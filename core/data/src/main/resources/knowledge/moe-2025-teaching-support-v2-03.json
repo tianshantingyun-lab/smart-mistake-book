@@ -113,6 +113,22 @@
    "licenseExpression": null,
    "licenseUri": null,
    "attributionText": "结构化总结（REVIEWED_SYNTHESIS），非原文。"
+  },
+  {
+   "sourceId": "desktop-src-e35c96096a:math",
+   "subject": "MATH",
+   "sourceType": "AUTHORIZED_EDUCATION_MATERIAL",
+   "title": "桌面教辅资料 · 2026年新高考资料",
+   "publisher": "教辅汇编（桌面原始资料）",
+   "edition": "2026/2027版",
+   "sourceUri": "https://www.example.edu/desktop-kb-source",
+   "licenseStatus": "REFERENCE_ONLY",
+   "contentFingerprint": "E35C96096A9E95099BEF33441707939E88281BCD87B7986C082DA8AD80918D51",
+   "importedAtEpochMillis": 1789669775241,
+   "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
+   "licenseExpression": null,
+   "licenseUri": null,
+   "attributionText": "桌面教辅资料直抽改写（REVIEWED_SYNTHESIS），仅内部教学参考。"
   }
  ],
  "materials": [
@@ -40467,6 +40483,26 @@
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:五步-书写热化学方程式",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-9a51501f22-001",
+   "subject": "MATH",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "集合的含义与表示",
+   "summaryMarkdown": "把研究对象统称为元素，一些元素组成的总体叫做集合；通常用大写拉丁字母表示集合、小写字母表示元素。",
+   "applicabilityMarkdown": "判断研究对象能否构成集合、规范书写集合符号。",
+   "contentMarkdown": "1. 含义：一般地，我们把研究对象统称为元素，把一些元素组成的总体叫做集合。2. 表示：通常用大写拉丁字母 A、B、C…表示集合，用小写拉丁字母 a、b、c…表示集合中的元素。",
+   "boundaryMarkdown": "本节点只到含义与符号层面；多种表示方法见同节点另一条材料，运算见“交集与并集”等节点。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-e35c96096a:math",
+   "sourceLocator": "桌面资料 2026年新高考资料 / 2026年新高考资料/一轮复习/2026年体育单招数学零基础一轮总复习/资料/1.1集合的概念（讲义）（学生版）.docx（块 9a51501f22-001）",
+   "reviewedAtEpochMillis": 1789669775137,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:集合的含义与表示",
      "role": "PRIMARY"
     }
    ]

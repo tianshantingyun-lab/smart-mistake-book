@@ -85,7 +85,8 @@ FORWARD = {
     "PENDING_MEDIA": {"EXTRACTED", "REJECTED", "ERROR"},
     "ERROR": PENDING_STATES,
     "SKIPPED_NO_CONTENT": set(),
-    "EXTRACTED": set(),
+    # 一个源文件可产出多条材料：EXTRACTED→EXTRACTED 仅允许 output_ref 前缀扩展（追加）
+    "EXTRACTED": {"EXTRACTED"},
     "REJECTED": set(),
 }
 
@@ -133,6 +134,10 @@ def mark(paths: dict[str, tuple[str, str]], tool: str, path: Path = TABLE) -> li
             raise ValueError(f"状态表无此文件：{rel}")
         if new not in FORWARD.get(row["state"], set()):
             raise ValueError(f"非法迁移 {row['state']} → {new}（{rel}）")
+        if row["state"] == new == "EXTRACTED":
+            old = row["output_ref"]
+            if not (ref == old or ref.startswith(old + ",")):
+                raise ValueError(f"EXTRACTED 追加须保持 output_ref 前缀（{rel}）")
         row["state"] = new
         row["output_ref"] = ref
         row["tool"] = tool
@@ -171,6 +176,18 @@ def verify(path: Path = TABLE) -> list[str]:
     missing = inv - seen
     if missing:
         problems.append(f"缺 {len(missing)} 个 inventory 文件，例：{sorted(missing)[:3]}")
+    # EXTRACTED 的 output_ref 必须真实存在于 sidecar（防状态与包漂移）
+    from kb_build import pack_io
+    mats: set[str] = set()
+    for sp in pack_io.sidecar_paths():
+        if sp.exists():
+            mats.update(m["slug"] for m in pack_io.load_json(sp)["materials"])
+    for r in rows:
+        if r["state"] != "EXTRACTED" or not r["output_ref"]:
+            continue
+        for ref in r["output_ref"].split(","):
+            if ref and ref not in mats:
+                problems.append(f"output_ref 悬空：{ref}（{r['rel_path']}）")
     return problems
 
 

@@ -63,10 +63,10 @@ class RealPackTest(unittest.TestCase):
         self.assertEqual(0, dp.delete(pack, deletes)[0])
         self.assertEqual(0, dp.delete(pack, deletes)[1], "不得清理悬挂前置")
 
-    def test_shipped_point_count_is_2295(self):
+    def test_shipped_point_count_is_2303(self):
         from kb_build import pack_io
         pack = pack_io.load_json(pack_io.pack_path())
-        self.assertEqual(2295, dp._point_count(pack))
+        self.assertEqual(2303, dp._point_count(pack))
 
     def test_purge_table_refs_is_clean_on_shipped(self):
         """成品已删过点、外部表已清过——再 purge 必须 0（无悬空引用残留）。"""

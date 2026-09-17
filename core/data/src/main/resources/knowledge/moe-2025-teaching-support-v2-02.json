@@ -97,6 +97,22 @@
    "licenseExpression": null,
    "licenseUri": null,
    "attributionText": "结构化总结（REVIEWED_SYNTHESIS），非原文。"
+  },
+  {
+   "sourceId": "desktop-src-e35c96096a:math",
+   "subject": "MATH",
+   "sourceType": "AUTHORIZED_EDUCATION_MATERIAL",
+   "title": "桌面教辅资料 · 2026年新高考资料",
+   "publisher": "教辅汇编（桌面原始资料）",
+   "edition": "2026/2027版",
+   "sourceUri": "https://www.example.edu/desktop-kb-source",
+   "licenseStatus": "REFERENCE_ONLY",
+   "contentFingerprint": "E35C96096A9E95099BEF33441707939E88281BCD87B7986C082DA8AD80918D51",
+   "importedAtEpochMillis": 1789669649286,
+   "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
+   "licenseExpression": null,
+   "licenseUri": null,
+   "attributionText": "桌面教辅资料直抽改写（REVIEWED_SYNTHESIS），仅内部教学参考。"
   }
  ],
  "materials": [
@@ -40581,6 +40597,206 @@
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:运动性质-匀变速曲线运动-加速度恒为重力加速度-g-大小方向不变",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-9a51501f22-003",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "集合的常用表示方法：列举法、描述法、区间、韦恩图",
+   "summaryMarkdown": "列举法用花括号一一列出元素；描述法 {x∈A|P(x)} 先写元素符号与取值范围再写共同特征；区间法表示实数集；韦恩图直观表达关系与运算。",
+   "applicabilityMarkdown": "书写集合的多种表示并互相转换；读区间端点开闭。",
+   "contentMarkdown": "1. 列举法：把元素一一列举、用花括号括起；元素间用逗号隔开，元素不能重复。2. 描述法：{x∈A|P(x)}，花括号内先写元素一般符号及取值范围，竖线后写共同特征。3. 区间表示法：用 [a",
+   "boundaryMarkdown": "b]、(a",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-e35c96096a:math",
+   "sourceLocator": "桌面资料 2026年新高考资料 / 2026年新高考资料/一轮复习/2026年体育单招数学零基础一轮总复习/资料/1.1集合的概念（讲义）（学生版）.docx（块 9a51501f22-003）",
+   "reviewedAtEpochMillis": 1789669649169,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:集合的含义与表示",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-9a51501f22-005",
+   "subject": "MATH",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "集合中元素的三个特征",
+   "summaryMarkdown": "确定性：元素是否属于集合可判断；互异性：同一集合元素不重复；无序性：排列顺序不影响集合。",
+   "applicabilityMarkdown": "含参集合题用互异性检验参数；判断两组对象是否同一集合。",
+   "contentMarkdown": "①确定性：集合的元素必须是确定的，给定对象属于或不属于该集合可以判断。②互异性：对于一个给定的集合，其中的元素一定是不同的，重复出现只算一个。③无序性：集合中元素的排列顺序可以任意，元素相同且个数相同的两个集合是同一个集合（即相等）。",
+   "boundaryMarkdown": "互异性检验是含参集合题的必查步骤；无序性是“元素相同且个数相同即集合相等”的依据。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-e35c96096a:math",
+   "sourceLocator": "桌面资料 2026年新高考资料 / 2026年新高考资料/一轮复习/2026年体育单招数学零基础一轮总复习/资料/1.1集合的概念（讲义）（学生版）.docx（块 9a51501f22-005）",
+   "reviewedAtEpochMillis": 1789669649169,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:集合中元素的特征",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-9a51501f22-004",
+   "subject": "MATH",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "元素与集合的属于关系",
+   "summaryMarkdown": "a 是集合 A 的元素记作 a∈A，不是记作 a∉A；元素与集合用属于关系，集合与集合用包含关系。",
+   "applicabilityMarkdown": "判断属于/不属于关系；区分 ∈ 与 ⊆ 两类符号。",
+   "contentMarkdown": "①属于：如果 a 是集合 A 的元素，就说 a 属于 A，记作 a∈A。②不属于：如果 a 不是集合 A 的元素，就说 a 不属于 A，记作 a∉A。③符号区分：元素与集合之间用 ∈/∉，集合与集合之间用 ⊆/⊇，两类符号不可混用。",
+   "boundaryMarkdown": "∈ 只能用于元素与集合之间；把 ∈ 用于两个集合之间是典型错误。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-e35c96096a:math",
+   "sourceLocator": "桌面资料 2026年新高考资料 / 2026年新高考资料/一轮复习/2026年体育单招数学零基础一轮总复习/资料/1.1集合的概念（讲义）（学生版）.docx（块 9a51501f22-004）",
+   "reviewedAtEpochMillis": 1789669649169,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:元素与集合的关系",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-9a51501f22-002",
+   "subject": "MATH",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "集合的分类：有限集与无限集",
+   "summaryMarkdown": "按元素个数，集合分为有限集（元素个数为有限个）与无限集（元素个数为无限个）。",
+   "applicabilityMarkdown": "选择表示方法：有限集宜列举，无限集宜描述。",
+   "contentMarkdown": "①有限集：含有有限个元素的集合，通常推荐用列举法或描述法表示。②无限集：含有无限个元素的集合，通常用描述法表示。③不含任何元素的集合是空集（见“空集”节点）。",
+   "boundaryMarkdown": "分类只按元素个数一条标准；空集是特殊有限集，性质另见“空集”节点。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-e35c96096a:math",
+   "sourceLocator": "桌面资料 2026年新高考资料 / 2026年新高考资料/一轮复习/2026年体育单招数学零基础一轮总复习/资料/1.1集合的概念（讲义）（学生版）.docx（块 9a51501f22-002）",
+   "reviewedAtEpochMillis": 1789669649169,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:集合的分类",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-43995b893f-001",
+   "subject": "MATH",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "子集与集合相等的定义",
+   "summaryMarkdown": "A 的任意元素都是 B 的元素则 A⊆B；互相包含则两集合相等。",
+   "applicabilityMarkdown": "判断两集合的子集/相等关系；由元素对应关系列条件。",
+   "contentMarkdown": "①子集：对于两个集合 A、B，如果 A 中任意一个元素都是 B 的元素，则称 A 是 B 的子集，记作 A⊆B（或 B⊇A），读作 A 包含于 B。②相等：如果 A⊆B 且 B⊆A（两集合所含元素完全相同），则 A=B。",
+   "boundaryMarkdown": "子集判断抓“任意性”；A⊆B 包含 A=B 的情况，注意与真子集区分。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-e35c96096a:math",
+   "sourceLocator": "桌面资料 2026年新高考资料 / 2026年新高考资料/一轮复习/2026年体育单招数学零基础一轮总复习/资料/1.2集合间的基本关系（讲义）（学生版）.docx（块 43995b893f-001）",
+   "reviewedAtEpochMillis": 1789669649169,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:子集与集合的相等",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-43995b893f-002",
+   "subject": "MATH",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "真子集的定义",
+   "summaryMarkdown": "A 是 B 的子集且 B 中存在不属于 A 的元素，则 A⫋B，读作 A 真包含于 B。",
+   "applicabilityMarkdown": "区分 ⊆ 与 ⫋；子集个数问题。",
+   "contentMarkdown": "若 A⊆B 且 B 中存在不属于 A 的元素，则称集合 A 是集合 B 的真子集，记作 A⫋B（或 B⊋A），读作 A 真包含于 B（或 B 真包含 A）。",
+   "boundaryMarkdown": "A⫋B 要求 A≠B；空集是任何非空集合的真子集。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-e35c96096a:math",
+   "sourceLocator": "桌面资料 2026年新高考资料 / 2026年新高考资料/一轮复习/2026年体育单招数学零基础一轮总复习/资料/1.2集合间的基本关系（讲义）（学生版）.docx（块 43995b893f-002）",
+   "reviewedAtEpochMillis": 1789669649169,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:子集与集合的相等",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-43995b893f-003",
+   "subject": "MATH",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "空集的概念与子集计数",
+   "summaryMarkdown": "∅ 不含任何元素，是任何集合的子集、任何非空集合的真子集；n 元集合有 2ⁿ 个子集。",
+   "applicabilityMarkdown": "判断子集个数；含空集讨论的选择题。",
+   "contentMarkdown": "①空集：不含有任何元素的集合称为空集，记作 ∅。②规定：空集是任何集合的子集，是任何非空集合的真子集。③计数：一般地，一个含 n 个元素的集合，其子集数为 2ⁿ，真子集数为 2ⁿ−1，非空真子集数为 2ⁿ−2；特别地，空集的子集个数为 1，真子集个数为 0。",
+   "boundaryMarkdown": "计数公式在 n=0 时须回到空集特例（子集数为 1 而非 0）。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-e35c96096a:math",
+   "sourceLocator": "桌面资料 2026年新高考资料 / 2026年新高考资料/一轮复习/2026年体育单招数学零基础一轮总复习/资料/1.2集合间的基本关系（讲义）（学生版）.docx（块 43995b893f-003）",
+   "reviewedAtEpochMillis": 1789669649169,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:空集",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-16d279315a-001",
+   "subject": "MATH",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "交集的定义与符号表示",
+   "summaryMarkdown": "A∩B 由所有既属于 A 又属于 B 的元素组成，A∩B={x|x∈A 且 x∈B}，读作 A 交 B。",
+   "applicabilityMarkdown": "做交集运算；由 A∩B=A 推断 A⊆B。",
+   "contentMarkdown": "①自然语言：由所有属于集合 A 且属于集合 B 的元素组成的集合，称为 A 与 B 的交集，记作 A∩B，读作“A 交 B”。②符号表示：A∩B={x|x∈A 且 x∈B}。③基本性质：A∩∅=∅，A∩A=A，A∩B=B∩A，A∩B=A⇔A⊆B。",
+   "boundaryMarkdown": "交集运算以“共同元素”为准；韦恩图中为两圆重叠部分。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-e35c96096a:math",
+   "sourceLocator": "桌面资料 2026年新高考资料 / 2026年新高考资料/一轮复习/2026年体育单招数学零基础一轮总复习/资料/1.3集合的基本运算（讲义）（学生版）.docx（块 16d279315a-001）",
+   "reviewedAtEpochMillis": 1789669649169,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:交集与并集",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-16d279315a-002",
+   "subject": "MATH",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "并集的定义与符号表示",
+   "summaryMarkdown": "A∪B 由所有属于 A 或属于 B 的元素组成，A∪B={x|x∈A 或 x∈B}，读作 A 并 B。",
+   "applicabilityMarkdown": "做并集运算；含参并集去重。",
+   "contentMarkdown": "①自然语言：由所有属于集合 A 或属于集合 B 的元素组成的集合，称为 A 与 B 的并集，记作 A∪B，读作“A 并 B”。②符号表示：A∪B={x|x∈A 或 x∈B}。③基本性质：A∪∅=A，A∪A=A，A∪B=B∪A，A∪B=A⇔B⊆A。",
+   "boundaryMarkdown": "并集中重复元素只计一次（互异性）；“或”是逻辑或，包含同属两者的情形。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-e35c96096a:math",
+   "sourceLocator": "桌面资料 2026年新高考资料 / 2026年新高考资料/一轮复习/2026年体育单招数学零基础一轮总复习/资料/1.3集合的基本运算（讲义）（学生版）.docx（块 16d279315a-002）",
+   "reviewedAtEpochMillis": 1789669649169,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:交集与并集",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-16d279315a-003",
+   "subject": "MATH",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "补集的定义与基本性质",
+   "summaryMarkdown": "∁ᵤA 由全集 U 中不属于 A 的元素组成；全集的补集是 ∅，∅ 的补集是 U。",
+   "applicabilityMarkdown": "做补集运算；用补集转化“不属于”条件。",
+   "contentMarkdown": "①若集合 A 是全集 U 的一个子集，由 U 中不属于 A 的所有元素组成的集合，称为 A 相对于 U 的补集，记作 ∁ᵤA。②基本性质：全集的补集是空集，空集的补集是全集。",
+   "boundaryMarkdown": "补集运算必须先明确全集 U；同一集合在不同全集下补集不同。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-e35c96096a:math",
+   "sourceLocator": "桌面资料 2026年新高考资料 / 2026年新高考资料/一轮复习/2026年体育单招数学零基础一轮总复习/资料/1.3集合的基本运算（讲义）（学生版）.docx（块 16d279315a-003）",
+   "reviewedAtEpochMillis": 1789669649169,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:补集",
      "role": "PRIMARY"
     }
    ]
