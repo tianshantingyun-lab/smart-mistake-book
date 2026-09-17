@@ -44,3 +44,6 @@ smb-toolloop/
 kb_tools/
 kb_pdf_samples/
 knowledge-research/
+
+# Phase 2 提取块队列（258MB，可从源文件确定性重生成；权威状态在 extraction_state.csv）
+tools/kb_coverage/tables/extracted_chunks.jsonl
