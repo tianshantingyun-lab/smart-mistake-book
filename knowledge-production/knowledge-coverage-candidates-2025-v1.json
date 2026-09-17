@@ -2355,8 +2355,8 @@
               "candidateKind": "CURRICULUM_STATEMENT",
               "rawMarker": "③",
               "sourcePage": 49,
-              "name": "通过具体实例,了解超几何分布及其均值,并能解决简单的实际 问题。 ( 3)正态分布",
-              "text": "通过具体实例,了解超几何分布及其均值,并能解决简单的实际 问题。 ( 3)正态分布",
+              "name": "通过具体实例,了解超几何分布及其均值,并能解决简单的实际 问题。",
+              "text": "通过具体实例,了解超几何分布及其均值,并能解决简单的实际 问题。",
               "sourceLocator": "candidate:moe:2025:math:curriculum-text，PDF 第 49 页，选择性必修：概率与统计，原始编号 ③；DRAFT_UNREVIEWED 机械提取候选，尚未完成人工细化与审校"
             },
             {
@@ -2775,12 +2775,21 @@
               "candidateKind": "CURRICULUM_STATEMENT",
               "rawMarker": "(3)",
               "sourcePage": 56,
-              "name": "掌握非齐次线性方程组有解的判定 ,建立线性方程组的理论 基础。 ( 4)探索三元一次方程组解的结构 ,会表示一般解。",
-              "text": "掌握非齐次线性方程组有解的判定 ,建立线性方程组的理论 基础。 ( 4)探索三元一次方程组解的结构 ,会表示一般解。",
+              "name": "掌握非齐次线性方程组有解的判定 ,建立线性方程组的理论 基础。",
+              "text": "掌握非齐次线性方程组有解的判定 ,建立线性方程组的理论 基础。",
               "sourceLocator": "candidate:moe:2025:math:curriculum-text，PDF 第 56 页，选修A：空间向量与代数，原始编号 (3)；DRAFT_UNREVIEWED 机械提取候选，尚未完成人工细化与审校"
             },
             {
               "slug": "elective-a-space-vector-algebra-candidate-012",
+              "candidateKind": "CURRICULUM_STATEMENT",
+              "rawMarker": "(4)",
+              "sourcePage": 56,
+              "name": "探索三元一次方程组解的结构 ,会表示一般解。",
+              "text": "探索三元一次方程组解的结构 ,会表示一般解。",
+              "sourceLocator": "candidate:moe:2025:math:curriculum-text，PDF 第 56 页，选修A：空间向量与代数，原始编号 (4)；DRAFT_UNREVIEWED 机械提取候选，尚未完成人工细化与审校"
+            },
+            {
+              "slug": "elective-a-space-vector-algebra-candidate-013",
               "candidateKind": "CURRICULUM_STATEMENT",
               "rawMarker": "(5)",
               "sourcePage": 56,
@@ -2789,7 +2798,7 @@
               "sourceLocator": "candidate:moe:2025:math:curriculum-text，PDF 第 56 页，选修A：空间向量与代数，原始编号 (5)；DRAFT_UNREVIEWED 机械提取候选，尚未完成人工细化与审校"
             },
             {
-              "slug": "elective-a-space-vector-algebra-candidate-013",
+              "slug": "elective-a-space-vector-algebra-candidate-014",
               "candidateKind": "CURRICULUM_STATEMENT",
               "rawMarker": "(1)",
               "sourcePage": 57,
@@ -2798,7 +2807,7 @@
               "sourceLocator": "candidate:moe:2025:math:curriculum-text，PDF 第 57 页，选修A：空间向量与代数，原始编号 (1)；DRAFT_UNREVIEWED 机械提取候选，尚未完成人工细化与审校"
             },
             {
-              "slug": "elective-a-space-vector-algebra-candidate-014",
+              "slug": "elective-a-space-vector-algebra-candidate-015",
               "candidateKind": "CURRICULUM_STATEMENT",
               "rawMarker": "(2)",
               "sourcePage": 57,
@@ -2807,7 +2816,7 @@
               "sourceLocator": "candidate:moe:2025:math:curriculum-text，PDF 第 57 页，选修A：空间向量与代数，原始编号 (2)；DRAFT_UNREVIEWED 机械提取候选，尚未完成人工细化与审校"
             },
             {
-              "slug": "elective-a-space-vector-algebra-candidate-015",
+              "slug": "elective-a-space-vector-algebra-candidate-016",
               "candidateKind": "CURRICULUM_STATEMENT",
               "rawMarker": "(3)",
               "sourcePage": 57,
@@ -2816,7 +2825,7 @@
               "sourceLocator": "candidate:moe:2025:math:curriculum-text，PDF 第 57 页，选修A：空间向量与代数，原始编号 (3)；DRAFT_UNREVIEWED 机械提取候选，尚未完成人工细化与审校"
             },
             {
-              "slug": "elective-a-space-vector-algebra-candidate-016",
+              "slug": "elective-a-space-vector-algebra-candidate-017",
               "candidateKind": "CURRICULUM_STATEMENT",
               "rawMarker": "(1)",
               "sourcePage": 57,
@@ -2825,7 +2834,7 @@
               "sourceLocator": "candidate:moe:2025:math:curriculum-text，PDF 第 57 页，选修A：空间向量与代数，原始编号 (1)；DRAFT_UNREVIEWED 机械提取候选，尚未完成人工细化与审校"
             },
             {
-              "slug": "elective-a-space-vector-algebra-candidate-017",
+              "slug": "elective-a-space-vector-algebra-candidate-018",
               "candidateKind": "CURRICULUM_STATEMENT",
               "rawMarker": "(2)",
               "sourcePage": 57,
@@ -2834,7 +2843,7 @@
               "sourceLocator": "candidate:moe:2025:math:curriculum-text，PDF 第 57 页，选修A：空间向量与代数，原始编号 (2)；DRAFT_UNREVIEWED 机械提取候选，尚未完成人工细化与审校"
             },
             {
-              "slug": "elective-a-space-vector-algebra-candidate-018",
+              "slug": "elective-a-space-vector-algebra-candidate-019",
               "candidateKind": "CURRICULUM_STATEMENT",
               "rawMarker": "(3)",
               "sourcePage": 57,
@@ -2843,7 +2852,7 @@
               "sourceLocator": "candidate:moe:2025:math:curriculum-text，PDF 第 57 页，选修A：空间向量与代数，原始编号 (3)；DRAFT_UNREVIEWED 机械提取候选，尚未完成人工细化与审校"
             },
             {
-              "slug": "elective-a-space-vector-algebra-candidate-019",
+              "slug": "elective-a-space-vector-algebra-candidate-020",
               "candidateKind": "CURRICULUM_STATEMENT",
               "rawMarker": "(4)",
               "sourcePage": 57,
@@ -2852,7 +2861,7 @@
               "sourceLocator": "candidate:moe:2025:math:curriculum-text，PDF 第 57 页，选修A：空间向量与代数，原始编号 (4)；DRAFT_UNREVIEWED 机械提取候选，尚未完成人工细化与审校"
             },
             {
-              "slug": "elective-a-space-vector-algebra-candidate-020",
+              "slug": "elective-a-space-vector-algebra-candidate-021",
               "candidateKind": "CURRICULUM_STATEMENT",
               "rawMarker": "(5)",
               "sourcePage": 57,
@@ -2861,7 +2870,7 @@
               "sourceLocator": "candidate:moe:2025:math:curriculum-text，PDF 第 57 页，选修A：空间向量与代数，原始编号 (5)；DRAFT_UNREVIEWED 机械提取候选，尚未完成人工细化与审校"
             },
             {
-              "slug": "elective-a-space-vector-algebra-candidate-021",
+              "slug": "elective-a-space-vector-algebra-candidate-022",
               "candidateKind": "CURRICULUM_STATEMENT",
               "rawMarker": "(6)",
               "sourcePage": 57,
@@ -3219,21 +3228,39 @@
               "candidateKind": "CURRICULUM_STATEMENT",
               "rawMarker": "(5)",
               "sourcePage": 61,
-              "name": "掌握向量的线性运算 ,理解 (低维)向量空间与子空间的 概念。 ( 6)会求点到直线、点到平面的距离,两条异面直线的距离,直线 与平面的夹角。",
-              "text": "掌握向量的线性运算 ,理解 (低维)向量空间与子空间的 概念。 ( 6)会求点到直线、点到平面的距离,两条异面直线的距离,直线 与平面的夹角。",
+              "name": "掌握向量的线性运算 ,理解 (低维)向量空间与子空间的 概念。",
+              "text": "掌握向量的线性运算 ,理解 (低维)向量空间与子空间的 概念。",
               "sourceLocator": "candidate:moe:2025:math:curriculum-text，PDF 第 61 页，选修B：空间向量与代数，原始编号 (5)；DRAFT_UNREVIEWED 机械提取候选，尚未完成人工细化与审校"
             },
             {
               "slug": "elective-b-space-vector-algebra-candidate-006",
               "candidateKind": "CURRICULUM_STATEMENT",
-              "rawMarker": "(1)",
+              "rawMarker": "(6)",
               "sourcePage": 61,
-              "name": "通过几何直观引入矩阵概念 ,掌握矩阵的三种基本运算及其 性质。 ( 2)掌握行列式定义与性质,会计算行列式。",
-              "text": "通过几何直观引入矩阵概念 ,掌握矩阵的三种基本运算及其 性质。 ( 2)掌握行列式定义与性质,会计算行列式。",
-              "sourceLocator": "candidate:moe:2025:math:curriculum-text，PDF 第 61 页，选修B：空间向量与代数，原始编号 (1)；DRAFT_UNREVIEWED 机械提取候选，尚未完成人工细化与审校"
+              "name": "会求点到直线、点到平面的距离,两条异面直线的距离,直线 与平面的夹角。",
+              "text": "会求点到直线、点到平面的距离,两条异面直线的距离,直线 与平面的夹角。",
+              "sourceLocator": "candidate:moe:2025:math:curriculum-text，PDF 第 61 页，选修B：空间向量与代数，原始编号 (6)；DRAFT_UNREVIEWED 机械提取候选，尚未完成人工细化与审校"
             },
             {
               "slug": "elective-b-space-vector-algebra-candidate-007",
+              "candidateKind": "CURRICULUM_STATEMENT",
+              "rawMarker": "(1)",
+              "sourcePage": 61,
+              "name": "通过几何直观引入矩阵概念 ,掌握矩阵的三种基本运算及其 性质。",
+              "text": "通过几何直观引入矩阵概念 ,掌握矩阵的三种基本运算及其 性质。",
+              "sourceLocator": "candidate:moe:2025:math:curriculum-text，PDF 第 61 页，选修B：空间向量与代数，原始编号 (1)；DRAFT_UNREVIEWED 机械提取候选，尚未完成人工细化与审校"
+            },
+            {
+              "slug": "elective-b-space-vector-algebra-candidate-008",
+              "candidateKind": "CURRICULUM_STATEMENT",
+              "rawMarker": "(2)",
+              "sourcePage": 61,
+              "name": "掌握行列式定义与性质,会计算行列式。",
+              "text": "掌握行列式定义与性质,会计算行列式。",
+              "sourceLocator": "candidate:moe:2025:math:curriculum-text，PDF 第 61 页，选修B：空间向量与代数，原始编号 (2)；DRAFT_UNREVIEWED 机械提取候选，尚未完成人工细化与审校"
+            },
+            {
+              "slug": "elective-b-space-vector-algebra-candidate-009",
               "candidateKind": "CURRICULUM_STATEMENT",
               "rawMarker": "(1)",
               "sourcePage": 62,
@@ -3242,7 +3269,7 @@
               "sourceLocator": "candidate:moe:2025:math:curriculum-text，PDF 第 62 页，选修B：空间向量与代数，原始编号 (1)；DRAFT_UNREVIEWED 机械提取候选，尚未完成人工细化与审校"
             },
             {
-              "slug": "elective-b-space-vector-algebra-candidate-008",
+              "slug": "elective-b-space-vector-algebra-candidate-010",
               "candidateKind": "CURRICULUM_STATEMENT",
               "rawMarker": "(2)",
               "sourcePage": 62,
@@ -3251,7 +3278,7 @@
               "sourceLocator": "candidate:moe:2025:math:curriculum-text，PDF 第 62 页，选修B：空间向量与代数，原始编号 (2)；DRAFT_UNREVIEWED 机械提取候选，尚未完成人工细化与审校"
             },
             {
-              "slug": "elective-b-space-vector-algebra-candidate-009",
+              "slug": "elective-b-space-vector-algebra-candidate-011",
               "candidateKind": "CURRICULUM_STATEMENT",
               "rawMarker": "(3)",
               "sourcePage": 62,
@@ -3260,7 +3287,7 @@
               "sourceLocator": "candidate:moe:2025:math:curriculum-text，PDF 第 62 页，选修B：空间向量与代数，原始编号 (3)；DRAFT_UNREVIEWED 机械提取候选，尚未完成人工细化与审校"
             },
             {
-              "slug": "elective-b-space-vector-algebra-candidate-010",
+              "slug": "elective-b-space-vector-algebra-candidate-012",
               "candidateKind": "CURRICULUM_STATEMENT",
               "rawMarker": "(4)",
               "sourcePage": 62,
@@ -3269,7 +3296,7 @@
               "sourceLocator": "candidate:moe:2025:math:curriculum-text，PDF 第 62 页，选修B：空间向量与代数，原始编号 (4)；DRAFT_UNREVIEWED 机械提取候选，尚未完成人工细化与审校"
             },
             {
-              "slug": "elective-b-space-vector-algebra-candidate-011",
+              "slug": "elective-b-space-vector-algebra-candidate-013",
               "candidateKind": "CURRICULUM_STATEMENT",
               "rawMarker": "(5)",
               "sourcePage": 62,
@@ -12010,8 +12037,8 @@
               "candidateKind": "CURRICULUM_STATEMENT",
               "rawMarker": "1.2",
               "sourcePage": 39,
-              "name": "核外电子排布规律 知道原子核外电子的能级高低顺序,了解原子核外电子排布的构造 原理,认识基态原子中核外电子的排布遵循能量最低原理、泡利不相容 原理和洪特规则等。知道 1 ~36 号元素基态原子核外电子的排布。",
-              "text": "核外电子排布规律 知道原子核外电子的能级高低顺序,了解原子核外电子排布的构造 原理,认识基态原子中核外电子的排布遵循能量最低原理、泡利不相容 原理和洪特规则等。知道 1 ~36 号元素基态原子核外电子的排布。",
+              "name": "核外电子排布规律 知道原子核外电子的能级高低顺序,了解原子核外电子排布的构造 原理,认识基态原子中核外电子的排布遵循能量最低原理、泡利不相容 原理和洪特规则等。知道 1~36 号元素基态原子核外电子的排布。",
+              "text": "核外电子排布规律 知道原子核外电子的能级高低顺序,了解原子核外电子排布的构造 原理,认识基态原子中核外电子的排布遵循能量最低原理、泡利不相容 原理和洪特规则等。知道 1~36 号元素基态原子核外电子的排布。",
               "sourceLocator": "candidate:moe:2025:chemistry:curriculum-text，PDF 第 39 页，选择性必修：物质结构与性质，原始编号 1.2；DRAFT_UNREVIEWED 机械提取候选，尚未完成人工细化与审校"
             },
             {
