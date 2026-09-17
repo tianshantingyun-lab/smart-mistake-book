@@ -19,6 +19,13 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# 2026-09-17：GitHub 迁移到 Node 24 runner 后，android-actions/setup-android@v3
+# 的 sdkmanager 子进程启动即崩（check/instrumented 两个 job 逐字复现，run
+# 35244477722 / 35247418029 及 rerun）。按 runner 警告中的官方兜底强制该 action
+# 回退 Node 20；等 action 发布 Node 24 兼容版本后移除本变量。
+env:
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: "true"
+
 jobs:
   check:
     runs-on: ubuntu-latest
