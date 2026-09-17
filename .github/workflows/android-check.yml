@@ -35,13 +35,11 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
-      # 2026-09-17：android-actions/setup-android@v3 的默认 cmdline-tools 下载
-      # （16.0）在 Node 24 runner 上 sdkmanager 子进程 exit 1（run 35244477722 /
-      # 35247418029 / 35248118845，回退 Node 20 后仍复现）。换 agisome/setup-android
-      # 使用 runner 预装 SDK、不强制下载新 cmdline-tools。
-      - uses: agisome/setup-android@v2
-        with:
-          accept-licenses: true
+      # 2026-09-17：新版 GitHub runner 移除了 tools 包，setup-android@v3 强下
+      # cmdline-tools 后 sdkmanager exit 1（run 35244477722 / 35247418029 /
+      # 35248118845，Node 20 回退无效）。官方 v4.0.2 当日发布修复（"Fix for
+      # removed tools package"），升级到 v4。
+      - uses: android-actions/setup-android@v4
       - name: Grant Gradle wrapper permission
         run: chmod +x gradlew
       - name: Room schema drift check
@@ -146,13 +144,11 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
-      # 2026-09-17：android-actions/setup-android@v3 的默认 cmdline-tools 下载
-      # （16.0）在 Node 24 runner 上 sdkmanager 子进程 exit 1（run 35244477722 /
-      # 35247418029 / 35248118845，回退 Node 20 后仍复现）。换 agisome/setup-android
-      # 使用 runner 预装 SDK、不强制下载新 cmdline-tools。
-      - uses: agisome/setup-android@v2
-        with:
-          accept-licenses: true
+      # 2026-09-17：新版 GitHub runner 移除了 tools 包，setup-android@v3 强下
+      # cmdline-tools 后 sdkmanager exit 1（run 35244477722 / 35247418029 /
+      # 35248118845，Node 20 回退无效）。官方 v4.0.2 当日发布修复（"Fix for
+      # removed tools package"），升级到 v4。
+      - uses: android-actions/setup-android@v4
       - name: Grant Gradle wrapper permission
         run: chmod +x gradlew
       # CI run 32662033881：模拟器以 -accel off 软件模拟冷启动耗时 1023 秒，

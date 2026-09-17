@@ -54,7 +54,7 @@ class RealPackTest(unittest.TestCase):
     def test_shipped_point_count_is_2425(self):
         from kb_build import delete_points as dp
         pack = pack_io.load_json(pack_io.pack_path())
-        self.assertEqual(2327, dp._point_count(pack))
+        self.assertEqual(2301, dp._point_count(pack))
 
 
 if __name__ == "__main__":

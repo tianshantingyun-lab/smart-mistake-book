@@ -103,22 +103,22 @@ class GateTest(unittest.TestCase):
             set(metrics),
         )
         # 这几项是审计里逐一复核过的硬数字，门禁必须能复现。
-        # 2026-09-16 章层结构修复 + 去星 + 删 106 纯标签碎片后的当前快照
+        # 2026-09-16 章层结构修复 + 去星 + 删残渣/碎片 + 合并同章/跨章重复后的快照
         # （这些 pin 随结构修复推进而变，每次改动在提交里说明来源）：
-        #   unbound_points 998→850（删的残渣/碎片点本就无材料）
-        #   ghost_aliases 847→873（改名+删点后别名关系重算）
-        #   boundary_excerpt 968→911（删的点里有 57 个 boundary 命中摘录判据）
-        # starred_names 96→0：去星修复后为 0，此断言现为防星号回归哨兵。
+        #   unbound_points 998→701（删残渣/碎片本就无材料；合并使部分目标获首条材料）
+        #   ghost_aliases 847→852、boundary_excerpt 968→835、locator_boundary 589→585
+        # starred_names 96→0、duplicate_names 118→0：已修复，见下方专门断言。
         self.assertEqual(0, metrics["starred_names"].value)
-        self.assertEqual(724, metrics["unbound_points"].value)
+        self.assertEqual(0, metrics["duplicate_names"].value)
+        self.assertEqual(701, metrics["unbound_points"].value)
         self.assertEqual(892, metrics["unbound_materials"].value)
-        self.assertEqual(853, metrics["ghost_aliases"].value)
+        self.assertEqual(852, metrics["ghost_aliases"].value)
         self.assertEqual(194, metrics["latex_damage"].value)
         self.assertEqual(80, metrics["control_chars"].value)
-        self.assertEqual(849, metrics["boundary_excerpt"].value)
+        self.assertEqual(835, metrics["boundary_excerpt"].value)
         # 只留占位写法（`（见知识清单/教材）`）的条数。旧判据是"以 `定位：` 开头"，
         # 而本包每个 boundary 都这样开头，于是该项恒等于节点总数 2573、毫无信息量。
-        self.assertEqual(587, metrics["locator_boundary"].value)
+        self.assertEqual(585, metrics["locator_boundary"].value)
         # 两项必须不相交：一条边界不可能既是原文摘录、又是没写边界。
         # 旧判据下两项交集 1984、皆假 0，即"任何写法都至少中一项"，指标失去意义。
         bundled = pack_io.load_json(pack_io.pack_path())
@@ -135,7 +135,8 @@ class GateTest(unittest.TestCase):
         self.assertEqual(set(), excerpt_ids & locator_ids)
         # 缺陷类指标修复前必须非零——否则门禁不是在测真东西。
         # （starred_names 已修到 0，移出此列；上方 assertEqual(0,…) 现充当防回归哨兵。）
-        for key in ("bad_names", "duplicate_names", "unbound_points",
+        # duplicate_names 已修到 0（上方专门断言），不在此"必须非零"列表
+        for key in ("bad_names", "unbound_points",
                     "unbound_materials", "ghost_aliases", "undeclared_prereq",
                     "boundary_excerpt", "locator_boundary", "latex_damage",
                     "control_chars", "chapter_locator_mismatch"):

@@ -64,10 +64,9 @@ class ReviewedKnowledgePackJsonCodecTest {
         assertEquals(KnowledgeCoverageContract.CURRENT_BASELINE_ID, pack.coverage.baselineId)
         assertEquals(KnowledgeCoverageLevel.PARTIAL, pack.coverage.catalogLevel)
         assertEquals(setOf("MATH","PHYSICS","CHEMISTRY","BIOLOGY"), pack.nodes.mapTo(hashSetOf()) { it.subject })
-        // 节点 = topic + 原子点。2026-09-16 结构修复（归位/删残渣/去星/合并/建 光呼吸）+
-        // 综合桶治理（化学 23 铝点跨章归第三章 + 1 个新主题）：445→461 topic、
-        // 2573→2327 point，3018→2788 节点。
-        assertEquals(2788, pack.nodes.size)
+        // 节点 = topic + 原子点。2026-09-16 结构修复（归位/删残渣/去星/合并同章+跨章重复/
+        // 建 光呼吸/综合桶治理）：445→461 topic、2573→2301 point，3018→2762 节点。
+        assertEquals(2762, pack.nodes.size)
         // 多层知识树：卷 -> 章 -> 主题 -> 子主题 -> 知识点，topic 父链必须完整落到节点层
         val topicNodes = pack.nodes.filter { it.nodeKind == "TOPIC" }
         assertTrue(topicNodes.size >= 400)

@@ -3036,7 +3036,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:机械波-x1",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:机械波",
      "role": "PRIMARY"
     }
    ]
@@ -3056,7 +3056,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:机械波-x1",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:机械波",
      "role": "PRIMARY"
     }
    ]
@@ -8736,7 +8736,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:燃烧热-x1",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:燃烧热",
      "role": "PRIMARY"
     }
    ]
@@ -8796,7 +8796,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:盖斯定律-x1",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:盖斯定律",
      "role": "PRIMARY"
     }
    ]
@@ -9906,7 +9906,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:气体摩尔体积-x1",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:气体摩尔体积",
      "role": "PRIMARY"
     }
    ]
@@ -12601,7 +12601,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:键参数-x1",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:键参数",
      "role": "PRIMARY"
     }
    ]
@@ -14146,7 +14146,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:盖斯定律-x1",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:盖斯定律",
      "role": "PRIMARY"
     }
    ]
@@ -14166,7 +14166,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:盖斯定律-x1",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:盖斯定律",
      "role": "PRIMARY"
     }
    ]
@@ -14906,7 +14906,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:气体摩尔体积-x1",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:气体摩尔体积",
      "role": "PRIMARY"
     }
    ]
@@ -32461,7 +32461,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:烷烃的命名-x1",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:烷烃的命名",
      "role": "PRIMARY"
     }
    ]
@@ -33251,7 +33251,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:气体摩尔体积-x1",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:气体摩尔体积",
      "role": "PRIMARY"
     }
    ]
@@ -39266,7 +39266,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电离能-x1",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电离能",
      "role": "PRIMARY"
     }
    ]
@@ -39306,7 +39306,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电离能-x1",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电离能",
      "role": "PRIMARY"
     }
    ]
@@ -39406,7 +39406,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:键参数-x1",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:键参数",
      "role": "PRIMARY"
     }
    ]
