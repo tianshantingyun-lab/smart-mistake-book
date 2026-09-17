@@ -13,6 +13,8 @@ import org.junit.jupiter.api.Test
 
 class OpenAiEditsClientTest {
 
+    private val DUMMY_KEY = "test-key"
+
     private lateinit var server: MockWebServer
     private lateinit var client: OpenAiEditsClient
 
@@ -20,8 +22,9 @@ class OpenAiEditsClientTest {
     fun setUp() {
         server = MockWebServer()
         server.start()
+        // MockWebServer 本地假 key，非真实凭据：仅用于断言 Authorization 头透传
         client = OpenAiEditsClient(
-            apiKey = "test-key",
+            apiKey = DUMMY_KEY,
             baseUrl = server.url("/v1").toString().removeSuffix("/"),
             client = OkHttpClient(),
         )
@@ -49,7 +52,7 @@ class OpenAiEditsClientTest {
 
         val recorded = server.takeRequest()
         assertEquals("/v1/images/edits", recorded.path)
-        assertEquals("Bearer test-key", recorded.getHeader("Authorization"))
+        assertEquals("Bearer $DUMMY_KEY", recorded.getHeader("Authorization"))
         val boundary = recorded.getHeader("Content-Type")
             ?.substringAfter("boundary=")
             ?.removeSurrounding("\"")
@@ -109,7 +112,7 @@ class OpenAiEditsClientTest {
 
         val recorded = server.takeRequest()
         assertEquals("/v1/images/generations", recorded.path)
-        assertEquals("Bearer test-key", recorded.getHeader("Authorization"))
+        assertEquals("Bearer $DUMMY_KEY", recorded.getHeader("Authorization"))
         val body = recorded.body.readUtf8()
         assertTrue(body.contains("gpt-image-2"))
         assertTrue(body.contains("数轴标注导数正负区间"))
