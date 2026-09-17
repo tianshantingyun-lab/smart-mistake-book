@@ -94,34 +94,76 @@ def rename_topics(pack: dict, renames: dict[tuple[str, str], str]) -> int:
     return changed
 
 
-def _ensure_theme(topics: list[dict], chapter_slug: str, theme: str,
-                  subject: str, taken: set[str]) -> str:
-    """章下找/建 name=theme 的主题 topic，返回其 slug。"""
-    for t in topics:
-        if t.get("parentSlug") == chapter_slug and t["name"] == theme:
-            return t["slug"]
+def _subtree_themes(topics: list[dict], by_slug: dict[str, dict], chapter_slug: str,
+                    theme: str) -> list[dict]:
+    """章的整棵子树里 name=theme 的 topic（深查找，不含章本身）。
+
+    消灭的失败：目标主题在"章→单元→主题"的深层时，旧版只查章的直接子级，
+    找不到就新建 bare-slug 浅层同名分支，同一册出现两个同名分支（I-08 实测 7 例）。
+    """
+    out: list[dict] = []
+
+    def dfs(node: str) -> None:
+        for t in topics:
+            if t.get("parentSlug") != node:
+                continue
+            if t["name"] == theme:
+                out.append(t)
+            dfs(t["slug"])
+
+    if chapter_slug in by_slug:
+        dfs(chapter_slug)
+    return out
+
+
+def _topic_depth(by_slug: dict[str, dict], slug: str) -> int:
+    d, s = 0, by_slug[slug].get("parentSlug")
+    while s in by_slug:
+        s = by_slug[s].get("parentSlug")
+        d += 1
+    return d
+
+
+def _ensure_theme(topics: list[dict], by_slug: dict[str, dict], chapter_slug: str,
+                  theme: str, subject: str, taken: set[str],
+                  avoid: str | None = None) -> str:
+    """章子树里找 name=theme 的主题 topic（多个取最深；avoid 仅在还有备选时排除），找不到才建。"""
+    cands = _subtree_themes(topics, by_slug, chapter_slug, theme)
+    if len(cands) > 1 and avoid:
+        alt = [t for t in cands if t["slug"] != avoid]
+        if alt:
+            cands = alt
+    if cands:
+        return max(cands, key=lambda t: (_topic_depth(by_slug, t["slug"]), t["slug"]))["slug"]
     base = "".join(theme.split())[:80] or f"{subject.lower()}-topic"
     slug, n = base, 2
     while slug in taken:
         slug = f"{base}-{n}"
         n += 1
-    topics.append({
+    new = {
         "slug": slug, "name": theme,
         "sourceLocator": "定位：待补章表。",
         "parentSlug": chapter_slug,
         "knowledgePoints": [],
-    })
+    }
+    topics.append(new)
+    by_slug[slug] = new      # 同步索引：后续行的深度/子树查找才看得见新主题
     taken.add(slug)
     return slug
 
 
-def _theme_holds_point(topics: list[dict], base_slug: str, theme: str, slug: str) -> bool:
-    """base_slug 下名为 theme 的主题是否已包含 slug 这个点——是则该行已是完成态。"""
-    for t in topics:
-        if t.get("parentSlug") == base_slug and t["name"] == theme:
-            if any(p["slug"] == slug for p in t.get("knowledgePoints") or []):
-                return True
-    return False
+def _theme_holds_point(topics: list[dict], by_slug: dict[str, dict], base_slug: str,
+                       theme: str, slug: str) -> bool:
+    """`_ensure_theme` 会选中的那个主题（子树内最深）是否已含 slug——是则该行已完成。
+
+    点在浅层同名分支、深层另有同名主题时返回 False（仍要去更深的家），避免
+    浅层重复分支被当成完成态。
+    """
+    cands = _subtree_themes(topics, by_slug, base_slug, theme)
+    if not cands:
+        return False
+    target = max(cands, key=lambda t: (_topic_depth(by_slug, t["slug"]), t["slug"]))
+    return any(p["slug"] == slug for p in target.get("knowledgePoints") or [])
 
 
 def relocate(pack: dict, relocations: dict[tuple[str, str], tuple[str, str]]) -> int:
@@ -157,9 +199,10 @@ def relocate(pack: dict, relocations: dict[tuple[str, str], tuple[str, str]]) ->
                 base_slug = topic.get("parentSlug") or topic["slug"]
             if base_slug not in by_slug:
                 raise ValueError(f"relocate: 目标 topic {base_slug} 不存在（[{subj}] {slug}）")
-            if _theme_holds_point(topics, base_slug, theme, slug):
+            if _theme_holds_point(topics, by_slug, base_slug, theme, slug):
                 continue              # 幂等：目标主题已含此点
-            theme_slug = _ensure_theme(topics, base_slug, theme, subj, taken)
+            theme_slug = _ensure_theme(topics, by_slug, base_slug, theme, subj, taken,
+                                       avoid=topic.get("slug"))
             topic["knowledgePoints"].remove(point)
             next(t for t in topics if t["slug"] == theme_slug)["knowledgePoints"].append(point)
             moved += 1

@@ -105,14 +105,21 @@ def _has_prereq_cycle(pack: dict) -> bool:
     return False
 
 
-def _apply_pack_side(pack: dict, subj: str, surv: str, merged: str) -> bool:
-    """在给定 pack（或其副本）上应用单条合并的包侧改动。返回是否可行。"""
+def _apply_pack_side(pack: dict, subj: str, surv: str, merged: str,
+                     drop_prereq: str = "") -> bool:
+    """在给定 pack（或其副本）上应用单条合并的包侧改动。返回是否可行。
+
+    `drop_prereq`：前置并集里丢弃的指定 slug。消灭的失败：占位节点带语义垃圾
+    前置（如 `细胞器 ← 细胞呼吸的影响因素及应用`），并集会把垃圾边带给存活节点。
+    """
     _stopic, spoint = _find_point(pack, subj, surv)
     _mtopic, mpoint = _find_point(pack, subj, merged)
     if spoint is None or mpoint is None:
         return False
     union = list(dict.fromkeys(list(spoint.get("prerequisiteSlugs") or []) +
                                list(mpoint.get("prerequisiteSlugs") or [])))
+    if drop_prereq:
+        union = [q for q in union if q != drop_prereq]
     spoint["prerequisiteSlugs"] = [q for q in union if q not in (surv, merged)]
     spoint["aliases"] = list(dict.fromkeys(list(spoint.get("aliases") or []) +
                                            list(mpoint.get("aliases") or [])))
@@ -138,15 +145,16 @@ def merge(pack: dict, sidecars: list[dict], rows: list[dict]) -> dict:
     for row in rows:
         subj, surv, merged = (row["subject"].strip(), row["survivor_slug"].strip(),
                               row["merged_slug"].strip())
+        drop = (row.get("drop_prereq") or "").strip()
         if _find_point(pack, subj, surv)[1] is None or _find_point(pack, subj, merged)[1] is None:
             stats["skipped"] += 1            # 幂等：merged 已删，或 survivor 不在
             continue
         trial = copy.deepcopy(pack)
-        _apply_pack_side(trial, subj, surv, merged)
+        _apply_pack_side(trial, subj, surv, merged, drop)
         if _has_prereq_cycle(trial):
             stats["skipped_cycle"] += 1      # 该合并会造前置环，跳过
             continue
-        _apply_pack_side(pack, subj, surv, merged)
+        _apply_pack_side(pack, subj, surv, merged, drop)
         surv_id, merged_id = _node_id(pack_id, subj, surv), _node_id(pack_id, subj, merged)
         for sc in sidecars:
             for m in sc["materials"]:

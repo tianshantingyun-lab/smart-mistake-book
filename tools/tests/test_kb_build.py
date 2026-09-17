@@ -107,18 +107,21 @@ class GateTest(unittest.TestCase):
         # （这些 pin 随结构修复推进而变，每次改动在提交里说明来源）：
         #   unbound_points 998→701（删残渣/碎片本就无材料；合并使部分目标获首条材料）
         #   ghost_aliases 847→852、boundary_excerpt 968→835、locator_boundary 589→585
+        #   2026-09-18 第一章综合主题 36 点跨章归位 + 6 同概念重复对合并（I-08）后：
+        #   unbound_points 701→698（删 3 个零材料占位点）、ghost_aliases 852→849、
+        #   boundary_excerpt 835→833、locator_boundary 585→581
         # starred_names 96→0、duplicate_names 118→0：已修复，见下方专门断言。
         self.assertEqual(0, metrics["starred_names"].value)
         self.assertEqual(0, metrics["duplicate_names"].value)
-        self.assertEqual(701, metrics["unbound_points"].value)
+        self.assertEqual(698, metrics["unbound_points"].value)
         self.assertEqual(892, metrics["unbound_materials"].value)
-        self.assertEqual(852, metrics["ghost_aliases"].value)
+        self.assertEqual(849, metrics["ghost_aliases"].value)
         self.assertEqual(194, metrics["latex_damage"].value)
         self.assertEqual(80, metrics["control_chars"].value)
-        self.assertEqual(835, metrics["boundary_excerpt"].value)
+        self.assertEqual(833, metrics["boundary_excerpt"].value)
         # 只留占位写法（`（见知识清单/教材）`）的条数。旧判据是"以 `定位：` 开头"，
         # 而本包每个 boundary 都这样开头，于是该项恒等于节点总数 2573、毫无信息量。
-        self.assertEqual(585, metrics["locator_boundary"].value)
+        self.assertEqual(581, metrics["locator_boundary"].value)
         # 两项必须不相交：一条边界不可能既是原文摘录、又是没写边界。
         # 旧判据下两项交集 1984、皆假 0，即"任何写法都至少中一项"，指标失去意义。
         bundled = pack_io.load_json(pack_io.pack_path())

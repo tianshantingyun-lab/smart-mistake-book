@@ -52,6 +52,38 @@ class RelocateTest(unittest.TestCase):
         self.assertEqual(1, len(themes), "两个点归同一主题，只能建一个主题 topic")
         self.assertEqual(2, len(themes[0]["knowledgePoints"]))
 
+    def _pack_with_deep_theme(self):
+        """ch(章) → unit(单元) → 函数(深层主题, 含点 x)；章层另有散点 a。"""
+        pack = pack_with_chapter([pt("a")])
+        topics = pack["subjects"][0]["topics"]
+        topics.append({"slug": "unit", "name": "单元", "sourceLocator": "loc",
+                       "parentSlug": "ch", "knowledgePoints": []})
+        topics.append({"slug": "deep-func", "name": "函数", "sourceLocator": "loc",
+                       "parentSlug": "unit", "knowledgePoints": [pt("x")]})
+        return pack
+
+    def test_finds_deep_theme_not_create_shallow_twin(self):
+        pack = self._pack_with_deep_theme()
+        n = rel.relocate(pack, {("MATH", "a"): ("函数", "")})
+        self.assertEqual(1, n)
+        themes = [t for t in pack["subjects"][0]["topics"] if t["name"] == "函数"]
+        self.assertEqual(1, len(themes), "必须复用深层主题，不得新建浅层同名分支")
+        self.assertEqual({"a", "x"}, {p["slug"] for p in themes[0]["knowledgePoints"]})
+
+    def test_shallow_duplicate_point_moves_to_deeper_theme(self):
+        # 点已在浅层同名分支、深层另有同名主题 → 必须去更深的家（幂等判定不得把浅层当完成态）
+        pack = self._pack_with_deep_theme()
+        topics = pack["subjects"][0]["topics"]
+        topics.append({"slug": "shallow-func", "name": "函数", "sourceLocator": "loc",
+                       "parentSlug": "ch", "knowledgePoints": [pt("a")]})
+        ch = next(t for t in topics if t["slug"] == "ch")
+        ch["knowledgePoints"] = []
+        n = rel.relocate(pack, {("MATH", "a"): ("函数", "")})
+        self.assertEqual(1, n, "浅层重复分支不算完成态")
+        themes = [t for t in topics if t["name"] == "函数"]
+        deep = next(t for t in themes if t["slug"] == "deep-func")
+        self.assertIn("a", [p["slug"] for p in deep["knowledgePoints"]])
+
     def test_is_idempotent(self):
         pack = pack_with_chapter([pt("a")])
         self.assertEqual(1, rel.relocate(pack, {("MATH", "a"): ("函数", "")}))

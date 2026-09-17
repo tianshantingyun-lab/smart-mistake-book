@@ -63,6 +63,27 @@ class MergeTest(unittest.TestCase):
         self.assertEqual(["a"], by["b"]["prerequisiteSlugs"], "他点对 merged 的前置改指 survivor")
         self.assertTrue(stats["ok"])
 
+    def test_drop_prereq_removes_junk_edge_from_union(self):
+        # 占位节点 a-x1 带垃圾前置 junk；drop_prereq 应把 junk 从并集里去掉，
+        # 而正常前置 x 保留。
+        pack = pack_with([pt("a"), pt("a-x1", prereq=["junk", "x"])])
+        sc = [sidecar_with(node_id("a"))]
+        rows = [{"subject": "MATH", "survivor_slug": "a", "merged_slug": "a-x1",
+                 "reason": "dup", "drop_prereq": "junk"}]
+        stats = mp.merge(pack, sc, rows)
+        by = {p["slug"]: p for p in pack["subjects"][0]["topics"][0]["knowledgePoints"]}
+        self.assertEqual(["x"], by["a"]["prerequisiteSlugs"], "junk 被丢弃，x 保留")
+        self.assertTrue(stats["ok"])
+
+    def test_drop_prereq_defaults_empty(self):
+        # 没有 drop_prereq 键的旧行必须照常工作（并集不动）
+        pack = pack_with([pt("a"), pt("a-x1", prereq=["junk", "x"])])
+        sc = [sidecar_with(node_id("a"))]
+        rows = [{"subject": "MATH", "survivor_slug": "a", "merged_slug": "a-x1", "reason": "dup"}]
+        mp.merge(pack, sc, rows)
+        by = {p["slug"]: p for p in pack["subjects"][0]["topics"][0]["knowledgePoints"]}
+        self.assertIn("junk", by["a"]["prerequisiteSlugs"], "无 drop 列时保留并集")
+
     def test_is_idempotent(self):
         pack = pack_with([pt("a"), pt("a-x1")])
         sc = [sidecar_with(node_id("a-x1"))]
