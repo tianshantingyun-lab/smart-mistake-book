@@ -25,8 +25,8 @@ REPO: Path = Path(__file__).resolve().parents[2]
 KNOWLEDGE_DIR: Path = REPO / "core" / "data" / "src" / "main" / "resources" / "knowledge"
 
 PACK_NAME = "moe-2025-four-subjects-v1.json"
-SIDECAR_TMPL = "moe-2025-teaching-support-v2-0%d.json"
-SIDECAR_COUNT = 6
+SIDECAR_TMPL = "moe-2025-teaching-support-v2-{i:02d}.json"
+SIDECAR_INDEX_NAME = "moe-2025-teaching-support-v2-index.json"
 
 
 def use_directory(path: Path) -> None:
@@ -51,8 +51,39 @@ def pack_path() -> Path:
     return KNOWLEDGE_DIR / PACK_NAME
 
 
+def sidecar_index_path() -> Path:
+    return KNOWLEDGE_DIR / SIDECAR_INDEX_NAME
+
+
 def sidecar_paths() -> list[Path]:
-    return [KNOWLEDGE_DIR / (SIDECAR_TMPL % i) for i in range(1, SIDECAR_COUNT + 1)]
+    """sidecar 清单以索引文件为准（Kotlin loader 读同一份索引）。
+
+    索引缺失时回退到按文件名排序的 glob（仅用于早期验证，正常成品必须带索引）。
+    """
+    idx = sidecar_index_path()
+    if idx.exists():
+        doc = load_json(idx)
+        return [KNOWLEDGE_DIR / name.rsplit("/", 1)[-1] for name in doc["sidecars"]]
+    import re
+    pat = re.compile(r"moe-2025-teaching-support-v2-\d{2}\.json$")
+    return sorted(p for p in KNOWLEDGE_DIR.glob("moe-2025-teaching-support-v2-*.json")
+                  if pat.search(p.name))
+
+
+def next_sidecar_path() -> Path:
+    """下一个未占用的 sidecar 文件号（材料膨胀后开新卷用）。"""
+    used = {p.name for p in sidecar_paths()}
+    i = 1
+    while SIDECAR_TMPL.format(i=i) in used:
+        i += 1
+    return KNOWLEDGE_DIR / SIDECAR_TMPL.format(i=i)
+
+
+def write_sidecar_index(paths: list[Path]) -> None:
+    """把 sidecar 清单落盘成索引（Kotlin 端按同一清单加载）。"""
+    doc = {"packId": "moe-2025-four-subjects-v1",
+           "sidecars": ["knowledge/" + p.name for p in paths]}
+    dump_json(doc, sidecar_index_path())
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -109,5 +140,5 @@ def load_materials() -> list[tuple[Path, dict]]:
 
 
 def material_index() -> dict[str, dict]:
-    """材料 slug -> 材料 dict（跨 6 个 sidecar 全局）。"""
+    """材料 slug -> 材料 dict（跨全部 sidecar 全局，清单见索引文件）。"""
     return {m["slug"]: m for _p, m in load_materials()}

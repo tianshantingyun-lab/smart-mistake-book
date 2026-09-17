@@ -1,0 +1,11 @@
+{
+ "packId": "moe-2025-four-subjects-v1",
+ "sidecars": [
+  "knowledge/moe-2025-teaching-support-v2-01.json",
+  "knowledge/moe-2025-teaching-support-v2-02.json",
+  "knowledge/moe-2025-teaching-support-v2-03.json",
+  "knowledge/moe-2025-teaching-support-v2-04.json",
+  "knowledge/moe-2025-teaching-support-v2-05.json",
+  "knowledge/moe-2025-teaching-support-v2-06.json"
+ ]
+}

@@ -24,7 +24,9 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.longOrNull
 
 internal data class KnowledgeBasePack(
@@ -41,6 +43,8 @@ internal data class KnowledgeBasePack(
 
 internal object BundledKnowledgePackResources {
     private const val MAX_RESOURCE_CHARS = 12_000_000
+    private const val TEACHING_SIDECAR_INDEX = "knowledge/moe-2025-teaching-support-v2-index.json"
+    private const val INDEXED_PACK_ID = "moe-2025-four-subjects-v1"
     private val resourceNames = listOf(
         "knowledge/moe-2020-foundation-v1.json",
         "knowledge/moe-2025-four-subjects-v1.json",
@@ -49,15 +53,17 @@ internal object BundledKnowledgePackResources {
         "moe-2020-foundation-v1" to listOf(
             "knowledge/moe-2020-teaching-support-v1.json",
         ),
-        "moe-2025-four-subjects-v1" to listOf(
-            "knowledge/moe-2025-teaching-support-v2-01.json",
-            "knowledge/moe-2025-teaching-support-v2-02.json",
-            "knowledge/moe-2025-teaching-support-v2-03.json",
-            "knowledge/moe-2025-teaching-support-v2-04.json",
-            "knowledge/moe-2025-teaching-support-v2-05.json",
-            "knowledge/moe-2025-teaching-support-v2-06.json",
-        ),
     )
+    private val indexJson = Json { ignoreUnknownKeys = false }
+    // 四科包的教学材料卷数不再硬编码：开新卷只加文件 + 改索引数据，不动代码。
+    private val indexedSidecarNames: List<String> by lazy {
+        val root = indexJson.parseToJsonElement(readClasspathResource(TEACHING_SIDECAR_INDEX)).jsonObject
+        require(root["packId"]?.jsonPrimitive?.contentOrNull == INDEXED_PACK_ID) {
+            "Teaching sidecar index points at pack ${root["packId"]}, expected $INDEXED_PACK_ID"
+        }
+        root["sidecars"]?.jsonArray?.map { it.jsonPrimitive.content }
+            ?: error("Teaching sidecar index has no sidecars list")
+    }
     private val bundledPacks by lazy {
         resourceNames.map(::loadResource)
     }
@@ -68,7 +74,9 @@ internal object BundledKnowledgePackResources {
         val json = readClasspathResource(resourceName)
         require(json.length <= MAX_RESOURCE_CHARS) { "Bundled knowledge pack is too large" }
         val base = ReviewedKnowledgePackJsonCodec.decode(json)
-        val sidecars = teachingSidecarsByPack[base.packId].orEmpty().map { sidecarName ->
+        val sidecarNames = teachingSidecarsByPack[base.packId]
+            ?: if (base.packId == INDEXED_PACK_ID) indexedSidecarNames else emptyList()
+        val sidecars = sidecarNames.map { sidecarName ->
             val sidecarJson = readClasspathResource(sidecarName)
             require(sidecarJson.length <= MAX_RESOURCE_CHARS) {
                 "Bundled teaching-material sidecar is too large"
