@@ -7510,7 +7510,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞呼吸的影响因素及应用",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:实验-探究酵母菌细胞呼吸的方式",
      "role": "PRIMARY"
     }
    ]
@@ -32750,7 +32750,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:基因工程",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:dna是主要的遗传物质",
      "role": "PRIMARY"
     }
    ]

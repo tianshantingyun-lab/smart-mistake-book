@@ -20880,7 +20880,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞膜成分和结构的探究历程",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:dna的结构及特点",
      "role": "PRIMARY"
     }
    ]
@@ -21715,7 +21715,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:基因工程",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:育种",
      "role": "PRIMARY"
     }
    ]
@@ -23600,7 +23600,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞膜成分和结构的探究历程",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:核酸",
      "role": "PRIMARY"
     }
    ]
@@ -28670,7 +28670,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:基因工程",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:病毒",
      "role": "PRIMARY"
     }
    ]
@@ -38340,7 +38340,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞呼吸的影响因素及应用",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:基因频率",
      "role": "PRIMARY"
     }
    ]
@@ -38885,7 +38885,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞膜成分和结构的探究历程",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:种群的数量特征",
      "role": "PRIMARY"
     }
    ]
@@ -38905,7 +38905,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞呼吸的影响因素及应用",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:种群的数量特征",
      "role": "PRIMARY"
     }
    ]
