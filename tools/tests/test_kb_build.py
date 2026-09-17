@@ -110,7 +110,7 @@ class GateTest(unittest.TestCase):
         #   boundary_excerpt 968→911（删的点里有 57 个 boundary 命中摘录判据）
         # starred_names 96→0：去星修复后为 0，此断言现为防星号回归哨兵。
         self.assertEqual(0, metrics["starred_names"].value)
-        self.assertEqual(725, metrics["unbound_points"].value)
+        self.assertEqual(724, metrics["unbound_points"].value)
         self.assertEqual(892, metrics["unbound_materials"].value)
         self.assertEqual(853, metrics["ghost_aliases"].value)
         self.assertEqual(194, metrics["latex_damage"].value)
