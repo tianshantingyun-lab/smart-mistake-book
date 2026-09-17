@@ -19,13 +19,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-# 2026-09-17：GitHub 迁移到 Node 24 runner 后，android-actions/setup-android@v3
-# 的 sdkmanager 子进程启动即崩（check/instrumented 两个 job 逐字复现，run
-# 35244477722 / 35247418029 及 rerun）。按 runner 警告中的官方兜底强制该 action
-# 回退 Node 20；等 action 发布 Node 24 兼容版本后移除本变量。
-env:
-  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: "true"
-
 jobs:
   check:
     runs-on: ubuntu-latest
@@ -42,7 +35,13 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
-      - uses: android-actions/setup-android@v3
+      # 2026-09-17：android-actions/setup-android@v3 的默认 cmdline-tools 下载
+      # （16.0）在 Node 24 runner 上 sdkmanager 子进程 exit 1（run 35244477722 /
+      # 35247418029 / 35248118845，回退 Node 20 后仍复现）。换 agisome/setup-android
+      # 使用 runner 预装 SDK、不强制下载新 cmdline-tools。
+      - uses: agisome/setup-android@v2
+        with:
+          accept-licenses: true
       - name: Grant Gradle wrapper permission
         run: chmod +x gradlew
       - name: Room schema drift check
@@ -147,7 +146,13 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
-      - uses: android-actions/setup-android@v3
+      # 2026-09-17：android-actions/setup-android@v3 的默认 cmdline-tools 下载
+      # （16.0）在 Node 24 runner 上 sdkmanager 子进程 exit 1（run 35244477722 /
+      # 35247418029 / 35248118845，回退 Node 20 后仍复现）。换 agisome/setup-android
+      # 使用 runner 预装 SDK、不强制下载新 cmdline-tools。
+      - uses: agisome/setup-android@v2
+        with:
+          accept-licenses: true
       - name: Grant Gradle wrapper permission
         run: chmod +x gradlew
       # CI run 32662033881：模拟器以 -accel off 软件模拟冷启动耗时 1023 秒，
