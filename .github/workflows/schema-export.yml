@@ -39,7 +39,7 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
-      - uses: android-actions/setup-android@v3
+      - uses: android-actions/setup-android@v4
       - name: Grant Gradle wrapper permission
         run: chmod +x gradlew
       - name: Clean full schema export (no build cache, rerun all tasks)
@@ -78,7 +78,7 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
-      - uses: android-actions/setup-android@v3
+      - uses: android-actions/setup-android@v4
       - name: Grant Gradle wrapper permission
         run: chmod +x gradlew
       - name: Enable KVM group perms

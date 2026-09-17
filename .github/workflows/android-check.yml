@@ -42,7 +42,7 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
-      - uses: android-actions/setup-android@v3
+      - uses: android-actions/setup-android@v4
       - name: Grant Gradle wrapper permission
         run: chmod +x gradlew
       - name: Room schema drift check
@@ -147,7 +147,7 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
-      - uses: android-actions/setup-android@v3
+      - uses: android-actions/setup-android@v4
       - name: Grant Gradle wrapper permission
         run: chmod +x gradlew
       # CI run 32662033881：模拟器以 -accel off 软件模拟冷启动耗时 1023 秒，
