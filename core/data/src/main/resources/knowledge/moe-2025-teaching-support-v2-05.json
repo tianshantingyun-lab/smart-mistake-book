@@ -97,6 +97,22 @@
    "licenseExpression": null,
    "licenseUri": null,
    "attributionText": "结构化总结（REVIEWED_SYNTHESIS），非原文。"
+  },
+  {
+   "sourceId": "desktop-src-e35c96096a:math",
+   "subject": "MATH",
+   "sourceType": "AUTHORIZED_EDUCATION_MATERIAL",
+   "title": "桌面教辅资料 · 2026年新高考资料",
+   "publisher": "教辅汇编（桌面原始资料）",
+   "edition": "2026/2027版",
+   "sourceUri": "https://www.example.edu/desktop-kb-source",
+   "licenseStatus": "REFERENCE_ONLY",
+   "contentFingerprint": "E35C96096A9E95099BEF33441707939E88281BCD87B7986C082DA8AD80918D51",
+   "importedAtEpochMillis": 1789675200896,
+   "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
+   "licenseExpression": null,
+   "licenseUri": null,
+   "attributionText": "桌面教辅资料直抽改写（REVIEWED_SYNTHESIS），仅内部教学参考。"
   }
  ],
  "materials": [
@@ -40451,6 +40467,86 @@
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:协同进化与生物多样性的形成",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-412e7eb94a-001",
+   "subject": "MATH",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "百分位数的定义与求法",
+   "summaryMarkdown": "第 p 百分位数是至少有 p% 数据小于等于它、至少有 100-p% 数据大于等于它的值。",
+   "applicabilityMarkdown": "求一组数据的第 p 百分位数；由直方图估计百分位数。",
+   "contentMarkdown": "①定义：一般地，一组数据的第 p 百分位数是这样一个值，它使得这组数据中至少有 p% 的数据小于或等于这个值，且至少有（100-p）% 的数据大于或等于这个值。②求法规则：将 n 个数据按从小到大排列，若 n·p% 是整数，则第 p 百分位数是第 n·p% 位与第 n·p%+1 位数据的平均数；若 n·p% 不是整数，则取第 ⌈n·p%⌉ 位数据。③直方图估计：找到累计面积首次达到 p% 的区间，在区间内按面积比例插值。",
+   "boundaryMarkdown": "百分位数按定义可以不唯一；n·p% 的整数/非整数两种情形规则不同。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-e35c96096a:math",
+   "sourceLocator": "桌面资料 2026年新高考资料 / 2026年新高考资料/一轮复习/2026年大一轮复习讲义数学课件讲义练习/基础版/Word版题库/第九章　统计与成对数据的统计分析/第2节　用样本估计总体.docx（块 412e7eb94a-001）",
+   "reviewedAtEpochMillis": 1789675200800,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:百分位数",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-412e7eb94a-001b",
+   "subject": "MATH",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "集中趋势的三个统计量：众数、中位数与平均数",
+   "summaryMarkdown": "众数是出现次数最多的数据；中位数是排序后居中的值；平均数是算术平均，三者刻画数据的集中趋势。",
+   "applicabilityMarkdown": "比较三个集中趋势量的含义；选择描述集中趋势的统计量。",
+   "contentMarkdown": "①众数：一组数据中出现次数最多的那个数据叫做这组数据的众数（可以有多个众数）。②中位数：把 n 个数据按大小顺序排列，处于最中间位置的数据（n 为奇数取第 (n+1)/2 位；n 为偶数取中间两个数的平均数）叫做中位数。③平均数：x̄=(x1+…+xn)/n，反映整组数据的平均水平，对极端值敏感。",
+   "boundaryMarkdown": "平均数受极端值影响大、中位数稳健、众数体现最集中取值；三者不一致时提示数据分布不对称。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-e35c96096a:math",
+   "sourceLocator": "桌面资料 2026年新高考资料 / 2026年新高考资料/一轮复习/2026年大一轮复习讲义数学课件讲义练习/基础版/Word版题库/第九章　统计与成对数据的统计分析/第2节　用样本估计总体.docx（块 412e7eb94a-001）",
+   "reviewedAtEpochMillis": 1789675200800,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:众数、中位数与平均数",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-412e7eb94a-001c",
+   "subject": "MATH",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "方差与标准差的定义",
+   "summaryMarkdown": "方差 s²=（1/n）Σ(xi−x̄)² 刻画离散程度，标准差 s=√s² 与数据同单位。",
+   "applicabilityMarkdown": "计算方差/标准差；比较两组数据的稳定程度。",
+   "contentMarkdown": "①设一组数据 x1，…，xn 的平均数为 x̄，则方差 s²=（1/n）·[(x1−x̄)²+…+(xn−x̄)²]，标准差 s=√s²。②总体方差：总体 N 个变量值 Y1，…，YN 平均数 Ȳ 时，S²=（1/N）Σ(Yi−Ȳ)²；加权形式：不同值 Y1…Yk 频数 f1…fk 时 S²=（1/N）Σ fi(Yi−Ȳ)²。③方差（标准差）越小，数据越集中在平均数附近。",
+   "boundaryMarkdown": "方差的单位是数据单位的平方，与标准差单位不同；总体方差用 N 除（统计口径）。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-e35c96096a:math",
+   "sourceLocator": "桌面资料 2026年新高考资料 / 2026年新高考资料/一轮复习/2026年大一轮复习讲义数学课件讲义练习/基础版/Word版题库/第九章　统计与成对数据的统计分析/第2节　用样本估计总体.docx（块 412e7eb94a-001）",
+   "reviewedAtEpochMillis": 1789675200800,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:方差与标准差",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-412e7eb94a-002",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "数据线性变换下平均数与方差的性质",
+   "summaryMarkdown": "mx+a 型变换：平均数同型变换，方差乘缩放因子平方；平移不改方差。",
+   "applicabilityMarkdown": "利用性质快速求变换后数据的平均数与方差。",
+   "contentMarkdown": "①若 x1，…，xn 的平均数为 x̄，则 mx1+a，…，mxn+a 的平均数为 m·x̄+a。②数据与每个数加上同一常数 a 后的数据方差相等（平移不变性）。③若 x1，…，xn 的方差为 s²，则 ax1+b，…，axn+b 的方差为 a²s²（伸缩 a 倍后方差乘 a²）。",
+   "boundaryMarkdown": "缩放因子必须平方（a²s²），直接用 a 是典型错误；a=−1 时方差不变。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-e35c96096a:math",
+   "sourceLocator": "桌面资料 2026年新高考资料 / 2026年新高考资料/一轮复习/2026年大一轮复习讲义数学课件讲义练习/基础版/Word版题库/第九章　统计与成对数据的统计分析/第2节　用样本估计总体.docx（块 412e7eb94a-002）",
+   "reviewedAtEpochMillis": 1789675200800,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:方差与标准差",
      "role": "PRIMARY"
     }
    ]
