@@ -9840,7 +9840,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:成熟植物细胞的吸水和失水",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:质壁分离",
      "role": "PRIMARY"
     }
    ]
@@ -16900,7 +16900,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:成熟植物细胞的吸水和失水",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞壁",
      "role": "PRIMARY"
     }
    ]
@@ -17415,7 +17415,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:体液调节和神经调节的区别与联系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:质壁分离",
      "role": "PRIMARY"
     }
    ]
@@ -22520,7 +22520,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:体液调节和神经调节的区别与联系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:突触",
      "role": "PRIMARY"
     }
    ]
@@ -23835,7 +23835,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:成熟植物细胞的吸水和失水",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞壁",
      "role": "PRIMARY"
     }
    ]
@@ -24755,7 +24755,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:体液调节和神经调节的区别与联系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:有氧呼吸",
      "role": "PRIMARY"
     }
    ]
@@ -26605,7 +26605,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:体液调节和神经调节的区别与联系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:内分泌系统",
      "role": "PRIMARY"
     }
    ]
@@ -27225,7 +27225,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:体液调节和神经调节的区别与联系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:抗原",
      "role": "PRIMARY"
     }
    ]
@@ -39100,7 +39100,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:体液调节和神经调节的区别与联系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:群落的结构",
      "role": "PRIMARY"
     }
    ]

@@ -1175,7 +1175,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:体液调节和神经调节的区别与联系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:质壁分离",
      "role": "PRIMARY"
     }
    ]
@@ -2220,7 +2220,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:生态系统的稳定性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:dna的结构及特点",
      "role": "PRIMARY"
     }
    ]
@@ -2380,7 +2380,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:体液调节和神经调节的区别与联系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:染色体变异",
      "role": "PRIMARY"
     }
    ]
@@ -3420,7 +3420,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:成熟植物细胞的吸水和失水",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞膜",
      "role": "PRIMARY"
     }
    ]
@@ -6540,7 +6540,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:成熟植物细胞的吸水和失水",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞壁",
      "role": "PRIMARY"
     }
    ]
@@ -13180,7 +13180,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:成熟植物细胞的吸水和失水",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞壁",
      "role": "PRIMARY"
     }
    ]
@@ -19720,7 +19720,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:成熟植物细胞的吸水和失水",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:液泡",
      "role": "PRIMARY"
     }
    ]
@@ -20820,7 +20820,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:体液调节和神经调节的区别与联系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:探究酶的专一性-高效性相关实验",
      "role": "PRIMARY"
     }
    ]
@@ -23770,7 +23770,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:成熟植物细胞的吸水和失水",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:环境因素参与调节植物的生命活动",
      "role": "PRIMARY"
     }
    ]
@@ -25470,7 +25470,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:生态系统的稳定性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:dna的结构及特点",
      "role": "PRIMARY"
     }
    ]
@@ -30470,7 +30470,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:成熟植物细胞的吸水和失水",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:植物组织培养",
      "role": "PRIMARY"
     }
    ]
@@ -30490,7 +30490,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:成熟植物细胞的吸水和失水",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:植物组织培养",
      "role": "PRIMARY"
     }
    ]
@@ -30530,7 +30530,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:成熟植物细胞的吸水和失水",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:植物组织培养",
      "role": "PRIMARY"
     }
    ]
@@ -30550,7 +30550,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:成熟植物细胞的吸水和失水",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:植物组织培养",
      "role": "PRIMARY"
     }
    ]
@@ -30570,7 +30570,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:成熟植物细胞的吸水和失水",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:植物组织培养",
      "role": "PRIMARY"
     }
    ]
@@ -30590,7 +30590,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:成熟植物细胞的吸水和失水",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:植物组织培养",
      "role": "PRIMARY"
     }
    ]
@@ -30630,7 +30630,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:成熟植物细胞的吸水和失水",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:植物组织培养",
      "role": "PRIMARY"
     }
    ]
@@ -30650,7 +30650,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:成熟植物细胞的吸水和失水",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:植物组织培养",
      "role": "PRIMARY"
     }
    ]
@@ -31510,7 +31510,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:成熟植物细胞的吸水和失水",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:植物组织培养",
      "role": "PRIMARY"
     }
    ]
@@ -31570,7 +31570,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:成熟植物细胞的吸水和失水",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:植物组织培养",
      "role": "PRIMARY"
     }
    ]
@@ -32310,7 +32310,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:体液调节和神经调节的区别与联系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:甲状腺激素",
      "role": "PRIMARY"
     }
    ]
@@ -32330,7 +32330,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:体液调节和神经调节的区别与联系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:激素",
      "role": "PRIMARY"
     }
    ]
@@ -32350,7 +32350,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:体液调节和神经调节的区别与联系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:激素调节的特点",
      "role": "PRIMARY"
     }
    ]
@@ -32370,7 +32370,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:体液调节和神经调节的区别与联系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:胰岛素",
      "role": "PRIMARY"
     }
    ]
@@ -32390,7 +32390,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:体液调节和神经调节的区别与联系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:激素",
      "role": "PRIMARY"
     }
    ]
@@ -32410,7 +32410,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:体液调节和神经调节的区别与联系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:激素",
      "role": "PRIMARY"
     }
    ]
@@ -32430,7 +32430,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:体液调节和神经调节的区别与联系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:激素",
      "role": "PRIMARY"
     }
    ]
@@ -32450,7 +32450,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:体液调节和神经调节的区别与联系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:激素",
      "role": "PRIMARY"
     }
    ]
@@ -32510,7 +32510,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:体液调节和神经调节的区别与联系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:体温调节",
      "role": "PRIMARY"
     }
    ]
@@ -32530,7 +32530,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:体液调节和神经调节的区别与联系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:水和无机盐平衡的调节",
      "role": "PRIMARY"
     }
    ]
@@ -32570,7 +32570,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:体液调节和神经调节的区别与联系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:体温调节",
      "role": "PRIMARY"
     }
    ]
@@ -32590,7 +32590,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:体液调节和神经调节的区别与联系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:水和无机盐平衡的调节",
      "role": "PRIMARY"
     }
    ]
@@ -32610,7 +32610,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:体液调节和神经调节的区别与联系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:体温调节",
      "role": "PRIMARY"
     }
    ]
@@ -32630,7 +32630,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:体液调节和神经调节的区别与联系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:体温调节",
      "role": "PRIMARY"
     }
    ]
@@ -32650,7 +32650,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:体液调节和神经调节的区别与联系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:体温调节",
      "role": "PRIMARY"
     }
    ]
@@ -32670,7 +32670,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:体液调节和神经调节的区别与联系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:体温调节",
      "role": "PRIMARY"
     }
    ]
@@ -32690,7 +32690,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:体液调节和神经调节的区别与联系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:水和无机盐平衡的调节",
      "role": "PRIMARY"
     }
    ]
@@ -34290,7 +34290,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:生态系统的稳定性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:能量流动",
      "role": "PRIMARY"
     }
    ]
@@ -34310,7 +34310,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:生态系统的稳定性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:能量流动",
      "role": "PRIMARY"
     }
    ]
@@ -34330,7 +34330,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:生态系统的稳定性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:能量流动",
      "role": "PRIMARY"
     }
    ]
@@ -34350,7 +34350,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:生态系统的稳定性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:能量流动",
      "role": "PRIMARY"
     }
    ]
@@ -34370,7 +34370,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:生态系统的稳定性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:能量流动",
      "role": "PRIMARY"
     }
    ]
@@ -34390,7 +34390,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:生态系统的稳定性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:能量流动",
      "role": "PRIMARY"
     }
    ]
@@ -34410,7 +34410,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:生态系统的稳定性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:能量流动",
      "role": "PRIMARY"
     }
    ]
@@ -34430,7 +34430,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:生态系统的稳定性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:能量流动",
      "role": "PRIMARY"
     }
    ]
@@ -34450,7 +34450,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:生态系统的稳定性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:能量流动",
      "role": "PRIMARY"
     }
    ]
@@ -34470,7 +34470,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:生态系统的稳定性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:物质循环",
      "role": "PRIMARY"
     }
    ]
@@ -34490,7 +34490,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:生态系统的稳定性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:物质循环",
      "role": "PRIMARY"
     }
    ]
@@ -34510,7 +34510,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:生态系统的稳定性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:物质循环",
      "role": "PRIMARY"
     }
    ]
@@ -34530,7 +34530,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:生态系统的稳定性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:物质循环",
      "role": "PRIMARY"
     }
    ]
@@ -34550,7 +34550,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:生态系统的稳定性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:物质循环",
      "role": "PRIMARY"
     }
    ]
@@ -34570,7 +34570,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:生态系统的稳定性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:物质循环",
      "role": "PRIMARY"
     }
    ]
@@ -34590,7 +34590,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:生态系统的稳定性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:物质循环",
      "role": "PRIMARY"
     }
    ]
@@ -34610,7 +34610,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:生态系统的稳定性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:信息传递",
      "role": "PRIMARY"
     }
    ]
@@ -34630,7 +34630,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:生态系统的稳定性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:信息传递",
      "role": "PRIMARY"
     }
    ]
@@ -34650,7 +34650,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:生态系统的稳定性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:信息传递",
      "role": "PRIMARY"
     }
    ]
@@ -34670,7 +34670,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:生态系统的稳定性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:信息传递",
      "role": "PRIMARY"
     }
    ]
@@ -34690,7 +34690,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:生态系统的稳定性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:信息传递",
      "role": "PRIMARY"
     }
    ]
@@ -34710,7 +34710,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:生态系统的稳定性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:信息传递",
      "role": "PRIMARY"
     }
    ]
@@ -34730,7 +34730,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:生态系统的稳定性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:信息传递",
      "role": "PRIMARY"
     }
    ]
@@ -34750,7 +34750,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:生态系统的稳定性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:信息传递",
      "role": "PRIMARY"
     }
    ]
@@ -37550,7 +37550,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:成熟植物细胞的吸水和失水",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞壁",
      "role": "PRIMARY"
     }
    ]
