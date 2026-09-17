@@ -39,12 +39,19 @@ from pathlib import Path
 from kb_build import pack_io
 
 RELOCATION = "chapter_point_relocation.csv"
+TOPIC_RENAME = "topic_rename.csv"
 TABLES = Path(__file__).resolve().parent / "tables"
-COLUMNS = ("subject", "slug", "theme")
+COLUMNS = ("subject", "slug", "theme", "to_topic_slug")
+RENAME_COLUMNS = ("subject", "slug", "new_name")
 
 
-def load_relocations(path: Path | None = None) -> dict[tuple[str, str], str]:
-    """(subject, slug) -> theme。表必须引用真实存在的点，否则报错（防 name/slug 混用）。"""
+def load_relocations(path: Path | None = None) -> dict[tuple[str, str], tuple[str, str]]:
+    """(subject, slug) -> (theme, to_topic_slug)。
+
+    `to_topic_slug` 为空＝章内下移（在同章下建/找 theme 主题）；
+    非空＝跨章移动（在 to_topic_slug 指向的**章**下建/找 theme 主题）。
+    表必须引用真实存在的点，否则报错（防 name/slug 混用）。
+    """
     from kb_build import tables
     path = path or (TABLES / RELOCATION)
     if not path.exists():
@@ -53,15 +60,38 @@ def load_relocations(path: Path | None = None) -> dict[tuple[str, str], str]:
     tables._require_columns(RELOCATION, rows, COLUMNS)
     pack = pack_io.load_json(pack_io.pack_path())
     known = {(s, p["slug"]) for s, _t, p in pack_io.iter_points(pack)}
-    out: dict[tuple[str, str], str] = {}
+    out: dict[tuple[str, str], tuple[str, str]] = {}
     for r in rows:
         key = (r["subject"].strip(), r["slug"].strip())
         if key not in known:
             raise ValueError(f"{RELOCATION}: {key} 不在知识包中（可能写成了 name）")
         if not r["theme"].strip():
             raise ValueError(f"{RELOCATION}: {key} 缺 theme")
-        out[key] = r["theme"].strip()
+        out[key] = (r["theme"].strip(), r.get("to_topic_slug", "").strip())
     return out
+
+
+def load_topic_renames(path: Path | None = None) -> dict[tuple[str, str], str]:
+    """topic 改名表（只改 name，slug 不动——parentSlug 引用它）。"""
+    from kb_build import tables
+    path = path or (TABLES / TOPIC_RENAME)
+    if not path.exists():
+        return {}
+    rows = tables._read(path)
+    tables._require_columns(TOPIC_RENAME, rows, RENAME_COLUMNS)
+    return {(r["subject"].strip(), r["slug"].strip()): r["new_name"].strip() for r in rows}
+
+
+def rename_topics(pack: dict, renames: dict[tuple[str, str], str]) -> int:
+    """只改 topic 的 name。返回改动数。幂等。"""
+    changed = 0
+    for subject in pack["subjects"]:
+        for topic in subject["topics"]:
+            new = renames.get((subject["subject"], topic["slug"]))
+            if new and topic["name"] != new:
+                topic["name"] = new
+                changed += 1
+    return changed
 
 
 def _ensure_theme(topics: list[dict], chapter_slug: str, theme: str,
@@ -85,10 +115,20 @@ def _ensure_theme(topics: list[dict], chapter_slug: str, theme: str,
     return slug
 
 
-def relocate(pack: dict, relocations: dict[tuple[str, str], str]) -> int:
-    """就地把章层点下移到主题层。返回移动条数。幂等。
+def _theme_holds_point(topics: list[dict], base_slug: str, theme: str, slug: str) -> bool:
+    """base_slug 下名为 theme 的主题是否已包含 slug 这个点——是则该行已是完成态。"""
+    for t in topics:
+        if t.get("parentSlug") == base_slug and t["name"] == theme:
+            if any(p["slug"] == slug for p in t.get("knowledgePoints") or []):
+                return True
+    return False
 
-    表里只应列"章层"的点——即当前所在 topic 就是章（有父、且点直接挂它）。
+
+def relocate(pack: dict, relocations: dict[tuple[str, str], tuple[str, str]]) -> int:
+    """把点下移到主题层（章内）或跨章移动到指定章的主题下。返回移动条数。幂等。
+
+    - `to_topic_slug` 为空：在同章下建/找 theme 主题（章内下移）。
+    - 非空：在 to_topic_slug（必须真实存在）下建/找 theme 主题（跨章移动）。
     """
     moved = 0
     not_found: list[tuple[str, str]] = []
@@ -96,21 +136,30 @@ def relocate(pack: dict, relocations: dict[tuple[str, str], str]) -> int:
         subj = subject["subject"]
         topics = subject["topics"]
         taken = {t["slug"] for t in topics}
+        by_slug = {t["slug"]: t for t in topics}
         # (subject, slug) -> (所在 topic, 点对象)
         owner: dict[tuple[str, str], tuple[dict, dict]] = {}
         for t in topics:
             for p in t.get("knowledgePoints") or []:
                 owner[(subj, p["slug"])] = (t, p)
-        for (s, slug), theme in relocations.items():
+        for (s, slug), (theme, to_topic) in relocations.items():
             if s != subj:
                 continue
             if (s, slug) not in owner:
                 not_found.append((s, slug))
                 continue
             topic, point = owner[(s, slug)]
-            if topic["name"] == theme:      # 幂等：已在该主题下
-                continue
-            theme_slug = _ensure_theme(topics, topic["slug"], theme, subj, taken)
+            if to_topic:
+                base_slug = to_topic
+            else:
+                # 章内模式：点若已在某主题下（有父），以父为章——否则第二次跑会把
+                # base_slug 解析成主题自己的 slug，幂等判定失效。
+                base_slug = topic.get("parentSlug") or topic["slug"]
+            if base_slug not in by_slug:
+                raise ValueError(f"relocate: 目标 topic {base_slug} 不存在（[{subj}] {slug}）")
+            if _theme_holds_point(topics, base_slug, theme, slug):
+                continue              # 幂等：目标主题已含此点
+            theme_slug = _ensure_theme(topics, base_slug, theme, subj, taken)
             topic["knowledgePoints"].remove(point)
             next(t for t in topics if t["slug"] == theme_slug)["knowledgePoints"].append(point)
             moved += 1
@@ -156,11 +205,13 @@ def main(argv: list[str] | None = None) -> int:
     before_pts = sum(len(t.get("knowledgePoints") or []) for s in pack["subjects"] for t in s["topics"])
     before_slugs = {p["slug"] for s, _t, p in pack_io.iter_points(pack)}
     moved = relocate(pack, reloc)
+    renames = load_topic_renames()
+    renamed = rename_topics(pack, renames)
     after = chapter_layer_count(pack)
     after_pts = sum(len(t.get("knowledgePoints") or []) for s in pack["subjects"] for t in s["topics"])
     after_slugs = {p["slug"] for s, _t, p in pack_io.iter_points(pack)}
 
-    print(f"章层挂点：{before} → {after}（移动 {moved}）")
+    print(f"章层挂点：{before} → {after}（移动 {moved}；topic 改名 {renamed}）")
     if after_pts != before_pts or after_slugs != before_slugs:
         print(f"无损校验失败：点 {before_pts}→{after_pts}，slug 差 "
               f"{len(before_slugs ^ after_slugs)}")

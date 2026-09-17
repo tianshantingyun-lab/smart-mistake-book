@@ -35,7 +35,7 @@ def pack_with_chapter(points: list[dict]) -> dict:
 class RelocateTest(unittest.TestCase):
     def test_moves_point_under_new_theme(self):
         pack = pack_with_chapter([pt("a"), pt("b")])
-        n = rel.relocate(pack, {("MATH", "a"): "函数"})
+        n = rel.relocate(pack, {("MATH", "a"): ("函数", "")})
         self.assertEqual(1, n)
         topics = pack["subjects"][0]["topics"]
         ch = next(t for t in topics if t["slug"] == "ch")
@@ -47,20 +47,20 @@ class RelocateTest(unittest.TestCase):
 
     def test_points_reuse_same_theme(self):
         pack = pack_with_chapter([pt("a"), pt("b")])
-        rel.relocate(pack, {("MATH", "a"): "函数", ("MATH", "b"): "函数"})
+        rel.relocate(pack, {("MATH", "a"): ("函数", ""), ("MATH", "b"): ("函数", "")})
         themes = [t for t in pack["subjects"][0]["topics"] if t["name"] == "函数"]
         self.assertEqual(1, len(themes), "两个点归同一主题，只能建一个主题 topic")
         self.assertEqual(2, len(themes[0]["knowledgePoints"]))
 
     def test_is_idempotent(self):
         pack = pack_with_chapter([pt("a")])
-        self.assertEqual(1, rel.relocate(pack, {("MATH", "a"): "函数"}))
-        self.assertEqual(0, rel.relocate(pack, {("MATH", "a"): "函数"}), "第二次必须 0 移动")
+        self.assertEqual(1, rel.relocate(pack, {("MATH", "a"): ("函数", "")}))
+        self.assertEqual(0, rel.relocate(pack, {("MATH", "a"): ("函数", "")}), "第二次必须 0 移动")
 
     def test_preserves_point_count_and_slugs(self):
         pack = pack_with_chapter([pt("a"), pt("b"), pt("c")])
         before = {p["slug"] for _s, _t, p in pack_io.iter_points(pack)}
-        rel.relocate(pack, {("MATH", "a"): "函数", ("MATH", "c"): "集合"})
+        rel.relocate(pack, {("MATH", "a"): ("函数", ""), ("MATH", "c"): ("集合", "")})
         after = {p["slug"] for _s, _t, p in pack_io.iter_points(pack)}
         self.assertEqual(before, after, "slug 集合必须不变——只挪位置，不增删点")
 
@@ -68,7 +68,7 @@ class RelocateTest(unittest.TestCase):
         """表引用了不存在的 slug（写成 name 或拼错）必须报错，不许静默忽略。"""
         pack = pack_with_chapter([pt("a")])
         with self.assertRaises(ValueError):
-            rel.relocate(pack, {("MATH", "no-such-slug"): "函数"})
+            rel.relocate(pack, {("MATH", "no-such-slug"): ("函数", "")})
 
 
 class RealPackTest(unittest.TestCase):
@@ -76,7 +76,7 @@ class RealPackTest(unittest.TestCase):
         """当前表对已成品的成品包必须幂等（点已在主题下）——否则重放不幂等。"""
         pack = pack_io.load_json(pack_io.pack_path())
         reloc = rel.load_relocations()
-        self.assertEqual(0, rel.relocate(pack, reloc))
+        self.assertEqual(0, rel.relocate(pack, reloc), "重放必须幂等")
 
     def test_shipped_chapter_layer_is_20(self):
         """成品章层挂点的当前快照。

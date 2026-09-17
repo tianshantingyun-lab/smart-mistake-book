@@ -134,15 +134,15 @@ class RealPackTest(unittest.TestCase):
         """渐进式披露的数据前提：任何一层都不许复述父名。改前 421 条违反，现在应为 0。"""
         self.assertEqual([], st.names_carrying_parent_path(self.pack))
 
-    def test_unassigned_buckets_stay_visible(self):
-        """没有章归属的知识点必须仍然看得见。
+    def test_unassigned_buckets_resolved(self):
+        """「综合」桶缺陷已修复（2026-09-16）：断言保持为 0。
 
-        改前它们藏在 `PHYSICS·综合·综合·综合` 这类名字里（相邻重复段），改名把那层噪音
-        抹平后，剩下的信号是**名字里带 `综合` 段的桶**——共 9 个 topic、92 个知识点
-        （随残渣/碎片删除从 105 逐步下降）。规范里写的 `跨册综合` 一个都没有，所以这些
-        不是"合法的跨册归并"，是章表匹配事故。
-
-        数字若变：下降＝章表修好了（好），上升＝又有知识点错挂（坏）。两种都该被看见。
+        原状：9 个 topic 名带「综合」段、挂 88 个无章归属知识点（规范写的
+        `跨册综合` 一个都没有）。修复分两步：
+        1. 化学 23 个铝点跨章移动到 必修第一册·第三章/铝及其化合物
+           （relocate 新增 to_topic_slug 跨章模式）；
+        2. 其余综合 topic 按规范改名为 跨册综合/综合复习（topic_rename.csv，只改 name）。
+        若此断言再变非 0，说明又有知识点被挂进无章归属的桶——回归。
         """
         buckets = [
             topic
@@ -150,8 +150,7 @@ class RealPackTest(unittest.TestCase):
             for topic in subject["topics"]
             if st.SEPARATOR.join(["综合"]) in topic["name"].split(st.SEPARATOR)
         ]
-        self.assertEqual(9, len(buckets), [t["name"] for t in buckets])
-        self.assertEqual(88, sum(len(t["knowledgePoints"]) for t in buckets))
+        self.assertEqual([], buckets, [(t["name"], len(t["knowledgePoints"])) for t in buckets])
 
     def test_deep_topics_now_have_short_local_names(self):
         """最深一层的名字必须已经是层内名（改前 L4 是 26–28 字的全路径）。"""
