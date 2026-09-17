@@ -67,7 +67,7 @@ class ReviewedKnowledgePackJsonCodecTest {
         // 节点 = topic + 原子点。2026-09-16 结构修复：归位 103 点建 15 主题、删 42 题干残渣
         // + 106 纯标签碎片 + 42 残渣名重复 + 10 空壳、去星 96、改名 4、合并 46 同章重复
         // （2 对因前置环跳过）、新建 光呼吸 1 节点：445→460 topic、2573→2328 point，3018→2788 节点。
-        assertEquals(2788, pack.nodes.size)
+        assertEquals(2787, pack.nodes.size)
         // 多层知识树：卷 -> 章 -> 主题 -> 子主题 -> 知识点，topic 父链必须完整落到节点层
         val topicNodes = pack.nodes.filter { it.nodeKind == "TOPIC" }
         assertTrue(topicNodes.size >= 400)
