@@ -1,10 +1,10 @@
 subject,candidate_slug,status,target_node_slug,evidence_phrase,note
-MATH,required-preparatory-knowledge-candidate-001,NOT_COVERED,,"了解集合的含义,理解元素与集合的属于关系",无集合概念基础节点（包内仅有集合运算类节点）
-MATH,required-preparatory-knowledge-candidate-002,NOT_COVERED,,用符号语言刻画集合,无集合表示方法节点
-MATH,required-preparatory-knowledge-candidate-003,PARTIAL,忽视-漏-空集致错,了解全集与空集的含义,仅易错辨析面，缺全集/空集概念节点
+MATH,required-preparatory-knowledge-candidate-001,COVERED,集合的含义与表示,研究对象统称为元素、一些元素组成的总体叫做集合,原缺口已由 2026-09-18 第三批直抽材料闭合
+MATH,required-preparatory-knowledge-candidate-002,COVERED,集合的含义与表示,用符号语言刻画集合（大写拉丁字母表集合）,原缺口已由 2026-09-18 第三批直抽材料闭合
+MATH,required-preparatory-knowledge-candidate-003,COVERED,空集,空集是任何集合的子集，是任何非空集合的真子集,原缺口已由 2026-09-18 第三批直抽材料闭合
 MATH,required-preparatory-knowledge-candidate-004,COVERED,判断集合间的关系,"理解集合之间包含与相等的含义,能识别给定集合的子集",
-MATH,required-preparatory-knowledge-candidate-005,PARTIAL,集合运算中的常用二级结论,"理解两个集合的并集与交集的含义,能求两个集合的并集与交集",仅二级结论层，缺并/交基本运算节点
-MATH,required-preparatory-knowledge-candidate-006,PARTIAL,集合运算中的常用二级结论,"理解在给定集合中一个子集的补集的含义,能求给定子集的补集",同上
+MATH,required-preparatory-knowledge-candidate-005,COVERED,交集与并集,A∩B={x|x∈A且x∈B}；A∪B={x|x∈A或x∈B},原缺口已由 2026-09-18 第三批直抽材料闭合
+MATH,required-preparatory-knowledge-candidate-006,COVERED,补集,∁ᵤA 由全集 U 中不属于 A 的元素组成,原缺口已由 2026-09-18 第三批直抽材料闭合
 MATH,required-preparatory-knowledge-candidate-007,COVERED,venn图在集合运算中的应用,能使用 V e n n图表达集合的基本关系与基本运算,
 MATH,required-preparatory-knowledge-candidate-008,COVERED,充分条件与必要条件的判断,"理解必要条件的意义,理解性质定理与必要条件的关系",
 MATH,required-preparatory-knowledge-candidate-009,COVERED,充分条件与必要条件的判断,"理解充分条件的意义,理解判定定理与充分条件的关系",同一节点兼覆盖充分/必要两条课标
@@ -85,10 +85,10 @@ MATH,required-probability-statistics-candidate-008,COVERED,简单随机抽样,"�
 MATH,required-probability-statistics-candidate-009,COVERED,分层随机抽样,"了解分层随机抽样的特点和适用范围,掌握各层样本量比例分配的方法",
 MATH,required-probability-statistics-candidate-010,PARTIAL,分层随机抽样,"能根据实际问题的特点,设计恰当的抽样方法解决问题",抽样方法比选未单设
 MATH,required-probability-statistics-candidate-011,COVERED,统计图表的读取,选择恰当的统计图表对数据进行可视化描述,
-MATH,required-probability-statistics-candidate-012,PARTIAL,平均数与中位数,"能用样本估计总体的集中趋势参数,众数未覆盖",
-MATH,required-probability-statistics-candidate-013,NOT_COVERED,,",方差/标准差/极差未设节点",
+MATH,required-probability-statistics-candidate-012,COVERED,众数、中位数与平均数,众数是出现次数最多的数据；中位数居中间；平均数为算术平均,原缺口已由 2026-09-18 第三批直抽材料闭合
+MATH,required-probability-statistics-candidate-013,COVERED,方差与标准差,方差 s²=（1/n）Σ(xi−x̄)² 刻画离散程度，标准差与数据同单位,原缺口已由 2026-09-18 第三批直抽材料闭合
 MATH,required-probability-statistics-candidate-014,NOT_COVERED,,",分布估计未设节点",
-MATH,required-probability-statistics-candidate-015,NOT_COVERED,,",百分位数未设节点",
+MATH,required-probability-statistics-candidate-015,COVERED,百分位数,至少有 p% 数据小于等于它且至少有 100-p% 大于等于它的值,原缺口已由 2026-09-18 第三批直抽材料闭合
 MATH,required-modeling-inquiry-candidate-001,NOT_COVERED,,",建模方法论未设节点（活动性要求）",
 MATH,selective-functions-candidate-001,COVERED,数列的概念,了解数列的概念和表示方法,另见 数列的有关概念
 MATH,selective-functions-candidate-002,COVERED,等差数列,理解等差数列的概念和通项公式的意义,通项另见 等差数列的通项

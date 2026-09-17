@@ -15,13 +15,13 @@
      "module": "必修：预备知识",
      "scopeSummary": false,
      "sourceLocator": "candidate:moe:2025:math:curriculum-text，PDF 第 18 页，必修：预备知识，原始编号 ①；DRAFT_UNREVIEWED 机械提取候选，尚未完成人工细化与审校",
-     "status": "NOT_COVERED",
-     "targetRef": null,
-     "evidencePhrase": "了解集合的含义,理解元素与集合的属于关系",
+     "status": "COVERED",
+     "targetRef": "kb:moe-2025-four-subjects-v1:math:atomic:集合的含义与表示",
+     "evidencePhrase": "研究对象统称为元素、一些元素组成的总体叫做集合",
      "reviewState": "AI_REVIEWED",
      "reviewer": "Qwen3.8-27B（用户指定语义判定通道，2026-09-16 决定）",
      "reviewedAt": "2026-09-18",
-     "note": "无集合概念基础节点（包内仅有集合运算类节点）"
+     "note": "原缺口已由 2026-09-18 第三批直抽材料闭合"
     },
     {
      "candidateRef": "candidate:moe:2025:math:curriculum-text/required-preparatory-knowledge-candidate-002",
@@ -29,13 +29,13 @@
      "module": "必修：预备知识",
      "scopeSummary": false,
      "sourceLocator": "candidate:moe:2025:math:curriculum-text，PDF 第 18 页，必修：预备知识，原始编号 ②；DRAFT_UNREVIEWED 机械提取候选，尚未完成人工细化与审校",
-     "status": "NOT_COVERED",
-     "targetRef": null,
-     "evidencePhrase": "用符号语言刻画集合",
+     "status": "COVERED",
+     "targetRef": "kb:moe-2025-four-subjects-v1:math:atomic:集合的含义与表示",
+     "evidencePhrase": "用符号语言刻画集合（大写拉丁字母表集合）",
      "reviewState": "AI_REVIEWED",
      "reviewer": "Qwen3.8-27B（用户指定语义判定通道，2026-09-16 决定）",
      "reviewedAt": "2026-09-18",
-     "note": "无集合表示方法节点"
+     "note": "原缺口已由 2026-09-18 第三批直抽材料闭合"
     },
     {
      "candidateRef": "candidate:moe:2025:math:curriculum-text/required-preparatory-knowledge-candidate-003",
@@ -43,13 +43,13 @@
      "module": "必修：预备知识",
      "scopeSummary": false,
      "sourceLocator": "candidate:moe:2025:math:curriculum-text，PDF 第 18 页，必修：预备知识，原始编号 ③；DRAFT_UNREVIEWED 机械提取候选，尚未完成人工细化与审校",
-     "status": "PARTIAL",
-     "targetRef": "kb:moe-2025-four-subjects-v1:math:atomic:忽视-漏-空集致错",
-     "evidencePhrase": "了解全集与空集的含义",
+     "status": "COVERED",
+     "targetRef": "kb:moe-2025-four-subjects-v1:math:atomic:空集",
+     "evidencePhrase": "空集是任何集合的子集，是任何非空集合的真子集",
      "reviewState": "AI_REVIEWED",
      "reviewer": "Qwen3.8-27B（用户指定语义判定通道，2026-09-16 决定）",
      "reviewedAt": "2026-09-18",
-     "note": "仅易错辨析面，缺全集/空集概念节点"
+     "note": "原缺口已由 2026-09-18 第三批直抽材料闭合"
     },
     {
      "candidateRef": "candidate:moe:2025:math:curriculum-text/required-preparatory-knowledge-candidate-004",
@@ -71,13 +71,13 @@
      "module": "必修：预备知识",
      "scopeSummary": false,
      "sourceLocator": "candidate:moe:2025:math:curriculum-text，PDF 第 18 页，必修：预备知识，原始编号 ①；DRAFT_UNREVIEWED 机械提取候选，尚未完成人工细化与审校",
-     "status": "PARTIAL",
-     "targetRef": "kb:moe-2025-four-subjects-v1:math:atomic:集合运算中的常用二级结论",
-     "evidencePhrase": "理解两个集合的并集与交集的含义,能求两个集合的并集与交集",
+     "status": "COVERED",
+     "targetRef": "kb:moe-2025-four-subjects-v1:math:atomic:交集与并集",
+     "evidencePhrase": "A∩B={x|x∈A且x∈B}；A∪B={x|x∈A或x∈B}",
      "reviewState": "AI_REVIEWED",
      "reviewer": "Qwen3.8-27B（用户指定语义判定通道，2026-09-16 决定）",
      "reviewedAt": "2026-09-18",
-     "note": "仅二级结论层，缺并/交基本运算节点"
+     "note": "原缺口已由 2026-09-18 第三批直抽材料闭合"
     },
     {
      "candidateRef": "candidate:moe:2025:math:curriculum-text/required-preparatory-knowledge-candidate-006",
@@ -85,13 +85,13 @@
      "module": "必修：预备知识",
      "scopeSummary": false,
      "sourceLocator": "candidate:moe:2025:math:curriculum-text，PDF 第 18 页，必修：预备知识，原始编号 ②；DRAFT_UNREVIEWED 机械提取候选，尚未完成人工细化与审校",
-     "status": "PARTIAL",
-     "targetRef": "kb:moe-2025-four-subjects-v1:math:atomic:集合运算中的常用二级结论",
-     "evidencePhrase": "理解在给定集合中一个子集的补集的含义,能求给定子集的补集",
+     "status": "COVERED",
+     "targetRef": "kb:moe-2025-four-subjects-v1:math:atomic:补集",
+     "evidencePhrase": "∁ᵤA 由全集 U 中不属于 A 的元素组成",
      "reviewState": "AI_REVIEWED",
      "reviewer": "Qwen3.8-27B（用户指定语义判定通道，2026-09-16 决定）",
      "reviewedAt": "2026-09-18",
-     "note": "同上"
+     "note": "原缺口已由 2026-09-18 第三批直抽材料闭合"
     },
     {
      "candidateRef": "candidate:moe:2025:math:curriculum-text/required-preparatory-knowledge-candidate-007",
@@ -1219,13 +1219,13 @@
      "module": "必修：概率与统计",
      "scopeSummary": false,
      "sourceLocator": "candidate:moe:2025:math:curriculum-text，PDF 第 35 页，必修：概率与统计，原始编号 ①；DRAFT_UNREVIEWED 机械提取候选，尚未完成人工细化与审校",
-     "status": "PARTIAL",
-     "targetRef": "kb:moe-2025-four-subjects-v1:math:atomic:平均数与中位数",
-     "evidencePhrase": "能用样本估计总体的集中趋势参数,众数未覆盖",
+     "status": "COVERED",
+     "targetRef": "kb:moe-2025-four-subjects-v1:math:atomic:众数、中位数与平均数",
+     "evidencePhrase": "众数是出现次数最多的数据；中位数居中间；平均数为算术平均",
      "reviewState": "AI_REVIEWED",
      "reviewer": "Qwen3.8-27B（用户指定语义判定通道，2026-09-16 决定）",
      "reviewedAt": "2026-09-18",
-     "note": ""
+     "note": "原缺口已由 2026-09-18 第三批直抽材料闭合"
     },
     {
      "candidateRef": "candidate:moe:2025:math:curriculum-text/required-probability-statistics-candidate-013",
@@ -1233,13 +1233,13 @@
      "module": "必修：概率与统计",
      "scopeSummary": false,
      "sourceLocator": "candidate:moe:2025:math:curriculum-text，PDF 第 35 页，必修：概率与统计，原始编号 ②；DRAFT_UNREVIEWED 机械提取候选，尚未完成人工细化与审校",
-     "status": "NOT_COVERED",
-     "targetRef": null,
-     "evidencePhrase": ",方差/标准差/极差未设节点",
+     "status": "COVERED",
+     "targetRef": "kb:moe-2025-four-subjects-v1:math:atomic:方差与标准差",
+     "evidencePhrase": "方差 s²=（1/n）Σ(xi−x̄)² 刻画离散程度，标准差与数据同单位",
      "reviewState": "AI_REVIEWED",
      "reviewer": "Qwen3.8-27B（用户指定语义判定通道，2026-09-16 决定）",
      "reviewedAt": "2026-09-18",
-     "note": ""
+     "note": "原缺口已由 2026-09-18 第三批直抽材料闭合"
     },
     {
      "candidateRef": "candidate:moe:2025:math:curriculum-text/required-probability-statistics-candidate-014",
@@ -1261,13 +1261,13 @@
      "module": "必修：概率与统计",
      "scopeSummary": false,
      "sourceLocator": "candidate:moe:2025:math:curriculum-text，PDF 第 35 页，必修：概率与统计，原始编号 ④；DRAFT_UNREVIEWED 机械提取候选，尚未完成人工细化与审校",
-     "status": "NOT_COVERED",
-     "targetRef": null,
-     "evidencePhrase": ",百分位数未设节点",
+     "status": "COVERED",
+     "targetRef": "kb:moe-2025-four-subjects-v1:math:atomic:百分位数",
+     "evidencePhrase": "至少有 p% 数据小于等于它且至少有 100-p% 大于等于它的值",
      "reviewState": "AI_REVIEWED",
      "reviewer": "Qwen3.8-27B（用户指定语义判定通道，2026-09-16 决定）",
      "reviewedAt": "2026-09-18",
-     "note": ""
+     "note": "原缺口已由 2026-09-18 第三批直抽材料闭合"
     },
     {
      "candidateRef": "candidate:moe:2025:math:curriculum-text/required-modeling-inquiry-candidate-001",
@@ -4324,13 +4324,13 @@
    ],
    "counts": {
     "total": 308,
-    "COVERED": 118,
-    "PARTIAL": 45,
-    "NOT_COVERED": 145,
+    "COVERED": 126,
+    "PARTIAL": 41,
+    "NOT_COVERED": 141,
     "UNDECIDED": 0,
-    "coverageNumerator": 118,
+    "coverageNumerator": 126,
     "coverageDenominator": 308,
-    "coverage": 0.3831
+    "coverage": 0.4091
    }
   },
   {
@@ -9322,11 +9322,11 @@
   }
  ],
  "total": {
-  "COVERED": 340,
-  "PARTIAL": 79,
-  "NOT_COVERED": 242,
+  "COVERED": 348,
+  "PARTIAL": 75,
+  "NOT_COVERED": 238,
   "UNDECIDED": 0,
-  "coverageNumerator": 340,
+  "coverageNumerator": 348,
   "coverageDenominator": 661
  },
  "publishedRule": "覆盖率 = COVERED / (总数 − UNDECIDED)；分子、分母、UNDECIDED 绝对数同时公布"
