@@ -535,3 +535,50 @@ flavor-named tasks only exist in `:app`; every other module's … are listed
 explicitly or they never run in CI" — so the checked set stays reviewable. If a
 future finding class is decided to be acceptable rather than fixed, suppress it
 at the call site with the reason, the rule KD-12 followed.
+
+## KD-14 (open) · Deep security scans are systematically inconclusive on this host
+
+**Symptom.** The Mimosa pre-commit/pre-push hook has been reporting
+`scanner_enobufs` for many days (scan not completing inside the host tool
+window). Full on-demand deep scans do complete — they are sealed — but four
+independent runs across 2026-09-14 and 2026-09-17 all report
+`runStatus=inconclusive` with the verbatim-same coverage gap: the semantic
+phases (`threatModel`, `findingDiscovery`) do not cover entry points /
+principals / authorization surfaces, and `pathAnalysis` is N/A. The static
+phases cover every file. This is a host/environment gap in the scanner, not a
+repository-content problem: the same gap reproduces byte-for-byte across
+days, repos states, and run attempts.
+
+**Evidence (sealed artifacts, under `~/.mimosa/security-scans/project-c079ff08106a86cc56edfee2/`):**
+2026-09-17 `scan-2026-09-17T16-22-56.206Z-b0fc1c53ff5f`
+(seal `sha256:58ff6b04…`) and `scan-2026-09-17T16-28-12.386Z-e9d35c5c3609`
+(seal `sha256:88601862…`); 2026-09-14
+`scan-2026-09-13T16-35-18.764Z-0b14062db08c` / `scan-2026-09-13T16-38-37.763Z-7ce64768d5b5`.
+Findings in all runs: 0 high / 0 medium / 3 low, the lows being CWE-330 in the
+untracked parallel-session tool `tools/kb_build/audit_quality.py`
+(`random.Random(fixed seed).sample` — deliberately seeded reproducible
+sampling for humans, a substantive false positive). Dependency surface: 38
+packages, 0 advisories.
+
+**Known discrepancy.** The `security_scan_status` API summary carries
+P1/P2/P3/P4 counts (e.g. 1/4/5/8 + 22 excluded) that do not match the sealed
+report body (`0 business-logic candidate`, 3 low occurrences). Per the scan
+contract, the sealed artifacts (`findings.json`, `report.md`, `seal.json`) are
+authoritative; the API summary counts must not be quoted as specific findings.
+
+**Consequence.** No completion claim may say "security audit passed". What is
+defensible today: full static-mode scan with 0 high/medium and clean
+dependency surface; the semantic threat-model phase is uncovered on this host.
+
+**Resolution / close condition.** Either (a) rerun a deep scan in a
+non-local environment (CI or another machine) and obtain a fully-covered
+conclusion, or (b) the Mimosa plugin side fixes the local semantic-phase gap
+(persisting since 2026-09-14; four reproductions with sealed evidence to
+hand over). Until then, treat this entry as an open boundary: git-hook
+`scanner_enobufs` pass-throughs and any "no scanner conclusion" note are
+expected, and every release claim must cite this entry rather than assert
+security.
+
+**Reopen condition.** A sealed run that reports `runStatus=complete` (or an
+equivalent full-coverage status) supersedes this entry with its finding
+summary; any new high/medium finding from such a run becomes its own open KD.
