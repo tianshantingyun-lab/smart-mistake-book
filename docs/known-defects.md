@@ -570,14 +570,25 @@ authoritative; the API summary counts must not be quoted as specific findings.
 defensible today: full static-mode scan with 0 high/medium and clean
 dependency surface; the semantic threat-model phase is uncovered on this host.
 
-**Resolution / close condition.** Either (a) rerun a deep scan in a
-non-local environment (CI or another machine) and obtain a fully-covered
-conclusion, or (b) the Mimosa plugin side fixes the local semantic-phase gap
-(persisting since 2026-09-14; four reproductions with sealed evidence to
-hand over). Until then, treat this entry as an open boundary: git-hook
-`scanner_enobufs` pass-throughs and any "no scanner conclusion" note are
-expected, and every release claim must cite this entry rather than assert
-security.
+**Resolution / close condition (updated 2026-09-18 with root cause).**
+`mimosa doctor` pinpoints the missing runtimes on this host: the bundled
+**Semgrep CE is not installed** (`install_metadata_missing`) and **PyCG is
+unconfigured**, which is exactly why `--deep` degrades ("PyCG 未配置，--deep
+将优雅降级到 Mimosa 静态可达性") and `pathAnalysis` comes back N/A. The
+self-repair path is `mimosa semgrep install --accept-license` (and a PyCG
+configuration), but that command is currently **blocked by the plugin's own
+PreToolUse hook**, which misclassifies running the plugin CLI as a write to
+the plugin cache file (two identical rejections observed 2026-09-17). So:
+(a) run the install command manually from a terminal outside the agent
+hooks, rerun a deep scan, and if it seals with full coverage, close this
+entry with its finding summary; or (b) the Mimosa plugin side fixes the
+hook false-positive / the local runtime gap. **CI cannot close this entry**:
+the semantic review phase is performed by the ZCode host model (per the
+plugin manifest), which does not exist on GitHub runners — a CI-hosted scan
+would reproduce the same gap, not fill it. Until closed, treat this entry as
+an open boundary: git-hook `scanner_enobufs` pass-throughs and any "no
+scanner conclusion" note are expected, and every release claim must cite
+this entry rather than assert security.
 
 **Reopen condition.** A sealed run that reports `runStatus=complete` (or an
 equivalent full-coverage status) supersedes this entry with its finding
