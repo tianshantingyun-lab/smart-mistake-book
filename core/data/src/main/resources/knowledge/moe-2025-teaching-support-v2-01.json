@@ -113,6 +113,22 @@
    "licenseExpression": null,
    "licenseUri": null,
    "attributionText": "结构化总结（REVIEWED_SYNTHESIS），非原文。"
+  },
+  {
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "subject": "CHEMISTRY",
+   "sourceType": "AUTHORIZED_EDUCATION_MATERIAL",
+   "title": "桌面教辅资料 · 2026年新高考资料(3)",
+   "publisher": "教辅汇编（桌面原始资料）",
+   "edition": "2026/2027版",
+   "sourceUri": "https://www.example.edu/desktop-kb-source",
+   "licenseStatus": "REFERENCE_ONLY",
+   "contentFingerprint": "C099D2D6FC638AD404DB0E49170FD02C69F6A1EB0C3C2DF28862F35A917DCE2E",
+   "importedAtEpochMillis": 1789732985467,
+   "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
+   "licenseExpression": null,
+   "licenseUri": null,
+   "attributionText": "桌面教辅资料直抽改写（REVIEWED_SYNTHESIS），仅内部教学参考。"
   }
  ],
  "materials": [
@@ -40207,6 +40223,206 @@
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:平均速度与瞬时速度的区别",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-96397bfcc6-023",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "分散系的概念与分类",
+   "summaryMarkdown": "一种或多种物质分散到另一种或多种物质中所得的体系叫分散系；被分散的叫分散质，起容纳作用的叫分散剂。",
+   "applicabilityMarkdown": "判断分散系类别；溶液/胶体/浊液区分。",
+   "contentMarkdown": "①概念：一种（或多种）物质分散到另一种（或多种）物质中所得到的体系。被分散的物质称为分散质，起容纳分散质作用的物质称为分散剂，分散系都是混合物。②按分散质粒子大小（本质区别）分为溶液、胶体、浊液三种。③按分散质与分散剂状态分为 9 种：如烟是气固分散系，雾是气液分散系，悬浊液是液固分散系，合金是固固分散系。",
+   "boundaryMarkdown": "分散系至少含两种物质、必为混合物，蒸馏水不是分散系；三种分散系之间转化是物理变化；透明不等于无色（CuSO4 溶液蓝色、Fe(OH)3 胶体红褐色）。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（四川专用）/第01讲 物质的分类及转化（复习讲义）（四川专用）（教师版）.docx（块 96397bfcc6-023）",
+   "reviewedAtEpochMillis": 1789732985366,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:分散系",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-96397bfcc6-024",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "胶体的性质：丁达尔效应、电泳、聚沉、渗析",
+   "summaryMarkdown": "分散质粒子直径 1~100 nm 是胶体本质特征；丁达尔效应鉴别溶液与胶体；聚沉用于制豆腐、净水。",
+   "applicabilityMarkdown": "胶体性质题；鉴别胶体与溶液。",
+   "contentMarkdown": "①定义：分散质粒子直径在 1~100 nm 之间的分散系（本质特征）。②丁达尔效应：可见光束通过胶体时入射光侧面出现光亮通路，可用于鉴别溶液和胶体。③电泳：胶粒带电，在电场中定向移动，应用于静电除尘。④介稳性：胶粒吸附电荷互相排斥 + 布朗运动，稳定但可聚沉。⑤聚沉：加电解质、加带相反电荷胶粒的胶体、加热或搅拌均可使胶体聚沉；制豆腐、净水均利用聚沉。⑥渗析：用半透膜分离胶体与可溶性杂质，是物理分离方法。",
+   "boundaryMarkdown": "胶体本身不带电（整个体系电中性），带电的是胶粒；同种胶粒带同种电荷。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（四川专用）/第01讲 物质的分类及转化（复习讲义）（四川专用）（教师版）.docx（块 96397bfcc6-024）",
+   "reviewedAtEpochMillis": 1789732985366,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:胶体",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-15c287c4f8-003",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "电解质与非电解质的判断",
+   "summaryMarkdown": "电解质是在水溶液或熔融状态下能导电的化合物；单质与混合物既不是电解质也不是非电解质。",
+   "applicabilityMarkdown": "判断某物质是否为电解质/弱强电解质分类。",
+   "contentMarkdown": "①电解质：在水溶液中或熔融状态下能够导电的化合物（酸、碱、盐属于电解质）。②非电解质：在水溶液中和熔融状态下都不能导电的化合物（如蔗糖、乙醇）。③单质和混合物既不是电解质也不是非电解质。④电解质不一定导电（固态 NaCl、液态 HCl），导电物质不一定是电解质（金属单质）。⑤CO2、SO2、NH3、SO3 本身不电离，是非电解质；它们与水反应生成的 H2CO3、H2SO3、NH3·H2O、H2SO4 才是电解质。",
+   "boundaryMarkdown": "“水溶液能导电”不等于“它是电解质”——关键看离子是否由它自身电离产生。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习考点精讲精练（新高考通用）/2026版/专题02 离子反应  离子方程式（高效培优讲义）（教师版）.docx（块 15c287c4f8-003）",
+   "reviewedAtEpochMillis": 1789732985366,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电解质及其分类",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-15c287c4f8-003b",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "电离的概念与电离方程式",
+   "summaryMarkdown": "电解质溶于水或受热熔化形成自由移动离子的过程叫电离；用等号书写电离方程式。",
+   "applicabilityMarkdown": "写电解质电离方程式；强弱电解质分类。",
+   "contentMarkdown": "①概念：电解质溶于水或受热熔化时形成自由移动离子的过程叫做电离。②强电解质在溶液中全部电离（如 NaCl、H2SO4），不存在电离平衡；弱电解质部分电离（如 CH3COOH、NH3·H2O），存在电离平衡。③电离方程式用“=”连接：H2SO4===2H+＋SO4^2−；盐不论难溶易溶绝大多数是强电解质（BaSO4 虽难溶但溶解部分全部电离，仍是强电解质）。",
+   "boundaryMarkdown": "难溶盐是强电解质的判定常错：溶解度小不等于电离不完全。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习考点精讲精练（新高考通用）/2026版/专题02 离子反应  离子方程式（高效培优讲义）（教师版）.docx（块 15c287c4f8-003）",
+   "reviewedAtEpochMillis": 1789732985366,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电离",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-2c017ad5a8-013",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "氧化剂与氧化产物",
+   "summaryMarkdown": "氧化剂是反应时所含元素化合价降低（得电子）的物质，被还原，生成还原产物。",
+   "applicabilityMarkdown": "氧化还原反应中识别氧化剂、还原剂、氧化产物、还原产物。",
+   "contentMarkdown": "①氧化剂：反应时所含元素化合价降低、得到电子（或电子对偏向）的物质；被还原，发生还原反应，得到还原产物。②还原剂：化合价升高、失去电子的物质；被氧化，发生氧化反应，得到氧化产物。③电子从还原剂转移到氧化剂（如 Cl2+2NaCl→2NaCl 中氧化剂是 Cl2、还原剂是 Na）。④记忆口诀：氧得降还得还、还失升失还氧。⑤同一物质可既是氧化剂又是还原剂（如 Cl2+2NaOH===NaCl+NaClO+H2O 中 Cl2 兼两种角色）。",
+   "boundaryMarkdown": "氧化剂/还原剂是就“物质”而言，氧化/还原反应是就“元素”而言，两个层面不要混。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习考点精讲精练（新高考通用）/2026版/专题04 氧化还原反应的基本概念和规律（高效培优讲义）（教师版）.docx（块 2c017ad5a8-013）",
+   "reviewedAtEpochMillis": 1789732985366,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:氧化剂",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-2c017ad5a8-013b",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "还原剂与还原产物",
+   "summaryMarkdown": "还原剂是反应时所含元素化合价升高（失电子）的物质，被氧化，生成氧化产物。",
+   "applicabilityMarkdown": "识别还原剂并判断还原性强弱方向。",
+   "contentMarkdown": "①还原剂：反应时所含元素化合价升高、失去电子（或电子对偏离）的物质；被氧化，发生氧化反应，得到氧化产物。②还原性：失电子的能力，还原剂具有还原性。③电子从还原剂转移到氧化剂。④某元素由化合态变为游离态，既可能被氧化也可能被还原（如 S2−→S 是氧化，Fe3+→Fe 是还原）。",
+   "boundaryMarkdown": "“变游离态必被还原”是误区：升价变游离态是被氧化。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习考点精讲精练（新高考通用）/2026版/专题04 氧化还原反应的基本概念和规律（高效培优讲义）（教师版）.docx（块 2c017ad5a8-013）",
+   "reviewedAtEpochMillis": 1789732985366,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:还原剂",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-b0471d5c46-001",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "氧化还原反应的特征、本质与电子转移表示",
+   "summaryMarkdown": "特征是化合价变化，本质是电子转移（得失或偏移）；双线桥/单线桥表示电子转移。",
+   "applicabilityMarkdown": "判断是否氧化还原；用双线桥/单线桥表示电子转移。",
+   "contentMarkdown": "①特征：反应前后有元素化合价变化。②本质：电子转移（得失或偏移）。③与基本反应类型关系：有单质参加的化合、有单质生成的分解是氧化还原反应；有单质参加或生成的反应不一定是（3O2⇌2O3）；置换反应都是，复分解反应都不是。④电子转移表示：双线桥标“得/失电子×n”，单线桥从失电子元素指向得电子元素并标 n×e−。",
+   "boundaryMarkdown": "“得失电子数目多少决定氧化性还原性强弱”是误区：强弱看转移难易而非数目。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习举一反三（新高考通用）/资料/2026版/第03讲 氧化还原反应（举一反三讲义）（学生版）.docx（块 b0471d5c46-001）",
+   "reviewedAtEpochMillis": 1789732985366,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电子转移",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-9f5d8db076-001",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "原电池的工作原理与盐桥作用",
+   "summaryMarkdown": "原电池是把化学能转化为电能的装置；负极失电子、正极得电子；盐桥连接内电路并平衡电荷。",
+   "applicabilityMarkdown": "原电池电极反应书写；正负极判断。",
+   "contentMarkdown": "①概念：原电池是把化学能转化为电能的装置。②工作原理（锌铜原电池）：负极 Zn−2e−===Zn2+（氧化反应），正极 Cu2+＋2e−===Cu（还原反应），总反应 Zn＋Cu2+===Cu＋Zn2+。③盐桥：含饱和 KCl 的琼脂凝胶；作用是连接内电路形成闭合回路、平衡电荷；阴离子移向负极、阳离子移向正极。④应用：设计化学电源；比较金属活动性（负极一般是较活泼金属）；加快反应速率；金属防护（被保护金属作正极）。",
+   "boundaryMarkdown": "负极不一定是活泼性较强的金属（视电解质而定）；电子只走外电路、离子只走内电路（“电子不下水”）。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学大一轮复习卓越讲义重难点/资料/（重点·方法·点拨）第36讲 化学能转化为电能——电池- （教师版）.docx（块 9f5d8db076-001）",
+   "reviewedAtEpochMillis": 1789732985366,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:原电池",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-eab8893387-003",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "电解池的工作原理与电极判断",
+   "summaryMarkdown": "惰性电极电解 CuCl2：阳极氧化、阴极还原；电子不下水、离子不上线。",
+   "applicabilityMarkdown": "写电解池电极反应；判断阴/阳极产物。",
+   "contentMarkdown": "①模型（惰性电极电解 CuCl2）：总反应 CuCl2→Cu＋Cl2↑（通电）。②阴、阳极判断：外接电源正极接阳极、负极接阴极；电流从阴极流出、阳极流入；电子从阳极流出、阴极流入；阴离子移向阳极、阳离子移向阴极；阳极氧化、阴极还原。③放电顺序：阴极 Ag+＞Fe3+＞Cu2+＞H+(酸)＞Fe2+＞Zn2+＞H+(水)＞Al3+＞Mg2+；阳极活性电极先溶解，惰性电极时 S2−＞I−＞Br−＞Cl−＞OH−。④速记：“电子不下水，离子不上线”。",
+   "boundaryMarkdown": "活性阳极（如 Cu）作阳极时电极本身先失电子，阴离子不放电——判断产物前先定电极材料。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（安徽专用）/第03讲 电解池、金属的腐蚀与防护（复习讲义）（安徽专用）（教师版）.docx（块 eab8893387-003）",
+   "reviewedAtEpochMillis": 1789732985366,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电解池",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-ce5ba68671-002",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "物质的量与阿伏加德罗常数",
+   "summaryMarkdown": "物质的量（单位 mol）表示含有一定数目粒子的集合体；NA≈6.02×10^23 mol−1；n=N/NA。",
+   "applicabilityMarkdown": "微观粒子数与物质的量互化；NA 计算。",
+   "contentMarkdown": "①物质的量 n：表示含有一定数目粒子的集合体的物理量，单位摩尔（mol）。②使用范围：微观粒子（电子、质子、中子、分子、原子、离子）或微观粒子的特定组合（原子团、官能团）。③阿伏加德罗常数 NA：1 mol 任何粒子的粒子数，NA≈6.02×10^23 mol−1，与 0.012 kg 12C 所含碳原子数相同。④关系式：n=N/NA，N=n·NA。",
+   "boundaryMarkdown": "摩尔后面必须跟确切微粒名称（“1 mol 氢”错误，应“1 mol H”或“1 mol H2”）；6.02×10^23 是纯数值，NA 才是带单位的物理量。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（安徽专用）/第01讲 物质的量、气体摩尔体积（复习讲义）（安徽专用）（教师版）.docx（块 ce5ba68671-002）",
+   "reviewedAtEpochMillis": 1789732985366,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:物质的量",
      "role": "PRIMARY"
     }
    ]
