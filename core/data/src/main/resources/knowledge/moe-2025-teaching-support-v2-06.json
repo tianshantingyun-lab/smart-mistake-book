@@ -81,6 +81,22 @@
    "licenseExpression": null,
    "licenseUri": null,
    "attributionText": "桌面教辅资料直抽改写（REVIEWED_SYNTHESIS），仅内部教学参考。"
+  },
+  {
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-physics:physics",
+   "subject": "PHYSICS",
+   "sourceType": "AUTHORIZED_EDUCATION_MATERIAL",
+   "title": "2027版5·3 A版 高考总复习（精讲册）",
+   "publisher": "曲一线·五三",
+   "edition": "2027版",
+   "sourceUri": "https://www.example.edu/wusan-2027-a-jingjiang",
+   "licenseStatus": "REFERENCE_ONLY",
+   "contentFingerprint": "222220C701A42B3E54A3AB7F5C17C4AEF53BC2C01FA5658CE86F03698C829C1D",
+   "importedAtEpochMillis": 1784908800000,
+   "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
+   "licenseExpression": null,
+   "licenseUri": null,
+   "attributionText": "五三精讲册直抽改写（REVIEWED_SYNTHESIS），仅内部教学参考。"
   }
  ],
  "materials": [
@@ -5610,6 +5626,266 @@
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:等质量的铝与足量的盐酸-氢氧化钠溶液分别反应",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-phy-x3c5-fission",
+   "subject": "PHYSICS",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "重核裂变",
+   "summaryMarkdown": "重核裂变是重核俘获中子后分裂成中等核并放出中子的反应，是原子弹与核电站的原理。",
+   "applicabilityMarkdown": "书写裂变方程、或判断某方程是否属于裂变的题。",
+   "contentMarkdown": "典型方程：²³⁵U + ¹n → ¹⁴⁴Ba + ⁸⁹Kr + 3¹n；²³⁵U + ¹n → ¹³⁶Xe + ⁹⁰Sr + 10¹n。\n实际意义：原子弹、核电站的原理。\n裂变反应同样遵循质量数守恒与电荷数守恒。",
+   "boundaryMarkdown": "裂变方程里的中子数要数清（一个反应放出 3 个、另一个放出 10 个）——配平时漏掉右侧的中子数量会对不上质量数。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-physics:physics",
+   "sourceLocator": "《2027 5·3 A版 高考总复习 物理 精讲册》P191-P192",
+   "reviewedAtEpochMillis": 1789200000000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:核裂变",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-phy-x3c5-neutron",
+   "subject": "PHYSICS",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "中子的发现",
+   "summaryMarkdown": "查德威克用 α 粒子轰击铍核发现了中子：⁴He + ⁹Be → ¹²C + ¹n。",
+   "applicabilityMarkdown": "写出发现中子的核反应方程、或判断方程中粒子符号的题。",
+   "contentMarkdown": "中子的发现：⁴He + ⁹Be → ¹²C + ¹n，查德威克由此发现中子（方程也可写作 ⁹Be + ⁴He → ¹²C + ¹n）。\n中子不带电，在核反应方程中记作 ¹n（质量数 1、电荷数 0）。",
+   "boundaryMarkdown": "中子写作 ¹₀n、质子写作 ¹₁H——两者质量数都是 1，靠电荷数区分，写错就等于把发现中子的反应写成了另一种反应。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-physics:physics",
+   "sourceLocator": "《2027 5·3 A版 高考总复习 物理 精讲册》P191-P192",
+   "reviewedAtEpochMillis": 1789200000000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:中子-卢瑟福预言中子的存在-查德威克证实",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-phy-x3c5-binding-energy",
+   "subject": "PHYSICS",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "结合能与比结合能",
+   "summaryMarkdown": "结合能只对由核子组成的原子核而言，等于比结合能乘核子数；比结合能越大原子核越稳定，中等核最稳定。",
+   "applicabilityMarkdown": "比较不同原子核的结合能与比结合能、或解释裂变与聚变都能释放核能的题。",
+   "contentMarkdown": "结合能：针对由核子组成的原子核而言，孤立核子如质子或中子没有结合能；质量数越大的原子核结合能越大。\n比结合能：大小反映原子核的稳定程度，比结合能越大、原子核越难被拆开、越稳定。核子数较小的轻核与核子数较大的重核，比结合能都比较小；中等大小的核比结合能较大。\n当比结合能较小的原子核变成比结合能较大的原子核时就释放核能——这就是重核裂变与轻核聚变都能释放核能的原因。\n原子核的结合能 ＝ 比结合能 × 核子数。",
+   "boundaryMarkdown": "结合能随质量数单调增大，比结合能却是中等核最大——把两者当成同一趋势，就无法解释「裂变与聚变都放能」。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-physics:physics",
+   "sourceLocator": "《2027 5·3 A版 高考总复习 物理 精讲册》P191-P192",
+   "reviewedAtEpochMillis": 1789200000000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:结合能",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-phy-v-fd0a8769",
+   "subject": "PHYSICS",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "分子的两种模型与微观量估算",
+   "summaryMarkdown": "固体液体用球体模型d＝∛（6V₀／π）；气体用立方体模型d＝∛V₀，此时d为分子间平均距离。",
+   "applicabilityMarkdown": "估算分子直径、分子间距与物体所含分子数。",
+   "contentMarkdown": "①分子很小：分子直径的数量级为10⁻¹⁰ m，分子质量的数量级为10⁻²⁶ kg。②球体模型：对固体和液体分子，把分子看成紧密排列的球体，V₀＝πd³／6，则d＝∛（6V₀／π），d为分子直径、V₀为分子体积。③立方体模型：对气体分子，把分子占据的空间看成一个小立方体，V₀＝d³，则d＝∛V₀，此时d为气体分子间的平均距离、V₀为分子所占空间的体积（气体分子本身的体积远小于它所占的空间）。④宏观量与微观量的换算：分子质量m₀＝M／N_A＝ρV_mol／N_A；分子体积（气体为所占空间）V₀＝V_mol／N_A＝M／（ρN_A）。⑤阿伏加德罗常数N_A＝6.02×10²³ mol⁻¹，物体所含分子数N＝（V／V_mol）N_A＝（m／M）N_A＝（ρV／M）N_A。",
+   "boundaryMarkdown": "气体分子的d是分子间平均距离而不是分子直径，分子体积远小于分子所占空间体积。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-physics:physics",
+   "sourceLocator": "五三物理精讲册 P179（内文页172）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:分子模型",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-phy-v-6323d410",
+   "subject": "PHYSICS",
+   "type": "REPRESENTATION_GUIDE",
+   "title": "气体分子速率分布规律",
+   "summaryMarkdown": "任意温度下分子速率都呈中间多、两头少的分布；温度升高时高峰向速率大的方向移动，平均速率增大。",
+   "applicabilityMarkdown": "分析速率分布曲线随温度的变化。",
+   "contentMarkdown": "①坐标含义：横轴为速率区间，纵轴为各速率区间的分子数占总分子数的百分比，图线与横轴所围的面积为1。②在任意一温度下，气体分子的速率都按“中间多、两头少”的规律分布，即速率处于中间区间的分子数目最多。③温度升高时，“中间多”的这一“高峰”向速率大的方向移动，速率小的分子数减少，速率大的分子数增多，分子的平均速率增大。④温度升高并不是每个分子的速率都增大，而是分子总数的统计规律；温度越高，分子的平均动能越大。⑤图线比较：温度高（如100 ℃）的曲线峰值较低且偏右，温度低（如30 ℃）的曲线峰值较高且偏左；速率分布只对大量分子才有意义。",
+   "boundaryMarkdown": "温度升高对应高峰右移、峰值降低，不是所有分子速率都增大。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-physics:physics",
+   "sourceLocator": "五三物理精讲册 P179（内文页172）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:分子运动速率分布图像-气体分子速率呈-中间多-两头少-的规律分布-如下图所示",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-phy-v-2402fcd7",
+   "subject": "PHYSICS",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "分子动能、分子势能与内能",
+   "summaryMarkdown": "内能是所有分子的热运动动能与分子势能的总和，由温度、体积、物质的量决定；温度是分子平均动能的标志。",
+   "applicabilityMarkdown": "判断内能变化及其影响因素。",
+   "contentMarkdown": "①分子动能：分子做无规则运动所具有的动能；温度是分子平均动能的标志，温度越高分子的平均动能越大，分子动能由温度决定。②分子势能：由分子间的相对位置决定的势能，与分子间距（即体积）有关。③内能：所有分子的热运动动能和分子势能的总和，由温度、体积、物质的量共同决定。④内能是微观量：温度、内能等物理量只对大量分子才有意义，对单个或少量分子没有实际意义；内能与物体宏观机械运动情况无关。⑤判断方法：温度升高时分子平均动能增大，但若体积同时变化使分子势能减小，内能不一定增大，应结合ΔU＝W＋Q综合判断。",
+   "boundaryMarkdown": "温度升高不等于内能一定增大；内能由温度、体积、物质的量三者共同决定。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-physics:physics",
+   "sourceLocator": "五三物理精讲册 P180（内文页173）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:内能",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-phy-v-f656b21f",
+   "subject": "PHYSICS",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "液体表面张力与浸润",
+   "summaryMarkdown": "表面层分子间距比内部大、分子力表现为引力，方向与液面相切，使液面趋于最小；由此决定浸润与毛细现象。",
+   "applicabilityMarkdown": "解释表面张力、浸润与毛细现象。",
+   "contentMarkdown": "①定义：使液体表面绷紧的力叫作表面张力。②形成原因：表面层中分子间的距离比液体内部分子间的距离大，分子间的作用力表现为引力。③方向：和液面相切，垂直于液面上的各条分界线。④作用：使液体表面具有收缩的趋势，使液体表面积趋于最小（在体积相同的条件下，球体的表面积最小）。⑤浸润与不浸润：当液体和与之接触的固体间的相互作用比液体分子之间的相互作用强时，液体能够浸润固体；弱时液体不浸润固体。⑥毛细现象：浸润液体在细管中上升、不浸润液体在细管中下降的现象；细管内径越小，毛细现象越明显。",
+   "boundaryMarkdown": "表面张力是表面层分子间的引力，作用效果是使液面收缩。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-physics:physics",
+   "sourceLocator": "五三物理精讲册 P181（内文页174）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:表面张力",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-phy-v-f21586b2",
+   "subject": "PHYSICS",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "三个气体实验定律与状态方程",
+   "summaryMarkdown": "玻意耳、查理、盖-吕萨克定律分别描述等温、等容、等压过程，统一为理想气体状态方程pV／T＝C。",
+   "applicabilityMarkdown": "一定质量理想气体的状态变化计算。",
+   "contentMarkdown": "①玻意耳定律：一定质量的某种气体，在温度不变的情况下，压强与体积成反比，p₁V₁＝p₂V₂。②查理定律：一定质量的某种气体，在体积不变的情况下，压强与热力学温度成正比，p₁／T₁＝p₂／T₂，也可写成Δp＝（p₁／T₁）ΔT。③盖-吕萨克定律：一定质量的某种气体，在压强不变的情况下，其体积与热力学温度成正比，V₁／T₁＝V₂／T₂，也可写成ΔV＝（V₁／T₁）ΔT。④理想气体状态方程：一定质量的理想气体p₁V₁／T₁＝p₂V₂／T₂，或pV／T＝C；式中C是与p、V、T无关的常量，它与气体的质量、种类有关；实际上该方程是由克拉伯龙方程pV＝nRT得出的。⑤理想气体：在任何温度、任何压强下都遵从气体实验定律的气体；理想气体不计分子间的作用力，即不计分子势能，其内能仅由温度决定。",
+   "boundaryMarkdown": "三个定律都要求一定质量的某种气体；温度必须用热力学温度，查理定律与盖-吕萨克定律的图线过原点。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-physics:physics",
+   "sourceLocator": "五三物理精讲册 P182（内文页175）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:气体实验定律",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-phy-v-043b821f",
+   "subject": "PHYSICS",
+   "type": "METHOD_MODEL",
+   "title": "活塞-汽缸模型的解题思路",
+   "summaryMarkdown": "活塞作力学对象、气体作热学对象，由活塞移动情况判断等压、等容、等温或绝热过程。",
+   "applicabilityMarkdown": "汽缸类气体状态变化综合题。",
+   "contentMarkdown": "①模型关系：活塞与气体通过压力和压强相互关联，对活塞根据牛顿第二定律或力的平衡建立等量关系，对气体根据气体实验定律或理想气体状态方程建立等量关系。②以活塞为研究对象：明确活塞的质量是否忽略不计、活塞是水平放置还是竖直放置、是否考虑活塞重力产生的压强；活塞处于力学平衡状态时，根据受力平衡得出气体的压强或活塞两侧隔离气体的压强关系；活塞处于力学非平衡状态时，根据牛顿运动定律得出压强关系。③以气体为研究对象：单个汽缸中需明确气体的变化过程，分析清楚气体初末状态的温度、压强、体积，再依据气体实验定律或理想气体状态方程列方程；涉及两个或多个汽缸封闭几部分气体且相互关联时，分别研究各部分气体，找出各自遵循的规律并写出方程，最后联立求解。④如何选用定律：活塞自由移动时是等压过程；活塞不动时是等容过程；活塞或汽缸不传热、缓慢改变活塞产生的压力时是等温过程；活塞与汽缸均绝热时是绝热过程。",
+   "boundaryMarkdown": "先判断过程性质再选定律；活塞两侧气体压强由受力平衡关联。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-physics:physics",
+   "sourceLocator": "五三物理精讲册 P186（内文页179）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:活塞气缸模型",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-phy-v-f9be2670",
+   "subject": "PHYSICS",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "热力学第一定律与符号法则",
+   "summaryMarkdown": "ΔU＝W＋Q；外界对气体做功W为正、吸热Q为正、内能增加ΔU为正，注意绝热、等容、恒温三种情形。",
+   "applicabilityMarkdown": "判断内能变化、做功与吸放热。",
+   "contentMarkdown": "①内容：一个热力学系统的内能变化量等于外界向它传递的热量与外界对它所做的功的和。②表达式：ΔU＝W＋Q。③符号法则：W为“＋”表示外界对气体做功，W为“−”表示气体对外界做功；Q为“＋”表示气体吸收热量，Q为“−”表示气体放出热量；ΔU为“＋”表示内能增加，ΔU为“−”表示内能减少。④三种特殊情况：绝热过程Q＝0，W＝ΔU；等容过程W＝0，Q＝ΔU；恒温过程或初、末状态的内能相等时ΔU＝0，则W＋Q＝0，即W＝−Q。⑤注意：气体体积膨胀时气体对外界做功（W＜0），气体被压缩时外界对气体做功（W＞0），做功情况由体积变化判断；内能变化由温度变化判断。",
+   "boundaryMarkdown": "符号判断先定谁对谁做功；绝热时Q＝0、等容时W＝0，不要漏掉ΔU与W、Q的对应。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-physics:physics",
+   "sourceLocator": "五三物理精讲册 P190（内文页183）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:热力学第一定律",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-phy-v-85d4c6da",
+   "subject": "PHYSICS",
+   "type": "REPRESENTATION_GUIDE",
+   "title": "热力学第一定律与图像的综合",
+   "summaryMarkdown": "等温线、等容线、等压线之间变化时，由体积变化定W、由温度变化定ΔU，再由ΔU＝W＋Q定吸放热。",
+   "applicabilityMarkdown": "由p-V、p-T、V-T图像判断做功与吸放热。",
+   "contentMarkdown": "①等温线之间变化（p-V图）：a→b等温降压膨胀，内能不变，吸收的热量等于气体对外做的功；b→c等容升温升压，不做功，吸收的热量等于内能增加量；c→a等压降温压缩，放出的热量等于外界做的功和内能减少量之和。②等容线之间变化（p-T图）：用同样的思路逐段判断各过程的做功、吸放热与内能变化。③等压线之间变化（V-T图）：a→b等温升压压缩，内能不变，外界对气体做的功等于放出的热量；b→c等压升温膨胀，吸收的热量等于内能增加量和气体对外做的功之和；c→a等容降温降压，不做功，内能减少量等于放出的热量。④四点注意：气体状态变化可由图像直接判断或由pV／T＝C分析；气体做功情况由体积变化分析，体积膨胀气体对外做功W＜0，气体被压缩外界对气体做功W＞0；气体内能的变化由温度的变化判断，温度升高内能增大、温度降低内能减小；做功、吸放热与内能变化也可由ΔU＝W＋Q分析。",
+   "boundaryMarkdown": "判断顺序是体积定做功、温度定内能、第一定律定吸放热；等温过程ΔU＝0。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-physics:physics",
+   "sourceLocator": "五三物理精讲册 P191（内文页184）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:热力学图像问题",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-phy-v-3bc4dba1",
+   "subject": "PHYSICS",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "爱因斯坦光电效应方程",
+   "summaryMarkdown": "E_k＝hν−W₀，逸出功W₀＝hν_c＝hc／λ_c；频率决定最大初动能，光强决定光电流大小。",
+   "applicabilityMarkdown": "计算最大初动能、逸出功与截止频率。",
+   "contentMarkdown": "①表达式：E_k＝hν−W₀。②逸出功W₀：电子从金属中逸出所需外界对它做功的最小值，W₀＝hν_c＝hc／λ_c。③物理意义：金属表面的电子吸收一个光子的能量hν，这些能量的一部分用来克服金属的逸出功W₀，剩下的表现为逸出后电子的最大初动能E_k。④两种决定关系：光的频率决定光子能量，光子能量越高则产生光电子的最大初动能越大；光的强弱决定单位时间照到金属表面的光子数目，光子数目越多则单位时间产生的光电子越多、光电流越大。⑤应区分的概念：光子是光本身的不可分割的能量子，光电子是金属表面受光照时吸收光子的能量从金属表面逸出的电子；除脱离金属需要的能量（逸出功）外，还要克服原子的其他束缚力做功，只有从金属表面直接向外逸出的电子才具有最大初动能。",
+   "boundaryMarkdown": "光强决定单位时间的光子数而不是每个光子的能量；最大初动能只与频率和金属种类有关。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-physics:physics",
+   "sourceLocator": "五三物理精讲册 P194（内文页187）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:光电效应方程",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-phy-v-92099394",
+   "subject": "PHYSICS",
+   "type": "DERIVATION",
+   "title": "质量亏损与核能的计算",
+   "summaryMarkdown": "质量亏损Δm对应释放的核能ΔE＝Δmc²（或用ΔE＝Δm×931.5 MeV）；结合能＝比结合能×核子数。",
+   "applicabilityMarkdown": "计算核反应释放的核能。",
+   "contentMarkdown": "①质能方程：一定的能量和一定的质量相联系，物体的总能量和它的质量成正比，即E＝mc²。②质量亏损：核子在结合成原子核时出现质量亏损Δm，其能量也要相应减少，释放的能量ΔE＝Δmc²；原子核分解成核子时要吸收一定的能量，相应的质量增加Δm，吸收的能量ΔE＝Δmc²。③两种计算方法：根据ΔE＝Δmc²计算，Δm的单位是kg、c的单位是m／s、ΔE的单位是J；根据ΔE＝Δm×931.5 MeV计算，因1 u相当于931.5 MeV的能量，此时Δm的单位是u、ΔE的单位是MeV。④结合能＝比结合能×核子数；比结合能越大，原子核越难被拆开、越稳定，中等大小的核比结合能较大；当比结合能较小的原子核变成比结合能较大的原子核时，就可释放核能。⑤核反应遵循质量数与电荷数守恒，但反应前后总质量不守恒（存在质量亏损）。",
+   "boundaryMarkdown": "用ΔE＝Δm×931.5 MeV时Δm必须取u为单位；质量亏损是质量转化为能量，不是质量消失。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-physics:physics",
+   "sourceLocator": "五三物理精讲册 P199（内文页192）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:质量亏损",
      "role": "PRIMARY"
     }
    ]

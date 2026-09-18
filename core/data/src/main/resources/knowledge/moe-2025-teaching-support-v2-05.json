@@ -129,6 +129,38 @@
    "licenseExpression": null,
    "licenseUri": null,
    "attributionText": "桌面教辅资料直抽改写（REVIEWED_SYNTHESIS），仅内部教学参考。"
+  },
+  {
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-physics:physics",
+   "subject": "PHYSICS",
+   "sourceType": "AUTHORIZED_EDUCATION_MATERIAL",
+   "title": "2027版5·3 A版 高考总复习（精讲册）",
+   "publisher": "曲一线·五三",
+   "edition": "2027版",
+   "sourceUri": "https://www.example.edu/wusan-2027-a-jingjiang",
+   "licenseStatus": "REFERENCE_ONLY",
+   "contentFingerprint": "222220C701A42B3E54A3AB7F5C17C4AEF53BC2C01FA5658CE86F03698C829C1D",
+   "importedAtEpochMillis": 1784908800000,
+   "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
+   "licenseExpression": null,
+   "licenseUri": null,
+   "attributionText": "五三精讲册直抽改写（REVIEWED_SYNTHESIS），仅内部教学参考。"
+  },
+  {
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "subject": "CHEMISTRY",
+   "sourceType": "AUTHORIZED_EDUCATION_MATERIAL",
+   "title": "2027版5·3 A版 高考总复习（精讲册）",
+   "publisher": "曲一线·五三",
+   "edition": "2027版",
+   "sourceUri": "https://www.example.edu/wusan-2027-a-jingjiang",
+   "licenseStatus": "REFERENCE_ONLY",
+   "contentFingerprint": "2011B658897C1A5FB7A4F28711CE553EDB9329E95695B8F9EFE01088DA48CF60",
+   "importedAtEpochMillis": 1784908800000,
+   "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
+   "licenseExpression": null,
+   "licenseUri": null,
+   "attributionText": "五三精讲册直抽改写（REVIEWED_SYNTHESIS），仅内部教学参考。"
   }
  ],
  "materials": [
@@ -42063,6 +42095,866 @@
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:常见的装置",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-phy-x3c5-natural-radioactivity",
+   "subject": "PHYSICS",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "天然放射现象的三种射线",
+   "summaryMarkdown": "α 射线是高速氦核流、β 射线是高速电子流、γ 射线是光子流；电离本领与穿透本领的顺序相反。",
+   "applicabilityMarkdown": "比较三种射线的本质与穿透电离能力、或判断某射线能否被什么挡住的题。",
+   "contentMarkdown": "α 射线：高速氦核流，速度约 0.1c，电离本领很强、穿透本领弱（纸片即可挡住）。\nβ 射线：高速电子流，速度约 0.99c，电离本领较弱、穿透本领较强（能穿透几毫米厚的铝板）。\nγ 射线：光子流，速度等于光速，电离本领很弱、穿透本领很强（能穿透几厘米厚的铅板），且经常是伴随着 α 射线或 β 射线同时产生的。",
+   "boundaryMarkdown": "电离本领与穿透本领的顺序相反：α 电离最强而穿透最弱、γ 电离最弱而穿透最强——把 β 说成穿透最强是这类题的常见错。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-physics:physics",
+   "sourceLocator": "《2027 5·3 A版 高考总复习 物理 精讲册》P191-P192",
+   "reviewedAtEpochMillis": 1789200000000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:天然放射现象",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-phy-x3c5-fusion",
+   "subject": "PHYSICS",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "轻核聚变",
+   "summaryMarkdown": "轻核聚变是轻核结合成较重核的反应，典型方程是 ²H + ³H → ⁴He + ¹n，是太阳与氢弹的原理。",
+   "applicabilityMarkdown": "书写聚变方程、或判断某方程属于裂变还是聚变的题。",
+   "contentMarkdown": "典型方程：²H + ³H → ⁴He + ¹n。\n实际意义：太阳、氢弹的原理。\n聚变与裂变都向「中等大小的核」靠拢，因此都能释放核能；区别在于聚变由轻核结合、裂变由重核分裂。",
+   "boundaryMarkdown": "判断裂变还是聚变只看反应前后核的轻重方向：轻核结合成较重核是聚变，重核分裂成中等核是裂变——只凭是否放出中子判会错。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-physics:physics",
+   "sourceLocator": "《2027 5·3 A版 高考总复习 物理 精讲册》P191-P192",
+   "reviewedAtEpochMillis": 1789200000000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:核聚变",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-phy-x3c5-first-artificial-reaction",
+   "subject": "PHYSICS",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "第一次人工核反应与三个人工转变",
+   "summaryMarkdown": "卢瑟福用 α 粒子轰击氮核第一次实现人工核反应并发现质子；此后的人工转变分别发现了中子和人工放射性同位素。",
+   "applicabilityMarkdown": "把发现者与人工核反应方程对号、或书写人工转变方程的题。",
+   "contentMarkdown": "第一次人工核反应（卢瑟福发现质子）：⁴He + ¹⁴N → ¹⁷O + ¹H。\n发现中子：⁴He + ⁹Be → ¹²C + ¹n（查德威克）。\n发现人工放射性同位素：²⁷Al + ⁴He → ³⁰P + ¹n，随后 ³⁰P → ³⁰Si + ⁰₊₁e（约里奥-居里夫妇）。",
+   "boundaryMarkdown": "三条人工转变方程各对应一项发现——质子、中子、人工放射性同位素，考试常把发现者对错位。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-physics:physics",
+   "sourceLocator": "《2027 5·3 A版 高考总复习 物理 精讲册》P191-P192",
+   "reviewedAtEpochMillis": 1789200000000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:第一次人工核反应",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-chem-x3c4-amino-acid-peptide",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "氨基酸的两性与成肽反应",
+   "summaryMarkdown": "α-氨基酸同时含氨基与羧基，既能与酸又能与碱反应；分子间脱水成肽，多种氨基酸经肽键连接形成蛋白质。",
+   "applicabilityMarkdown": "书写氨基酸与酸碱反应、成肽反应的方程式，或判断二肽种数的题。",
+   "contentMarkdown": "α-氨基酸通式 R—CH(NH₂)—COOH，官能团为氨基（—NH₂）和羧基（—COOH）。\n两性：氨基显碱性能与 HCl 反应（—NH₂ 变为 —NH₃Cl），羧基显酸性能与 NaOH 反应（—COOH 变为 —COONa）。\n成肽反应：氨基酸分子间脱水缩合形成含有肽键的化合物；多种氨基酸通过肽键连接最终可形成蛋白质。",
+   "boundaryMarkdown": "两种氨基酸混合可以形成四种链状二肽——排列有顺序（A—B 与 B—A 是不同物质），只数「组合」会少一半。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "《2027 5·3 A版 高考总复习 化学 精讲册》P123-P125",
+   "reviewedAtEpochMillis": 1789200000000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:蛋白质和氨基酸的结构与性质",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-chem-x3c4-monomer-chain-unit",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "单体、链节与聚合度",
+   "summaryMarkdown": "加聚由不饱和单体加成聚合、缩聚由单体缩合同时放出小分子；链节是重复单元，聚合度是链节个数 n。",
+   "applicabilityMarkdown": "由高分子结构式写单体、或由单体写出链节的题。",
+   "contentMarkdown": "加聚反应：由不饱和单体加成聚合生成高分子，如 n CH₂=CH—CH₃ →催化剂 [-CH₂-CH(CH₃)-]ₙ，链节即单体打开不饱和键后的重复单元。\n缩聚反应：单体分子间通过缩合反应生成高分子，同时还生成小分子，如 n HOCH₂CH₂OH + n HOOC—COOH →催化剂,Δ H-[-OCH₂CH₂-O-CO-CO-]ₙ-OH + (2n-1)H₂O，链节是脱去小分子后的重复单元。\n聚合度就是链节重复的个数 n。",
+   "boundaryMarkdown": "加聚与缩聚的判据是「有没有小分子生成」，不是单体饱不饱和——二元醇与二元酸都不含不饱和键，它们的反应却是缩聚。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "《2027 5·3 A版 高考总复习 化学 精讲册》P123-P125",
+   "reviewedAtEpochMillis": 1789200000000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:基本概念",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-chem-x3c2-alkene",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "烯烃的通式与碳碳双键",
+   "summaryMarkdown": "单烯烃的通式是 CₙH₂ₙ（n≥2），官能团为碳碳双键；能使酸性高锰酸钾溶液褪色。",
+   "applicabilityMarkdown": "由分子式判断是否可能为烯烃、或比较烯烃与烷烃性质的题。",
+   "contentMarkdown": "单烯烃通式 CₙH₂ₙ（n≥2），官能团为碳碳双键（C=C）。\n含双键的碳原子不能旋转，对原子空间位置有「定格」作用，因此存在顺反异构（如顺-2-丁烯与反-2-丁烯）。\n烯烃能使酸性高锰酸钾溶液褪色，烷烃不能，可据此鉴别。",
+   "boundaryMarkdown": "通式 CₙH₂ₙ 同时覆盖烯烃与环烷烃（n≥3 时为官能团异构）——只看通式判不出是不是烯烃，要看有没有碳碳双键。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "《2027 5·3 A版 高考总复习 化学 精讲册》P110-P114、P120",
+   "reviewedAtEpochMillis": 1789200000000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:烯烃",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-chem-x3c2-alkane-chemistry",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "烷烃的取代反应与燃烧",
+   "summaryMarkdown": "烷烃在光照下与卤素发生取代，能燃烧生成二氧化碳和水，但不能使酸性高锰酸钾溶液褪色。",
+   "applicabilityMarkdown": "判断烷烃能发生哪类反应、或书写取代与燃烧方程式的题。",
+   "contentMarkdown": "取代反应（光照）：CH₃CH₃ + Cl₂ →光照 CH₃CH₂Cl + HCl。\n燃烧通式：CₓH_y + (x + y/4)O₂ →点燃 xCO₂ + (y/2)H₂O。\n烷烃不能使酸性高锰酸钾溶液褪色——这正是它与烯烃、炔烃的鉴别点。",
+   "boundaryMarkdown": "烷烃的取代需要**光照**（与苯环取代需要催化剂不同）；取代产物是多种卤代烃的混合物，只写一种产物并不代表反应只发生这一步。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "《2027 5·3 A版 高考总复习 化学 精讲册》P110-P114、P120",
+   "reviewedAtEpochMillis": 1789200000000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:烷烃的化学性质",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-chem-x3c2-benzene-chemistry",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "苯的取代与加成反应",
+   "summaryMarkdown": "苯在催化剂下发生环上卤代、硝化与磺化，能与氢加成；但苯不能被酸性高锰酸钾溶液氧化。",
+   "applicabilityMarkdown": "判断苯能发生哪些反应、或书写苯的溴代与硝化方程式的题。",
+   "contentMarkdown": "卤代（苯环取代，催化剂）：苯 + 3Br₂(l) →FeBr₃ 1,3,5-三溴苯 + 3HBr↑。\n硝化：苯 + HNO₃ →浓硫酸,Δ 硝基苯 + H₂O。\n磺化：苯 + HO—SO₃H →Δ 苯磺酸 + H₂O。\n加成：苯 + 3H₂ →催化剂,Δ 环己烷；苯不能被酸性高锰酸钾溶液氧化。",
+   "boundaryMarkdown": "苯的取代要催化剂（FeBr₃、浓硫酸）而**不是光照**；「苯不能被酸性高锰酸钾氧化」是它与烯烃、炔烃的关键区别。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "《2027 5·3 A版 高考总复习 化学 精讲册》P110-P114、P120",
+   "reviewedAtEpochMillis": 1789200000000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:苯的化学性质",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-chem-x3c2-benzene-geometry",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "苯分子的空间结构与原子共面共线判断",
+   "summaryMarkdown": "苯是平面结构，一个苯环至少 12 个原子共平面；单键可旋转、双键与三键不能旋转，是共面判断的核心依据。",
+   "applicabilityMarkdown": "判断有机物分子中最多/最少有多少原子共面或共线、或判断「一定共面」的题。",
+   "contentMarkdown": "基础模型：甲烷正四面体、乙烯平面、乙炔直线、苯平面、甲醛平面。\n结论：结构中若存在饱和碳原子，则分子中所有原子一定不共面；存在 1 个苯环至少有 12 个原子共平面；存在 1 个碳碳双键至少有 6 个原子共平面。\n两条规律：定平面规律（共平面的不在同一直线上的 3 个原子处于另一平面时，两平面必定重叠，两平面内所有原子必定共平面）；定直线规律（直线形分子中有 2 个原子处于某一平面内时，该分子所有原子也在此平面内）。",
+   "boundaryMarkdown": "单键可以旋转、双键与三键不能旋转（对空间位置有「定格」作用）；环状结构中直接参与成环的单键一般也不能旋转——转动单键能让两个平面重合，但改变不了已定格的键。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "《2027 5·3 A版 高考总复习 化学 精讲册》P110-P114、P120",
+   "reviewedAtEpochMillis": 1789200000000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:苯分子的空间结构",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-che-v-51f4799f",
+   "subject": "CHEMISTRY",
+   "type": "REPRESENTATION_GUIDE",
+   "title": "醚的官能团与结构通式",
+   "summaryMarkdown": "醚键由氧原子连接两个烃基构成，通式R—O—R′；氧两侧均为碳是与醇酚的本质区别",
+   "applicabilityMarkdown": "官能团识别与有机物分类",
+   "contentMarkdown": "①定义：醚可看作水分子中两个氢原子被烃基取代的产物，也可看作醇羟基上的氢被烃基取代的产物，两个烃基可以相同也可以不同。②官能团：醚键（写作 —C—O—C—，即碳—氧—碳单键骨架），氧原子两侧均连烃基碳原子，这是与醇（C—O—H）最本质的区别。③结构通式：R—O—R′，如CH3—O—CH3（甲醚）、CH3—O—CH2CH3（甲乙醚）、CH3CH2—O—CH2CH3（乙醚）。④精讲册官能团分类表中，醚与烯烃、炔烃、卤代烃、醇和酚、醛、酮、羧酸、酯、胺、酰胺并列，同属按官能团划分的一类有机物。⑤判断要点：只要分子中含有两端都连碳的醚键，即可判定该物质属于醚。",
+   "boundaryMarkdown": "醚键两端必须都连碳原子；氧上若还连氢则属于醇或酚，不可当作醚",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "五三化学精讲册 P0113（书内页码 110）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:醚的结构与性质",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-che-v-4e55b441",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "酚羟基保护：成醚与酸性复原",
+   "summaryMarkdown": "酚羟基易被氧化，合成中先用CH3I或(CH3)2SO4把—OH变为—OCH3，最后用HI复原",
+   "applicabilityMarkdown": "有机合成中官能团的保护",
+   "contentMarkdown": "①精讲册\"官能团的保护\"表：因酚羟基易被氧化，所以在氧化其他基团前可以先使其与 CH3I 或 (CH3)2SO4 反应，把 —OH 转变为 —OCH3。②反应实质：酚羟基与卤代烃或硫酸酯发生取代反应，生成芳香醚，即用醚键 —C—O—C— 取代了原来的 —O—H，使酚羟基被保护起来；此时该位置不再具有酚羟基的还原性和弱酸性。③复原方法：待氧化等其他步骤完成后再加 HI，使醚键断裂、甲基离去，—OCH3 变回 —OH。④同类保护对照：碳碳双键可用 HCl 等加成保护、之后再消去复原；氨基可先用乙酸酐转成 —NHCOCH3、氧化后再水解复原；醛基可先转成缩醛结构、待氧化后再水解变回醛基。⑤这一组\"成醚—断醚\"是醚类在有机合成中最典型的两步用法，也是考查官能团保护的常见素材。",
+   "boundaryMarkdown": "保护产物是醚（—OCH3）而不是酮或酯；复原必须用强酸断醚，碱不能使—OCH3变回—OH",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "五三化学精讲册 P0132（书内页码 129）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:醚的结构与性质",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-che-v-47c45f2e",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "脂肪烃的通式与物理性质递变",
+   "summaryMarkdown": "烷烃CnH2n+2、单烯烃CnH2n、单炔烃CnH2n—2；碳数≤4为气，支链多沸点低",
+   "applicabilityMarkdown": "烃的分类与性质比较",
+   "contentMarkdown": "①通式：烷烃 CnH2n+2（n≥1）；单烯烃 CnH2n（n≥2）；单炔烃 CnH2n—2（n≥2）。②物理性质递变：常温下碳原子数≤4 的烃为气体；随碳原子数增多，熔、沸点升高；碳原子数相同时支链越多，熔、沸点越低；密度均比水小，且随碳原子数增多而增大；均难溶于水。③注意：新戊烷常温下为气体。④化学性质差异：烷烃光照下与 Cl2 取代；烯烃在高温下也能与 Cl2 发生取代，如 CH3CH=CH2+Cl2 —Δ→ CH2ClCH=CH2+HCl，并能与 Br2、HCl、H2O 加成，炔烃能加成与加聚。⑤氧化性差异：烷烃不能使酸性高锰酸钾溶液褪色，烯烃、炔烃可以，可用于鉴别。",
+   "boundaryMarkdown": "常温下≤4个碳的烃才是气体；烷烃不能使酸性KMnO4褪色，判断时勿混",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "五三化学精讲册 P0116（书内页码 113）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:脂肪烃的结构和性质",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-che-v-f8ee68cc",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "卤代烃中卤素原子的检验方法",
+   "summaryMarkdown": "先加NaOH水溶液加热水解，再加稀硝酸酸化，最后加AgNO3由沉淀颜色判定卤素",
+   "applicabilityMarkdown": "卤素原子种类检验",
+   "contentMarkdown": "①步骤（精讲册流程）：取卤代烃 RX，先加 NaOH 水溶液并加热使其水解；再滴加稀硝酸酸化；最后加入 AgNO3 溶液，观察沉淀颜色。②现象与结论：若产生白色沉淀，则 X 是氯原子；若产生浅黄色沉淀，则 X 是溴原子；若产生黄色沉淀，则 X 是碘原子。③酸化顺序的原因：水解液中含过量的 NaOH，若不先中和，AgNO3 会与 NaOH 生成棕黑色的 Ag2O 沉淀，干扰对卤化银沉淀颜色的判断，所以必须先加稀硝酸酸化。④注意用稀硝酸而不用稀硫酸，因为硫酸会引入 SO4^2-，同样干扰检验。⑤该方法适用于卤代烃及一切能水解释放卤素离子的含卤有机物。",
+   "boundaryMarkdown": "必须先酸化再加AgNO3；酸化用稀硝酸而不是稀硫酸",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "五三化学精讲册 P0118（书内页码 115）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:为了测定某卤代烃分子中所含有的卤素原子种类-可按下列步骤进行实验",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-che-v-ced2d216",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "苯酚的弱酸性与酸性强弱比较",
+   "summaryMarkdown": "苯酚酸性弱于碳酸强于HCO3-，故苯酚钠通CO2只得NaHCO3，遇FeCl3显紫色",
+   "applicabilityMarkdown": "酚的性质与酸性比较",
+   "contentMarkdown": "①结构：苯酚是羟基与苯环直接相连形成的化合物，最简单的酚为苯酚，分子式 C6H6O，结构简式可写为 C6H5—OH，官能团为 —OH。②物理性质：纯净的苯酚是无色晶体，易溶于乙醇等有机溶剂，常温下在水中溶解度不大，温度高于 65℃ 时能与水混溶；久置的苯酚呈粉红色，是部分苯酚被空气中的氧气氧化所致。③弱酸性：苯酚能电离出 H+ 而显弱酸性，俗称石炭酸，酸性很弱，不能使紫色石蕊溶液变红；与钠反应生成苯酚钠和 H2；与 NaOH 反应生成苯酚钠和水。④酸性强弱：H2CO3>苯酚>HCO3—，所以向苯酚钠溶液中通入 CO2 只生成苯酚和 NaHCO3，不能生成 Na2CO3；苯酚与 Na2CO3 反应生成苯酚钠和 NaHCO3，不能生成 CO2。⑤取代与显色：与浓溴水反应生成三溴苯酚白色沉淀，遇 FeCl3 溶液显紫色，可用于检验酚羟基。",
+   "boundaryMarkdown": "苯酚不能使石蕊变红，也不与NaHCO3反应；通CO2入苯酚钠只能得到NaHCO3",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "五三化学精讲册 P0119（书内页码 116）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:苯酚的化学性质",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-che-v-01230ccc",
+   "subject": "CHEMISTRY",
+   "type": "MISCONCEPTION_GUIDE",
+   "title": "醛基与碳碳双键共存时的检验顺序",
+   "summaryMarkdown": "必须先用弱氧化剂氧化醛基、酸化后再用酸性KMnO4或溴水验双键，颠倒顺序会误判",
+   "applicabilityMarkdown": "官能团检验顺序",
+   "contentMarkdown": "①易错情境：当有机物分子中同时存在醛基和碳碳双键时，若直接加酸性 KMnO4 溶液或溴水，两者都会被还原而褪色，无法说明碳碳双键是否真实存在。②正确顺序（精讲册原文）：要检验碳碳双键，应先用弱氧化剂（银氨溶液或新制 Cu(OH)2）将醛基氧化，酸化后再用酸性 KMnO4 溶液或溴水检验碳碳双键。③原理：醛基的还原性强于碳碳双键，弱氧化剂只氧化醛基而不与碳碳双键反应，先\"除掉\"醛基再用强氧化剂才能确认双键存在。④中间酸化一步不可省：银氨溶液与新制 Cu(OH)2 均呈碱性，不酸化会中和酸性 KMnO4 溶液而影响现象判断。⑤对比记忆：银镜反应生成银镜、与新制 Cu(OH)2 生成砖红色 Cu2O 沉淀都只对醛基（含甲酸、甲酸酯、葡萄糖等）有效，酮不能发生。",
+   "boundaryMarkdown": "先氧化醛基、再酸化、后检验双键；顺序颠倒会把醛基的还原性误算成碳碳双键",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "五三化学精讲册 P0121（书内页码 118）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:醛和酮的结构和性质易混易错点",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-che-v-f8c4df32",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "糖类的组成与还原性判断",
+   "summaryMarkdown": "糖类是多羟基醛、多羟基酮及其脱水缩合物；葡萄糖与麦芽糖有还原性，蔗糖与多糖没有",
+   "applicabilityMarkdown": "糖类性质与检验",
+   "contentMarkdown": "①概念：从分子结构上看，糖类是多羟基醛、多羟基酮和它们的脱水缩合物，可分为单糖、低聚糖（包括二糖）和多糖。②单糖：葡萄糖分子式 C6H12O6，结构简式 CH2OH(CHOH)4CHO，官能团为 —OH、—CHO；果糖分子式也是 C6H12O6，结构简式 CH2OH(CHOH)3COCH2OH，官能团为 —OH 和酮羰基；二者互为同分异构体。③葡萄糖的性质：能与新制 Cu(OH)2 和银氨溶液反应（还原性）；能与 H2 加成生成己六醇；在酒化酶作用下发酵生成乙醇，C6H12O6 —酒化酶→ 2C2H5OH+2CO2↑。④二糖：蔗糖与麦芽糖分子式均为 C12H22O11，互为同分异构体，都能水解；蔗糖不含醛基，麦芽糖含有醛基，属于还原性糖。⑤多糖：淀粉与纤维素均可表示为 (C6H10O5)n，n 值不确定，二者均为混合物且不互为同分异构体；都能水解且最终产物均为葡萄糖。",
+   "boundaryMarkdown": "二糖与多糖水解最终都生成葡萄糖；但蔗糖、淀粉、纤维素本身不是还原性糖",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "五三化学精讲册 P0126（书内页码 123）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:糖类的结构和性质",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-phy-v-27ffb1e3",
+   "subject": "PHYSICS",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "饱和汽与饱和汽压",
+   "summaryMarkdown": "汽液动态平衡时汽的压强叫饱和汽压；同温度下饱和汽压与体积无关，温度升高饱和汽压增大，湿度用相对湿度描述。",
+   "applicabilityMarkdown": "判断饱和汽压随温度的变化与相对湿度计算。",
+   "contentMarkdown": "①动态平衡：在密闭容器中，液面上同时进行蒸发和液化，当单位时间内从液面飞出的分子数与回到液体中的分子数相等时，汽与液达到动态平衡。②饱和汽：与同种液体的液态处于动态平衡的汽叫作饱和汽，它的压强叫作饱和汽压。③饱和汽压随温度变化：温度升高时分子的平均动能增大，单位时间内从液面飞出的分子数增多，饱和汽压随之增大（同一种液体的饱和汽压只与温度有关）。④同一温度下饱和汽压与汽的体积无关：体积被压缩时部分汽液化为液体，汽的密度与压强保持不变，因此不能用玻意耳定律处理饱和汽。⑤未饱和汽：压强小于同温度下饱和汽压的汽叫作未饱和汽，它可以通过降温或减小体积趋于饱和。⑥湿度：空气中所含水蒸气的压强与同温度下水的饱和汽压之比叫作相对湿度，表达式为B＝（p／p_s）×100%；当水蒸气的压强等于同温度下的饱和汽压时相对湿度为100%，此时对应的温度叫露点。",
+   "boundaryMarkdown": "饱和汽压只由液体种类和温度决定、与体积无关；涉及饱和汽时不能套用气体实验定律。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-physics:physics",
+   "sourceLocator": "非五三页面转写：五三物理精讲册第十五章（P179–P192／内文页172–185）未收录饱和汽；据人教版选择性必修三第二章（节点 sourceLocator）补写，相对湿度公式经外部来源核对",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:饱和汽",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-phy-v-50c0b75c",
+   "subject": "PHYSICS",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "布朗运动与扩散现象",
+   "summaryMarkdown": "悬浮微粒的无规则运动反映液体分子的热运动，微粒越小、温度越高越明显；扩散直接反映分子的热运动。",
+   "applicabilityMarkdown": "区分分子运动与微粒运动、判断实验现象。",
+   "contentMarkdown": "①分子热运动：分子在做永不停息的无规则运动。②扩散现象：相互接触的不同物质彼此进入对方的现象；扩散现象直接反映了分子的热运动，温度越高扩散越快。③布朗运动：悬浮在液体或气体中的微粒的无规则运动。④实质：布朗运动是花粉或炭颗粒（等小颗粒）的无规则运动，反映了液体分子的无规则运动；它不是分子本身的运动，而是分子热运动的间接体现。⑤影响因素：微粒越小、温度越高，布朗运动越明显。⑥注意：显微镜下看到的是固体小颗粒的运动而不是分子运动；颗粒越小、温度越高，来自各方向分子碰撞的不平衡性越显著，运动越明显。",
+   "boundaryMarkdown": "布朗运动的主体是悬浮微粒而不是分子；它只能间接说明分子在运动。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-physics:physics",
+   "sourceLocator": "五三物理精讲册 P179（内文页172）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:布朗运动",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-phy-v-00e44286",
+   "subject": "PHYSICS",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "分子力与分子势能随间距的变化",
+   "summaryMarkdown": "r＜r₀时表现为斥力，r＝r₀时分子力为零且分子势能最小，r＞r₀时表现为引力，r＞10r₀时可忽略。",
+   "applicabilityMarkdown": "判断分子力方向、分子力做功与分子势能变化。",
+   "contentMarkdown": "①当r＜r₀时，F随r增大而减小，表现为斥力；r增大时F做正功，分子势能E_p减小。②当r＝r₀时，F＝0，此时E_p最小且小于0。③当r＞r₀时，r增大F先增大后减小，表现为引力；r增大时F做负功，E_p增大。④当r＞10r₀时，可近似看作F＝0，E_p＝0。⑤图像特征：E_p随r变化的曲线极小值出现在r＝r₀处；分子势能与重力势能、弹性势能、电势能类似，都是与某种力对应、由相对位置决定的能量。⑥易错：分子势能为0与分子势能最小含义不同，前者与选择的零势能面有关，后者的位置一定在r＝r₀处。",
+   "boundaryMarkdown": "r＝r₀是分子力为零、分子势能最小的位置，不要把分子力先增大后减小误用到r＜r₀段。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-physics:physics",
+   "sourceLocator": "五三物理精讲册 P180（内文页173）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:分子间的作用力与分子间距离的关系",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-phy-v-28554957",
+   "subject": "PHYSICS",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "晶体与非晶体的比较",
+   "summaryMarkdown": "单晶体外形规则、物理性质各向异性；多晶体和非晶体各向同性；只有晶体有确定熔点。",
+   "applicabilityMarkdown": "判断晶体与非晶体、解释各向异性。",
+   "contentMarkdown": "①外形：单晶体规则，多晶体不规则，非晶体不规则。②熔点：单晶体和多晶体有确定熔点，非晶体没有确定熔点。③物理性质：单晶体各向异性，多晶体各向同性，非晶体各向同性。④微观结构：单晶体的原子（或分子、离子）按一定的规则排列，具有空间上的周期性；多晶体由许多单晶体杂乱无章地组合而成；非晶体的排列不规则、无空间上的周期性。⑤典型物质：单晶体如单晶硅、单晶锗；多晶体如蔗糖块、铜；非晶体如玻璃、蜂蜡、松香。⑥提分关键：凡是具有确定熔点的物体必定是晶体，反之必是非晶体；单晶体具有各向异性，但并不是在各种物理性质上都表现出各向异性；晶体和非晶体在一定条件下可以相互转化。",
+   "boundaryMarkdown": "判断顺序是先看有无确定熔点再谈各向异性；多晶体有确定熔点但各向同性。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-physics:physics",
+   "sourceLocator": "五三物理精讲册 P180（内文页173）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:晶体",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-phy-v-f945cb6e",
+   "subject": "PHYSICS",
+   "type": "DERIVATION",
+   "title": "气体压强的微观解释与推导",
+   "summaryMarkdown": "压强由分子数密度与分子平均速率共同决定；由动量定理可推出p＝2Nmv／（SΔt）。",
+   "applicabilityMarkdown": "定性分析气体压强的变化、解释微观原因。",
+   "contentMarkdown": "①产生原因：气体中大量分子做无规则运动时对器壁频繁碰撞，形成对器壁各处均匀、持续的压力。②决定因素：气体分子的数密度和分子的平均速率（温度）。③推导：设气体分子质量为m、与器壁碰撞时的速度大小为v，弹性碰撞后动量反向，碰撞前后动量大小均为mv；设Δt时间内有N个气体分子撞击器壁，由动量定理得−FΔt＝Nm（−v）−Nmv，即F＝2Nmv／Δt；器壁单位面积上受到的压力就是气体压强，p＝F／S＝2Nmv／（SΔt）。④因果链：体积V减小则气体分子的数密度N／V增大，单位时间内撞击单位面积的分子数增多；温度T升高则分子平均速率增大，每个分子的撞击力度增大；二者都使压强p增大。⑤形象理解：气体压强是单位时间单位面积上气体分子的撞击次数与一次撞击的平均作用力的乘积。",
+   "boundaryMarkdown": "压强变化要同时看分子数密度和分子平均速率，不能说成分子间斥力变大。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-physics:physics",
+   "sourceLocator": "五三物理精讲册 P182（内文页175）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:气体压强",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-phy-v-38b8f844",
+   "subject": "PHYSICS",
+   "type": "METHOD_MODEL",
+   "title": "玻璃管-液柱模型的分析方法",
+   "summaryMarkdown": "热学对象是封闭气体、力学对象是液柱；核心方程p_下＝p_上＋ρgh，h为两液面间的高度差。",
+   "applicabilityMarkdown": "液柱封闭气体的压强与状态变化计算。",
+   "contentMarkdown": "①两个研究对象：热学对象是被液柱封闭的气体，依据气体实验定律或理想气体状态方程列方程；力学对象是液柱，对它进行受力分析并列相关方程。②两者的区别：连通的气体压强处处相等，液体的压强与该位置的高度有关。③核心方程：一段液柱下表面处的压强等于液柱上表面处的压强加上由于液柱重力产生的压强，即p_上＋ρgh＝p_下；其中h是液柱上、下两液面间的高度差，而不是液柱的长度。④基本步骤：找到大气与液柱的接触面，列出该液面处压强表达式；找到封闭气体与液柱的接触面，结合气体实验定律列出该液面的压强表达式；联立两液面间的压强关系方程求解。⑤求压强的三种方法：力平衡法（取与气体接触的液柱为研究对象，由受力平衡结合p＝F／S求压强）、等压面法（连通器中同种液体同一深度处压强相等，p＝p₀＋ρgh）、液片法（取假想液片，两侧压强相等）。⑥加速运动系统中取与气体接触的液柱为研究对象，用牛顿第二定律列方程。",
+   "boundaryMarkdown": "公式中的h是两液面高度差而不是液柱长度；压强的单位要统一。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-physics:physics",
+   "sourceLocator": "五三物理精讲册 P184（内文页177）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:液柱模型",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-phy-v-c1e1910a",
+   "subject": "PHYSICS",
+   "type": "METHOD_MODEL",
+   "title": "气体变质量问题的等效处理",
+   "summaryMarkdown": "把打气、灌气、漏气、抽气等变质量问题转化为总质量不变的定质量问题，用分态式或玻意耳定律列方程。",
+   "applicabilityMarkdown": "打气、抽气、漏气、分装类问题。",
+   "contentMarkdown": "①一个思想：把变质量问题转化为定质量问题。②巧选研究对象：将问题涉及的全部气体选为研究对象，这些气体状态不管怎样变化，其总质量都不变。充气（打气）时将即将充进容器内的气体和容器内的原有气体构成的整体作为研究对象；灌气（分装）时把大容器中的剩余气体和多个小容器中的气体构成的整体作为研究对象；漏气时选容器内剩余气体和漏出气体构成的整体作为研究对象；抽气时将每次抽气过程中抽出的气体和剩余气体构成的整体作为研究对象。③选择适当的方程：应用理想气体状态方程的分态式p₁V₁／T₁＋p₂V₂／T₂＋…＝p₁′V₁′／T₁′＋p₂′V₂′／T₂′＋…求解，或巧妙应用玻意耳定律p₁V₁＋p₂V₂＋…＝pV。④一个流程：审（审清题意、明确物理过程，找出初态、末态和中间态）→定（确定变质量问题类型，选定合适的研究对象）→列（找出各个状态的气体状态参量，应用理想气体状态方程或玻意耳定律列出适当方程，联立求解）。",
+   "boundaryMarkdown": "研究对象必须选全部相关气体使总质量不变；温度不变时才可用玻意耳定律的分态式。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-physics:physics",
+   "sourceLocator": "五三物理精讲册 P188（内文页181）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:变质量问题的处理思想-等效",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-phy-v-ab67d6c7",
+   "subject": "PHYSICS",
+   "type": "MISCONCEPTION_GUIDE",
+   "title": "两类永动机与热力学第二定律",
+   "summaryMarkdown": "第一类永动机违背能量守恒定律；第二类永动机违背热力学第二定律，热量不能自发地从低温物体传到高温物体。",
+   "applicabilityMarkdown": "判断自发过程的方向、识别永动机类错误说法。",
+   "contentMarkdown": "①第一类永动机是不可能制成的，它违背了能量守恒定律。②第二类永动机是不可能制成的，它违背了热力学第二定律（易错点：说成违背能量守恒定律）。③两种表述：克劳修斯表述为热量不能自发地从低温物体传到高温物体；开尔文表述为不可能从单一热库吸收热量，使之完全变成功，而不产生其他影响。④方向性实例：热量Q能自发地从高温物体传给低温物体，不能自发地从低温物体传给高温物体；功能自发地完全转化为热，热不能自发地完全转化为功；气体体积V₁能自发膨胀到V₂（V₁＜V₂），不能自发收缩；不同气体A和B能自发混合，不能自发分离。⑤易错：一定质量的理想气体吸收热量时温度不一定升高（可能同时对外做功）；压缩气体时体积越小越困难，是因为气体分子数密度增大使压强增大，而不是分子间斥力随距离减小而增大。",
+   "boundaryMarkdown": "不违背能量守恒不等于可以实现；第二类永动机违反的是热力学第二定律。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-physics:physics",
+   "sourceLocator": "五三物理精讲册 P190（内文页183）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:热力学第二定律",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-phy-v-547a4d86",
+   "subject": "PHYSICS",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "光电效应的实验规律",
+   "summaryMarkdown": "存在截止频率、饱和电流与遏止电压，光电效应具有瞬时性；截止频率只与金属自身性质有关。",
+   "applicabilityMarkdown": "判断光电效应能否发生及光电流的变化。",
+   "contentMarkdown": "①光电效应：照射到金属表面的光能使金属中的电子从表面逸出的现象，逸出的电子叫作光电子。②存在截止频率ν_c（又称极限频率）：当入射光的频率减小到某一数值ν_c时，光电流消失；截止频率只与金属自身的性质有关，与入射光强弱无关。③存在饱和电流：光照条件不变的情况下，光电流随电压的增大而增大，但最终会趋于一个饱和值，此后即使电压再增大电流也不会增大；对一定频率的光，入射光越强，饱和电流越大。④存在遏止电压U_c：使光电流减小到0的反向电压；遏止电压的大小取决于入射光的频率，与光强无关，最大初动能E_k＝eU_c。⑤具有瞬时性：当频率超过截止频率ν_c时，无论入射光怎样微弱，照到金属时都会立即产生光电流。",
+   "boundaryMarkdown": "截止频率与遏止电压由频率决定，饱和电流由光强决定，两者不要混。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-physics:physics",
+   "sourceLocator": "五三物理精讲册 P193（内文页186）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:光电效应",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-phy-v-b2f2ff7a",
+   "subject": "PHYSICS",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "玻尔原子理论与能级跃迁",
+   "summaryMarkdown": "轨道半径r_n＝n²r₁、能量E_n＝E₁／n²；跃迁满足hν＝|E_初−E_末|，分自发跃迁与受激跃迁。",
+   "applicabilityMarkdown": "能级跃迁、光子频率与能量的计算。",
+   "contentMarkdown": "①轨道量子化与定态：电子绕核运动的可能轨道不是任意的，各可能轨道的半径r_n＝n²r₁（n＝1、2、3、…），r₁为基态轨道半径；原子只能处于一系列不连续的、稳定的能量状态（定态），其能量与基态能量的关系为E_n＝E₁／n²。②频率条件：原子在两个定态之间跃迁时，将辐射（或吸收）一定频率的光子，光子的能量hν＝|E_初−E_末|。③自发跃迁：高能级到低能级，释放能量、放出光子，光子的频率ν＝ΔE／h＝（E_高−E_低）／h。④受激跃迁：低能级到高能级，吸收能量；吸收光子的能量必须恰好等于能级差，即hν＝ΔE；碰撞、加热等只要入射粒子能量大于或等于能级差即可，即E_外≥ΔE。⑤氢原子能级图：基态E₁＝−13.6 eV，激发态依次为−3.4 eV、−1.51 eV、−0.85 eV、−0.54 eV，n→∞时E＝0（电离态）。",
+   "boundaryMarkdown": "光子激发要求能量恰好等于能级差，碰撞激发只要能量不小于能级差；能量不足时不被吸收。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-physics:physics",
+   "sourceLocator": "五三物理精讲册 P196（内文页189）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:玻尔模型",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-che-v-4de1dbc4",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "胶体的性质与氢氧化铁胶体制备",
+   "summaryMarkdown": "胶体区别于其他分散系的本质是分散质粒子直径，丁达尔效应可用于鉴别",
+   "applicabilityMarkdown": "分散系分类与胶体性质判断",
+   "contentMarkdown": "①组成上分散系由分散质和分散剂组成，按分散质粒子直径分为溶液、胶体和浊液，分界值为1 nm和100 nm；按分散剂状态胶体分为液溶胶、气溶胶和固溶胶。②本质特征：胶体粒子能透过滤纸但不能透过半透膜，这是胶体与其他分散系的本质区别。③性质与应用：丁达尔效应是胶体粒子对光的散射，用于鉴别溶液和胶体；电泳用于静电除尘；聚沉可通过加入电解质溶液、加入含带相反电荷胶粒的胶体、加热或搅拌实现，用于明矾净水和卤水点豆腐。④制备：将饱和FeCl3溶液滴入沸水中，继续加热至液体变为红褐色，Fe3+ + 3H2O =(Δ) Fe(OH)3(胶体) + 3H+。",
+   "boundaryMarkdown": "胶粒不一定带电，如淀粉胶体中胶粒不带电；胶体本身呈电中性",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "五三化学精讲册 P0003（书内页码 1）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:胶体",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-che-v-b8f125b0",
+   "subject": "CHEMISTRY",
+   "type": "REPRESENTATION_GUIDE",
+   "title": "电离方程式的书写规则",
+   "summaryMarkdown": "强电解质用等号、弱电解质用可逆号，多元弱酸分步写、多元弱碱一步写",
+   "applicabilityMarkdown": "电离方程式的书写与正误判断",
+   "contentMarkdown": "①强弱电解质与符号：强电解质在水溶液中完全电离，电离方程式用等号连接；弱电解质在水溶液中部分电离，电离方程式用可逆号连接。②多元弱酸分步电离分步书写，如碳酸：H2CO3 ⇌ H+ + HCO3-（主）、HCO3- ⇌ H+ + CO32-（次）。③多元弱碱分步电离一步书写，如Fe(OH)3 ⇌ Fe3+ + 3OH-。④酸式盐的电离：强酸的酸式盐中酸式酸根离子完全电离，如NaHSO4 = Na+ + H+ + SO42-；弱酸的酸式盐中酸式酸根离子不完全电离，如NaHCO3 = Na+ + HCO3-。⑤熔融状态下NaHSO4 = Na+ + HSO4-。",
+   "boundaryMarkdown": "单质和混合物既不是电解质也不是非电解质；SO2、CO2、NH3自身不电离，属于非电解质",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "五三化学精讲册 P0014（书内页码 12）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电解质的电离",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-che-v-e9ff575c",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "与量有关离子方程式的书写方法",
+   "summaryMarkdown": "少量物质定为1 mol按组成配比书写，连续型分段写，竞争型按先后顺序写",
+   "applicabilityMarkdown": "与量有关的离子方程式书写",
+   "contentMarkdown": "①配比型（少定多变法）：根据相对量把少量物质定为1 mol，若少量物质中有两种或两种以上离子参加反应，则参加反应的离子的物质的量之比与物质的组成之比相符。②示例：向Ca(HCO3)2溶液中加入过量NaOH溶液，少量物质Ca(HCO3)2拆出的离子为Ca2+和HCO3-，按组成配比补上过量物质充分反应所需的离子2OH-，得Ca2+ + 2HCO3- + 2OH- = CaCO3↓ + CO32- + 2H2O。③连续型：如H2S与NaOH溶液反应，NaOH不足时生成HS-，NaOH过量时继续反应生成S2-，总反应为H2S + 2OH- = S2- + 2H2O；CO2与NaOH、Na2CO3与盐酸同理。④竞争型：溶液中同时存在多个可能发生的反应且有先后顺序时，按反应的先后顺序书写；先后顺序不明确时可先假设，若生成物不和其他物质反应则假设正确，否则需调整顺序。",
+   "boundaryMarkdown": "少量物质定为1 mol后，过量物质中参加反应的离子量由少量物质的组成决定，不能按过量物质自身的配比书写",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "五三化学精讲册 P0016（书内页码 14）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:配比型离子方程式的书写-少定多变法",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-che-v-68474054",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "氧化还原反应的五条基本规律",
+   "summaryMarkdown": "守恒、强弱、价态、难易、先后五条规律，用于判断产物与反应顺序",
+   "applicabilityMarkdown": "判断产物价态与反应先后顺序",
+   "contentMarkdown": "①守恒规律：氧化剂得电子总数等于还原剂失电子总数，化合价升高总数等于化合价降低总数。②强弱规律：氧化性较强的氧化剂与还原性较强的还原剂反应，生成还原性较弱的还原产物和氧化性较弱的氧化产物。③价态规律：元素处于最高价态时只有氧化性，处于最低价态时只有还原性，处于中间价态时既有氧化性又有还原性；同种元素的高价态氧化低价态时遵循「高到高、低到低、只靠拢、不交叉」的规律；同种元素相邻价态间不发生氧化还原反应。④难易规律：越易失去电子的物质，失去后就越难得电子；越易得到电子的物质，得到后就越难失电子。⑤先后规律：溶液中同时存在几种浓度相差不大的还原剂时，加入一种氧化剂，还原性强的还原剂优先被氧化；溶液中同时存在几种浓度相差不大的氧化剂时，加入一种还原剂，氧化性强的氧化剂优先被还原。",
+   "boundaryMarkdown": "同种元素相邻价态间不发生氧化还原反应，如浓硫酸不能氧化SO2，Na2SO3与浓硫酸的反应属于复分解反应",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "五三化学精讲册 P0019（书内页码 17）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:氧化还原反应规律及其应用",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-che-v-dc7cffa1",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "碳酸钠与碳酸氢钠的性质与鉴别",
+   "summaryMarkdown": "从热稳定性、与盐酸反应的气泡先后、同浓度溶液的碱性三方面鉴别二者",
+   "applicabilityMarkdown": "碳酸钠与碳酸氢钠的鉴别与除杂",
+   "contentMarkdown": "①俗名与物理性质：Na2CO3俗称纯碱、苏打，NaHCO3俗称小苏打；二者均为白色固体、易溶于水，溶解度Na2CO3大于NaHCO3，溶于水时Na2CO3放热、NaHCO3吸热。②化学性质比较：水溶液均呈碱性，同浓度时碱性Na2CO3强于NaHCO3；热稳定性Na2CO3强于NaHCO3，2NaHCO3 =(Δ) Na2CO3 + CO2↑ + H2O；与盐酸反应均生成CO2，盐酸逐滴加入时NaHCO3先产生气泡。③相互转化：Na2CO3溶液中通入CO2或加入少量H+生成NaHCO3，NaHCO3固体加热或溶液中加入NaOH转化为Na2CO3。④鉴别方法：利用热稳定性不同，加热无明显变化的是Na2CO3，放出能使澄清石灰水变浑浊的无色无味气体的是NaHCO3；利用与酸反应生成气体的现象不同，立即产生气泡的是NaHCO3；利用溶液的酸碱性不同，测相同浓度溶液的pH，大者为Na2CO3。",
+   "boundaryMarkdown": "鉴别二者时要注意盐酸的滴加顺序，逐滴加入时NaHCO3先产生气泡，不能据此颠倒结论",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "五三化学精讲册 P0024（书内页码 22）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:碳酸钠与碳酸氢钠的相互转化",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-che-v-492ed554",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "二氧化硅的性质与用途",
+   "summaryMarkdown": "酸性氧化物，能与碱和碱性氧化物反应，也能与氢氟酸反应，用于制光导纤维",
+   "applicabilityMarkdown": "硅及其化合物的性质与试剂瓶选择",
+   "contentMarkdown": "①存在形式与物理性质：石英、水晶、玛瑙、沙子等的主要成分，常温下为固体，硬度大，熔、沸点高，不溶于水。②酸性氧化物的通性：SiO2 + 2NaOH = Na2SiO3 + H2O，盛有碱性物质的试剂瓶要用橡胶塞而不能用玻璃塞；SiO2 + CaO =(高温) CaSiO3。③特性：SiO2 + 4HF = SiF4↑ + 2H2O，可用于刻蚀玻璃，但不能据此认为SiO2是碱性氧化物或两性氧化物。④用途：制光导纤维、光学仪器等。⑤硅的制取：SiO2 + 2C =(1800~2000 ℃) Si(粗硅) + 2CO↑，粗硅再经Si + 3HCl =(300 ℃) SiHCl3 + H2、SiHCl3 + H2 =(1100 ℃) Si + 3HCl提纯得高纯硅；硅用作半导体材料，用于制造芯片和太阳能电池。",
+   "boundaryMarkdown": "SiO2能与氢氟酸反应但不能据此认为它是碱性氧化物或两性氧化物；硅酸不能由SiO2与水化合直接制得",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "五三化学精讲册 P0034（书内页码 32）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:二氧化硅",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-che-v-ce621032",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "二氧化硫的性质与检验顺序",
+   "summaryMarkdown": "既有酸性氧化物通性，又有还原性、氧化性和漂白性，与CO2混合时须先检后除",
+   "applicabilityMarkdown": "SO2的性质分析与SO2、CO2混合气体检验",
+   "contentMarkdown": "①物理性质：无色、有刺激性气味的气体，密度比空气大，易溶于水，通常状况下1体积水约溶解40体积SO2。②酸性氧化物的性质：与水反应生成H2SO3，与碱反应生成盐和水，与碱性氧化物反应生成相应的盐。③还原性：2SO2 + O2 =(催化剂、Δ) 2SO3；能被溴水氧化使溴水褪色，SO2 + Br2 + 2H2O = H2SO4 + 2HBr；能使酸性KMnO4溶液褪色。④氧化性：SO2 + 2H2S = 3S↓ + 2H2O。⑤漂白性：能使品红溶液褪色，加热后恢复原色。⑥实验室制法：Na2SO3 + H2SO4(浓) = Na2SO4 + SO2↑ + H2O。⑦SO2与CO2同时存在时的检验流程：用品红溶液检验SO2，用酸性KMnO4溶液除去SO2，再用品红溶液检验SO2是否除尽，最后用澄清石灰水检验CO2。",
+   "boundaryMarkdown": "检验CO2前必须先除尽SO2，因为SO2也能使澄清石灰水变浑浊而干扰CO2的检验",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "五三化学精讲册 P0038（书内页码 36）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:二氧化硫",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-che-v-56a99d9c",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "价层电子对互斥模型与空间结构",
+   "summaryMarkdown": "价层电子对数由σ键电子对数和孤电子对数决定，据此判断空间结构",
+   "applicabilityMarkdown": "分子或离子空间结构的判断",
+   "contentMarkdown": "①理论要点：价层电子对在空间上彼此相距最远时，排斥力最小，体系的能量最低。②公式法：价层电子对数 = σ键电子对数 + (1/2)(a - xb)，其中a为中心原子的价电子数，对于阳离子a = 中心原子价电子数 - 离子电荷数，对于阴离子a = 中心原子价电子数 + |离子电荷数|；x为与中心原子结合的原子数；b为与中心原子结合的原子最多能接受的电子数。③电子式或结构式法：写出电子式或结构式，观察σ键电子对数和中心原子上的孤电子对数，两者相加即可。④价层电子对数与空间结构的对应：价层电子对数为2时中心原子为sp杂化，模型为直线形；为3时中心原子为sp2杂化，模型为平面三角形；为4时中心原子为sp3杂化，模型为四面体形。",
+   "boundaryMarkdown": "价层电子对互斥模型名称与分子或离子的空间结构不等同，去掉孤电子对后才是分子的空间结构",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "五三化学精讲册 P0050（书内页码 48）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:价层电子对互斥模型",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-che-v-7b299c57",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "反应热与焓变及吸放热的判断",
+   "summaryMarkdown": "从能量高低与化学键两个角度判断吸放热并明确ΔH的符号规定与催化剂的作用",
+   "applicabilityMarkdown": "反应热与焓变的判断与表示",
+   "contentMarkdown": "①反应热是在等温条件下化学反应体系向环境释放或从环境吸收的热量；等压条件下进行的化学反应其反应热等于焓变，符号为ΔH，常用单位kJ·mol⁻¹。②从能量高低理解：吸热反应E(生成物)>E(反应物)、ΔH>0；放热反应E(生成物)<E(反应物)、ΔH<0；图中E₁为正反应的活化能，E₂为逆反应的活化能。③从化学键角度理解：旧化学键断裂吸收能量E₁，新化学键形成放出能量E₂；E₁>E₂时ΔH>0为吸热反应，E₁<E₂时ΔH<0为放热反应。④催化剂参与反应改变反应历程，降低活化能，增大反应速率（正、逆反应速率都增大），缩短达到平衡的时间，但不能改变反应热ΔH，不能使平衡移动，不能改变平衡常数K和平衡转化率α。",
+   "boundaryMarkdown": "催化剂只降低活化能而不改变ΔH；ΔH的正负由生成物与反应物的总能量相对大小决定。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "五三化学精讲册 P62",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:焓变",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-che-v-fd7a02f5",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "金属电化学腐蚀的类型与快慢规律",
+   "summaryMarkdown": "化学腐蚀与电化学腐蚀的对比、析氢与吸氧腐蚀的电极反应及腐蚀快慢的判断原则",
+   "applicabilityMarkdown": "金属腐蚀类型与腐蚀快慢判断",
+   "contentMarkdown": "①金属腐蚀的本质：金属原子失去电子变成金属阳离子。②化学腐蚀是金属与其表面接触到的干燥气体或非电解质液体等直接反应，无电流产生；电化学腐蚀是不纯的金属接触到电解质溶液发生原电池反应，较活泼的金属被腐蚀，有微弱电流产生；电化学腐蚀比化学腐蚀普遍得多，腐蚀速率更快。③以钢铁的腐蚀为例：析氢腐蚀的条件是水膜酸性较强，负极Fe－2e⁻=Fe²⁺，正极2H⁺+2e⁻=H₂↑，总反应Fe+2H⁺=Fe²⁺+H₂↑；吸氧腐蚀的条件是水膜酸性较弱或呈中性，正极O₂+2H₂O+4e⁻=4OH⁻，总反应2Fe+O₂+2H₂O=2Fe(OH)₂，吸氧腐蚀更普遍。④腐蚀快慢：电解原理引起的腐蚀>原电池原理引起的腐蚀>化学腐蚀>有防腐措施的腐蚀；同一金属在相同浓度的不同溶液中，强电解质溶液>弱电解质溶液>非电解质溶液；活动性不同的两种金属构成原电池两极时，活动性差别越大，活动性强的金属腐蚀越快。",
+   "boundaryMarkdown": "吸氧腐蚀比析氢腐蚀更普遍；比较腐蚀快慢时不要漏掉有防腐措施的腐蚀最慢。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "五三化学精讲册 P72",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:金属电化学腐蚀规律",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-che-v-f42c9a1f",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "化学反应速率大小的比较方法",
+   "summaryMarkdown": "归一法、比值法、条件法与平衡移动法比较不同物质表示的速率大小",
+   "applicabilityMarkdown": "反应速率大小的比较",
+   "contentMarkdown": "①归一法：不同物质表示的速率，换算为同一物质、同一单位表示的速率，再比较数值的大小。②比值法：比较v(A)/a、v(B)/b、v(C)/c、v(D)/d的值，比值越大速率越大。③条件法：同一反应在其他条件相同时，温度高、浓度大、压强大（气体）、使用正催化剂的速率大。④平衡移动法：当平衡正向移动时v(正)>v(逆)；当平衡逆向移动时v(正)<v(逆)。⑤易错提醒：不能用物质的量代替物质的量浓度计算速率；单位不统一时必须先换算；同一反应中各物质的速率之比等于化学计量数之比，只有换算为同一物质后才能比较大小。",
+   "boundaryMarkdown": "用不同物质表示同一反应的速率时，必须先化为同一物质、同一单位才能比较数值大小。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "五三化学精讲册 P82",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化学反应速率的比较",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-che-v-4f3b268e",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "改变条件对化学平衡的影响规律",
+   "summaryMarkdown": "浓度压强温度催化剂对平衡移动的影响及勒夏特列原理的分析流程",
+   "applicabilityMarkdown": "判断化学平衡的移动方向",
+   "contentMarkdown": "①浓度：增大反应物浓度或减小生成物浓度，平衡正向移动；减小反应物浓度或增大生成物浓度，平衡逆向移动。②压强（对有气体参加的反应）：反应前后气体分子数不等时，增大压强平衡向气体分子数减小的方向移动，减小压强平衡向气体分子数增大的方向移动；反应前后气体分子数相等时，改变压强平衡不移动。③温度：升高温度平衡向吸热反应方向移动，降低温度平衡向放热反应方向移动。④催化剂：同等程度地改变v正、v逆，平衡不移动。⑤充入无关气体：恒温恒容时总压强增大，各组分浓度不变，反应速率不变，平衡不移动；恒温恒压时总体积增大，各组分浓度等比例减小，平衡向气体分子数增大的方向移动。⑥判断平衡移动方向的思维流程：先分析反应特点（是否有气体参加、是否有固体或纯液体参加、反应前后气体体积是否变化、反应是吸热还是放热），再分析反应容器特点（恒温恒容还是恒温恒压），最后根据勒夏特列原理从温度、压强、浓度三方面判断。",
+   "boundaryMarkdown": "恒温恒容充入无关气体平衡不移动；气体分子数不变的反应改变压强时平衡不移动。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "五三化学精讲册 P84",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:外界条件对化学平衡的影响",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-che-v-9fade2cc",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "速率常数速率方程与平衡常数的关系",
+   "summaryMarkdown": "基元反应与复杂反应的速率方程、速率常数的影响因素及k正/k逆=K的推导",
+   "applicabilityMarkdown": "速率方程的书写与速率常数计算",
+   "contentMarkdown": "①基元反应是大多数化学反应分步完成中的每一步；基元反应aA(g)+bB(g)=cC(g)+dD(g)的速率可表示为v=kc^a(A)·c^b(B)，式中的k称为反应速率常数，k与浓度无关，但受温度、催化剂、固体表面性质等因素的影响。②基元反应的速率方程：v正=k正·c^a(A)·c^b(B)，v逆=k逆·c^c(C)·c^d(D)；基元反应的反应速率与反应物浓度以其化学计量数为指数的幂的乘积成正比。③复杂反应的速率方程由最慢的基元反应决定，如第一步A₂→2A·为慢反应、第二步2A·+B→A₂B为快反应，则总反应的速率方程为v=kc(A₂)，而不是v=kc(A₂)·c(B)。④速率常数与平衡常数的关系：基元反应平衡时v正=v逆，即k正·c^a(A)·c^b(B)=k逆·c^c(C)·c^d(D)，则k正/k逆=c^c(C)·c^d(D)/[c^a(A)·c^b(B)]=K。",
+   "boundaryMarkdown": "复杂反应的速率方程由最慢的基元反应（决速步）决定，不能按总反应方程式直接写出；k与浓度无关。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "五三化学精讲册 P89",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:速率常数和速率方程",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-che-v-ed37bb72",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "判断一元酸为弱酸的实验方法与结论",
+   "summaryMarkdown": "由pH、稀释后pH变化、中和碱的用量及与锌反应的速率等实验事实判断弱酸",
+   "applicabilityMarkdown": "强酸与弱酸的实验判断",
+   "contentMarkdown": "①测0.1 mol·L⁻¹的HA溶液的pH：若pH>1，则HA为弱酸。②测相同体积、相同pH的HA溶液和盐酸稀释相同倍数前后的pH变化：若HA溶液的pH变化比盐酸的小，则HA为弱酸。③测等体积、等pH的HA溶液和盐酸分别中和NaOH：若HA溶液消耗NaOH更多，则HA为弱酸。④测等体积、等物质的量浓度的HA溶液和盐酸分别与颗粒大小相同的锌粒反应：若HA溶液与锌粒反应更慢，则HA为弱酸。⑤其他事实：室温下NaR溶液的pH大于7；加热HR溶液时溶液的pH变小；0.01 mol·L⁻¹ HR溶液的pH=2.8；HR溶液中加少量NaR固体后pH变大，均可说明HR为弱酸。",
+   "boundaryMarkdown": "等pH、等体积的强酸与弱酸中和碱的能力不同，弱酸消耗的碱更多；稀释相同倍数时弱酸的pH变化更小。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "五三化学精讲册 P100",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:判断弱酸的三种方法",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-che-v-16b62da1",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "酸碱中和滴定的操作与终点判断",
+   "summaryMarkdown": "滴定管与指示剂的选择、滴定前的准备与滴定操作要点、终点判断与数据处理",
+   "applicabilityMarkdown": "中和滴定的操作与终点判断",
+   "contentMarkdown": "①仪器：酸式滴定管、碱式滴定管、滴定管夹、铁架台、烧杯、锥形瓶；滴定管0刻度在上，尖嘴部分无刻度，读数精确到0.01 mL，酸式滴定管带玻璃活塞，碱式滴定管带橡胶管、玻璃球。②滴定管的选择：酸性、氧化性溶液一般用酸式滴定管盛装，因为其易腐蚀橡胶；碱性溶液一般用碱式滴定管盛装，因为其易腐蚀玻璃，致使玻璃活塞无法打开。③指示剂的选择：不用石蕊作中和滴定的指示剂，因其颜色变化不明显；滴定终点为碱性时用酚酞、为酸性时用甲基橙、为中性时两者均可。④操作（以盐酸滴定待测NaOH溶液为例）：滴定前检漏→洗涤→润洗→装液→调液面→记录，锥形瓶加碱液→加指示剂；滴定中左手控制滴定管的活塞，右手摇动锥形瓶，眼睛注视锥形瓶内溶液颜色变化。⑤终点判断：滴入最后半滴标准液后溶液变色，且半分钟内不恢复原来的颜色。⑥数据处理：重复2～3次，求平均值后按c(NaOH)=c(HCl)·V(HCl)/V(NaOH)计算。",
+   "boundaryMarkdown": "锥形瓶不能润洗而滴定管必须润洗；读数要精确到0.01 mL；石蕊不能作中和滴定的指示剂。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "五三化学精讲册 P101",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:滴定操作",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-che-v-033df417",
+   "subject": "CHEMISTRY",
+   "type": "REPRESENTATION_GUIDE",
+   "title": "盐类水解离子方程式的书写规则",
+   "summaryMarkdown": "单水解用可逆号且不标气体沉淀符号、多元弱酸根分步书写与双水解方程式的配平步骤",
+   "applicabilityMarkdown": "水解离子方程式的书写",
+   "contentMarkdown": "①一般来说，盐类水解的程度不大，应该用可逆符号表示；盐类水解一般不会产生沉淀和气体，所以一般不用符号↓和↑。②多元弱酸盐的水解分步书写，如CO₃²⁻+H₂O⇌HCO₃⁻+OH⁻、HCO₃⁻+H₂O⇌H₂CO₃+OH⁻。③相互促进的水解反应：若水解产物均为容易脱离反应体系的溶解度较小的物质，则水解程度非常大、完全进行，应用等号并标“↑”“↓”，如Al³⁺+3HCO₃⁻=Al(OH)₃↓+3CO₂↑。④书写双水解离子方程式的步骤（以FeCl₃与Na₂CO₃溶液混合为例）：第一步写出反应的两种离子及产物（难溶物加↓），Fe³⁺+CO₃²⁻→Fe(OH)₃↓+CO₂↑；第二步配平电荷得2Fe³⁺+3CO₃²⁻→2Fe(OH)₃↓+3CO₂↑；第三步确定“H₂O”的位置并配平，因生成物中有H而反应物中无H，故H₂O为反应物，得2Fe³⁺+3CO₃²⁻+3H₂O=2Fe(OH)₃↓+3CO₂↑。",
+   "boundaryMarkdown": "单水解用可逆号且不标↓、↑；双水解进行到底时才用等号并标↓、↑，产物溶解度较大时仍用可逆号。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "五三化学精讲册 P103",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:盐类水解离子方程式的书写",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-che-v-e30845fa",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "溶液中粒子等量关系的三大守恒",
+   "summaryMarkdown": "电荷守恒、元素守恒、质子守恒的含义与典型示例以及三者之间的联立关系",
+   "applicabilityMarkdown": "粒子浓度等量关系的书写与判断",
+   "contentMarkdown": "①电荷守恒：溶液中阳离子所带正电荷总数等于阴离子所带负电荷总数；如NaHCO₃溶液中c(Na⁺)+c(H⁺)=c(HCO₃⁻)+2c(CO₃²⁻)+c(OH⁻)。②元素（物料）守恒：电解质溶液中某些离子发生电离或水解，但所含的某种元素在变化前后守恒；如0.1 mol·L⁻¹ NaHCO₃溶液中c(Na⁺)=c(HCO₃⁻)+c(CO₃²⁻)+c(H₂CO₃)=0.1 mol·L⁻¹。③质子守恒：分子或离子得到质子与失去质子的物质的量相等；如Na₂CO₃溶液中得质子过程为HCO₃⁻+H⁺←CO₃²⁻、H₂CO₃+2H⁺←CO₃²⁻，失质子过程为H₂O→H⁺+OH⁻，故c(HCO₃⁻)+2c(H₂CO₃)+c(H⁺)=c(OH⁻)。④三者关系：质子守恒式可由电荷守恒式与元素守恒式联立得到，如Na₂CO₃溶液中由元素守恒与电荷守恒式联立消去c(Na⁺)即得质子守恒式。",
+   "boundaryMarkdown": "质子守恒的基准态是溶液中大量存在的初始粒子；写电荷守恒时离子浓度要乘以其所带电荷数。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "五三化学精讲册 P107",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:溶液中粒子等量关系-三大守恒",
      "role": "PRIMARY"
     }
    ]
