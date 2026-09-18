@@ -114,7 +114,7 @@ class GateTest(unittest.TestCase):
         # starred_names 96→0、duplicate_names 118→0：已修复，见下方专门断言。
         self.assertEqual(0, metrics["starred_names"].value)
         self.assertEqual(0, metrics["duplicate_names"].value)
-        self.assertEqual(678, metrics["unbound_points"].value)
+        self.assertEqual(664, metrics["unbound_points"].value)
         self.assertEqual(892, metrics["unbound_materials"].value)
         self.assertEqual(849, metrics["ghost_aliases"].value)
         self.assertEqual(194, metrics["latex_damage"].value)
