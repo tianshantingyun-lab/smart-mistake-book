@@ -155,8 +155,12 @@ def write(judgments: list[dict]) -> dict:
     states = pl["states"]
     refs: dict[str, str] = {rel: st.get("output_ref", "") for rel, st in states.items()}
     existing_slugs: set[str] = set()
+    existing_targets: dict[str, str] = {}
     for sp in pack_io.sidecar_paths():
-        existing_slugs.update(m["slug"] for m in pack_io.load_json(sp)["materials"])
+        for m in pack_io.load_json(sp)["materials"]:
+            existing_slugs.add(m["slug"])
+            for b in m.get("bindings") or []:
+                existing_targets.setdefault(m["slug"], b["knowledgeNodeId"].split(":")[-1])
     changed_sidecars: dict[Path, dict] = {}
     sources_added: dict[str, list[str]] = {}
     done = 0
@@ -172,6 +176,11 @@ def write(judgments: list[dict]) -> dict:
         slug = f"ext-{SUBJ3[subject]}-{h}-{idx}{(r.get('midx') or '').strip()}"
         assert SAFE_SLUG.match(slug), slug
         if slug in existing_slugs:
+            prev = existing_targets.get(slug)
+            if prev != r["node_slug"]:
+                raise ValueError(
+                    f"slug 撞车：{slug} 已绑 {prev}，本行目标 {r['node_slug']}"
+                    "（同块被两行复用时必须在判定表里给后一行填 midx 后缀 b/c/d）")
             continue  # 幂等：材料已实际入库（以 sidecar 实况为准，状态漂移也能自愈）
         top_dir = r["chunk_rel"].split("/", 1)[0] if "/" in r["chunk_rel"] else r["chunk_rel"]
         sid = _source_id(top_dir, subject)

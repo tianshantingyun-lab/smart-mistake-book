@@ -4555,26 +4555,6 @@
    ]
   },
   {
-   "slug": "ext-che-9a101eff14-001b",
-   "subject": "CHEMISTRY",
-   "type": "METHOD_MODEL",
-   "title": "醛酮在有机合成中的应用",
-   "summaryMarkdown": "醛酮可与HCN加成增长碳链，含α-H的醛发生羟醛缩合生成α，β-不饱和醛，是常用成键反应。",
-   "applicabilityMarkdown": "醛酮性质与有机合成增碳反应",
-   "contentMarkdown": "①醛的氧化反应：能发生银镜反应(乙醛与银氨溶液水浴加热生成银镜)，也能与新制Cu(OH)2悬浊液反应生成砖红色Cu2O沉淀，两个反应都必须在碱性条件下进行。②醛、酮的还原反应：催化加氢生成相应的醇，故醛酮既能被氧化又能被还原。③醛、酮与含极性键的共价分子加成：与HCN加成得到α-羟基腈，水解后可得α-羟基酸，是增长碳链并引入官能团的常用方法。④羟醛缩合：含α-H的醛在稀碱(10% NaOH)溶液中与另一分子醛作用生成β-羟基醛，加热脱水得α，β-不饱和醛；丙酮与柠檬醛经此反应可合成α-紫罗兰酮和β-紫罗兰酮。⑤甲醛是常温下唯一呈气态的烃的含氧衍生物。",
-   "boundaryMarkdown": "银镜反应与新制Cu(OH)2的反应都必须在碱性条件下进行，酸会破坏两种试剂。",
-   "derivationKind": "REVIEWED_SYNTHESIS",
-   "sourceId": "desktop-src-c099d2d6fc:chemistry",
-   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学大一轮复习卓越讲义重难点/资料/（重点·方法·点拨）第58讲 醛、酮、羧酸、酯、酰胺- （学生版）.docx（块 9a101eff14-001）",
-   "reviewedAtEpochMillis": 1789739845765,
-   "bindings": [
-    {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:醛-酮在有机合成中的应用",
-     "role": "PRIMARY"
-    }
-   ]
-  },
-  {
    "slug": "ext-che-c16f7b5af8-013",
    "subject": "CHEMISTRY",
    "type": "MISCONCEPTION_GUIDE",
@@ -4835,26 +4815,6 @@
    ]
   },
   {
-   "slug": "ext-che-a18e148bcb-001b",
-   "subject": "CHEMISTRY",
-   "type": "CONCEPT_EXPLANATION",
-   "title": "氨基酸与蛋白质的结构性质",
-   "summaryMarkdown": "氨基酸含氨基和羧基而具两性，可脱水成肽；蛋白质由氨基酸缩聚而成，含C、H、O、N、S等元素。",
-   "applicabilityMarkdown": "氨基酸成肽与蛋白质组成",
-   "contentMarkdown": "①氨基酸的结构特点：分子中既含有氨基(—NH2)又含有羧基(—COOH)，α-氨基酸的通式为RCH(NH2)COOH，常见的有氨基乙酸(甘氨酸)、2-氨基丙酸(丙氨酸)、苯丙氨酸等。②氨基酸的主要性质：氨基显碱性、羧基显酸性，具有两性，既能与酸反应又能与碱反应。③成肽反应：两个氨基酸分子(可以相同也可以不同)彼此脱水缩合生成含有肽键的二肽，多个氨基酸分子脱水生成多肽，相对分子质量在10000以上并具有一定空间结构的多肽称为蛋白质。④蛋白质由不同氨基酸脱水缩聚形成，结构复杂，含有C、H、O、N、S等元素，属于天然有机高分子，水解的最终产物为α-氨基酸。⑤氨基酸、多肽和蛋白质之间可以相互转化。",
-   "boundaryMarkdown": "成肽时氨基脱氢、羧基脱羟基，二肽分子中仍保留一个氨基和一个羧基。",
-   "derivationKind": "REVIEWED_SYNTHESIS",
-   "sourceId": "desktop-src-c099d2d6fc:chemistry",
-   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习·知识清单（新高考通用）/资料/第29讲 糖类　油脂　蛋白质　高分子材料（学生版）.docx（块 a18e148bcb-001）",
-   "reviewedAtEpochMillis": 1789739845765,
-   "bindings": [
-    {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:蛋白质和氨基酸的结构与性质",
-     "role": "PRIMARY"
-    }
-   ]
-  },
-  {
    "slug": "ext-che-581fb521c0-011",
    "subject": "CHEMISTRY",
    "type": "CONCEPT_EXPLANATION",
@@ -5070,26 +5030,6 @@
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:根据题给信息写出对应的方程式",
-     "role": "PRIMARY"
-    }
-   ]
-  },
-  {
-   "slug": "ext-che-9a101eff14-003b",
-   "subject": "CHEMISTRY",
-   "type": "CONCEPT_EXPLANATION",
-   "title": "羧酸和酯的结构与性质",
-   "summaryMarkdown": "羧基与酯基中的碳氧双键不与H2加成；酯化与酯的水解均为取代反应，碱性水解更彻底。",
-   "applicabilityMarkdown": "羧酸与酯的性质辨析",
-   "contentMarkdown": "①羧酸的化学性质：具有酸性，能与NaHCO3溶液反应生成CO2；能与醇发生酯化反应(取代反应)，生成酯和水。②酯化反应的书写要注意配比：一元羧酸与多元醇、多元羧酸与一元醇都能酯化；乙二酸与乙二醇可生成环酯或高聚酯；羟基酸自身酯化也可生成环酯或高聚酯。③酯的通性：酯的密度一般小于水，难溶于水、易溶于有机溶剂，低级酯通常有芳香气味，可用作溶剂或香料。④酯的水解属于取代反应：酸性条件下水解可逆，碱性条件下水解进行彻底。⑤羧基和酯基中的碳氧双键不能与H2发生加成反应，能加氢的只有醛基、酮羰基等。⑥1 mol酚酯基在碱性条件下水解时最多可消耗2 mol NaOH。",
-   "boundaryMarkdown": "羧基、酯基中的碳氧双键不能与H2加成；碱性条件下酯水解不可逆，酸性条件下可逆。",
-   "derivationKind": "REVIEWED_SYNTHESIS",
-   "sourceId": "desktop-src-c099d2d6fc:chemistry",
-   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学大一轮复习卓越讲义重难点/资料/（重点·方法·点拨）第58讲 醛、酮、羧酸、酯、酰胺- （学生版）.docx（块 9a101eff14-003）",
-   "reviewedAtEpochMillis": 1789739845765,
-   "bindings": [
-    {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:羧酸和酯的结构和性质易混易错点",
      "role": "PRIMARY"
     }
    ]

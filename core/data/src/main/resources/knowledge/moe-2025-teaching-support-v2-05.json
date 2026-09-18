@@ -40706,6 +40706,1366 @@
      "role": "PRIMARY"
     }
    ]
+  },
+  {
+   "slug": "ext-che-132fa7a532-001",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "钠的性质与保存",
+   "summaryMarkdown": "钠的物理性质；与氧气、氯气、水、乙醇的反应；制取、保存与用途。",
+   "applicabilityMarkdown": "钠单质性质判断与方程式书写",
+   "contentMarkdown": "①物理性质：银白色有金属光泽、质地柔软、熔点低于100 ℃、密度比水小比煤油大，故密封保存在煤油或石蜡油中；②与O2常温生成Na2O、加热燃烧生成淡黄色Na2O2，与Cl2点燃生成NaCl（白烟）；③与水反应2Na＋2H2O=2NaOH＋H2↑，与乙醇反应2Na＋2CH3CH2OH=2CH3CH2ONa＋H2↑，钠与水反应更快；④制取：电解熔融NaCl得2NaCl(熔融)=2Na＋Cl2↑；⑤用途：制高压钠灯、冶炼钛锆等金属、钠钾合金作核反应堆导热剂。",
+   "boundaryMarkdown": "钠极活泼，与盐溶液反应先与水反应，不能置换出溶液中的金属。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题01 钠及其重要化合物（知识清单）（全国通用）（教师版）.docx（块 132fa7a532-001）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:钠",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-ad9f8fb59a-004",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "铁的重要化合物",
+   "summaryMarkdown": "铁的氧化物与氢氧化物的性质、与酸（含氧化性酸）反应及Fe(OH)2的制法。",
+   "applicabilityMarkdown": "铁盐转化与离子方程式书写",
+   "contentMarkdown": "①氧化物与盐酸：FeO＋2H＋=Fe2＋＋H2O、Fe2O3＋6H＋=2Fe3＋＋3H2O、Fe3O4＋8H＋=2Fe3＋＋Fe2＋＋4H2O；②与氧化性酸或还原性酸相遇要兼价态：FeO与HNO3还发生Fe2＋被氧化，Fe2O3与HI还发生Fe3＋被还原，Fe3O4与HI反应生成Fe2＋与I2；③高温下氧化物都能被C、CO、Al还原为单质铁；④Fe(OH)2与HNO3、Fe(OH)3与HI反应都不是简单中和，而是氧化还原反应；⑤Fe(OH)2制法：可溶性亚铁盐加NaOH或氨水，Fe2＋＋2OH－=Fe(OH)2↓。",
+   "boundaryMarkdown": "易错：Fe3O4与HI反应时I－被氧化；Fe(OH)2必须隔绝空气制备。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（安徽专用）/第02讲 铁及其重要化合物（复习讲义）（安徽专用）（学生版）.docx（块 ad9f8fb59a-004）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:铁",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-08a9179372-024",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "不同价态含硫物质的转化",
+   "summaryMarkdown": "硫的价类二维图、同价态与不同价态转化的规律（台阶式升降与归中）。",
+   "applicabilityMarkdown": "含硫物质转化与离子方程式书写",
+   "contentMarkdown": "①硫元素常见价态为－2、0、＋4、＋6，可按价类二维图整理单质、氧化物、酸、盐间的转化；②同价态之间靠酸碱反应转化，如HSO₃⁻＋H＋=SO2↑＋H2O、SO₃²⁻＋SO2＋H2O=2HSO₃⁻、HS－＋OH－=S2－＋H2O；③不同价态间的转化通过氧化还原实现，化合价一般升高或降低到相邻价态，呈台阶式升降，如2SO2＋O2⇌2SO3、SO2＋2H2S=3S↓＋2H2O；④相邻价态粒子间不发生氧化还原反应（如S与H2S、SO2与浓硫酸）；⑤高价态与低价态相遇遵循归中规律，一般生成中间价态，如2S2－＋SO₃²⁻＋6H＋=3S↓＋3H2O。",
+   "boundaryMarkdown": "易错：相邻价态不反应，归中产物为中间价态而非歧化产物。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习讲义+练习+课件（新教材新高考）/2026版/第四章 非金属及其化合物/第02讲 硫及其重要化合物（复习讲义）（全国通用）（教师版）.docx（块 08a9179372-024）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:硫",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-8cf031c9fe-007",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "硅及其化合物的特殊性",
+   "summaryMarkdown": "硅单质与含硅化合物的特例（与HF反应、半导体性、硅酸难溶等）。",
+   "applicabilityMarkdown": "硅及无机非金属材料的易错辨析",
+   "contentMarkdown": "①Si的还原性大于C，但高温下C能还原出Si：SiO2＋2C=Si＋2CO↑；②非金属单质一般不与非氧化性酸反应，但Si能与HF反应：Si＋4HF=SiF4↑＋2H2↑；③非金属单质大多不导电，而Si是半导体；④SiO2是H2SiO3的酸酐却不溶于水，不能与水直接制H2SiO3，且能与HF反应：SiO2＋4HF=SiF4↑＋2H2O；⑤H2SiO3难溶于水，但Na2SiO3溶液中通少量CO2可析出H2SiO3：Na2SiO3＋CO2＋H2O=H2SiO3↓＋Na2CO3，而高温下SiO2＋Na2CO3=Na2SiO3＋CO2↑也能发生。",
+   "boundaryMarkdown": "易错：不能用高温制玻璃的反应比较H2SiO3与H2CO3的酸性强弱。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题04 碳、硅及无机非金属材料（知识清单）（全国通用）（学生版）.docx（块 8cf031c9fe-007）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:硅",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-024618b63e-018",
+   "subject": "CHEMISTRY",
+   "type": "MISCONCEPTION_GUIDE",
+   "title": "苯的结构与性质要点",
+   "summaryMarkdown": "苯分子中碳碳键完全等同、六元环共平面，凯库勒式只是习惯写法。",
+   "applicabilityMarkdown": "苯结构判断与实验现象辨析",
+   "contentMarkdown": "①苯分子中不存在单双键交替结构，6个碳碳键完全等同，是介于单键与双键之间的特殊共价键（大π键）；②凯库勒式（单双键交替的六边形）只是习惯表示方法，不能代表苯的真实结构；③苯分子中6个碳原子和6个氢原子共平面，6个碳原子构成正六边形；④与苯环直接相连的原子一定在苯环平面内，连接苯环的单键可以旋转；⑤据此可解释苯不能使酸性KMnO4溶液褪色、溴水不因加成而褪色，以及苯的一溴代物只有一种。",
+   "boundaryMarkdown": "易错：苯不能因溴水褪色证明含碳碳双键，萃取使溴水褪色属物理变化。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（福建专用）/第九章 有机化学基础/第02讲 烃（教师版）.docx（块 024618b63e-018）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:苯",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-2924184449-014",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "合金的组成与性能",
+   "summaryMarkdown": "合金的概念、组成特点，以及熔点、硬度和强度相对成分金属的变化。",
+   "applicabilityMarkdown": "合金性质判断与金属材料应用",
+   "contentMarkdown": "①概念：合金是两种或两种以上金属（或金属与非金属）熔合而成的具有金属特性的物质，一定是混合物，没有固定的熔沸点；②组成：以一种金属为主，合金中一定含金属元素，可能含非金属元素，如钢中含碳；③性能：合金的熔点一般比各成分金属低，硬度和强度一般比各成分金属大；④化学性质上合金一般体现各成分金属的性质；⑤常温下多数合金为固态，但钾钠合金呈液态，可用作核反应堆导热剂；⑥新型合金如钛合金用于载人潜水器耐压壳，镍钴合金用于喷气发动机叶片。",
+   "boundaryMarkdown": "易错：合金性质不是各成分金属性质的简单加和；合金无固定熔点。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（安徽专用）/第04讲 金属材料及金属矿物的开发利用（复习讲义）（安徽专用）（教师版）.docx（块 2924184449-014）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:合金",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-6299d8c952-007",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "铜及其化合物的应用",
+   "summaryMarkdown": "铜作催化剂、热的铜网除氧、铜与稀硫酸通氧溶解及Cu2O与Cu的鉴别。",
+   "applicabilityMarkdown": "铜及其化合物的性质应用",
+   "contentMarkdown": "①Cu可用作醇催化氧化的催化剂；②热的铜网可用于除混合气体中少量O2：2Cu＋O2=2CuO；③Cu与稀H2SO4不反应，但通入O2时逐渐溶解：2Cu＋O2＋2H2SO4=2CuSO4＋2H2O；④鉴别红色物质Cu与Cu2O：加稀硫酸后溶液由无色变蓝色者为Cu2O，反应为Cu2O＋H2SO4=CuSO4＋Cu＋H2O；⑤无水硫酸铜遇水变蓝，只用于检验水，不能作干燥剂吸收水蒸气；⑥可利用新制Cu(OH)2悬浊液检验有机物中的醛基。",
+   "boundaryMarkdown": "易错：无水CuSO4只能检验水不能除去水；Cu不与稀硫酸直接反应。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习讲义+练习+课件（新教材新高考）/2026版/第三章 金属及其化合物/第04讲 金属材料及金属矿物的开发利用（复习讲义）（教师版）.docx（块 6299d8c952-007）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:铜盐",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-6679c4dab3-006",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "硫酸型酸雨的形成与防治",
+   "summaryMarkdown": "硫氧化物来源与危害、酸雨的两条形成途径及钙基固硫、氨水脱硫。",
+   "applicabilityMarkdown": "酸雨成因分析与脱硫方程式书写",
+   "contentMarkdown": "①来源：含硫化石燃料的燃烧及金属矿物冶炼等，危害人体健康并形成pH小于5.6的酸雨；②形成途径1：飘尘催化下2SO2＋O2=2SO3、SO3＋H2O=H2SO4；③途径2：SO2＋H2O⇌H2SO3、2H2SO3＋O2=2H2SO4；④治理：燃煤脱硫、改进燃烧技术；⑤钙基固硫法：生石灰与含硫煤混合燃烧，CaO＋SO2=CaSO3、2CaSO3＋O2=2CaSO4，总反应2CaO＋2SO2＋O2=2CaSO4；⑥氨水脱硫法：2NH3＋SO2＋H2O=(NH4)2SO3，再氧化为(NH4)2SO4。",
+   "boundaryMarkdown": "易错：酸雨的pH小于5.6而非小于7；固硫产物是硫酸盐。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（四川专用）/第02讲 硫及其重要化合物（复习讲义）（四川专用）（教师版）.docx（块 6679c4dab3-006）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:酸雨",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-99248b25c4-016",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "硫酸的性质与硫酸根检验",
+   "summaryMarkdown": "浓硫酸的物理性质与稀释、稀硫酸的通性、浓硫酸的三大特性及硫酸根检验。",
+   "applicabilityMarkdown": "硫酸性质实验与离子检验",
+   "contentMarkdown": "①硫酸是无色黏稠液体，沸点338 ℃属高沸点酸，难挥发，可用于制取低沸点酸；98%浓硫酸密度1.84 g/cm³，与水以任意比混溶并放出大量热；②稀释浓硫酸应将浓硫酸沿器壁缓缓注入水中并不断搅拌，切不可把水注入浓硫酸；③稀硫酸是强电解质，具有酸的通性：使石蕊变红、与活泼金属反应放出H2、与碱和盐反应；④浓硫酸具有吸水性、脱水性和强氧化性；⑤检验SO4²⁻：取少量溶液先加稀盐酸酸化，再加BaCl2溶液，生成不溶于稀盐酸的白色沉淀。",
+   "boundaryMarkdown": "易错：检验SO4²⁻不能用硝酸酸化，防止SO3²⁻被氧化造成干扰。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习考点精讲精练（新高考通用）/2026版/专题02 硫及其重要化合物（高效培优讲义）（学生版）.docx（块 99248b25c4-016）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:硫酸",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-aad89add33-039",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "陶瓷的原料与制备",
+   "summaryMarkdown": "传统无机非金属材料中的陶瓷：以黏土为主要原料高温烧结。",
+   "applicabilityMarkdown": "陶瓷材料成分与原料判断",
+   "contentMarkdown": "①传统无机非金属材料多为硅酸盐材料，如水泥、玻璃、陶瓷；②陶瓷以黏土（主要成分为含水的铝硅酸盐）为主要原料，经高温烧结而成；③烧结过程中发生复杂的物理变化和化学变化，故制陶瓷涉及化学变化；④硅酸盐产品中，水泥和陶瓷的共同原料是黏土，水泥和玻璃的共同原料是石灰石；⑤注意石英玻璃、水晶等不是硅酸盐产品，不能与陶瓷、水泥等混为一类。",
+   "boundaryMarkdown": "易错：烧结黏土制陶瓷属于化学变化；水晶、玛瑙不属于硅酸盐产品。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习讲义+练习+课件（新教材新高考）/2026版/第四章 非金属及其化合物/第04讲 碳、硅及无机非金属材料（复习讲义）（全国通用）（教师版）.docx（块 aad89add33-039）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:陶瓷",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-bfc3bf0f24-029",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "玻璃的组成与制备",
+   "summaryMarkdown": "普通玻璃的成分、原料与熔融制备过程及其主要用途。",
+   "applicabilityMarkdown": "玻璃成分与原料的判断",
+   "contentMarkdown": "①普通玻璃的主要成分为Na2SiO3、CaSiO3和SiO2；②原料为纯碱、石灰石和石英砂；③制备：原料经混合、粉碎后在玻璃窑中熔融，发生复杂的物理变化和化学变化；④玻璃生产中的重要反应之一为Na2CO3＋SiO2=Na2SiO3＋CO2↑；⑤用途：建筑材料、光学仪器和各种器皿，还可制造玻璃纤维用于高强度复合材料；⑥注意石英玻璃、钢化玻璃与普通玻璃的差别。",
+   "boundaryMarkdown": "易错：玻璃没有固定熔点；石英玻璃不是硅酸盐产品。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习讲义+练习+课件（新教材新高考）/2026版/第四章 非金属及其化合物/第04讲 碳、硅及无机非金属材料（复习讲义）（全国通用）（学生版）.docx（块 bfc3bf0f24-029）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:玻璃",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-21f6a2c8d8-022",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "水泥的原料与硬化调节",
+   "summaryMarkdown": "普通硅酸盐水泥的原料、煅烧过程与石膏的作用，以及混凝土的组成。",
+   "applicabilityMarkdown": "水泥生产与使用中的成分判断",
+   "contentMarkdown": "①普通硅酸盐水泥的主要原料是黏土和石灰石；②二者与其他辅料经混合、研磨后在水泥回转窑中煅烧，发生复杂的物理变化和化学变化；③加入适量石膏调节水泥硬化速率，再研成细粉得到普通水泥；④混凝土是水泥、沙子和碎石等与水混合得到的；⑤硅酸盐产品中水泥和陶瓷的共同原料是黏土，水泥和玻璃的共同原料是石灰石。",
+   "boundaryMarkdown": "易错：石膏是调节硬化速率而非主要原料；水泥是混合物无固定组成。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（福建专用）/第四章 非金属及其化合物/第04讲 碳、硅及无机非金属材料（复习讲义）（福建专用）（学生版）.docx（块 21f6a2c8d8-022）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:水泥",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-ad656d9e3c-001",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "脂肪烃的结构与反应类型",
+   "summaryMarkdown": "烷烃、烯烃、炔烃的代表物比较，取代、加成、加聚反应的特点与定量关系。",
+   "applicabilityMarkdown": "烃类反应类型判断与方程式书写",
+   "contentMarkdown": "①烷烃是碳原子间全部以单键结合的饱和链烃，通式CnH2n＋2；烯烃含碳碳双键，单烯烃通式CnH2n；炔烃含碳碳三键，单炔烃通式CnH2n－2；②甲烷是烷烃的最简单代表物，与气态卤素单质在光照下发生取代反应，产物为多种卤代烃的混合物和HX，取代1 mol氢原子消耗1 mol卤素单质并生成1 mol HX；③甲烷等烷烃性质稳定，不能被酸性KMnO4氧化，也不能使溴水褪色；④烯烃、炔烃能发生加成反应和加聚反应，也能被酸性KMnO4氧化。",
+   "boundaryMarkdown": "易错：取代反应产物为混合物；烷烃不能使酸性KMnO4溶液褪色。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学大一轮复习卓越讲义重难点/资料/（重点·方法·点拨）第56讲 烃　化石燃料- （教师版）.docx（块 ad656d9e3c-001）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:甲烷",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-b7a06d31b8-002",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "烷烃的结构与物理性质",
+   "summaryMarkdown": "烷烃的概念、sp3杂化与单键结构、同系物及熔沸点变化规律。",
+   "applicabilityMarkdown": "烷烃概念辨析与熔沸点比较",
+   "contentMarkdown": "①概念：只含碳、氢两种元素，分子中碳原子之间都以单键结合，碳原子剩余价键均与氢原子结合，使碳的化合价达到饱和，称为饱和烃即烷烃；②结构特点：烷烃结构与甲烷相似，碳原子以伸向四面体四个顶点方向的sp3杂化轨道成键，共价键全部是单键；③组成上相差一个或若干个CH2原子团且结构相似的化合物互称同系物，链状烷烃通式CnH2n＋2；④1～4个碳原子为气态，随碳原子数增加熔沸点升高、密度增大；碳原子数相同时支链越多熔沸点越低。",
+   "boundaryMarkdown": "易错：支链越多熔沸点越低；烷烃密度均比水小。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（福建专用）/第九章 有机化学基础/第02讲 烃（学生版） .docx（块 b7a06d31b8-002）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:烷烃",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-024618b63e-005",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "烯烃的结构与性质",
+   "summaryMarkdown": "烯烃的官能团、分类与通式，以及状态、溶解性、熔沸点等物理性质规律。",
+   "applicabilityMarkdown": "烯烃结构判断与通式应用",
+   "contentMarkdown": "①烯烃是含有碳碳双键的烃类化合物，官能团名称为碳碳双键；②按双键数目分为单烯烃、多烯烃，二烯烃又分累积二烯烃（双键连在一起）、共轭二烯烃（单双键交替排列）和孤立二烯烃（两个双键间相隔两个或以上单键）；③只含一个碳碳双键时通式为CnH2n；④物理性质：2～4个碳原子为气态，都难溶于水、易溶于有机溶剂，随碳原子数增多熔沸点升高、密度增大，分子式相同时支链越多熔沸点越低；⑤乙烯是最简单的烯烃，能使溴水因加成而褪色、使酸性KMnO4溶液因氧化而褪色。",
+   "boundaryMarkdown": "易错：符合CnH2n的烃不一定是烯烃，也可能是环烷烃。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（福建专用）/第九章 有机化学基础/第02讲 烃（教师版）.docx（块 024618b63e-005）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:乙烯",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-4ddeefaa27-005",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "醇的化学性质与断键",
+   "summaryMarkdown": "以乙醇为例的醇的置换、取代、消去、催化氧化与脱水成醚。",
+   "applicabilityMarkdown": "醇化学方程式与产物判断",
+   "contentMarkdown": "①乙醇与钠反应属于置换反应：2CH3CH2OH＋2Na→2CH3CH2ONa＋H2↑；②与HBr反应属于取代反应：CH3CH2OH＋HBr→CH3CH2Br＋H2O；③醇分子内脱水生成烯烃属于消去反应，需浓硫酸并加热，且与羟基相连碳的邻位碳上必须有氢；④醇分子间脱水生成醚：2CH3CH2OH→CH3CH2OCH2CH3＋H2O，用浓H2SO4并控温140 ℃；⑤催化氧化生成醛或酮：2CH3CH2OH＋O2→2CH3CHO＋2H2O，含—CH2OH结构才能氧化成醛。",
+   "boundaryMarkdown": "易错：乙醇制乙烯需迅速升温到170 ℃，140 ℃主要生成乙醚。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学大一轮复习卓越讲义重难点/资料/（重点·方法·点拨）第57讲 卤代烃　醇　酚- （教师版）.docx（块 4ddeefaa27-005）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:乙醇",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-22e4da5a7a-002",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "反应热与焓变",
+   "summaryMarkdown": "反应热、焓与焓变的定义，以及恒压条件下ΔH与反应热的关系。",
+   "applicabilityMarkdown": "反应热与焓变概念辨析",
+   "contentMarkdown": "①反应热：当化学反应在一定压强下进行时反应所放出或吸收的热量，常用Q表示，单位kJ·mol－1；②焓是与内能有关的物理量，用于描述物质所具有的能量，物质的焓越小能量越低、稳定性越强；③焓变ΔH等于生成物的焓与反应物的焓之差，单位kJ·mol－1，其值只与始末状态有关而与过程无关；④对于恒压条件下进行的化学反应，若能量变化全部转化为热能，则ΔH＝Qp；⑤放热反应反应物总能量大于生成物总能量，ΔH＜0；吸热反应则ΔH＞0。",
+   "boundaryMarkdown": "易错：ΔH与反应条件、是否使用催化剂无关，只取决于始末状态。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（福建专用）/第六章 化学反应与能量/第01讲 化学反应的热效应（复习讲义）（福建专用）（教师版）.docx（块 22e4da5a7a-002）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:焓变",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-e1aeb95cdb-001",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "盐类水解的定义与实质",
+   "summaryMarkdown": "盐类水解的定义、实质链条与常见弱离子及水解规律和特点。",
+   "applicabilityMarkdown": "水解实质分析与离子方程式书写",
+   "contentMarkdown": "①定义：在溶液中盐电离出来的离子跟水电离产生的H＋或OH－结合生成弱电解质的反应叫盐类的水解；②实质：盐电离出的弱离子结合水电离的H＋或OH－，破坏了水的电离平衡，水的电离程度增大，c(H＋)≠c(OH－)，溶液呈碱性或酸性；③常见的弱离子：弱碱阳离子有NH4＋、Al3＋、Fe3＋、Cu2＋等，弱酸根离子有CO3²⁻、HCO3⁻、AlO2⁻、S2－、ClO－、CH3COO－、F－等；④特点：水解可逆、是中和反应的逆反应、程度微弱，离子方程式用可逆号且不标沉淀或气体符号。",
+   "boundaryMarkdown": "易错：水解程度微弱，一般不生成沉淀和气体；酸碱性由“谁强显谁性”判断。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题03 盐类的水解（知识清单）（全国通用）（教师版）.docx（块 e1aeb95cdb-001）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:实质",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-0614213d2c-008",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "晶体类型与熔沸点规律",
+   "summaryMarkdown": "共价晶体、离子晶体、分子晶体熔沸点高低的比较思维模型。",
+   "applicabilityMarkdown": "晶体熔沸点比较与稳定性判断",
+   "contentMarkdown": "①共价晶体：共价键键长越短、键能越大熔点越高，如熔点金刚石＞碳化硅＞硅；②离子晶体：阴、阳离子电荷数越多、离子半径越小，离子间作用力越强，熔沸点越高，如MgO＞MgCl2＞NaCl＞CsCl；衡量离子晶体稳定性的物理量是晶格能，晶格能越大晶体越稳定、熔点越高、硬度越大；③分子晶体：分子间作用力越大熔沸点越高，含氢键者反常升高，如H2O＞H2Te＞H2Se＞H2S；组成结构相似时相对分子质量越大熔沸点越高，如SnH4＞GeH4＞SiH4＞CH4，同分异构体支链越多熔沸点越低。",
+   "boundaryMarkdown": "易错：分子内氢键使熔沸点降低，分子间氢键使熔沸点升高。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（黑吉辽蒙专用）/第04讲 晶体结构与性质（复习讲义）（黑吉辽蒙专用）（学生版）.docx（块 0614213d2c-008）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:晶体",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-d7fc4505d9-014",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "能层与能级",
+   "summaryMarkdown": "能层的划分依据与表示方法，能级符号、数目及可容纳电子数。",
+   "applicabilityMarkdown": "核外电子分层排布的判断",
+   "contentMarkdown": "①能层：根据多电子原子的核外电子的能量差异，将核外电子分成不同的能层，能层用n表示，n值越大能量越高；②能级：同一能层中电子能量不同而分为不同能级，用能层序数和s、p、d、f组合表示，n能层的能级按能量由低到高排列为ns、np、nd、nf；③能层序数等于该能层所包含的能级数，如第三能层有3s、3p、3d三个能级；④s、p、d、f能级可容纳的电子数为1、3、5、7的二倍；⑤能层数等于电子层数，第一能层只有s能级，第二能层s、p能级中p的三个原子轨道能量相同。",
+   "boundaryMarkdown": "易错：能层序数决定能级种类数，能级容纳电子数为轨道数的2倍。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习讲义+练习+课件（新教材新高考）/2026版/第五章 物质结构与性质 元素周期律/第02讲 原子结构与性质（复习讲义）（全国通用）（教师版）.docx（块 d7fc4505d9-014）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:能层",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-f252c8ac79-009",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "能级及其电子容量",
+   "summaryMarkdown": "能级的划分依据、符号表示、与能层序数的关系及最多容纳电子数。",
+   "applicabilityMarkdown": "能级符号书写与电子容量计算",
+   "contentMarkdown": "①能级的划分依据是多电子原子中同一能层电子能量的不同；②能级用相应能层的序数和字母s、p、d、f组合表示，n能层的能级按能量由低到高排列为ns、np、nd、nf等；③能层序数等于该能层所包含的能级数，如第三能层有3s、3p、3d能级；④s、p、d、f能级可容纳的电子数为1、3、5、7的二倍，即最多为2、6、10、14个；⑤每一能层最多容纳的电子数为2n²；⑥同一能层中p能级上有px、py、pz三个能量相同的原子轨道。",
+   "boundaryMarkdown": "易错：能级符号前的数字是能层序数，如3p表示第三能层的p能级。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习讲义+练习+课件（新教材新高考）/2026版/第五章 物质结构与性质 元素周期律/第02讲 原子结构与性质（复习讲义）（全国通用）（学生版）.docx（块 f252c8ac79-009）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:能级",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-3b15fc287d-001",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "羧酸酸性的结构解释",
+   "summaryMarkdown": "键的极性对羧酸酸性的影响：羟基极性越大酸性越强，烷基推电子使酸性减弱。",
+   "applicabilityMarkdown": "羧酸酸性强弱比较与归因",
+   "contentMarkdown": "①键的极性对羧酸酸性大小的影响实质是通过改变羧基中羟基的极性实现的，羧基中羟基的极性越大越容易电离出H＋，羧酸的酸性越强；②与羧基相邻的共价键的极性越大，羧基中羟基的极性越大，羧酸的酸性越强，故氟乙酸强于氯乙酸；③烷基是推电子基团，会减小羟基的极性导致羧酸酸性减弱，一般烷基越长推电子效应越大酸性越弱，故甲酸＞乙酸＞丙酸；④据此可比较CF3COOH、CCl3COOH、CHCl2COOH、CH2ClCOOH、CH3COOH、CH3CH2COOH的酸性依次减弱。",
+   "boundaryMarkdown": "易错：比较酸性要抓住与羧基相连基团的吸电子或推电子效应。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高三化学一轮复习讲义（新高考通用）/资料/第七章　第33讲　分子的性质　配合物与超分子（教师版）.docx（块 3b15fc287d-001）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:羧酸",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-223f2a1a32-027",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "氢键的表示与影响",
+   "summaryMarkdown": "氢键的定义、表示方法X—H…Y、分子间与分子内氢键及其对性质的影响。",
+   "applicabilityMarkdown": "氢键判断与熔沸点、溶解性解释",
+   "contentMarkdown": "①定义：氢键是由已经与电负性很大的原子形成共价键的氢原子与另一个电负性很大的原子之间的作用力；②表示方法：X—H…Y，其中X、Y为N、O、F原子，可以相同也可不同；③类型：分为分子间氢键和分子内氢键；④分子间氢键使物质熔沸点升高，故NH3、H2O、HF的沸点反常地高；分子内氢键使熔沸点降低，如邻羟基苯甲醛沸点低于对羟基苯甲醛；⑤与水分子形成分子间氢键可增大物质的溶解性，如NH3、C2H5OH、CH3COOH易溶于水；⑥氢键还能解释水蒸气相对分子质量偏大、HF测定值偏高等缔合现象。",
+   "boundaryMarkdown": "易错：氢键不属于化学键，其强度介于范德华力与化学键之间。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（四川专用）/第03讲 分子结构与性质、化学键（复习讲义）（四川专用）（教师版）.docx（块 223f2a1a32-027）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:氢键",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-4f9d48294b-002",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "分离与提纯及其除杂原则",
+   "summaryMarkdown": "分离与提纯的区别、除杂四原则及常见正误实例。",
+   "applicabilityMarkdown": "除杂方案的设计与评价",
+   "contentMarkdown": "①物质的分离：将混合物的各组分分离出来，获得几种纯净物的过程；②物质的提纯：将混合物中的杂质除去而得到纯净物的过程，又叫净化或除杂；③除杂四原则：不增（不得引入新杂质，如NaCl中混Na2SO4用适量BaCl2而不用Ba(NO3)2）、不减（尽量不减少被提纯的物质，如CO2中混HCl用饱和NaHCO3溶液而不用Na2CO3溶液）、易分离（如CO中混CO2用NaOH溶液吸收而不通过灼热碳粉）、易复原（被提纯物质转化后要易于复原）。",
+   "boundaryMarkdown": "易错：除杂须同时满足四原则，不能引入新杂质或消耗主体物质。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（四川专用）/第02讲 物质的分离、提纯与鉴别（复习讲义）（四川专用）（教师版）.docx（块 4f9d48294b-002）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:过滤",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-4f9d48294b-004",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "蒸发与结晶方法的选择",
+   "summaryMarkdown": "蒸发装置的操作要点，以及蒸发结晶与蒸发浓缩降温结晶的适用条件。",
+   "applicabilityMarkdown": "结晶方法选择与操作分析",
+   "contentMarkdown": "①固液分离中，过滤适用于不溶性固体与液体的分离，操作注意一贴、二低、三靠；②蒸发装置适用于溶解度随温度变化不大的易溶性固体溶质，采用蒸发结晶；溶解度受温度变化较大的易溶性固体溶质，采用蒸发浓缩、降温结晶的方法；③蒸发结晶操作中玻璃棒的作用是搅拌，防止液体局部过热而飞溅；④当有大量晶体析出时应停止加热，利用余热蒸干而不能直接蒸干；⑤液液分离用分液或蒸馏，固固分离可用升华等方法。",
+   "boundaryMarkdown": "易错：蒸发结晶不能蒸干；KNO3等应蒸发浓缩、冷却结晶。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（四川专用）/第02讲 物质的分离、提纯与鉴别（复习讲义）（四川专用）（教师版）.docx（块 4f9d48294b-004）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:蒸发",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-6feede4660-001",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "蒸馏操作及注意事项",
+   "summaryMarkdown": "蒸馏操作顺序、防暴沸措施、减压蒸馏与萃取的要求。",
+   "applicabilityMarkdown": "蒸馏操作分析及分离方法选择",
+   "contentMarkdown": "①操作顺序：安装蒸馏装置、加入待蒸馏的物质和沸石、通冷凝水、加热、弃去前馏分、收集馏分、停止加热、停止通冷凝水；②防暴沸措施：外加沸石，若加热后发现未加沸石应停止加热、冷却后补加；减压蒸馏中毛细管吸入少量空气形成小气泡以防暴沸，同时还起搅拌作用；③蒸馏适用于分离沸点相差较大且互溶的液体混合物，温度计水银球应在蒸馏烧瓶支管口处，冷凝水应下口进上口出；④减压蒸馏可降低馏出物沸点，适用于受热易分解的物质；⑤萃取剂应与原溶剂互不相溶、不反应，且溶质在其中溶解度远大于在原溶剂中的溶解度。",
+   "boundaryMarkdown": "易错：沸石不能中途补加；冷凝水方向与温度计位置是常考点。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高三化学一轮复习讲义（新高考通用）/资料/第三章 第11讲 物质的分离与提纯　常见离子的检验（学生版）.docx（块 6feede4660-001）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:蒸馏",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-84c9f9347b-011",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "碳中和的含义与实现途径",
+   "summaryMarkdown": "碳中和的定义、提出时间与通过植树造林、节能减排、碳捕集与封存实现零排放。",
+   "applicabilityMarkdown": "碳中和概念判断与低碳措施分析",
+   "contentMarkdown": "①2020年9月，我国提出争取在2060年前实现碳中和；②碳中和是指直接或间接产生的温室气体排放总量，通过植树造林、节能减排、碳捕集与封存等形式，抵消自身产生的二氧化碳排放量，实现二氧化碳零排放；③其核心是排放与吸收相抵消，而不是完全不排放二氧化碳；④注意与碳达峰区分，推广煤液化、煤气化只能提高煤的利用率，并不能减少二氧化碳排放，不利于实现碳中和。",
+   "boundaryMarkdown": "易错：碳中和是排放与吸收抵消的零排放，煤液化并不能减少CO2排放。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题03 氮及其化合物（知识清单）（全国通用）（学生版）.docx（块 84c9f9347b-011）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:碳中和",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-e0e62d3438-002",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "平衡状态的判断与转化率",
+   "summaryMarkdown": "各组分量不变、转化率与产率不变可判断达到平衡；转化率是可逆反应达到限度的定量描述。",
+   "applicabilityMarkdown": "平衡状态判断与转化率含义",
+   "contentMarkdown": "①可逆反应在相同条件下既能向正反应方向进行、同时又能向逆反应方向进行，反应不能进行到底，反应物不能实现完全转化；②达到化学平衡状态时，各组成成分的质量、物质的量、分子数、气体体积、物质的量浓度均保持不变，各组成成分的质量分数、物质的量分数、气体体积分数也保持不变；③反应物的转化率、产物的产率保持不变，可作为判断达到平衡状态的标志之一；④转化率指已转化的量与起始量之比，转化率小于100%说明反应具有可逆性。",
+   "boundaryMarkdown": "易错：转化率不变、浓度不变才能说明达平衡，而浓度相等不一定平衡。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题02 化学平衡状态 化学平衡的移动（知识清单）（全国通用）（学生版）.docx（块 e0e62d3438-002）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:转化率",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-d361f74c03-015",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "同系物的判断与同分异构体",
+   "summaryMarkdown": "同系物的定义与判定要点，以及同分异构体数目判断的常用方法。",
+   "applicabilityMarkdown": "同系物判定与同分异构体计数",
+   "contentMarkdown": "①同系物：结构相似、分子组成上相差一个或若干个CH2原子团的化合物互称为同系物；②判定两要点：官能团种类和数目均相同，且具有相同的通式；③同分异构体：化合物分子式相同、结构不同的现象称为同分异构现象；④同分异构体数目的判断方法：记忆法（4个碳原子的烷烃有2种、5个碳原子的烷烃有3种、6个碳原子的烷烃有5种）、基元法（丁基有4种，则丁醇、戊醛、戊酸也有4种）、替代法（二氯苯与四氯苯同为3种）、等效氢法（同一碳原子上的氢等效、同一碳原子上甲基的氢等效、对称位置碳原子上的氢等效）。",
+   "boundaryMarkdown": "易错：分子式相同而结构不同才是同分异构体；同系物必须官能团相同。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习讲义+练习+课件（新教材新高考）/2026版/第九章 有机化学基础/第01讲 有机化合物的结构特点与研究方法（复习讲义）（全国通用）（教师版）.docx（块 d361f74c03-015）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:同系物",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-7feb6686e1-013",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "中和热与中和热测定",
+   "summaryMarkdown": "中和热概念的内涵、热化学方程式中的定量要求及中和热测定的注意事项。",
+   "applicabilityMarkdown": "中和热概念判断与实验误差分析",
+   "contentMarkdown": "①当用热化学方程式表示中和热时，生成H2O的物质的量必须是1 mol；表示燃烧热时，可燃物的物质的量必须为1 mol；②中和热不包括离子在水溶液中的生成热、物质的溶解热以及电解质电离时的热效应；③测定时用碎泡沫塑料及硬纸板的作用是保温隔热，减少热量损失；④为保证酸、碱完全中和，常使碱稍稍过量；⑤用环形玻璃搅拌棒上下搅动溶液，不能用铜丝搅拌棒代替，因为铜传热快、热量损失大；⑥取多次实验t1、t2的平均值代入公式计算，而不是对结果取平均值。",
+   "boundaryMarkdown": "易错：中和热与酸碱用量无关，但必须生成1 mol水；不能取结果平均值。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题01 化学反应的热效应（知识清单）（全国通用）（教师版）.docx（块 7feb6686e1-013）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:中和热",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-7feb6686e1-001",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "反应热与焓变",
+   "summaryMarkdown": "反应热与焓变的定义、ΔH正负的规定、焓变的计算与燃烧热的表示。",
+   "applicabilityMarkdown": "反应热概念判断与ΔH书写",
+   "contentMarkdown": "①反应热：在等温条件下，化学反应体系向环境释放或从环境吸收的热量，称为化学反应的热效应，简称反应热；②焓变：在等压条件下进行的化学反应，其反应热等于反应的焓变，等于生成物的总焓与反应物的总焓之差，用ΔH表示，单位常用kJ·mol－1；③放热反应的ΔH为负值，吸热反应的ΔH为正值；④化学反应ΔH的计算公式为ΔH＝生成物总能量－反应物总能量；⑤燃烧热：由于燃烧反应均是放热反应，用文字表述燃烧热时可不带负号，但用ΔH表示时必须带负号。",
+   "boundaryMarkdown": "易错：ΔH只与始末状态有关，与反应条件、催化剂及反应是否可逆无关。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题01 化学反应的热效应（知识清单）（全国通用）（教师版）.docx（块 7feb6686e1-001）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:反应热",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-e0e62d3438-005",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "催化剂与化学平衡的移动",
+   "summaryMarkdown": "用v—t图像分析催化剂对化学平衡的影响，及勒夏特列原理的适用范围。",
+   "applicabilityMarkdown": "催化剂作用判断与平衡移动分析",
+   "contentMarkdown": "①加入催化剂时，v正与v逆同等倍数增大，故v正仍然等于v逆，化学平衡不移动，但达到平衡所需时间缩短；②催化剂只改变反应速率，不影响ΔH、不改变平衡转化率；③勒夏特列原理：如果改变影响平衡的一个因素（如温度、压强及参加反应物质的浓度），平衡就向着能够减弱这种改变的方向移动；④适用范围：仅适用于已达到平衡的反应体系，不可逆过程或未达到平衡的可逆过程不能使用；该原理对溶解平衡、电离平衡和水解平衡等所有动态平衡都适用；⑤同时改变多个因素时不能简单用勒夏特列原理判断。",
+   "boundaryMarkdown": "易错：催化剂同等加快正逆反应速率，只能缩短达平衡时间而不能使平衡移动。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题02 化学平衡状态 化学平衡的移动（知识清单）（全国通用）（学生版）.docx（块 e0e62d3438-005）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:催化剂",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-79644b1cee-004",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "溶度积常数及其影响因素",
+   "summaryMarkdown": "Ksp的含义、影响因素（温度）及与离子积的比较方法。",
+   "applicabilityMarkdown": "沉淀溶解平衡判断与Ksp应用",
+   "contentMarkdown": "①以AmBn(s)可逆生成mAn＋(aq)＋nBm－(aq)为例，Ksp＝cm(An＋)·cn(Bm－)，溶度积与离子积的相对大小可判断沉淀的生成、溶解与转化；②内因：难溶物质本身的性质是主要决定因素；③外因中温度是唯一影响Ksp的因素，绝大多数难溶电解质的溶解是吸热过程，升高温度平衡向溶解方向移动，Ksp增大；④加水稀释时平衡向溶解方向移动，但Ksp不变；⑤向平衡体系中加入能与某些离子反应生成更难溶物质、更难电离物质或气体的离子时，平衡向溶解方向移动，但Ksp不变；⑥一般认为溶液中残留离子浓度小于1.0×10－5 mol·L－1时沉淀完全。",
+   "boundaryMarkdown": "易错：Ksp只受温度影响，与沉淀量、离子浓度无关；Ksp小不一定溶解度小。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习讲义+练习+课件（新教材新高考）/2026版/第八章 水溶液中的离子反应与平衡/专题04 沉淀溶解平衡（知识清单）（全国通用）（教师版）.docx（块 79644b1cee-004）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:溶度积",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-ca2b62f148-002",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "盐溶液的酸碱性及原因",
+   "summaryMarkdown": "不同盐溶液酸碱性的实验结论、理论解释与“谁强显谁性”规律。",
+   "applicabilityMarkdown": "盐溶液酸碱性判断与水解分析",
+   "contentMarkdown": "①实验结论：强酸弱碱盐溶液显酸性，强碱弱酸盐溶液显碱性，强酸强碱盐溶液显中性；②理论分析：NH4Cl溶液中NH4＋与水电离的OH－结合生成弱电解质NH3·H2O，使c(H＋)＞c(OH－)显酸性；CH3COONa溶液中CH3COO－结合H＋生成CH3COOH，使c(OH－)＞c(H＋)显碱性；Na2CO3是二元酸对应的盐，水解分两步进行；③NaCl溶液中盐电离的离子不能与H＋或OH－生成弱电解质，c(H＋)＝c(OH－)显中性；④酸式盐的酸碱性取决于电离与水解程度的相对大小：只电离不水解的显酸性，电离大于水解的显酸性，水解大于电离的显碱性。",
+   "boundaryMarkdown": "易错：NaHCO3、NaHS水解大于电离而显碱性；核心规律是谁强显谁性。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（福建专用）/第八章 水溶液中的离子反应与平衡/第03讲 盐类的水解（教师版）.docx（块 ca2b62f148-002）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:盐溶液",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-735d3d72c5-003",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "元素周期律与电负性递变",
+   "summaryMarkdown": "主族元素性质的周期性递变规律及金属性、非金属性强弱的比较方法。",
+   "applicabilityMarkdown": "电负性与金属性、非金属性比较",
+   "contentMarkdown": "①四个重要关系：电子层数等于周期数，最外层电子数等于主族序数，主族元素最高正化合价等于主族序数（O、F除外），最低负化合价等于主族序数减8；②同周期元素从左到右核电荷数增大、原子半径减小，原子核对最外层电子吸引能力增强，第一电离能和电负性呈增大趋势，金属性减弱、非金属性增强；③同主族元素从上到下电子层数增大、原子半径增大，第一电离能和电负性呈减小趋势，金属性增强、非金属性减弱；④比较非金属性强弱可依据最高价氧化物对应水化物的酸性、气态氢化物的稳定性、单质间的置换反应等。",
+   "boundaryMarkdown": "易错：电负性大者非金属性强，但电负性与第一电离能顺序不完全一致。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高三化学一轮复习讲义（新高考通用）/资料/第六章 第29讲　元素周期表　元素的性质（学生版）.docx（块 735d3d72c5-003）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电负性",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-3d089ae275-009",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "芳香烃与苯的同系物",
+   "summaryMarkdown": "芳香烃的含义与分类、苯的结构与化学性质及苯的同系物通式和性质差异。",
+   "applicabilityMarkdown": "芳香烃分类与苯及同系物性质比较",
+   "contentMarkdown": "①芳香烃：分子里含有一个或多个苯环的烃，按苯环数目和侧链情况分类；②苯是无色有特殊香味的液体，密度比水小，难溶于水、易溶于有机溶剂；③苯的化学性质：燃烧时火焰明亮有浓烟，与液溴发生取代反应、与浓硝酸发生硝化反应，一定条件下能与H2发生加成反应；④苯的同系物是苯环上的氢原子被烷基取代的产物，通式为CnH2n－6（n≥6）；⑤苯环与烷基相互影响：苯的同系物比苯易发生取代反应，苯环上的甲基能被酸性KMnO4溶液氧化而使溶液褪色。",
+   "boundaryMarkdown": "易错：苯不能使酸性KMnO4褪色，而甲苯可以；侧链氧化需与苯环相连碳上有氢。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（黑吉辽蒙专用）/第02讲 烃（复习讲义）（黑吉辽蒙专用）（教师版）.docx（块 3d089ae275-009）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:芳香烃",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-4e1924ed00-015",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "配制溶液的仪器与容量瓶",
+   "summaryMarkdown": "配制一定物质的量浓度溶液的主要仪器、容量瓶的结构规格、查漏与使用禁忌。",
+   "applicabilityMarkdown": "容量瓶选择与使用正误判断",
+   "contentMarkdown": "①主要仪器：托盘天平（或分析天平）、烧杯、玻璃棒、胶头滴管、量筒，以及容量瓶；②容量瓶是配制一定物质的量浓度溶液的专用仪器，瓶上标有温度、容积和刻度线；③选择容量瓶应遵循大而近的原则，所配溶液体积等于或略小于容量瓶的体积，如需配480 mL溶液应选500 mL容量瓶并按500 mL计算溶质质量；④查漏方法：加水、塞瓶塞、倒立观察是否漏水、正立后将瓶塞旋转180°再倒立观察；⑤使用容量瓶注意五不：不能用于溶解固体、不能用于稀释浓溶液、不能加热、不能用作反应容器、不能长期贮存溶液。",
+   "boundaryMarkdown": "易错：容量瓶不能用来溶解或稀释；只能配规定容积的溶液，不能配制任意体积。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习考点精讲精练（新高考通用）/2026版/专题02  物质的量浓度（高效培优讲义）（学生版）.docx（块 4e1924ed00-015）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:主要仪器",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-ad2b24e970-004",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "过氧化钠的强氧化性与还原性",
+   "summaryMarkdown": "从元素化合价角度分析Na2O2的强氧化性、还原性及自身氧化还原反应。",
+   "applicabilityMarkdown": "Na2O2氧化还原反应方程式书写",
+   "contentMarkdown": "①Na2O2中氧元素为－1价，介于0价与－2价之间，既有氧化性又有还原性，通常表现强氧化性；②表现强氧化性的实例：Na2O2＋SO2=Na2SO4、Na2O2＋Na2SO3＋H2O=Na2SO4＋2NaOH、Na2O2＋H2S=S↓＋2NaOH，能使品红溶液褪色、使滴有酚酞的溶液先变红后褪色；③表现还原性：遇KMnO4等强氧化剂时被氧化，氧化产物为O2；④遇CO2、H2O、H＋时发生自身的氧化还原反应，其中氧元素一部分被氧化为O2、一部分被还原为－2价；⑤1 mol Na2O2与H2O或CO2反应转移1 mol电子。",
+   "boundaryMarkdown": "易错：Na2O2中氧为－1价，与水或CO2反应转移电子数为1 mol而非2 mol。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高三化学一轮复习讲义（新高考通用）/资料/第四章 第12讲 钠及其重要化合物（学生版）.docx（块 ad2b24e970-004）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:na22",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-9da7ad2f4a-032",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "卤族元素性质的相似性与递变性",
+   "summaryMarkdown": "卤素原子结构的相似性与递变性，单质物理性质、与水、碱、金属反应的规律。",
+   "applicabilityMarkdown": "卤素单质性质比较与方程式书写",
+   "contentMarkdown": "①周期表中的位置：位于第ⅦA族，价电子排布为ns2np5，包括氟、氯、溴、碘、砹等元素；②结构的相似性与递变性决定了性质的相似性和递变性；③物理性质相似性：都有颜色、有毒、在水中溶解度不大、易溶于苯、汽油、四氯化碳等有机溶剂；递变性：从F2到I2单质颜色逐渐加深、熔沸点逐渐升高、密度逐渐增大、在水中溶解度逐渐减小；④与水反应通式X2＋H2O=HX＋HXO（X为Cl、Br、I），而2F2＋2H2O=4HF＋O2反应剧烈；⑤与碱反应通式2NaOH＋X2=NaX＋NaXO＋H2O；⑥与金属反应：F2和所有金属都能反应，Cl2和绝大多数金属反应，I2只与活泼金属反应。",
+   "boundaryMarkdown": "易错：氟与水反应生成O2而非HFO；卤素单质的置换能力F2＞Cl2＞Br2＞I2。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（四川专用）/第01讲 氯及其重要化合物（复习讲义）（四川专用）（教师版）.docx（块 9da7ad2f4a-032）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:卤族元素",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-841d0e5e17-011",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "电解水实验与现象分析",
+   "summaryMarkdown": "以Na2SO4溶液为电解质的电解水实验：装置、现象与电极反应式。",
+   "applicabilityMarkdown": "电解水实验现象与电极反应判断",
+   "contentMarkdown": "①实验用品：U形管、经烘干活化处理的石墨棒、3～6 V直流电源、鳄鱼夹、导线和开关、电流表，1 mol·L－1 Na2SO4溶液与酚酞溶液；②操作：在U形管中注入Na2SO4溶液并滴入1～2滴酚酞，两边插入石墨棒连接直流电源，闭合开关开始电解；③现象：两极石墨棒均产生气泡，右侧石墨棒附近溶液变红；④阳极反应为2H2O－4e－=4H＋＋O2↑，阴极反应为2H2O＋2e－=2OH－＋H2↑，故阴极区pH不断增大；⑤不能用NaCl固体代替Na2SO4，否则阳极会产生Cl2。",
+   "boundaryMarkdown": "易错：电解水加Na2SO4增强导电性，加NaCl会电解出氯气；阴极区显红色。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题03 电解池、金属的腐蚀与防护（知识清单）（全国通用）（教师版）.docx（块 841d0e5e17-011）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电解水",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-cde8b71dd3-015",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "核外电子排布的表达方法",
+   "summaryMarkdown": "原子（离子）结构示意图、电子排布式、简化式、价电子排布与轨道表示式的书写。",
+   "applicabilityMarkdown": "电子排布式与轨道表示式书写",
+   "contentMarkdown": "①原子或离子结构示意图用圆圈表示原子核并标出核电荷数，用弧线表示电子层及电子数；②构造原理决定电子的填充顺序；③基态原子的电子排布式：将能级上所排布的电子数标注在该能级符号右上角，并按能层从左到右排列，书写时必须按电子层顺序排列；④简化电子排布式：将内层电子排布用相应稀有气体元素符号加方括号表示；⑤离子的电子排布式：原子失电子总是先失最外层电子，再失次外层电子，主族元素一般只失最外层电子，得电子则填充到最外能层未填满的能级上；⑥价电子排布（外围电子排布）是去掉简化式中的稀有气体和中括号所得。",
+   "boundaryMarkdown": "易错：书写电子排布式须按能层顺序而非填充顺序；离子先失最外层电子。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（湖南专用）/第02讲 原子结构与性质（复习讲义）（湖南专用）（教师版）.docx（块 cde8b71dd3-015）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:原子结构",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-7f2e13df1b-004",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "氮的氧化物与NO的性质",
+   "summaryMarkdown": "氮的氧化物的种类、NO与NO2的比较及NO溶于水计算的常用关系式。",
+   "applicabilityMarkdown": "氮氧化物性质判断与体积计算",
+   "contentMarkdown": "①氮的氧化物：氮元素从＋1价到＋5价都有对应氧化物，如N2O、NO、N2O3、NO2（或N2O4）、N2O5，其中N2O5、N2O3分别是硝酸、亚硝酸的酸酐；N2O俗称笑气；②NO是无色气体，难溶于水，能与血红蛋白结合使人中毒，在空气中易被氧化为红棕色的NO2，故只能用排水法收集，不能用排空气法；③NO2是红棕色气体，与水反应3NO2＋H2O=2HNO3＋NO，故只能用向上排空气法收集；④NO2与N2O4存在平衡2NO2可逆生成N2O4，因此实验测得NO2的平均相对分子质量总大于46；⑤序号计算关系式：4NO2＋O2＋2H2O=4HNO3、4NO＋3O2＋2H2O=4HNO3。",
+   "boundaryMarkdown": "易错：验证无色气体为NO的方法是通过O2后变红棕色；NO只能用排水法收集。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习讲义+练习+课件（新教材新高考）/2026版/第四章 非金属及其化合物/第03讲 氮及其重要化合物（复习讲义）（全国通用）（教师版） .docx（块 7f2e13df1b-004）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:一氧化氮",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-9bf6d767cc-003",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "氮氧化物的性质与溶于水规律",
+   "summaryMarkdown": "NO与NO2的性质比较、氮氧化物溶于水的几种情况及相关计算关系式。",
+   "applicabilityMarkdown": "氮氧化物溶于水计算与收集方法选择",
+   "contentMarkdown": "①氮有多种价态的氧化物，如N2O、NO、N2O3、NO2（或N2O4）、N2O5，其中N2O5、N2O3分别是硝酸、亚硝酸的酸酐；②NO2是红棕色气体，既有氧化性又有还原性且以氧化性为主，能使湿润的淀粉碘化钾试纸变蓝；③NO只能用排水法收集，NO2只能用向上排空气法收集；④NO2或NO2与N2的混合气体溶于水时3NO2＋H2O=2HNO3＋NO，可依据气体体积变化差计算；⑤NO2与O2混合溶于水时4NO2＋O2＋2H2O=4HNO3；⑥NO与O2同时通入水中时总反应为4NO＋3O2＋2H2O=4HNO3。",
+   "boundaryMarkdown": "易错：NO2不能用排水法收集；体积差计算要注意剩余气体的成分。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（黑吉辽蒙专用）/第03讲 氮及其重要化合物（复习讲义）（黑吉辽蒙专用）（学生版）.docx（块 9bf6d767cc-003）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:二氧化氮",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-ed230e0ad8-004",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "放热反应与吸热反应",
+   "summaryMarkdown": "两类反应的能量与ΔH判据、键能判据、常见实例及与反应条件、活化能的关系。",
+   "applicabilityMarkdown": "反应吸放热判断与图像分析",
+   "contentMarkdown": "①放热反应：释放热量的化学反应，反应物的总能量大于生成物的总能量，体系能量降低，ΔH＜0；②吸热反应：吸收热量的化学反应，反应物的总能量小于生成物的总能量，体系能量升高，ΔH＞0；③从键能角度判断：断键吸收的总能量与成键释放的总能量的相对大小决定吸放热；④化学反应的本质是旧化学键断裂和新化学键形成，任何化学反应都具有热效应；⑤不能根据反应条件判断吸放热，需要加热才能进行的反应不一定是吸热反应；⑥有能量变化的过程不一定是吸热或放热反应，如水结成冰放热但不属于放热反应；⑦催化剂能降低反应所需活化能，但不影响焓变的大小。",
+   "boundaryMarkdown": "易错：反应是否需加热不能作为吸放热的判据；催化剂不改变ΔH。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习讲义+练习+课件（新教材新高考）/2026版/第六章 化学反应与能量/第01讲 化学反应的热效应（复习讲义）（全国通用）（教师版）.docx（块 ed230e0ad8-004）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:吸热反应",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-7feb6686e1-008",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "反应热计算的依据",
+   "summaryMarkdown": "计算反应热的主要依据与判断反应热大小的常见出发点。",
+   "applicabilityMarkdown": "反应热计算思路选择",
+   "contentMarkdown": "①主要依据包括热化学方程式、键能、盖斯定律及燃烧热、中和热、反应物和生成物的总能量等；②依据热化学方程式计算时，反应热与反应物和生成物各物质的物质的量成正比；③依据化学键断裂与形成过程中的能量变化计算时，ΔH等于反应物的化学键断裂吸收的能量减去生成物的化学键形成释放的能量，需注意断键和成键的总数；④依据盖斯定律计算时，反应热只与始态和终态有关而与途径无关；⑤依据燃烧热计算时Q(放)＝n(可燃物)×|ΔH|；⑥还可依据比热公式Q＝c·m·ΔT计算。",
+   "boundaryMarkdown": "易错：断键吸收与成键释放要按总数目计，不能用部分键能代替。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题01 化学反应的热效应（知识清单）（全国通用）（教师版）.docx（块 7feb6686e1-008）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:主要依据",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-45d8808041-008",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "反应热计算的方法与盖斯定律",
+   "summaryMarkdown": "根据热化学方程式、总能量、键能、盖斯定律、燃烧热与比热公式计算反应热的方法。",
+   "applicabilityMarkdown": "反应热计算与盖斯定律应用",
+   "contentMarkdown": "①根据热化学方程式计算：反应热与反应物和生成物各物质的物质的量成正比；②根据反应物和生成物的总能量计算：ΔH＝E生成物－E反应物；③依据键能计算：ΔH＝反应物化学键断裂吸收的能量－生成物化学键形成释放的能量；④根据盖斯定律计算：化学反应的反应热只与反应的始态和终态有关而与途径无关，分步反应的反应热之和等于一步完成时的反应热；应用盖斯定律常用热化学方程式相加或相减、合理设计反应途径两种方法；⑤根据燃烧热计算Q(放)＝n(可燃物)×|ΔH|；⑥根据比热公式计算Q＝c·m·ΔT。",
+   "boundaryMarkdown": "易错：盖斯定律中方程式相加减时ΔH必须同步处理并注意系数。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题01 化学反应的热效应（知识清单）（全国通用）（学生版）.docx（块 45d8808041-008）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:主要方法",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-b8ae75e42f-014",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "影响化学反应速率的因素",
+   "summaryMarkdown": "内因（反应物本身性质）是决定因素，外因包括浓度、压强、温度、催化剂等。",
+   "applicabilityMarkdown": "反应速率影响因素分析",
+   "contentMarkdown": "①内因：反应物本身的性质是影响化学反应速率的决定因素，相同条件下卤素单质与H2反应的速率大小关系为F2＞Cl2＞Br2＞I2，镁、铝、锌、铁与稀硫酸反应的速率大小关系为Mg＞Al＞Zn＞Fe；②外因（其他条件不变，只改变一个条件）：浓度——增大反应物浓度反应速率增大；③压强——对有气体参加的反应，改变压强可改变化学反应速率；④温度——升高温度反应速率增大，温度每升高10 ℃反应速率通常增大为原来的2～4倍；⑤催化剂——可改变化学反应速率，一般指正催化剂；⑥其他因素：反应物颗粒大小、构成微小原电池、光、超声波、激光等也能影响反应速率。",
+   "boundaryMarkdown": "易错：固体和纯液体的浓度可视为常数，改变其用量不影响反应速率。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（福建专用）/第七章 化学反应速率与化学平衡/第01讲 化学反应速率及其影响因素（复习讲义）（福建专用）（教师版）.docx（块 b8ae75e42f-014）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:主要因素",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-e0e62d3438-001",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "化学平衡状态及其特征",
+   "summaryMarkdown": "可逆反应的特征、化学平衡状态的概念与“逆、等、动、定、变”五特征。",
+   "applicabilityMarkdown": "平衡状态判断与特征辨析",
+   "contentMarkdown": "①可逆反应：在相同条件下，既能向正反应方向进行，同时又能向逆反应方向进行的反应；其特征是同一条件下正逆反应同时发生、同时存在，反应不能进行到底，反应物不能实现完全转化，反应达到限度时反应仍在进行、没有停止；②化学平衡状态：在一定条件下的可逆反应，当正、逆反应的速率相等时，反应物和生成物的浓度均保持不变，即体系的组成不随时间而改变，表明反应中物质的转化达到了限度；③五特征：逆——研究对象为可逆反应；等——v正等于v逆；动——化学平衡是动态平衡，v正等于v逆且不等于0；定——各组分的浓度保持不变；变——条件改变时化学平衡状态可能发生移动。",
+   "boundaryMarkdown": "易错：平衡时反应并未停止，v正与v逆均不为0；浓度相等不一定达平衡。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题02 化学平衡状态 化学平衡的移动（知识清单）（全国通用）（学生版）.docx（块 e0e62d3438-001）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化学平衡",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-138d8deb9f-006",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "酯化反应的方程式书写",
+   "summaryMarkdown": "一元与多元羧酸、醇之间酯化反应方程式的书写规律及酯的通性。",
+   "applicabilityMarkdown": "酯化方程式书写与产物判断",
+   "contentMarkdown": "①酯化反应是羧酸与醇在浓硫酸、加热条件下生成酯和水的反应，属于取代反应；②一元羧酸与多元醇按物质的量之比1∶1酯化生成酯和水，如CH3COOH＋HOCH2CH2OH→CH3COOCH2CH2OH＋H2O；③多元羧酸与一元醇酯化，如HOOC—COOH与2分子乙醇生成二酯和水；④多元羧酸与多元醇可生成环酯或高聚酯，羟基酸自身也能生成环酯或高聚酯；⑤酯的密度一般小于水，难溶于水、易溶于有机溶剂，低级酯通常有芳香气味；⑥酯在酸性条件下水解可逆，在碱性条件下水解彻底。",
+   "boundaryMarkdown": "易错：酯化反应是可逆反应；多元醇与多元酸可生成环酯或高聚物。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学大一轮复习卓越讲义重难点/资料/（重点·方法·点拨）第58讲 醛、酮、羧酸、酯、酰胺- （教师版）.docx（块 138d8deb9f-006）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:酯化反应",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-6014828781-003",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "有机化合物命名的一般步骤",
+   "summaryMarkdown": "选母体、编序号、写名称的命名步骤及系统命名法中四种字的含义。",
+   "applicabilityMarkdown": "有机化合物命名与名称正误判断",
+   "contentMarkdown": "①命名的一般步骤为选母体、编序号、写名称；②烷烃命名分习惯命名法与系统命名法；③含官能团的有机化合物按系统命名法命名时，母体为含官能团的最长碳链，按官能团和取代基位次最小的原则编号；④苯的同系物命名时苯环作为母体，其他基团作为取代基，苯环上二元取代物可分别用邻、间、对表示；系统命名时将苯环上的6个碳原子编号，以某个取代基所在碳原子的位置为1号，选取最小位次号给其他取代基编号；⑤酯的命名先写酸的名称再写醇的名称，后将醇改为酯；⑥系统命名法中四种字：烯、炔、醛、酮、酸、酯等指官能团，二、三、四等指相同取代基或官能团的个数，1、2、3等指官能团或取代基的位置，甲、乙、丙、丁等指主链碳原子个数。",
+   "boundaryMarkdown": "易错：官能团必须编入母体链并使其位次最小；酯命名顺序不能颠倒。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（四川专用）/第01讲 有机化合物的结构特点与研究方法（教师版）.docx（块 6014828781-003）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:一般步骤",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-0bf385ef55-003",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "有机化合物命名的原则",
+   "summaryMarkdown": "选母体与编序号的原则，以及各类有机物命名的通用要点。",
+   "applicabilityMarkdown": "有机物命名正误判断",
+   "contentMarkdown": "①选母体时：若官能团中没有碳原子，则母体的主链必须包含与官能团相连接的碳原子；若官能团含有碳原子，则母体的主链必须包含这些官能团上的碳原子；②编序号时：让官能团或取代基的位次最小；③烷烃按习惯命名法与系统命名法命名；④苯的同系物以苯环为母体，其他基团为取代基，二元取代物可用邻、间、对表示，系统命名时以某个取代基所在碳原子的位置为1号并选取最小位次号给其他取代基编号；⑤酯的命名先写酸的名称再写醇的名称，后将醇改为酯；⑥理解系统命名法中烯、炔、醛、酮、酸、酯等字表示官能团，甲、乙、丙、丁等表示主链碳原子个数。",
+   "boundaryMarkdown": "易错：母体必须包含官能团碳原子；位次最小原则是编号的核心。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（四川专用）/第01讲 有机化合物的结构特点与研究方法（学生版）.docx（块 0bf385ef55-003）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:命名原则",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-9da7ad2f4a-035",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "海水资源的开发利用",
+   "summaryMarkdown": "氯碱工业、海水提溴的空气吹出法流程与海带提碘的实验步骤及原理。",
+   "applicabilityMarkdown": "海水资源利用流程分析与方程式书写",
+   "contentMarkdown": "①氯的提取——氯碱工业：电解NaCl溶液，工业上用阳离子交换膜电解槽将阳极区与阴极区分隔，避免Cl2与H2、NaOH反应；阳极区Cl－放电生成Cl2，少量Cl2溶于水使阳极区呈酸性；②海水提溴常用空气吹出法：海水晒盐和海水淡化过程中Br－得到浓缩；通入Cl2将Br－氧化为Br2：Cl2＋2Br－=Br2＋2Cl－；利用溴的挥发性，通入热空气或水蒸气吹出溴蒸气并用SO2吸收：Br2＋SO2＋2H2O=2HBr＋H2SO4；再用Cl2将HBr氧化得到产品溴：2HBr＋Cl2=2HCl＋Br2；③海带提碘：灼烧、浸泡、过滤得含I－的滤液，加氧化剂将I－氧化为I2，I2使淀粉变蓝。",
+   "boundaryMarkdown": "易错：提溴分两步氧化，富集用SO2吸收；离子方程式注意Cl2的还原产物。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（四川专用）/第01讲 氯及其重要化合物（复习讲义）（四川专用）（教师版）.docx（块 9da7ad2f4a-035）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:海水资源",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-41f429e060-002",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "氧化还原方程式的配平步骤",
+   "summaryMarkdown": "配平的基本原则、“五步骤”流程及正向配平法与逆向配平法的适用范围。",
+   "applicabilityMarkdown": "氧化还原方程式配平与守恒检验",
+   "contentMarkdown": "①配平基本原则：反应前后原子守恒、电子守恒、电荷守恒；②五步骤：标变价——标出变化元素的化合价；列变化——列出一分子氧化剂和还原剂化合价的升降数值；求总数——用最小公倍数法求出化合价升降总数相等；配系数——先配平变价元素的系数，再用观察法配平其他物质的系数；写完整——检查反应前后原子是否守恒、电子是否守恒、电荷是否守恒；③正向配平法适用于完全氧化还原反应或归中反应，选择氧化剂、还原剂作为基准物质从反应物着手配平；④逆向配平法适用于部分氧化还原反应、分解反应和歧化反应，选择氧化产物、还原产物作为基准物质从生成物着手配平。",
+   "boundaryMarkdown": "易错：必须先标变价再列变化；歧化反应宜从生成物着手逆向配平。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（安徽专用）/第05讲 氧化还原反应方程式的配平与计算（复习讲义）（安徽专用）（教师版）.docx（块 41f429e060-002）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:配平步骤",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-87fdb465a4-013",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "电离平衡常数的概念与应用",
+   "summaryMarkdown": "电离常数的定义、一元与多元弱电解质的表达式及分步电离的规律。",
+   "applicabilityMarkdown": "电离常数表达式书写与酸性强弱比较",
+   "contentMarkdown": "①概念：在一定条件下，当弱电解质的电离达到平衡时，溶液中弱电解质电离所生成的各种离子浓度的乘积与溶液中未电离分子的浓度之比是一个常数，这个常数叫做电离平衡常数，简称电离常数，用K表示（弱酸用Ka、弱碱用Kb）；②表达式：一元弱酸HA的电离常数Ka＝c(H＋)·c(A－)/c(HA)，一元弱碱BOH的Kb＝c(B＋)·c(OH－)/c(BOH)；③多元弱酸或多元弱碱每一步电离都有电离常数，分别用Ka1、Ka2或Kb1、Kb2表示；④一般多元弱酸各步电离常数的大小为Ka1远大于Ka2，因此多元弱酸的酸性主要由第一步电离决定；⑤K值越大表示该弱电解质越易电离，对应酸或碱的酸性或碱性越强。",
+   "boundaryMarkdown": "易错：电离常数只与温度有关，与浓度无关；多元弱酸酸性看Ka1。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习讲义+练习+课件（新教材新高考）/2026版/第八章 水溶液中的离子反应与平衡/第01讲 电离平衡（复习讲义）（全国通用）（解析版）.docx（块 87fdb465a4-013）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电离常数",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-ca2b62f148-004",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "盐类水解的相关概念",
+   "summaryMarkdown": "盐类水解的原理、实质、水解规律与水解反应的特点。",
+   "applicabilityMarkdown": "水解程度判断与离子方程式书写",
+   "contentMarkdown": "①原理：在水溶液中，盐电离出来的离子与水电离出的H＋或OH－结合生成弱电解质的反应叫做盐类的水解；②实质：盐电离出的弱离子破坏了水的电离平衡，使水的电离程度增大，导致c(H＋)≠c(OH－)，溶液呈碱性或酸性；③常见弱离子：弱碱阳离子有NH4＋、Al3＋、Fe3＋、Cu2＋等，弱酸根离子有CO3²⁻、HCO3⁻、AlO2⁻、SO3²⁻、S2－、ClO－、CH3COO－、F－等；④特点：水解反应是可逆反应，是酸碱中和反应的逆反应，程度很微弱；⑤一般盐类水解程度很小，水解产物很少，通常不生成沉淀和气体，离子方程式中不标沉淀或气体符号，生成物不写成其分解产物的形式。",
+   "boundaryMarkdown": "易错：水解程度微弱，书写离子方程式用可逆号且不标↓、↑。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（福建专用）/第八章 水溶液中的离子反应与平衡/第03讲 盐类的水解（教师版）.docx（块 ca2b62f148-004）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:盐类水解",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-6c2b1eeb5f-009",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "酸碱中和滴定的原理",
+   "summaryMarkdown": "中和滴定的实验原理、定量关系式、关键操作及指示剂的选择。",
+   "applicabilityMarkdown": "中和滴定原理应用与指示剂选择",
+   "contentMarkdown": "①实验原理：利用酸碱中和反应，用已知物质的量浓度的酸（或碱）来测定未知物质的量浓度的碱（或酸），这种实验方法叫酸碱中和滴定；②一元酸与一元碱滴定时c待＝c标V标/V待，据此由标准液的浓度和消耗体积计算待测液的浓度；③中和滴定的关键：准确测定参加反应的酸、碱溶液的体积，选取适当指示剂并准确判断滴定终点；④指示剂的选择：变色要灵敏、变色范围要小，且变色范围尽量与滴定终点溶液的酸碱性一致；⑤强酸强碱相互滴定可选用酚酞或甲基橙作指示剂；生成强酸弱碱盐溶液一般选甲基橙，生成强碱弱酸盐溶液一般选酚酞；⑥石蕊颜色变化不明显且变色范围过宽，一般不用作滴定指示剂。",
+   "boundaryMarkdown": "易错：恰好中和不等于滴定终点也不等于溶液呈中性；指示剂选择看终点酸碱性。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题02 水的电离和溶液的酸碱性（知识清单）（全国通用）（教师版）.docx（块 6c2b1eeb5f-009）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:实验原理",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-0bc465bc23-026",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "中和滴定的仪器与指示剂",
+   "summaryMarkdown": "中和滴定的仪器选择、试剂组成、滴定管的选用依据与精确度。",
+   "applicabilityMarkdown": "滴定管选择与实验用品判断",
+   "contentMarkdown": "①仪器：酸式滴定管、碱式滴定管、滴定管夹、铁架台、烧杯、锥形瓶；②滴定管的精确度为0.01 mL；③滴定管的选择：酸性和氧化性试剂一般用酸式滴定管，因为酸性和氧化性物质易腐蚀橡胶管；碱性试剂一般用碱式滴定管，因为碱性物质易与玻璃反应生成具有黏性的物质致使活塞无法打开；④试剂：标准液、待测液、指示剂、蒸馏水；⑤关键操作：准确测定标准液的体积，选取适当指示剂，准确判断滴定终点；⑥注意恰好中和等于酸碱恰好完全反应，但不等于滴定终点，也不等于溶液呈中性，滴定终点与恰好中和越吻合测定误差越小。",
+   "boundaryMarkdown": "易错：酸性、氧化性试剂用酸式滴定管，碱性试剂用碱式滴定管。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（安徽专用）/第02讲 水的电离和溶液的酸碱性（复习讲义）（安徽专用）（教师版）.docx（块 0bc465bc23-026）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:实验用品",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-6c2b1eeb5f-010",
+   "subject": "CHEMISTRY",
+   "type": "REPRESENTATION_GUIDE",
+   "title": "滴定曲线的pH突变",
+   "summaryMarkdown": "中和滴定过程中溶液pH的变化特点、滴定曲线上的突变与终点酸碱性判断。",
+   "applicabilityMarkdown": "滴定曲线图像分析与终点判断",
+   "contentMarkdown": "①在酸碱中和滴定过程中，开始时由于被滴定的酸（或碱）浓度较大，滴入少量的碱（或酸）对其pH的影响不大；②当滴定接近终点（pH＝7）时，滴入很少量（一滴，约0.04 mL）的碱（或酸）溶液就会引起pH的突变，曲线上表现为一段近乎垂直的线段；③酸碱恰好反应时溶液不一定呈中性，溶液的酸碱性取决于生成盐的性质，如强酸滴定弱碱时终点溶液呈酸性；④因此选择指示剂时其变色范围应尽量与滴定终点溶液的酸碱性一致；⑤为减小误差，滴定时要求重复实验2～3次，求出所用标准溶液体积的平均值，再计算待测液的物质的量浓度。",
+   "boundaryMarkdown": "易错：滴定终点≠恰好中和≠中性；突变范围决定指示剂的选择。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题02 水的电离和溶液的酸碱性（知识清单）（全国通用）（教师版）.docx（块 6c2b1eeb5f-010）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:滴定曲线",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-6c2b1eeb5f-011",
+   "subject": "CHEMISTRY",
+   "type": "MISCONCEPTION_GUIDE",
+   "title": "中和滴定的误差与操作辨析",
+   "summaryMarkdown": "滴定操作中的常见错误判断：润洗、读数、指示剂选择与误差方向的判断。",
+   "applicabilityMarkdown": "滴定操作正误辨析与误差方向判断",
+   "contentMarkdown": "①滴定管在加入反应液之前一定要用所要盛装的反应液润洗2～3遍，而锥形瓶只用蒸馏水洗、不能用待装溶液润洗；②滴定管盛标准液时，液面不一定要调在0刻度，只要在0刻度或0刻度以下并准确读数即可；③读数应读到小数点后两位，如24.60 mL，不能记作24.6 mL；④若用标准盐酸滴定待测NaOH溶液，滴定前仰视、滴定后俯视，会使测定值偏大；⑤滴定达终点时若滴定管尖嘴部分有悬滴，会使测定结果偏大而非偏小；⑥用已知浓度的盐酸滴定未知浓度的氨水时应选择甲基橙作指示剂，而不是酚酞；⑦pH计可用于酸碱中和滴定终点的判断。",
+   "boundaryMarkdown": "易错：仰视俯视引起的误差方向易判断反；锥形瓶不能润洗。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题02 水的电离和溶液的酸碱性（知识清单）（全国通用）（教师版）.docx（块 6c2b1eeb5f-011）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:误差分析",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-4fdf31e94f-004",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "电离平衡的影响因素",
+   "summaryMarkdown": "内因决定电离程度，温度、浓度、同离子效应与化学反应对电离平衡的影响。",
+   "applicabilityMarkdown": "外界条件对电离平衡与电离程度的影响",
+   "contentMarkdown": "①内因：电解质本身的性质决定了弱电解质在水中达到电离平衡时电离程度的大小；②温度：弱电解质的电离过程吸热，升高温度电离平衡向电离方向移动，电离程度增大；③浓度：同一弱电解质，增大溶液浓度时电离平衡向电离方向移动，但电离程度减小；稀释溶液时电离平衡向电离方向移动，电离程度增大，但往往使溶液中离子的浓度减小；④同离子效应：加入与弱电解质电离产生相同离子的强电解质，电离平衡向逆方向移动，抑制电离；⑤化学反应：加入能与弱电解质电离产生的某种离子反应的物质，电离平衡向电离方向移动，促进电离；⑥注意弱酸或弱碱的电离平衡向右移动，其电离程度不一定增大。",
+   "boundaryMarkdown": "易错：稀释促进电离但离子浓度可能减小；平衡右移不等于电离程度增大。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（安徽专用）/第01讲 电离平衡（复习讲义）（安徽专用）（学生版）.docx（块 4fdf31e94f-004）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电离平衡",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-e2850176cd-001",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "电解原理及规律",
+   "summaryMarkdown": "电解与电解池的定义、工作原理（以电解CuCl2溶液为例）与两极粒子的放电顺序。",
+   "applicabilityMarkdown": "电解池电极判断与放电顺序应用",
+   "contentMarkdown": "①电解：让直流电通过电解质溶液（或熔融的电解质），在两个电极上分别发生氧化反应和还原反应的过程；②电解池：使电能转化为化学能的装置；③工作原理（以电解CuCl2溶液为例）：阳极（接电源正极）Cl－失电子生成Cl2，阴极（接电源负极）Cu2＋得电子生成Cu，总反应为CuCl2电解生成Cu＋Cl2↑；④电解时两极粒子的放电顺序：阳极按失电子能力由强到弱放电，阴极按氧化性由强到弱得电子；⑤电解质溶液的导电过程一定发生了化学变化；电子从电源负极流出流入阴极、从阳极流回电源正极，电子不通过溶液。",
+   "boundaryMarkdown": "易错：电子不经过溶液；阳离子在阴极放电、阴离子在阳极放电。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题03 电解池、金属的腐蚀与防护（知识清单）（全国通用）（学生版）.docx（块 e2850176cd-001）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电解原理",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-5feafff863-003",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "杂化轨道理论及类型判断",
+   "summaryMarkdown": "杂化轨道理论的要点、常见杂化类型与杂化轨道数目及类型的判断方法。",
+   "applicabilityMarkdown": "杂化类型判断与空间结构分析",
+   "contentMarkdown": "①理论概述：中心原子上若干不同类型（主要是s、p轨道）、能量相近的原子轨道混合起来，重新组合成同等数目、能量完全相同的新轨道；杂化轨道数不同，轨道间的夹角就不同，形成分子的空间结构就不同；②常考的三种杂化轨道类型为sp、sp2、sp3；③杂化轨道数目计算：杂化轨道总数等于σ键数加孤电子对数，也等于中心原子的价层电子对数；④依据中心原子成键形式判断：第ⅡA族Be形成2个共价键采取sp杂化，第ⅢA族B、Al等形成3个共价键采取sp2杂化、形成4个共价键采取sp3杂化；第ⅣA至ⅦA族元素只形成单键时采取sp3杂化，形成1个双键时采取sp2杂化，形成1个三键时采取sp杂化。",
+   "boundaryMarkdown": "易错：杂化轨道数等于价层电子对数，不能只看σ键数或孤对电子数。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高三化学一轮复习讲义（新高考通用）/资料/第七章　第32讲　价层电子对互斥模型　杂化轨道理论（教师版）.docx（块 5feafff863-003）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:杂化轨道",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-6aa46b5568-016",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "有机合成的原则与分析方法",
+   "summaryMarkdown": "有机合成的三条原则、正合成、逆合成与类比合成分析法及解题方法。",
+   "applicabilityMarkdown": "有机合成路线设计与分析",
+   "contentMarkdown": "①有机合成原则：合成线路简捷，步骤少、操作简单、安全可靠、能耗低、易于实现、产品易于分离且产率较高；基础原料要价廉、易得、低毒性、低污染；符合绿色化学思想，即原子的经济性、原料的绿色化、试剂与催化剂的无公害性；②正合成分析法：从基础原料入手，找出合成所需的直接或间接的中间体，逐步推向合成的目标有机物；③逆合成分析法：由目标有机物倒推寻找上一步反应的中间体，依次倒推，最后确定最适宜的基础原料和最终的合成路线，是设计复杂有机物合成路线的常用方法；④类比合成分析法：比较题目所给知识，找出原料与合成物质的内在联系，确定中间产物，最后得到目标产物。",
+   "boundaryMarkdown": "易错：复杂有机物合成路线通常优先用逆合成分析法，再正向书写。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（安徽专用）/第05讲 有机合成与推断（复习讲义）（安徽专用）（学生版）.docx（块 6aa46b5568-016）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:有机合成",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-debd9107b2-036",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "范德华力及其对性质的影响",
+   "summaryMarkdown": "分子间作用力的分类与强弱，范德华力的性质、影响因素及与化学键的比较。",
+   "applicabilityMarkdown": "分子间作用力判断与熔沸点比较",
+   "contentMarkdown": "①分子间作用力：物质分子之间普遍存在的相互作用力，最常见的是范德华力和氢键；②强弱关系：范德华力＜氢键＜化学键；③范德华力约比化学键的键能小1～2个数量级；④范德华力主要影响物质的熔点、沸点、硬度等物理性质，范德华力越强，物质的熔点、沸点越高、硬度越大；⑤组成和结构相似的物质，随着相对分子质量的增加，范德华力逐渐增大，故熔沸点逐渐升高；⑥范德华力不属于化学键，不影响物质的化学性质。",
+   "boundaryMarkdown": "易错：范德华力只影响物理性质；相对分子质量越大范德华力越强。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习讲义+练习+课件（新教材新高考）/2026版/第五章 物质结构与性质 元素周期律/第03讲 分子结构与性质、化学键（复习讲义）（全国通用）（教师版）.docx（块 debd9107b2-036）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:范德华力",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-254546a036-008",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "中和滴定的操作流程",
+   "summaryMarkdown": "滴定管与锥形瓶的洗涤、装液调液面、读数与数据处理的操作规范。",
+   "applicabilityMarkdown": "滴定操作步骤与数据处理分析",
+   "contentMarkdown": "①洗涤：滴定管（或移液管）用自来水洗后依次用蒸馏水、所装溶液润洗；锥形瓶用自来水、蒸馏水洗净，不用所装溶液润洗；②装液调整液面：装液后使液面一般高于0刻度，驱除滴定管尖嘴处的气泡；③读数：调整液面在0刻度或0刻度以下，读出初读数；滴定至终点后读出末读数，实际消耗标准液的体积为末读数减初读数；④操作顺序可归纳为查漏、洗涤、润洗、注液、调液、滴定；⑤数据处理：为减少实验误差，要求重复实验2～3次，求出所用标准溶液体积的平均值，再计算待测液的物质的量浓度；⑥滴定接近终点时滴定管的尖嘴可以接触锥形瓶内壁。",
+   "boundaryMarkdown": "易错：滴定管必须润洗而锥形瓶不能；消耗体积为末读数减初读数。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题02 水的电离和溶液的酸碱性（知识清单）（全国通用）（学生版）.docx（块 254546a036-008）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:中和滴定",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-97a64ae5f0-026",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "海水提镁的流程与反应",
+   "summaryMarkdown": "从海水中提取镁的六个基本步骤与主要反应，以及脱水和冷却的注意点。",
+   "applicabilityMarkdown": "海水提镁流程分析与方程式书写",
+   "contentMarkdown": "①制石灰乳：CaCO3高温分解生成CaO和CO2↑，CaO＋H2O=Ca(OH)2；②沉淀Mg2＋：MgCl2＋Ca(OH)2=Mg(OH)2↓＋CaCl2；③酸化制备MgCl2：Mg(OH)2＋2HCl=MgCl2＋2H2O；④蒸发结晶析出MgCl2·6H2O；⑤脱水：在氯化氢气流中使MgCl2·6H2O脱水制得无水氯化镁，氯化氢的作用是抑制Mg2＋的水解；⑥电解熔融氯化镁制得金属镁：MgCl2(熔融)电解生成Mg＋Cl2↑；⑦因镁在高温下能与O2、N2、CO2等反应，电解得到的镁应在H2氛围中冷却；由于氧化镁熔点很高，工业上不用电解熔融氧化镁的方法制取镁。",
+   "boundaryMarkdown": "易错：由MgCl2·6H2O制无水MgCl2必须在HCl气流中加热以防MgCl2水解。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（四川专用）/第03讲  铝及其重要化合物（复习讲义）（四川专用）（教师版）.docx（块 97a64ae5f0-026）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:海水提取镁",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-269458a117-022",
+   "subject": "CHEMISTRY",
+   "type": "MISCONCEPTION_GUIDE",
+   "title": "元素周期律的易混易错点",
+   "summaryMarkdown": "金属性与金属活动性、氢化物稳定性、半径比较、电离能反常等易错辨析。",
+   "applicabilityMarkdown": "元素周期律易错辨析与性质比较",
+   "contentMarkdown": "①金属性指金属气态原子失电子能力的性质，金属活动性指金属单质在水溶液中失去电子能力的性质，两者顺序基本一致但仅极少数例外，如金属性Pb＞Sn，而金属活动性Sn＞Pb；②元素的气态氢化物越稳定非金属性越强，但其水溶液的酸性与元素非金属性没有必然联系；③同周期元素从左到右原子半径逐渐减小，金属阳离子半径小于同周期非金属元素的阴离子半径；④金属活动性顺序与元素相应的电离能大小顺序不完全一致，不能据金属活动性顺序表判断电离能大小；⑤同一周期中第ⅡA、ⅤA族元素价电子排布处于全空或半满状态，第一电离能比同周期相邻元素大，如I(N)＞I(O)；⑥每一周期第一电离能最大的为稀有气体元素。",
+   "boundaryMarkdown": "易错：金属性与金属活动性不同；ⅡA、ⅤA族第一电离能反常。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题01 元素周期表 元素周期律（知识清单）（全国通用）（教师版）.docx（块 269458a117-022）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:元素周期律",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-66a5a9c895-001",
+   "subject": "CHEMISTRY",
+   "type": "REPRESENTATION_GUIDE",
+   "title": "氨的喷泉实验装置分析",
+   "summaryMarkdown": "以氨为例说明喷泉实验的原理、装置类型与引发方法。",
+   "applicabilityMarkdown": "喷泉实验装置原理与现象分析",
+   "contentMarkdown": "①氨是无色、有刺激性气味的气体，密度比空气小，易液化，液氨可作制冷剂，极易溶于水（体积比约为1∶700），可由喷泉实验证明；②喷泉实验的原理：气体极易溶于水（或与吸收液反应），使烧瓶内气体大量溶解导致烧瓶内形成负压，外界大气压将水压入烧瓶形成喷泉；③引发方法：打开止水夹并挤压胶头滴管使少量水进入烧瓶；或用手（热毛巾）捂烧瓶使气体受热膨胀逸出，或用浸冰水的毛巾冷敷烧瓶；④也可在锥形瓶中加入能产生气体的物质增大锥形瓶内压强，将液体压入烧瓶；⑤用酚酞溶液时可看到红色喷泉；⑥吸收氨气或HCl时要注意防止倒吸。",
+   "boundaryMarkdown": "易错：形成喷泉的关键是烧瓶内压强明显减小；氨水只显弱碱性。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高三化学一轮复习讲义（新高考通用）/资料/第五章 第24讲 氨　铵盐（学生版）.docx（块 66a5a9c895-001）",
+   "reviewedAtEpochMillis": 1789741889464,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:常见的装置",
+     "role": "PRIMARY"
+    }
+   ]
   }
  ]
 }

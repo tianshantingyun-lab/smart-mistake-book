@@ -40674,6 +40674,346 @@
      "role": "PRIMARY"
     }
    ]
+  },
+  {
+   "slug": "ext-che-9a101eff14-001c",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "酮的结构与通式",
+   "summaryMarkdown": "酮的羰基结构、通式、丙酮的性质与加成还原，与醛的区别。",
+   "applicabilityMarkdown": "醛酮区分与结构判断",
+   "contentMarkdown": "①羰基两端都连烃基时为酮，丙酮是最简单的酮，饱和一元酮通式CnH2nO(n≥3)；②丙酮与氢气加成生成2-丙醇，体现羰基的加成（还原）反应；③小分子酮碳链短，羰基氧与水形成氢键，易溶于水；④酮不能被银氨溶液或新制Cu(OH)2氧化，故可用银氨溶液或Cu(OH)2鉴别醛与酮；⑤酮与醛互为官能团类别异构，分子式相同的醛与酮互为同分异构体。",
+   "boundaryMarkdown": "易错：丙酮不能发生银镜反应；羰基加氢属于还原反应而非氧化。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学大一轮复习卓越讲义重难点/资料/（重点·方法·点拨）第58讲 醛、酮、羧酸、酯、酰胺- （学生版）.docx（块 9a101eff14-001）",
+   "reviewedAtEpochMillis": 1789741931288,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:酮",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-9a101eff14-003c",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "羧酸与乙酸的化学性质",
+   "summaryMarkdown": "以乙酸为代表的羧酸酸性、酯化反应及各类酯化方程式的书写。",
+   "applicabilityMarkdown": "乙酸性质与酯化方程式书写",
+   "contentMarkdown": "①乙酸的结构为甲基连羧基，官能团是羧基，具有酸性且酸性强于碳酸；②羧酸与醇在浓硫酸、加热条件下发生酯化反应，属于取代反应，反应中羧酸脱羟基、醇脱氢；③一元羧酸与多元醇按物质的量之比1∶1酯化生成酯和水；④多元羧酸与多元醇可生成环酯或高聚酯，如乙二酸与乙二醇生成高聚酯；⑤羟基酸自身也可酯化生成环酯或高聚酯；⑥酯化反应是可逆反应，浓硫酸起催化剂和吸水剂作用。",
+   "boundaryMarkdown": "易错：酯化反应中羧酸脱—OH、醇脱—H，可用同位素示踪法验证。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学大一轮复习卓越讲义重难点/资料/（重点·方法·点拨）第58讲 醛、酮、羧酸、酯、酰胺- （学生版）.docx（块 9a101eff14-003）",
+   "reviewedAtEpochMillis": 1789741931288,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:乙酸",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-a18e148bcb-001c",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "糖类的概念与分类",
+   "summaryMarkdown": "糖类的定义与组成、按水解产物分类为单糖、二糖和多糖。",
+   "applicabilityMarkdown": "糖类分类与组成判断",
+   "contentMarkdown": "①概念：从分子结构上看，糖类是多羟基醛、多羟基酮和它们的脱水缩合物；②组成元素为碳、氢、氧，大多数糖类化合物的通式为Cm(H2O)n，所以糖类也叫碳水化合物；③分类：按能否水解及水解产物分为单糖（如葡萄糖、果糖，不能水解）、二糖（如蔗糖、麦芽糖，水解生成两分子单糖）和多糖（如淀粉、纤维素，水解最终生成葡萄糖）；④葡萄糖是多羟基醛，果糖是多羟基酮，二者互为同分异构体。",
+   "boundaryMarkdown": "易错：糖类不都符合Cm(H2O)n，符合该通式的也不一定是糖类。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习·知识清单（新高考通用）/资料/第29讲 糖类　油脂　蛋白质　高分子材料（学生版）.docx（块 a18e148bcb-001）",
+   "reviewedAtEpochMillis": 1789741931288,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:单糖",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-84c9f9347b-011c",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "碳中和的含义与实现途径",
+   "summaryMarkdown": "碳中和的定义、提出时间与通过植树造林、节能减排、碳捕集与封存实现零排放。",
+   "applicabilityMarkdown": "碳中和概念判断与低碳措施分析",
+   "contentMarkdown": "①2020年9月，我国提出争取在2060年前实现碳中和；②碳中和是指直接或间接产生的温室气体排放总量，通过植树造林、节能减排、碳捕集与封存等形式，抵消自身产生的二氧化碳排放量，实现二氧化碳零排放；③其核心是排放与吸收相抵消，而不是完全不排放二氧化碳；④注意与碳达峰区分，推广煤液化、煤气化只能提高煤的利用率，并不能减少二氧化碳排放，不利于实现碳中和。",
+   "boundaryMarkdown": "易错：碳中和是排放与吸收抵消的零排放，煤液化并不能减少CO2排放。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题03 氮及其化合物（知识清单）（全国通用）（学生版）.docx（块 84c9f9347b-011）",
+   "reviewedAtEpochMillis": 1789741931288,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:碳中和",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-9a101eff14-001b",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "醛酮在有机合成中的应用",
+   "summaryMarkdown": "醛酮可与HCN加成增长碳链，含α-H的醛发生羟醛缩合生成α，β-不饱和醛，是常用成键反应。",
+   "applicabilityMarkdown": "醛酮性质与有机合成增碳反应",
+   "contentMarkdown": "①醛的氧化反应：能发生银镜反应(乙醛与银氨溶液水浴加热生成银镜)，也能与新制Cu(OH)2悬浊液反应生成砖红色Cu2O沉淀，两个反应都必须在碱性条件下进行。②醛、酮的还原反应：催化加氢生成相应的醇，故醛酮既能被氧化又能被还原。③醛、酮与含极性键的共价分子加成：与HCN加成得到α-羟基腈，水解后可得α-羟基酸，是增长碳链并引入官能团的常用方法。④羟醛缩合：含α-H的醛在稀碱(10% NaOH)溶液中与另一分子醛作用生成β-羟基醛，加热脱水得α，β-不饱和醛；丙酮与柠檬醛经此反应可合成α-紫罗兰酮和β-紫罗兰酮。⑤甲醛是常温下唯一呈气态的烃的含氧衍生物。",
+   "boundaryMarkdown": "银镜反应与新制Cu(OH)2的反应都必须在碱性条件下进行，酸会破坏两种试剂。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学大一轮复习卓越讲义重难点/资料/（重点·方法·点拨）第58讲 醛、酮、羧酸、酯、酰胺- （学生版）.docx（块 9a101eff14-001）",
+   "reviewedAtEpochMillis": 1789742035158,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:醛-酮在有机合成中的应用",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-a18e148bcb-001b",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "氨基酸与蛋白质的结构性质",
+   "summaryMarkdown": "氨基酸含氨基和羧基而具两性，可脱水成肽；蛋白质由氨基酸缩聚而成，含C、H、O、N、S等元素。",
+   "applicabilityMarkdown": "氨基酸成肽与蛋白质组成",
+   "contentMarkdown": "①氨基酸的结构特点：分子中既含有氨基(—NH2)又含有羧基(—COOH)，α-氨基酸的通式为RCH(NH2)COOH，常见的有氨基乙酸(甘氨酸)、2-氨基丙酸(丙氨酸)、苯丙氨酸等。②氨基酸的主要性质：氨基显碱性、羧基显酸性，具有两性，既能与酸反应又能与碱反应。③成肽反应：两个氨基酸分子(可以相同也可以不同)彼此脱水缩合生成含有肽键的二肽，多个氨基酸分子脱水生成多肽，相对分子质量在10000以上并具有一定空间结构的多肽称为蛋白质。④蛋白质由不同氨基酸脱水缩聚形成，结构复杂，含有C、H、O、N、S等元素，属于天然有机高分子，水解的最终产物为α-氨基酸。⑤氨基酸、多肽和蛋白质之间可以相互转化。",
+   "boundaryMarkdown": "成肽时氨基脱氢、羧基脱羟基，二肽分子中仍保留一个氨基和一个羧基。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习·知识清单（新高考通用）/资料/第29讲 糖类　油脂　蛋白质　高分子材料（学生版）.docx（块 a18e148bcb-001）",
+   "reviewedAtEpochMillis": 1789742035158,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:蛋白质和氨基酸的结构与性质",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-9a101eff14-003b",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "羧酸和酯的结构与性质",
+   "summaryMarkdown": "羧基与酯基中的碳氧双键不与H2加成；酯化与酯的水解均为取代反应，碱性水解更彻底。",
+   "applicabilityMarkdown": "羧酸与酯的性质辨析",
+   "contentMarkdown": "①羧酸的化学性质：具有酸性，能与NaHCO3溶液反应生成CO2；能与醇发生酯化反应(取代反应)，生成酯和水。②酯化反应的书写要注意配比：一元羧酸与多元醇、多元羧酸与一元醇都能酯化；乙二酸与乙二醇可生成环酯或高聚酯；羟基酸自身酯化也可生成环酯或高聚酯。③酯的通性：酯的密度一般小于水，难溶于水、易溶于有机溶剂，低级酯通常有芳香气味，可用作溶剂或香料。④酯的水解属于取代反应：酸性条件下水解可逆，碱性条件下水解进行彻底。⑤羧基和酯基中的碳氧双键不能与H2发生加成反应，能加氢的只有醛基、酮羰基等。⑥1 mol酚酯基在碱性条件下水解时最多可消耗2 mol NaOH。",
+   "boundaryMarkdown": "羧基、酯基中的碳氧双键不能与H2加成；碱性条件下酯水解不可逆，酸性条件下可逆。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学大一轮复习卓越讲义重难点/资料/（重点·方法·点拨）第58讲 醛、酮、羧酸、酯、酰胺- （学生版）.docx（块 9a101eff14-003）",
+   "reviewedAtEpochMillis": 1789742035158,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:羧酸和酯的结构和性质易混易错点",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-4ddeefaa27-004b",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "醇的概念与断键反应",
+   "summaryMarkdown": "醇的官能团、分类、氢键与沸点、按断键部位理解醇的化学性质。",
+   "applicabilityMarkdown": "醇的结构与反应类型判断",
+   "contentMarkdown": "①醇是脂肪烃分子中氢原子或芳香烃侧链上氢原子被羟基取代后的化合物，饱和一元醇通式CnH2n＋1OH(n≥1)，官能团为羟基；②醇分子间形成氢键，故沸点比同碳原子数的烃高，甲醇、乙醇、丙醇与水分子间形成氢键，可与水以任意比例互溶；③羟基决定醇的主要化学性质：与Na反应断①键（置换），与HBr反应断②键（取代），分子内脱水成烯断②⑤键（消去），分子间脱水成醚断①②键（取代），催化氧化断①③键生成醛或酮。",
+   "boundaryMarkdown": "易错：与羟基相连碳的邻位碳上无氢时不能消去，含—CH2OH结构才能氧化成醛。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学大一轮复习卓越讲义重难点/资料/（重点·方法·点拨）第57讲 卤代烃　醇　酚- （教师版）.docx（块 4ddeefaa27-004）",
+   "reviewedAtEpochMillis": 1789742035158,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:醇",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-4ddeefaa27-009b",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "苯酚的性质与检验",
+   "summaryMarkdown": "苯酚的弱酸性、与溴水的取代、显色反应、缩聚与氧化。",
+   "applicabilityMarkdown": "酚类性质判断与检验操作",
+   "contentMarkdown": "①羟基与苯环相互影响，使苯酚中羟基氢更活泼而显弱酸性，但酸性比碳酸弱，与Na2CO3反应只生成NaHCO3，与NaHCO3不反应；②苯酚钠溶液中通入CO2无论是否过量都只生成NaHCO3；③苯酚与浓溴水反应生成2，4，6-三溴苯酚白色沉淀，可用于检验；④苯酚遇FeCl3溶液显紫色，是酚类的特征反应；⑤苯酚与甲醛可发生缩聚反应制酚醛树脂，苯酚易被空气氧化显粉红色；⑥苯酚有毒且腐蚀皮肤，沾到皮肤应先用酒精冲洗再用水冲洗。",
+   "boundaryMarkdown": "易错：苯酚与溴水取代需浓溴水且生成白色沉淀，稀溴水只显浅黄色。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学大一轮复习卓越讲义重难点/资料/（重点·方法·点拨）第57讲 卤代烃　醇　酚- （教师版）.docx（块 4ddeefaa27-009）",
+   "reviewedAtEpochMillis": 1789742035158,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:酚",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-138d8deb9f-001b",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "醛、酮的组成与氧化还原",
+   "summaryMarkdown": "醛与酮的官能团、通式、羰基加氢还原与醛的银镜、氢氧化铜氧化反应。",
+   "applicabilityMarkdown": "醛基检验与醛酮性质辨析",
+   "contentMarkdown": "①醛、酮的官能团都是羰基，区别在于羰基两端所连基团；饱和一元醛通式CnH2nO(n≥1)，饱和一元酮通式CnH2nO(n≥3)；②小分子醛酮碳链短，羰基氧能与水分子形成氢键，均易溶于水；③醛的氧化反应（以乙醛为例）：银镜反应生成银，与新制Cu(OH)2悬浊液加热生成砖红色Cu2O；④醛、酮都能与H2催化加成还原为醇；⑤羰基还能与具极性键的分子发生加成，醛酮在有机合成中常用到羟醛缩合。",
+   "boundaryMarkdown": "易错：银镜反应与Cu(OH)2反应均需碱性条件；酮不能被银氨溶液氧化。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学大一轮复习卓越讲义重难点/资料/（重点·方法·点拨）第58讲 醛、酮、羧酸、酯、酰胺- （教师版）.docx（块 138d8deb9f-001）",
+   "reviewedAtEpochMillis": 1789742035158,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:醛",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-9a101eff14-004b",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "酯的水解与定量关系",
+   "summaryMarkdown": "酯的水解条件（酸性可逆、碱性彻底）与酚酯耗碱的定量关系。",
+   "applicabilityMarkdown": "酯的水解产物与耗碱量计算",
+   "contentMarkdown": "①酯在酸性条件下水解不完全：CH3COOC2H5＋H2O⇌CH3COOH＋C2H5OH，是可逆反应；②碱性条件下水解彻底：CH3COOC2H5＋NaOH→CH3COONa＋C2H5OH，故除去乙酸乙酯中的乙酸不能用NaOH溶液；③分子式相同的羧酸与酯互为同分异构体，属于官能团类别异构；④酚酯基水解生成酚羟基与羧基，1 mol酚酯基最多消耗2 mol NaOH；⑤制备乙酸乙酯时用饱和Na2CO3溶液吸收，既中和乙酸、溶解乙醇又降低酯的溶解度，不能用NaOH溶液。",
+   "boundaryMarkdown": "易错：酯化反应与酯的水解都属于取代反应；酚酯耗碱多于普通酯。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学大一轮复习卓越讲义重难点/资料/（重点·方法·点拨）第58讲 醛、酮、羧酸、酯、酰胺- （学生版）.docx（块 9a101eff14-004）",
+   "reviewedAtEpochMillis": 1789742035158,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:酯",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-9129741016-003b",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "脂肪烃的化学性质",
+   "summaryMarkdown": "烷烃的稳定与取代、烯烃与炔烃的加成和氧化、加聚反应。",
+   "applicabilityMarkdown": "烃类化学性质比较与方程式书写",
+   "contentMarkdown": "①烷烃常温下很不活泼，与强酸、强碱、强氧化剂都不反应，只在光照或高温等特殊条件下发生反应：完全燃烧生成CO2和H2O，与纯卤素单质在光照下发生取代反应生成卤代烃和卤化氢；②烷烃取代反应的定量关系为取代1 mol氢原子消耗1 mol卤素单质并生成1 mol HX；③烷烃受热时可分解生成含碳原子数较少的烷烃和烯烃；④烯烃、炔烃含不饱和键，能与溴等发生加成反应而使溴水褪色，也能被酸性KMnO4溶液氧化而使其褪色，还能发生加聚反应生成高分子。",
+   "boundaryMarkdown": "易错：烯烃与溴水是加成反应，与酸性KMnO4是氧化反应。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习讲义+练习+课件（新教材新高考）/2026版/第九章 有机化学基础/专题02 烃（知识清单）（全国通用）（教师版）.docx（块 9129741016-003）",
+   "reviewedAtEpochMillis": 1789742035158,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:烯烃",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-024618b63e-008b",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "炔烃的结构与性质",
+   "summaryMarkdown": "炔烃的定义、官能团与通式、物理性质规律及化学性质。",
+   "applicabilityMarkdown": "炔烃结构与性质判断",
+   "contentMarkdown": "①定义：分子里含有碳碳三键的一类脂肪烃，官能团为碳碳三键；②通式：只含一个碳碳三键时通式为CnH2n－2（n≥2）；③物理性质：2～4个碳原子为气态，都难溶于水、易溶于有机溶剂；随碳原子数增多熔沸点升高、密度增大但比水小，分子式相同时支链越多熔沸点越低；④化学性质由碳碳三键决定，与乙炔相似：能燃烧生成CO2和H2O，能使酸性KMnO4溶液褪色，能发生加成反应和加聚反应。",
+   "boundaryMarkdown": "易错：炔烃与二烯烃通式相同但结构不相似，不互为同系物。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（福建专用）/第九章 有机化学基础/第02讲 烃（教师版）.docx（块 024618b63e-008）",
+   "reviewedAtEpochMillis": 1789742035158,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:炔烃",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-138d8deb9f-007b",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "胺与酰胺的性质",
+   "summaryMarkdown": "胺的碱性成因与酰胺在酸、碱条件下加热的水解反应。",
+   "applicabilityMarkdown": "胺与酰胺性质及水解方程式书写",
+   "contentMarkdown": "①胺类化合物与NH3类似具有碱性，能与盐酸、醋酸等反应；②碱性的原因：RNH2＋H2O可逆生成RNH3＋和OH－；③与酸反应：RNH2＋HCl→RNH3Cl；④酰胺是羧酸分子中羟基被氨基取代得到的化合物，官能团为酰胺基；⑤酰胺在酸或碱存在并加热的条件下可发生水解反应，以RCONH2为例：酸性条件下生成羧酸和铵盐，碱性条件下生成羧酸盐并放出氨气；⑥分子式相同的羧酸和酯互为同分异构体，酯化反应和酯的水解反应都属于取代反应。",
+   "boundaryMarkdown": "易错：酰胺在碱性条件下水解生成羧酸盐而不是羧酸。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学大一轮复习卓越讲义重难点/资料/（重点·方法·点拨）第58讲 醛、酮、羧酸、酯、酰胺- （教师版）.docx（块 138d8deb9f-007）",
+   "reviewedAtEpochMillis": 1789742035158,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:酰胺",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-4ddeefaa27-001b",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "卤代烃的性质与卤素检验",
+   "summaryMarkdown": "卤代烃的概念、物理性质、水解与消去反应及卤素原子的检验流程。",
+   "applicabilityMarkdown": "卤代烃反应类型与检验实验分析",
+   "contentMarkdown": "①概念：卤代烃可看作烃分子中一个或多个氢原子被卤素原子取代后生成的化合物，通式可表示为R—X，官能团是碳卤键；②物理性质：沸点比同碳原子数的烃高，不溶于水、可溶于有机溶剂，一般一氟代烃和一氯代烃比水小，其余比水大；③水解反应：在NaOH水溶液中加热生成醇；消去反应：在NaOH醇溶液中加热生成烯烃，能发生消去要求碳原子数≥2且存在β-H，苯环上的卤素原子不能消去；④检验卤素原子：先加NaOH水溶液加热使其转化为卤素离子，再加稀硝酸酸化，最后加AgNO3溶液，根据沉淀颜色判断；加稀硝酸是为中和过量NaOH，防止生成棕褐色Ag2O沉淀。",
+   "boundaryMarkdown": "易错：检验卤素必须先水解并酸化；消去反应必须有β-H。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学大一轮复习卓越讲义重难点/资料/（重点·方法·点拨）第57讲 卤代烃　醇　酚- （教师版）.docx（块 4ddeefaa27-001）",
+   "reviewedAtEpochMillis": 1789742035158,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:卤代烃",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-ac039fce3c-001b",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "合成高分子与聚合反应",
+   "summaryMarkdown": "单体、链节、聚合度的含义，合成高分子的加聚与缩聚两个基本反应。",
+   "applicabilityMarkdown": "聚合反应类型判断与单体分析",
+   "contentMarkdown": "①高分子的结构特点：单体是能聚合成高分子的小分子化合物；链节是高分子中化学组成和结构均可以重复的单位；聚合度指一个高分子化合物中结构单元的总数，表示形成该高分子时反应掉的单体数；②高分子的分类及性质特点中，塑料、合成纤维、合成橡胶又被称为三大合成材料；③合成高分子的两个基本反应是加聚反应和缩聚反应；④加聚反应由含不饱和键的单体相互加成而成，无小分子生成；⑤缩聚反应由单体间脱去小分子（如水）而成，如二元醇与二元酸缩聚成高聚酯、氨基酸缩聚成多肽。",
+   "boundaryMarkdown": "易错：加聚无小分子生成而缩聚有小分子生成，是判断反应类型的依据。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学大一轮复习卓越讲义重难点/资料/（重点·方法·点拨）第60讲 合成高分子　有机合成路线设计- （学生版）.docx（块 ac039fce3c-001）",
+   "reviewedAtEpochMillis": 1789742035158,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:聚合反应",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-84c9f9347b-011b",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "绿色化学与原子经济性",
+   "summaryMarkdown": "绿色化学的核心与特征、原子经济性的含义及原子利用率的表示。",
+   "applicabilityMarkdown": "绿色化学理念判断与原子利用率计算",
+   "contentMarkdown": "①核心：从源头上减少或消除工业生产对环境造成的污染，又称环境无害化学、环境友好化学、清洁化学；②理念在于不再使用有毒有害的物质、不再产生废物、不再处理废物；③绿色化学的研究围绕化学反应、原料、催化剂、溶剂和产品的绿色化开展，其特征为：采用无毒无害的原料，在无毒无害的条件下进行，产品是环境友好的，并具有原子经济性；④原子经济性要求反应具有高选择性、极少副产物甚至实现零排放；⑤原子经济性可用原子利用率来衡量，原子利用率等于目标产物的相对分子质量除以反应物总相对分子质量再乘以100%，其优点是最大限度利用原料并减少废物排放。",
+   "boundaryMarkdown": "易错：原子经济性看目标产物占反应物的比例，与产率概念不同。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题03 氮及其化合物（知识清单）（全国通用）（学生版）.docx（块 84c9f9347b-011）",
+   "reviewedAtEpochMillis": 1789742035158,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:绿色化学",
+     "role": "PRIMARY"
+    }
+   ]
   }
  ]
 }
