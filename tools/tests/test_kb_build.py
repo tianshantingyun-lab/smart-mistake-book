@@ -107,7 +107,7 @@ class GateTest(unittest.TestCase):
         # （这些 pin 随结构修复推进而变，每次改动在提交里说明来源）：
         #   unbound_points 998→701（删残渣/碎片本就无材料；合并使部分目标获首条材料）
         #   ghost_aliases 847→852、boundary_excerpt 968→835、locator_boundary 589→585
-        #   2026-09-18 第一章综合主题 36 点跨章归位 + 6 同概念重复对合并（I-08）后：
+        #   2026-09-18 残渣删除 116 点 + 整句话名收敛 102 个（旧句名进别名，ghost 836→897）后：
         #   unbound_points 701→698（删 3 个零材料占位点）、ghost_aliases 852→849、
         #   boundary_excerpt 835→833、locator_boundary 585→581
         #   集合基础 8 节点 + 命题节点入库材料后：unbound_points 698→697
@@ -116,7 +116,7 @@ class GateTest(unittest.TestCase):
         self.assertEqual(0, metrics["duplicate_names"].value)
         self.assertEqual(541, metrics["unbound_points"].value)
         self.assertEqual(892, metrics["unbound_materials"].value)
-        self.assertEqual(836, metrics["ghost_aliases"].value)
+        self.assertEqual(897, metrics["ghost_aliases"].value)
         self.assertEqual(194, metrics["latex_damage"].value)
         self.assertEqual(80, metrics["control_chars"].value)
         self.assertEqual(752, metrics["boundary_excerpt"].value)
