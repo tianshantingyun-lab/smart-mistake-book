@@ -641,3 +641,52 @@
 - **失败路径**：这些知识点在逐层展开时挂在"综合"这个无意义分组下，既无章、无主题语义，也无法参与"按章补材料"（wusan_plan）的队列。
 - **证据**：`[本轮实测]` 全量 topic 名含 `综合` 段的计数（9 topic / 105 点）；`test_kb_shorten_topic_names.py::test_unassigned_buckets_stays_visible` 钉住该数。
 - **归属**：章表修复（`regroup_aggregates.py` / `chapter_map.csv`），与 I-06 同源。
+
+## J. 视觉转写轮次（2026-09-19 · 解题觉醒大招册 951 条入库）
+
+### J-01 · 扫描件"是否已处理"过去只靠记忆，导致重复劳动 【P0 · 已收口 b7861e00】
+
+**现象.** 五三精讲册整本 743 页已转写完，其 4 个 PDF 仍挂在 `PENDING_SCANNED`；
+五三 A版【01】的分节精讲册（56 个文件）与整本精讲册同页，若按文件名判断会再扫一遍。
+
+**处置.** 新增 `tools/kb_coverage/tables/scan_decisions.csv`：407 个扫描 PDF 逐文件给
+决定（TRANSCRIBED / DUPLICATE_OF_BOOK / TRANSCRIBE_THIS_ROUND / TRANSCRIBE_LATER /
+SKIP_EXERCISES / SKIP_ANSWERS / PENDING_UNCLASSIFIED）+ 规则名 + 理由；
+重复判定用页图网格逐页比对（判据脚本 `dedupe_scans.py`），不靠文件名。
+已隔离 60 个文件 / 2.4GB 到 `<源根>/zz-已扫描隔离/`，脚本可 `--undo` 原样搬回。
+
+**遗留.** `PENDING_UNCLASSIFIED` 7 个（数学 1 页讲义 ×2、课堂笔记 1 页等），下轮判；
+物理按章"讲册PDF"（266 页）实测与整本不是同一版式，未判重复，排后续轮次。
+
+### J-02 · 节点 kind 越界：Python 工具允许 App 契约里不存在的枚举 【P2 · 已修 b7861e00】
+
+**现象.** `create_points.py` 的 KINDS 含 `MISCONCEPTION_GUIDE`，但 App 的
+`KnowledgeNodeKind`（TOPIC/CONCEPT/PROCEDURE/REASONING/REPRESENTATION/EXPERIMENT/EXPRESSION）
+没有它 —— 那是**材料类型**的枚举。本轮 2 个新节点因此越界，被
+`BundledTeachingMaterialsContractTest` 抓住（7 条用例连锁变红）。
+
+**处置.** 包内 2 个节点改 `REASONING`；**未**收紧 Python 侧 KINDS —— 这是漏修，
+记在此处：应把 `create_points.KINDS` 改成 App 契约的 7 值集合，
+否则同一类越界还会由 agent 生成的表再次引入（Kotlin 用例只会在最后一刻抓住）。
+
+### J-03 · 来源时间戳多卷不一致（KD-19）【P1 · 已修 b7861e00】
+
+见 `docs/known-defects.md` KD-19：写入 2 批后 284 条材料"早于来源导入"，
+根因是同一 sourceId 在不同卷各自盖 writing-time 时间戳。已修工具（复用最早条目）+ 数据。
+
+### J-04 · 新增 149 个节点的归属策略（需下一轮复核） 【P2 · open】
+
+**做法.** 跨章节的方法/思维类节点统一落在各科既有 `·综合·综合·综合` 主题
+（PHYSICS 59 → 71 点、BIOLOGY 3 → 30 点等）；教材内概念落到对应章节主题
+（107 条补了 chapter_map 归属）。sourceLocator 统一 `《解题觉醒》名师大招册（2027版）视觉转写`，
+来源单元表新增一行 decision=`keep_per_node`（这些节点逐条自带归属，不参与单元级推断）。
+
+**待复核.** 数学 97 个方法节点里有约 30 个（如 数形结合找临界 / 分类讨论法 / 隐函数的求导）
+按关键词落到了"函数的概念与性质/函数与导数"两个主题，逐条看应当更细；
+下一轮用 `relocate_chapter_points` 做一次主题级归位，并复核 综合 桶是否过胖。
+
+### J-05 · 别名污染实况（复核 I-04/A-18 的样本） 【P1 · open】
+
+本轮读包时发现 `数学必修第一册·第三章·函数的概念与性质` 里「函数的概念」的 aliases 含
+`导数的概念与导函数`、`排列与组合的概念及公式`、`绝对值型函数的处理方式` —— 与节点名无关。
+这与门指标 `幽灵别名（与当前绑定脱节）920` 是同一批历史遗留；绑定正确率优先，需专轮清理。

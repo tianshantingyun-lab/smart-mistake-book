@@ -27,8 +27,12 @@ from kb_build import pack_io, tables
 
 TABLE = "new_points_manual.csv"
 COLUMNS = ("subject", "slug", "name", "kind", "parent_topic_slug", "boundary", "source_locator")
-KINDS = {"CONCEPT", "PROCEDURE", "REASONING", "REPRESENTATION", "EXPERIMENT",
-         "EXPRESSION", "MISCONCEPTION_GUIDE"}
+# 必须与 App 侧的知识点类型枚举逐字一致：
+# core/model/src/main/kotlin/com/tingyun/smartmistakebook/core/model/ProblemCatalog.kt 的
+# KnowledgeNodeKind。MISCONCEPTION_GUIDE 曾经在这里出现过，但它是**材料类型**
+# （KnowledgeTeachingMaterialType）的取值，不是节点类型 —— 越界的节点会让内置包在
+# 解析时直接崩（2026-09-19 由 BundledTeachingMaterialsContractTest 抓住）。
+KINDS = {"CONCEPT", "PROCEDURE", "REASONING", "REPRESENTATION", "EXPERIMENT", "EXPRESSION"}
 
 
 def load_new_points(path: Path | None = None) -> list[dict]:
