@@ -113,6 +113,38 @@
    "licenseExpression": null,
    "licenseUri": null,
    "attributionText": "五三精讲册视觉转写改写（REVIEWED_SYNTHESIS），仅内部教学参考。"
+  },
+  {
+   "sourceId": "desktop-src-7b2647b433:math",
+   "subject": "MATH",
+   "sourceType": "AUTHORIZED_EDUCATION_MATERIAL",
+   "title": "桌面教辅资料 · 27版五三",
+   "publisher": "教辅汇编（桌面原始资料）",
+   "edition": "2026/2027版",
+   "sourceUri": "https://www.example.edu/desktop-kb-source",
+   "licenseStatus": "REFERENCE_ONLY",
+   "contentFingerprint": "1959862E778D2A1D7D2EE9090A0A63B43B58107476639538E7E8AC1B178E0645",
+   "importedAtEpochMillis": 1789750373146,
+   "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
+   "licenseExpression": null,
+   "licenseUri": null,
+   "attributionText": "桌面教辅资料直抽改写（REVIEWED_SYNTHESIS），仅内部教学参考。"
+  },
+  {
+   "sourceId": "desktop-src-48689b61de:physics",
+   "subject": "PHYSICS",
+   "sourceType": "AUTHORIZED_EDUCATION_MATERIAL",
+   "title": "桌面教辅资料 · 2026年新高考资料(1)",
+   "publisher": "教辅汇编（桌面原始资料）",
+   "edition": "2026/2027版",
+   "sourceUri": "https://www.example.edu/desktop-kb-source",
+   "licenseStatus": "REFERENCE_ONLY",
+   "contentFingerprint": "76E45DFAA54E87666698DBFB15E71C331C3C7336A9F486CD7BD1E6E4FE13483D",
+   "importedAtEpochMillis": 1789750373870,
+   "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
+   "licenseExpression": null,
+   "licenseUri": null,
+   "attributionText": "桌面教辅资料直抽改写（REVIEWED_SYNTHESIS），仅内部教学参考。"
   }
  ],
  "materials": [
@@ -6302,6 +6334,206 @@
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:折射率",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-93e7d67ed2-003",
+   "subject": "MATH",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "权方和不等式求分式最值",
+   "summaryMarkdown": "若 a、b、x、y 均大于 0，则 a²/x＋b²/y 不小于 (a＋b)²/(x＋y)，当且仅当 a/x 等于 b/y 时取等。",
+   "applicabilityMarkdown": "目标式为分子平方和的分式、求最值的题。",
+   "contentMarkdown": "①基本形式：若 a、b、x、y 均大于 0，则 a²/x＋b²/y 大于或等于 (a＋b)²/(x＋y)，当且仅当 a/x 等于 b/y 时等号成立。②来源：由二维形式的柯西不等式 (a²＋b²)(c²＋d²) 大于或等于 (ac＋bd)²（a、b、c、d 属于实数集，当且仅当 ad 等于 bc 时等号成立）取 c² 为 x、d² 为 y 得到。③结构识别：目标式为“分子是平方、分母是正数”的分式，且各项分母之和出现在结果分母中时，即可考虑直接套用权方和不等式。④使用要点：套用后必须回到 a/x 等于 b/y 检验取等条件，并把解出的变量代回原约束。",
+   "boundaryMarkdown": "使用前须确认 a、b、x、y 均为正数，且取等条件 a/x 等于 b/y 在题设约束下确实可取，否则该值不是最值。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-7b2647b433:math",
+   "sourceLocator": "桌面资料 27版五三 / 27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/1.链接教材/提分资料包/27版53B-链接教材正文.pdf（块 93e7d67ed2-003）",
+   "reviewedAtEpochMillis": 1789750367854,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:利用基本不等式求最值",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-93e7d67ed2-023",
+   "subject": "MATH",
+   "type": "DERIVATION",
+   "title": "用平面截圆锥面得圆锥曲线",
+   "summaryMarkdown": "平面与圆锥轴所成角 α 和母线与轴夹角 θ 比较，可判定截线是圆、椭圆、抛物线还是双曲线。",
+   "applicabilityMarkdown": "由截平面与圆锥的夹角判断截线形状的题。",
+   "contentMarkdown": "①模型建立：空间中的两条相交直线 l、m（交点为 S，夹角为锐角 θ）绕直线 l 旋转一周形成圆锥面；S 称为圆锥面的顶点，l 称为圆锥面的轴，圆锥面上过点 S 的任意一条直线都称为圆锥面的母线。②截线判定：用一个不经过点 S 的平面 β 去截这个圆锥面，设平面 β 与轴 l 所成角为 α，则 α 等于 π/2（平面 β 与轴 l 垂直）时截线是圆；θ 小于 α 且 α 小于 π/2 时截线是椭圆；α 等于 θ 时截线是抛物线；0 小于 α 且 α 小于 θ 时截线是双曲线。③统称：圆、椭圆、抛物线、双曲线都可以由平面截圆锥面得到，因此把它们统称为圆锥曲线。④离心率联系：比值 cosα/cosθ 就是圆锥曲线的离心率，椭圆段有 0 小于 cosα/cosθ 小于 1，抛物线时为 1，双曲线时大于 1。",
+   "boundaryMarkdown": "α 是平面与轴所成的角、θ 是母线与轴所成的角，两者比反会把椭圆与双曲线判断颠倒。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-7b2647b433:math",
+   "sourceLocator": "桌面资料 27版五三 / 27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/1.链接教材/提分资料包/27版53B-链接教材正文.pdf（块 93e7d67ed2-023）",
+   "reviewedAtEpochMillis": 1789750367854,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:圆锥曲线的综合问题",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-93e7d67ed2-026",
+   "subject": "MATH",
+   "type": "DERIVATION",
+   "title": "丹德林双球求椭圆的长轴与焦距",
+   "summaryMarkdown": "丹德林双球模型中椭圆长轴等于两切点所在母线段长，焦距由球心距与两球半径的差与和求出。",
+   "applicabilityMarkdown": "丹德林双球模型中求椭圆 a、b、c、e 的题。",
+   "contentMarkdown": "①模型：在圆锥内放两个大小不同的球 O₁、O₂，分别与圆锥的侧面和截面相切，两球与截面切于点 E、F，E、F 就是截口椭圆 C 的两个焦点。②求长轴：作轴截面后，2a 等于 |HI| 等于 |HF| 加 |FI| 等于 |HF| 加 |HE| 等于 |HB| 加 |HA| 等于 |AB|，即长轴等于两切点所在母线上的线段长。③求焦距：过 O₂ 作 O₂D 垂直于 O₁A 于 D 得矩形 ABO₂D；取半径 |O₂B| 等于 1、|O₁A| 等于 4、球心距 |O₁O₂| 等于 7，则 2a 等于根号下 7² 减 (4－1)² 等于 2 倍根号 10。④同理过 O₂ 作 O₂G 垂直于 O₁E 交延长线于 G，则 2c 等于根号下 7² 减 (4＋1)² 等于 2 倍根号 6。⑤结果：a 等于根号 10，c 等于根号 6，b 等于 2，离心率 e 等于根号 15 除以 5。",
+   "boundaryMarkdown": "求 2a 时用两球半径之差、求 2c 时用两球半径之和，两条辅助线的构造方向相反，不能混用。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-7b2647b433:math",
+   "sourceLocator": "桌面资料 27版五三 / 27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/1.链接教材/提分资料包/27版53B-链接教材正文.pdf（块 93e7d67ed2-026）",
+   "reviewedAtEpochMillis": 1789750367854,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:椭圆的离心率",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-743101f89f-014",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "用椭圆光学性质求垂足轨迹",
+   "summaryMarkdown": "椭圆任一切线上左焦点的射影到中心的距离恒等于 a，故该射影点的轨迹是以中心为圆心、a 为半径的圆。",
+   "applicabilityMarkdown": "涉及椭圆切线与焦点射影、轨迹判定的题。",
+   "contentMarkdown": "①已知：F₁ 为椭圆 C 的左焦点，直线 l 为椭圆 C 的任一条切线，H 为 F₁ 在 l 上的射影。②作辅助线：设 l 与椭圆相切于点 P，右焦点为 F₂，过 F₂ 作 F₂M 垂直于 l 于 M，连接 MO 并延长交直线 F₁H 于 N，易证三角形 MF₂O 与三角形 NF₁O 全等，则 |F₂M| 等于 |F₁N|。③用光学性质：由椭圆光学性质知角 F₁PH 等于角 F₂PM，设角 F₁PH 为 θ，则 |HM| 等于 |PF₁|cosθ 加 |PF₂|cosθ 等于 2a·cosθ，|HN| 等于 |PF₁|sinθ 加 |PF₂|sinθ 等于 2a·sinθ。④求 |MN|：直角三角形 MNH 中 |MN|² 等于 4a²(cos²θ＋sin²θ) 等于 4a²，故 |MN| 等于 2a。⑤结论：O 为 MN 的中点，故 |OH| 等于 a，由圆的定义得点 H 的轨迹是圆。",
+   "boundaryMarkdown": "射影点是 H（F₁ 到切线 l 的垂足）而不是 F₂ 的射影；|OH| 等于 a 依赖 O 为 MN 中点这一步。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-7b2647b433:math",
+   "sourceLocator": "桌面资料 27版五三 / 27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/2.数学建模/提分资料包/27版53B-数学建模正文.pdf（块 743101f89f-014）",
+   "reviewedAtEpochMillis": 1789750367854,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:椭圆",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-743101f89f-001",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "半衰期指数衰减模型的建立与求解",
+   "summaryMarkdown": "碳 14 含量按 C(t) 等于 C₀ 乘 (1/2) 的 t/5730 次方衰减，由剩余比例解指数方程即可推算死亡年代。",
+   "applicabilityMarkdown": "半衰期、衰减率类的函数建模与年代推算题。",
+   "contentMarkdown": "①模型建立：活体生物体内碳 14 含量大致不变，死亡后开始衰减。已知碳 14 半衰期为 5730 年，即生物死亡 t 年后碳 14 所剩质量 C(t) 等于 C₀ 乘 (1/2) 的 t/5730 次方，其中 C₀ 为活体组织中碳 14 的质量。②模型特征：半衰期模型是底数小于 1 的指数衰减模型，自变量是时间，因变量是剩余质量。③求解示例：2023 年发现某生物遗体中碳 14 含量约为原始质量的 0.4 倍，由 C₀ 乘 (1/2) 的 t/5730 次方等于 0.4C₀ 得 (t/5730) 乘 lg(1/2) 等于 lg(4/10)，故 t 等于 5730 乘 (1－2lg2)/lg2，代入 lg2 约等于 0.3010 得 t 约等于 7577。④作答：死亡时间约为公元前 7577 减 2023 等于 5554 年。",
+   "boundaryMarkdown": "算出 t 后是距今多少年，题问“公元前”时还要用参考年份相减；lg(1/2) 为负值，移项时不要丢负号。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-7b2647b433:math",
+   "sourceLocator": "桌面资料 27版五三 / 27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/2.数学建模/提分资料包/27版53B-数学建模正文.pdf（块 743101f89f-001）",
+   "reviewedAtEpochMillis": 1789750367854,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:函数模型与增长速度的比较",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-phy-3747c2c400-001",
+   "subject": "PHYSICS",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "位矢、位移与瞬时速度的矢量描述",
+   "summaryMarkdown": "位移只与初末位置有关且大小不等于路程；瞬时速度是位矢对时间的变化率，方向沿轨迹切线。",
+   "applicabilityMarkdown": "辨析位移与路程、平均速度与瞬时速度的题。",
+   "contentMarkdown": "①位矢：r(t) 等于 x(t)i 加 y(t)j 加 z(t)k，是从坐标原点指向质点位置的矢量，唯一确定了质点在任意时刻 t 的位置。②位移：Δr 等于 r(t₂) 减 r(t₁)，是描述质点位置变化的矢量，只与初末位置有关，与路径无关；注意 |Δr| 不等于 Δs，即位移大小不等于路程，除非是单向直线运动。③平均速度：v 平均等于 Δr 除以 Δt，是矢量，方向与 Δr 相同。④瞬时速度：定义为 v 等于 Δt 趋于 0 时 Δr/Δt 的极限，即 dr/dt；求导计算为 v(t) 等于 (dx/dt)i 加 (dy/dt)j 加 (dz/dt)k。⑤大小与方向：速率 |v| 等于根号下 vₓ² 加 v_y² 加 v_z²；瞬时速度的方向是质点运动轨迹的切线方向。⑥总纲：运动学的核心是研究 r(t)、v(t)、a(t) 三个矢量函数之间的关系，微积分是连接它们的桥梁。",
+   "boundaryMarkdown": "|Δr| 不等于 Δs 是常见失分点，只有单向直线运动中两者才相等；平均速度是矢量、平均速率是标量。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-48689b61de:physics",
+   "sourceLocator": "桌面资料 2026年新高考资料(1) / 2026年新高考资料(1)/专项复习/【1】2026年高考物理强基第一章讲义/物理强基讲义-第一章1-2节.pdf（块 3747c2c400-001）",
+   "reviewedAtEpochMillis": 1789750367854,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:瞬时速度",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-phy-a833eaa9d7-001",
+   "subject": "PHYSICS",
+   "type": "METHOD_MODEL",
+   "title": "切向与法向加速度的分解",
+   "summaryMarkdown": "加速度沿切向与法向分解：切向加速度改变速率大小，法向加速度改变速度方向且大小等于 v²/ρ。",
+   "applicabilityMarkdown": "一般曲线运动中求加速度或曲率半径的题。",
+   "contentMarkdown": "①坐标系：一般曲线运动用自然坐标系（切向、法向）分析加速度最直观，切向单位矢量沿速度方向，法向单位矢量指向曲率中心。②分解：a 等于 a 切 加 a 法。③切向加速度改变速度大小，计算为速率对时间的导数。④法向加速度改变速度方向，计算为 a 法 等于 v²/ρ，ρ 是该点轨迹的曲率半径，方向指向曲率中心即凹侧。⑤曲率半径：直角坐标下 ρ 等于 [1＋(y′)²] 的 3/2 次方 除以 |y″|；参数方程下 ρ 等于 (ẋ²＋ẏ²) 的 3/2 次方 除以 |ẋÿ－ẏẍ|。⑥三类情形：直线运动 ρ 趋于无穷、a 法 等于 0；匀速圆周运动 a 切 等于 0、a 等于 v²/r；一般曲线运动两者均不为零，总加速度等于根号下 a 切² 加 a 法²。",
+   "boundaryMarkdown": "法向加速度公式中的 v 是该时刻的瞬时速率而不是全程平均速率；求曲率半径应反用 ρ 等于 v²/a 法。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-48689b61de:physics",
+   "sourceLocator": "桌面资料 2026年新高考资料(1) / 2026年新高考资料(1)/专项复习/【1】2026年高考物理强基第一章讲义/物理强基讲义-第一章3-4节.pdf（块 a833eaa9d7-001）",
+   "reviewedAtEpochMillis": 1789750367854,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:曲线运动的基本概念与处理思想",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-phy-a833eaa9d7-005",
+   "subject": "PHYSICS",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "科里奥利力的方向与大小",
+   "summaryMarkdown": "科里奥利力大小等于 2mωv′，方向由右手定则确定，北半球使运动物体向右偏转、南半球向左。",
+   "applicabilityMarkdown": "分析旋转参考系中运动物体偏转的题。",
+   "contentMarkdown": "①产生条件：科里奥利力是物体在旋转参考系中运动时出现的惯性力，垂直于物体的运动方向，影响轨迹。②表达式：科里奥利力等于负 2m 乘 ω 乘 v′，其中 m 是质量，ω 是旋转参考系的角速度矢量，v′ 是物体在旋转参考系中的速度。③方向：垂直于 ω 和 v′，遵循右手定则；北半球运动物体向右偏转，南半球向左偏转。④地球自转实例：北半球河流右岸冲刷更严重；北半球气旋逆时针旋转；傅科摆证明地球自转。⑤计算示例：质量 1 kg 的物体在纬度 30° 处、以 10 m/s 向北运动，地球自转角速度为 7.27 乘 10 的负 5 次方 rad/s；角速度垂直分量等于角速度乘 sin30° 等于 3.635 乘 10 的负 5 次方 rad/s，科里奥利力等于 2 乘 1 乘 3.635 乘 10 的负 5 次方乘 10 等于 7.27 乘 10 的负 4 次方 N，方向向东。",
+   "boundaryMarkdown": "计算时用的是当地角速度的垂直分量即角速度乘 sin 纬度，不是地球自转角速度本身；科里奥利力垂直于运动方向，不做功。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-48689b61de:physics",
+   "sourceLocator": "桌面资料 2026年新高考资料(1) / 2026年新高考资料(1)/专项复习/【1】2026年高考物理强基第一章讲义/物理强基讲义-第一章3-4节.pdf（块 a833eaa9d7-005）",
+   "reviewedAtEpochMillis": 1789750367854,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:非惯性参考系",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-phy-1cac87e4fb-004",
+   "subject": "PHYSICS",
+   "type": "DERIVATION",
+   "title": "速度投影定理的证明与应用",
+   "summaryMarkdown": "刚性连接两点的距离不变，对距离关系式求导即得两点沿连线方向的速度分量相等。",
+   "applicabilityMarkdown": "绳、杆等刚性连接物体间的关联速度题。",
+   "contentMarkdown": "①定理内容：对于刚性连接的两点，它们在连线方向的速度分量相等。②证明思路：设 A、B 两点距离为 L，由 L² 等于 (x_A－x_B)² 加 (y_A－y_B)² 对时间求导，结合 dL/dt 等于 0，整理得 AB 向量点乘 (v_A－v_B) 等于 0，说明 A、B 在 AB 方向的速度分量相等。③杆连接应用：杆 AB 两端分别靠在竖直和水平墙面上，A 端以速度 v_A 向下运动时，由 v_A sinθ 等于 v_B cosθ 解得 v_B 等于 v_A tanθ。④绳连接应用：不可伸长的绳两端沿绳方向速度分量大小相等，如人向右拉绳时物体上升速度等于人速度沿绳方向的分量 v₀ 等于 v cosα。⑤齿轮啮合：啮合点线速度相等，ω₁r₁ 等于 ω₂r₂，解得 ω₂ 等于 (r₁/r₂)ω₁，两轮转向相反。",
+   "boundaryMarkdown": "分解的对象必须是物体的实际速度即合速度，不能先假设分速度；沿杆（绳）方向分量相等，垂直方向的分量一般不等。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-48689b61de:physics",
+   "sourceLocator": "桌面资料 2026年新高考资料(1) / 2026年新高考资料(1)/专项复习/【1】2026年高考物理强基第一章讲义/物理强基讲义-第一章5-6节.pdf（块 1cac87e4fb-004）",
+   "reviewedAtEpochMillis": 1789750367854,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:关联速度的分析-运动分解的核心思想",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-phy-a833eaa9d7-002",
+   "subject": "PHYSICS",
+   "type": "DERIVATION",
+   "title": "抛体轨迹最高点的曲率半径",
+   "summaryMarkdown": "最高点只剩水平分速度 v₀cosθ，向心加速度等于 g，故曲率半径等于 v₀²cos²θ 除以 g。",
+   "applicabilityMarkdown": "求抛体运动轨迹上某点曲率半径的题。",
+   "contentMarkdown": "①问题：一个抛射体以初速度 v₀ 与水平方向成 θ 角抛出，忽略空气阻力，求其抛物线轨迹在最高点的曲率半径。②找速度：抛体运动的轨迹为抛物线，在最高点垂直速度分量为零，只有水平速度分量 v 等于 v₀cosθ。③找向心加速度：此时加速度为重力加速度 g，方向竖直向下，与水平的速度方向垂直，因此向心加速度 a 法 等于 g。④用公式：曲率半径 ρ 与速度 v 和法向加速度的关系为 ρ 等于 v² 除以 a 法。⑤代入求解：代入最高点的速度 v 等于 v₀cosθ 和 a 法 等于 g，得 ρ 等于 (v₀cosθ)² 除以 g 等于 v₀²cos²θ/g，即抛体轨迹在最高点的曲率半径为 v₀²cos²θ 除以 g。⑥讨论：曲率半径与初速度 v₀、抛射角 θ 和重力加速度 g 有关；θ 为 0 时曲率半径最大，θ 为 90° 时曲率半径为零。",
+   "boundaryMarkdown": "最高点速度不为零（等于 v₀cosθ），不能把“最高点”当作速度为零的位置；a 法 取重力在该点的法向分量。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-48689b61de:physics",
+   "sourceLocator": "桌面资料 2026年新高考资料(1) / 2026年新高考资料(1)/专项复习/【1】2026年高考物理强基第一章讲义/物理强基讲义-第一章3-4节.pdf（块 a833eaa9d7-002）",
+   "reviewedAtEpochMillis": 1789750367854,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:抛体运动的规律及其应用",
      "role": "PRIMARY"
     }
    ]

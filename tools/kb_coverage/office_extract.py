@@ -112,6 +112,18 @@ def _extract_pptx(path: Path) -> list[dict]:
     return out
 
 
+def _extract_pdf(path: Path) -> list[dict]:
+    """文本层 PDF 逐页抽文本（fitz）。扫描件不走这里（PENDING_SCANNED）。"""
+    import fitz
+    out: list[dict] = []
+    idx = [0]
+    with fitz.open(str(path)) as doc:
+        for pno in range(doc.page_count):
+            text = doc.load_page(pno).get_text("text")
+            _flush([text], f"p{pno + 1}", out, idx)
+    return out
+
+
 def _extract_texty(path: Path) -> list[dict]:
     raw = None
     for enc in ("utf-8", "gbk"):
@@ -140,10 +152,12 @@ def extract_file(rel_path: str, subject: str) -> list[dict]:
         chunks = _extract_docx(path)
     elif ext == ".pptx":
         chunks = _extract_pptx(path)
+    elif ext == ".pdf":
+        chunks = _extract_pdf(path)
     elif ext in (".txt", ".html"):
         chunks = _extract_texty(path)
-    elif ext == ".doc":
-        raise ValueError("legacy .doc binary: no parser (mark ERROR)")
+    elif ext in (".doc", ".pps"):
+        raise ValueError(f"legacy binary {ext}: no parser (mark ERROR)")
     else:
         raise ValueError(f"unsupported ext {ext}")
     h = hashlib.sha256(rel_path.encode("utf-8")).hexdigest()[:10]
@@ -179,7 +193,7 @@ def run(subject: str | None, limit: int | None) -> dict:
     states = es.load_states()
     seen, seen_fps = _seen_keys()
     files = [r for r in states.values()
-             if r["state"] == "PENDING" and r["ext"] in (".docx", ".pptx", ".txt", ".html", ".doc")
+             if r["state"] == "PENDING" and r["ext"] in (".docx", ".pptx", ".txt", ".html", ".doc", ".pdf")
              and (subject is None or r["subject"] == subject)]
     files.sort(key=lambda r: r["rel_path"])
     if limit:

@@ -42926,6 +42926,246 @@
      "role": "PRIMARY"
     }
    ]
+  },
+  {
+   "slug": "ext-bio-a32e2f5823-001",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "自由水与结合水的比值与代谢抗逆性",
+   "summaryMarkdown": "细胞中的水分为自由水和结合水，自由水与结合水的比值越大代谢越旺盛，比值越小抗逆性越强。",
+   "applicabilityMarkdown": "判断细胞代谢强弱与抗逆性的题。",
+   "contentMarkdown": "①分类：细胞中的水绝大部分以自由水形式存在，少部分为结合水，结合水与蛋白质、多糖等物质结合后失去流动性和溶解性。②功能差异：自由水是细胞内良好的溶剂，为细胞提供液体环境，参与生化反应，并运送营养物质和代谢废物；结合水则参与组成细胞结构。③比值意义：一般自由水与结合水的比值越大，细胞代谢越旺盛，抗逆性（抗旱、抗寒等）越低；比值越小则抗逆性越强。④生成途径：蛋白质、多糖、核酸、ATP 等的合成以及有氧呼吸第三阶段产生水；蛋白质、多糖、核酸、ATP 等的水解、有氧呼吸第二阶段和光合作用的光反应消耗水。",
+   "boundaryMarkdown": "自由水与结合水的比值随温度等条件改变，判断时须先确认条件变化方向，再判断代谢与抗逆性的强弱。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-7b2647b433:biology",
+   "sourceLocator": "桌面资料 27版五三 / 27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.生物学.5·3A版/本书电子教参/第二章组成细胞的分子/1_专题资料包/5_第二章 组成细胞的分子  精讲册PDF.pdf（块 a32e2f5823-001）",
+   "reviewedAtEpochMillis": 1789750367854,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:水",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-bio-b20165289a-011",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "生物膜的成分交流与囊泡运输",
+   "summaryMarkdown": "生物膜系统由细胞膜、核膜与细胞器膜组成；各膜成分可经囊泡转移，囊泡运输依赖细胞骨架。",
+   "applicabilityMarkdown": "考查分泌蛋白运输中膜成分与膜面积变化的题。",
+   "contentMarkdown": "①组成：细胞膜、核膜及各种细胞器膜等结构共同构成生物膜系统。②功能：为酶提供附着位点；使细胞内部区域化，保证反应高效有序进行；参与物质运输、能量转化和信息传递。③联系：膜的组成成分可以从内质网转移到高尔基体，再转移到细胞膜；细胞内运输物质的具膜囊泡能与细胞膜融合，由此可推测囊泡膜的主要成分是脂质和蛋白质。④囊泡运输：囊泡主要由脂质和蛋白质组成，还含有糖类；囊泡的运输依赖于细胞骨架，囊泡运输中高尔基体起到交通枢纽的作用；囊泡膜与细胞器膜、细胞膜的融合依赖于膜的流动性。",
+   "boundaryMarkdown": "囊泡膜来自内质网与高尔基体，其膜面积变化要按“出、入”分别核算，不能只数囊泡个数。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-7b2647b433:biology",
+   "sourceLocator": "桌面资料 27版五三 / 27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.生物学.5·3A版/本书电子教参/第三章细胞的基本结构/1_专题资料包/5_第三章 细胞的基本结构  精讲册PDF.pdf（块 b20165289a-011）",
+   "reviewedAtEpochMillis": 1789750367854,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:生物膜系统",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-bio-8d79fbce11-004",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "温度与pH影响酶活性实验的变量控制",
+   "summaryMarkdown": "探究温度、pH 对酶活性影响的实验须先分别保温再混合，并按自变量选择合适的检测试剂与实验材料。",
+   "applicabilityMarkdown": "酶活性影响因素实验的变量分析与纠错。",
+   "contentMarkdown": "①变量确定：探究温度对酶活性的影响时，自变量是温度，因变量是淀粉酶活性；探究 pH 的影响时，自变量是 pH，因变量是过氧化氢酶活性。②操作要点：淀粉溶液和淀粉酶溶液必须在对应温度下分别保温一段时间后再混匀，不可先混合再在相应温度下保存。③试剂选择：探究温度影响的实验不宜选用斐林试剂作为检测试剂（使用斐林试剂需水浴加热），也不宜选用 H₂O₂ 作为实验材料（加热条件下会分解）。④材料选择：探究 pH 影响的实验可先将不同 pH 的缓冲液与过氧化氢酶混合，再加入 H₂O₂；不宜选用淀粉作为实验材料（酸性条件下易分解）。",
+   "boundaryMarkdown": "最适温度和 pH 条件下酶的活性最高，但酶应在低温条件下保存，而不是在最适温度下保存。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-7b2647b433:biology",
+   "sourceLocator": "桌面资料 27版五三 / 27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.生物学.5·3A版/本书电子教参/第五章细胞的能量供应和利用/1_专题资料包/1_第五章 细胞的能量供应和利用  精讲册PDF.pdf（块 8d79fbce11-004）",
+   "reviewedAtEpochMillis": 1789750367854,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:酶的特性及探究实验",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-bio-8d79fbce11-019",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "由CO₂与O₂的量判断呼吸方式",
+   "summaryMarkdown": "以葡萄糖为底物时，比较 CO₂ 释放量与 O₂ 吸收量可判断呼吸方式，并由比值算出两种呼吸的强度倍数。",
+   "applicabilityMarkdown": "给定量关系判断细胞呼吸方式或计算强度的题。",
+   "contentMarkdown": "①判断前提：多以葡萄糖为底物，不考虑光合作用。②定性依据：有氧呼吸消耗的 O₂ 量与释放的 CO₂ 量相等，产酒精的无氧呼吸只释放 CO₂ 不消耗 O₂；因此 CO₂ 释放量大于 O₂ 吸收量时，说明有氧呼吸与产酒精的无氧呼吸同时进行。③整体比例：有氧呼吸消耗 O₂（6a）比有氧呼吸和产酒精的无氧呼吸产生的 CO₂（6a＋2a）等于 3 比 4。④定量计算：若 CO₂ 释放量为 2b、O₂ 吸收量为 b，则无氧呼吸强度是有氧呼吸的 3 倍（不考虑乳酸发酵），具体为无氧呼吸强度是有氧呼吸强度的倍数等于（b/2）除以（b/6）等于 3。",
+   "boundaryMarkdown": "产乳酸的无氧呼吸不释放 CO₂，此时 CO₂ 释放量与 O₂ 吸收量相等，不能用上述比值判断。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-7b2647b433:biology",
+   "sourceLocator": "桌面资料 27版五三 / 27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.生物学.5·3A版/本书电子教参/第五章细胞的能量供应和利用/1_专题资料包/1_第五章 细胞的能量供应和利用  精讲册PDF.pdf（块 8d79fbce11-019）",
+   "reviewedAtEpochMillis": 1789750367854,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞呼吸的类型判断-规律方法",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-bio-acffd40782-007",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "自交与自由交配：同情境结果不同",
+   "summaryMarkdown": "同一群体的高茎个体分别自交与自由交配，子代高茎中纯合子比例分别为 3/5 与 1/2，两种算法不可混用。",
+   "applicabilityMarkdown": "比较自交与自由交配子代比例的计算题。",
+   "contentMarkdown": "①公共起点：基因型为 Aa 的玉米自交得 F₁，F₁ 中高茎个体为 1/3AA、2/3Aa。②自交路径：令 F₁ 高茎个体自交，统计后代基因型比例后，得 F₂ 高茎个体中纯合植株所占比例为 (1/2)除以(1/2＋1/3)等于 3/5。③自由交配路径：分两步，第一步先求 F₁ 高茎个体产生配子的种类及比例，第二步用配子法组合出 F₂ 的基因型比例；得 F₂ 高茎个体中纯合植株所占比例为 (4/9)除以(4/9＋4/9)等于 1/2。④对比结论：同一亲本群体中，自交与自由交配求得的子代比例不同，计算时必须先判断交配方式再选算法。",
+   "boundaryMarkdown": "自由交配必须用配子（基因）频率计算，不能套用自交的 1/4、1/2、1/4；统计口径是“高茎个体中”而不是全部子代。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-7b2647b433:biology",
+   "sourceLocator": "桌面资料 27版五三 / 27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.生物学.5·3A版/本书电子教参/第七章遗传因子的发现/1_专题资料包/1_第七章 遗传因子的发现  精讲册PDF.pdf（块 acffd40782-007）",
+   "reviewedAtEpochMillis": 1789750367854,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:自交和自由交配的概率计算",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-bio-925fb82620-015",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "遗传系谱图分析的程序与口诀",
+   "summaryMarkdown": "先判显隐性再判染色体，用口诀排除伴性；并区分“患病男孩”与“男孩患病”两种概率口径。",
+   "applicabilityMarkdown": "系谱图推断遗传方式与算发病概率的题。",
+   "contentMarkdown": "①判显隐性口诀：无中生有为隐性；有中生无为显性。②判是否为伴性：隐性遗传看女病，父子有正非伴性；显性遗传看男病，母女有正非伴性。③常染色体控制的病：患病男（女）孩概率等于患病孩子概率乘 1/2；男（女）孩患病概率等于患病孩子概率。④X 染色体控制的病：是否患病与性别相关联，患病男（女）孩概率等于患病男（女）孩在后代全部孩子中的概率；男（女）孩患病的概率等于子代男（女）孩中患病的概率。⑤解题程序：先由系谱图逐代写出可能基因型，再按上述口径代入计算。",
+   "boundaryMarkdown": "“患病男孩”的分母是全部子代，“男孩患病”的分母是子代中的男孩，两者不可混用。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-7b2647b433:biology",
+   "sourceLocator": "桌面资料 27版五三 / 27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.生物学.5·3A版/本书电子教参/第八章伴性遗传和人类遗传病/1_专题资料包/1_第八章 伴性遗传和人类遗传病  精讲册PDF.pdf（块 925fb82620-015）",
+   "reviewedAtEpochMillis": 1789750367854,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:程序法分析遗传系谱图-规律方法",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-bio-925fb82620-003",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "性别决定的类型：XO、ZW与倍数决定",
+   "summaryMarkdown": "除 XY 型外还有 XO 型、ZW 型与染色体组倍数决定，以及由基因、温度、激素决定性别的情形。",
+   "applicabilityMarkdown": "辨别不同生物性别决定方式的题。",
+   "contentMarkdown": "①XY 型：雌性为常染色体加 XX，雄性为常染色体加 XY，如哺乳动物。②XO 型：雌性为常染色体加 XX，雄性为常染色体加 XO，如蝗虫、蟋蟀。③ZW 型：雌性为常染色体加 ZW，雄性为常染色体加 ZZ，如鸟类、家蚕。④染色体组倍数决定：受精卵 2n 发育为雌性，由未受精的卵细胞发育而来的 n 个体为雄性，如蜜蜂、蚂蚁。⑤基因决定：玉米的性别受两对基因控制，B_T_ 为雌雄同株，bbT_ 为雄株，B_tt 和 bbtt 为雌株。⑥环境与激素决定：龟鳖目和鳄目卵的孵化温度决定性别；性反转现象如母鸡卵巢退化会发生“牝鸡司晨”。",
+   "boundaryMarkdown": "由性染色体决定性别的生物才有性染色体，雌雄同株的植物没有性染色体；性染色体上的基因未必都决定性别。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-7b2647b433:biology",
+   "sourceLocator": "桌面资料 27版五三 / 27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.生物学.5·3A版/本书电子教参/第八章伴性遗传和人类遗传病/1_专题资料包/1_第八章 伴性遗传和人类遗传病  精讲册PDF.pdf（块 925fb82620-003）",
+   "reviewedAtEpochMillis": 1789750367854,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:其他性别决定方式简介-深度拓展",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-bio-fa63e6b68c-004",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "物种形成与生物进化的区别",
+   "summaryMarkdown": "物种形成的标志是出现生殖隔离，生物进化的标志是种群基因频率改变；进化不一定形成新物种。",
+   "applicabilityMarkdown": "判断是否形成新物种或是否发生进化的题。",
+   "contentMarkdown": "①标志不同：物种形成的标志是出现生殖隔离；生物进化的标志是种群基因频率改变。②结果不同：新物种形成后与原来生物存在生殖隔离，属于质变，二者属于不同的物种；生物进化只是种群基因频率改变，属于量变，可能仍属于一个物种。③联系：生物进化不一定导致新物种的形成；新物种一旦形成，则说明生物肯定进化了。④辨析：同种动物为争夺配偶或食物而发生了进化，不属于协同进化，因为协同进化发生在不同物种之间或生物与无机环境之间；低温诱导产生多倍体的过程未经地理隔离。",
+   "boundaryMarkdown": "不要把“种群基因频率改变”当作物种形成的标志，也不要把地理隔离当作新物种形成的必要条件。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-7b2647b433:biology",
+   "sourceLocator": "桌面资料 27版五三 / 27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.生物学.5·3A版/本书电子教参/第十二章生物的进化/1_专题资料包/1_第十二章 生物的进化  精讲册PDF.pdf（块 fa63e6b68c-004）",
+   "reviewedAtEpochMillis": 1789750367854,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:物种的形成",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-bio-aae8de9434-018",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "兴奋性与抑制性递质的作用差异",
+   "summaryMarkdown": "兴奋性递质主要引起 Na⁺ 内流产生动作电位，抑制性递质主要引起 Cl⁻ 内流而抑制动作电位。",
+   "applicabilityMarkdown": "由突触后膜离子通道判断递质性质的题。",
+   "contentMarkdown": "①兴奋性递质：改变突触后膜对离子的通透性，主要引起 Na⁺ 内流，产生动作电位，电位变化如甲曲线。②抑制性递质：改变突触后膜对离子的通透性，主要引起 Cl⁻ 内流，也可能引起 K⁺ 外流，从而抑制动作电位的产生，电位变化如乙曲线。③受体结构特点：能识别并结合特定的神经递质，打开偶联的离子通道，引起突触后膜电位变化。④受体偶联的离子通道：Na⁺ 通道是主要兴奋性通道，内流引发动作电位；Ca²⁺ 通道内流促进兴奋、肌肉收缩等，突触前膜也有 Ca²⁺ 通道，前膜 Ca²⁺ 内流促进突触小泡的释放；Cl⁻ 通道是主要抑制性通道，内流增大静息电位的绝对值、抑制动作电位；K⁺ 通道多数情况下外流维持静息电位、抑制动作电位。",
+   "boundaryMarkdown": "同一种递质的作用效果不是固定不变的，如突触后膜 Cl⁻ 浓度改变后 GABA 的作用可由抑制性变为兴奋性。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-7b2647b433:biology",
+   "sourceLocator": "桌面资料 27版五三 / 27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.生物学.5·3A版/本书电子教参/第十四章神经调节/1_专题资料包/1_第十四章 神经调节  精讲册PDF.pdf（块 aae8de9434-018）",
+   "reviewedAtEpochMillis": 1789750367854,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:突触",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-bio-cb623abc4b-002",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "抗原与抗体的比较",
+   "summaryMarkdown": "抗原是能与免疫细胞表面受体结合引发免疫反应的物质，抗体是浆细胞产生的免疫球蛋白。",
+   "applicabilityMarkdown": "区分抗原与抗体的来源、本质与特点的题。",
+   "contentMarkdown": "①概念：抗原是能与免疫细胞表面的受体结合，引发免疫反应的物质；抗体是机体产生的能与抗原特异性结合的蛋白质。②来源：抗原一般为大分子“非己”成分，也可以是自身衰老或损伤的细胞；抗体由浆细胞产生。③化学本质：抗原大多为蛋白质，少数为多糖、脂类、核酸等；抗体是蛋白质（免疫球蛋白）。④特点：一种病原体可携带多种抗原；一种抗体只能与特定抗原结合。⑤由此可判断：一种病原体侵入人体时，机体通常可产生多种特异性抗体。",
+   "boundaryMarkdown": "一种病原体可携带多种抗原，所以“一种病原体侵入人体只产生一种特异性抗体”的说法是错误的。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-7b2647b433:biology",
+   "sourceLocator": "桌面资料 27版五三 / 27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.生物学.5·3A版/本书电子教参/第十六章免疫调节/1_专题资料包/1_第十六章 免疫调节  精讲册PDF.pdf（块 cb623abc4b-002）",
+   "reviewedAtEpochMillis": 1789750367854,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:抗原",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-bio-cb623abc4b-003",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "免疫系统的三大基本功能",
+   "summaryMarkdown": "免疫防御针对外来抗原性异物，免疫自稳针对自身衰老或损伤细胞，免疫监视针对突变细胞。",
+   "applicabilityMarkdown": "判断免疫系统功能异常导致何种疾病的题。",
+   "contentMarkdown": "①免疫防御：对象是外来抗原性异物（如病原体）；功能异常过强会造成组织损伤，过弱或缺失则易被病原体感染。②免疫自稳：对象是自身衰老或损伤的细胞；功能异常时易发生自身免疫病。③免疫监视：对象是突变的细胞；功能低下或失调会有肿瘤发生或持续的病毒感染。④配套的三道防线：第一道防线为皮肤、黏膜，第二道防线为体液中的杀菌物质和吞噬细胞，二者属于非特异性免疫，先天获得、无特异性；第三道防线为体液免疫和细胞免疫，属于特异性免疫，后天形成、有特异性，发生在体内且有淋巴细胞参与。",
+   "boundaryMarkdown": "三道防线中只有第三道防线需要淋巴细胞参与；皮肤和黏膜不仅作为物理屏障，还可提供化学防御。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-7b2647b433:biology",
+   "sourceLocator": "桌面资料 27版五三 / 27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.生物学.5·3A版/本书电子教参/第十六章免疫调节/1_专题资料包/1_第十六章 免疫调节  精讲册PDF.pdf（块 cb623abc4b-003）",
+   "reviewedAtEpochMillis": 1789750367854,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:免疫系统",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-bio-cb623abc4b-010",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "免疫失调的三种类型",
+   "summaryMarkdown": "免疫功能过强可致过敏反应与自身免疫病，功能不足或缺乏则引起免疫缺陷病，后者分先天与获得两类。",
+   "applicabilityMarkdown": "判断过敏反应、自身免疫病与免疫缺陷病的题。",
+   "contentMarkdown": "①过敏反应：已产生免疫的机体再次接受相同抗原时发生的组织损伤或功能紊乱。②自身免疫病：免疫系统对自身成分发生免疫反应而造成损伤，实例有类风湿关节炎、系统性红斑狼疮等。③免疫缺陷病：由机体免疫功能不足或缺乏而引起的疾病。④免疫缺陷病的类型：先天性免疫缺陷病是由于遗传而生来就有，如重症联合免疫缺陷病；获得性免疫缺陷病由疾病和其他因素引起，如艾滋病。⑤判别思路：先看功能是过强还是不足，过强再看向外来抗原还是自身成分，指向外来抗原为过敏反应，指向自身成分为自身免疫病。",
+   "boundaryMarkdown": "艾滋病属于获得性免疫缺陷病而不是自身免疫病；过敏反应是免疫功能过强而不是免疫缺陷。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-7b2647b433:biology",
+   "sourceLocator": "桌面资料 27版五三 / 27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.生物学.5·3A版/本书电子教参/第十六章免疫调节/1_专题资料包/1_第十六章 免疫调节  精讲册PDF.pdf（块 cb623abc4b-010）",
+   "reviewedAtEpochMillis": 1789750367854,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:免疫失调",
+     "role": "PRIMARY"
+    }
+   ]
   }
  ]
 }
