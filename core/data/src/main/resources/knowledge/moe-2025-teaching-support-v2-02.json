@@ -580,7 +580,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:内容-一个热力学系统的内能变化量等于外界向它传递的热量与外界对它所做的功的和",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:热力学第一定律",
      "role": "PRIMARY"
     }
    ]
@@ -2175,7 +2175,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:定义-物体在一个过程中所受合外力的冲量等于该物体在这个过程中动量的变化量",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:动量定理",
      "role": "PRIMARY"
     }
    ]
@@ -4295,7 +4295,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:定义-一个线圈中的电流变化时-它所产生的变化的磁场在它本身激发出感应电动势的现象",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:自感",
      "role": "PRIMARY"
     }
    ]
@@ -4355,7 +4355,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:定义-一个线圈中的电流变化时-它所产生的变化的磁场在它本身激发出感应电动势的现象",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:自感",
      "role": "PRIMARY"
     }
    ]
@@ -4475,7 +4475,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:定义-一个线圈中的电流变化时-它所产生的变化的磁场在它本身激发出感应电动势的现象",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:自感",
      "role": "PRIMARY"
     }
    ]
@@ -4495,7 +4495,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:定义-一个线圈中的电流变化时-它所产生的变化的磁场在它本身激发出感应电动势的现象",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:自感",
      "role": "PRIMARY"
     }
    ]
@@ -4975,7 +4975,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:定义-一个线圈中的电流变化时-它所产生的变化的磁场在它本身激发出感应电动势的现象",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:自感",
      "role": "PRIMARY"
     }
    ]
@@ -6960,7 +6960,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:力的分解-x1",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:力的分解",
      "role": "PRIMARY"
     }
    ]
@@ -8110,7 +8110,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:定义-物体在一个过程中所受合外力的冲量等于该物体在这个过程中动量的变化量",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:动量定理",
      "role": "PRIMARY"
     }
    ]
@@ -9415,7 +9415,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:定义-一个线圈中的电流变化时-它所产生的变化的磁场在它本身激发出感应电动势的现象",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:自感",
      "role": "PRIMARY"
     }
    ]
@@ -12285,7 +12285,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:定义-物体在一个过程中所受合外力的冲量等于该物体在这个过程中动量的变化量",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:动量定理",
      "role": "PRIMARY"
     }
    ]
@@ -15590,7 +15590,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:力的分解-x1",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:力的分解",
      "role": "PRIMARY"
     }
    ]
@@ -17305,7 +17305,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:定义-一个线圈中的电流变化时-它所产生的变化的磁场在它本身激发出感应电动势的现象",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:自感",
      "role": "PRIMARY"
     }
    ]
@@ -18365,7 +18365,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:定义-一个线圈中的电流变化时-它所产生的变化的磁场在它本身激发出感应电动势的现象",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:自感",
      "role": "PRIMARY"
     }
    ]
@@ -18545,7 +18545,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:定义-一个线圈中的电流变化时-它所产生的变化的磁场在它本身激发出感应电动势的现象",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:自感",
      "role": "PRIMARY"
     }
    ]
@@ -18645,7 +18645,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:定义-一个线圈中的电流变化时-它所产生的变化的磁场在它本身激发出感应电动势的现象",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:自感",
      "role": "PRIMARY"
     }
    ]
@@ -18685,7 +18685,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:定义-一个线圈中的电流变化时-它所产生的变化的磁场在它本身激发出感应电动势的现象",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:自感",
      "role": "PRIMARY"
     }
    ]
@@ -20610,7 +20610,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:定义-一个线圈中的电流变化时-它所产生的变化的磁场在它本身激发出感应电动势的现象",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:自感",
      "role": "PRIMARY"
     }
    ]
@@ -23525,7 +23525,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:力的分解-x1",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:力的分解",
      "role": "PRIMARY"
     }
    ]
@@ -24690,7 +24690,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:定义-物体在一个过程中所受合外力的冲量等于该物体在这个过程中动量的变化量",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:动量定理",
      "role": "PRIMARY"
     }
    ]
@@ -31360,7 +31360,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:定义-一个线圈中的电流变化时-它所产生的变化的磁场在它本身激发出感应电动势的现象",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:自感",
      "role": "PRIMARY"
     }
    ]
@@ -32130,7 +32130,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:定义-一个线圈中的电流变化时-它所产生的变化的磁场在它本身激发出感应电动势的现象",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:自感",
      "role": "PRIMARY"
     }
    ]
@@ -32955,7 +32955,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:产生条件-穿过回路的磁通量发生改变-与电路是否闭合无关",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:产生感应电流的条件",
      "role": "PRIMARY"
     }
    ]
@@ -33435,7 +33435,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:定义-物体在一个过程中所受合外力的冲量等于该物体在这个过程中动量的变化量",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:动量定理",
      "role": "PRIMARY"
     }
    ]
@@ -35275,7 +35275,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:向心力-x1",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:向心力",
      "role": "PRIMARY"
     }
    ]
@@ -35870,7 +35870,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:定义-一个线圈中的电流变化时-它所产生的变化的磁场在它本身激发出感应电动势的现象",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:自感",
      "role": "PRIMARY"
     }
    ]
@@ -39245,7 +39245,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:定义-一个线圈中的电流变化时-它所产生的变化的磁场在它本身激发出感应电动势的现象",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:自感",
      "role": "PRIMARY"
     }
    ]
@@ -41641,6 +41641,26 @@
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:pcr技术",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-42dee98d13-013b",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "金属的腐蚀与防护",
+   "summaryMarkdown": "金属腐蚀的本质、化学腐蚀与电化学腐蚀及腐蚀快慢规律",
+   "applicabilityMarkdown": "电化学 金属腐蚀与防护",
+   "contentMarkdown": "①金属腐蚀的本质是金属本身失电子变成阳离子（M－ne－===Mn＋）而发生氧化反应。②按接触物质不同分两类：金属与接触物质直接发生化学反应、过程中无电流产生的为化学腐蚀；金属与电解质溶液接触形成原电池、过程中有电流产生的为电化学腐蚀。③钢铁的电化学腐蚀以吸氧腐蚀为主，析氢腐蚀与吸氧腐蚀取决于金属表面电解质溶液的酸碱性；两种情况下负极均是Fe失电子生成Fe2＋而非Fe3＋。④腐蚀快慢：电解原理引起的腐蚀＞原电池原理引起的腐蚀＞化学腐蚀＞有防护措施的腐蚀。",
+   "boundaryMarkdown": "负极产物是Fe2＋不是Fe3＋；氢后金属只能发生吸氧腐蚀，不能发生析氢腐蚀",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-c099d2d6fc:chemistry",
+   "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（湖南专用）/第03讲 电解池、金属的腐蚀与防护（复习讲义）（湖南专用）（学生版）.docx（块 42dee98d13-013）",
+   "reviewedAtEpochMillis": 1789743755069,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:金属的腐蚀",
      "role": "PRIMARY"
     }
    ]

@@ -42,20 +42,57 @@ TABLE = "point_delete.csv"
 COLUMNS = ("subject", "slug", "reason")
 
 
-def load_deletes(path: Path | None = None) -> dict[tuple[str, str], str]:
+def load_deletes(path: Path | None = None) -> dict[tuple[str, str], tuple[str, bool]]:
+    """(subject, slug) -> (reason, drop_materials)。
+
+    `drop_materials` 列（可选，值 yes）＝连同"只绑定到该点的材料"一起删除。
+    没有该列而点又带着材料时，写回会被拒（见 main 的守卫）——防"删点留悬空材料"。
+    """
     path = path or (tables.TABLES_DIR / TABLE)
     if not path.exists():
         return {}
     rows = tables._read(path)
     tables._require_columns(TABLE, rows, COLUMNS)
-    return {(r["subject"].strip(), r["slug"].strip()): r["reason"].strip() for r in rows}
+    return {(r["subject"].strip(), r["slug"].strip()):
+            (r["reason"].strip(), (r.get("drop_materials") or "").strip().lower() == "yes")
+            for r in rows}
+
+
+def drop_materials_for(keys: set[tuple[str, str]]) -> tuple[int, int]:
+    """删除"只绑定到被删点"的材料；多绑材料里剥掉指向被删点的绑定。
+
+    返回 (删除的材料数, 被剥绑定的材料数)。这是删点的**影响面闭合**：不这样做会留下
+    指向不存在节点的悬空绑定（Kotlin 装载时该材料被静默丢弃，unbound_materials 虚高）。
+    """
+    removed = stripped = 0
+    for sp in pack_io.sidecar_paths():
+        doc = pack_io.load_json(sp)
+        keep = []
+        changed = False
+        for m in doc["materials"]:
+            binds = m.get("bindings") or []
+            remain = [b for b in binds
+                      if (m.get("subject", ""), b["knowledgeNodeId"].split(":")[-1]) not in keys]
+            if not remain and binds:
+                removed += 1
+                changed = True
+                continue
+            if len(remain) != len(binds):
+                m["bindings"] = remain
+                stripped += 1
+                changed = True
+            keep.append(m)
+        if changed:
+            doc["materials"] = keep
+            pack_io.dump_json(doc, sp)
+    return removed, stripped
 
 
 def _point_count(pack: dict) -> int:
     return sum(len(t.get("knowledgePoints") or []) for s in pack["subjects"] for t in s["topics"])
 
 
-def delete(pack: dict, to_delete: dict[tuple[str, str], str]) -> tuple[int, int]:
+def delete(pack: dict, to_delete: dict[tuple[str, str], tuple[str, bool]]) -> tuple[int, int]:
     """返回 (删除点数, 清理的悬挂前置引用数)。prerequisiteSlugs 保持 list（JSON 不可序列化 set）。"""
     removed = dangling = 0
     for subject in pack["subjects"]:
@@ -130,8 +167,27 @@ def main(argv: list[str] | None = None) -> int:
         # 但这是**有副作用**的清理，必须显式报告，让调用者知道动了前置图。
         print(f"注意：清理了 {dangling} 处指向被删点的前置引用（被删点本不该当前置，属错误绑定修正）")
 
+    # 守卫：被删点若还带材料，而表里没标 drop_materials=yes → 拒绝写回（防悬空材料）
+    bound: dict[str, int] = {}
+    for sp in pack_io.sidecar_paths():
+        for m in pack_io.load_json(sp)["materials"]:
+            for b in m.get("bindings") or []:
+                if (m.get("subject", ""), b["knowledgeNodeId"].split(":")[-1]) in deletes:
+                    k = (m["subject"], b["knowledgeNodeId"].split(":")[-1])
+                    bound[k] = bound.get(k, 0) + 1
+    need = {k: n for k, n in bound.items() if not deletes[k][1]}
+    if need:
+        for (subj, slug), n in list(need.items())[:5]:
+            print(f"  拒绝：{subj}/{slug[:30]} 仍带 {n} 条材料，表未标 drop_materials=yes")
+        print("（要么先重绑材料，要么在 point_delete.csv 该行加 drop_materials=yes）")
+        return 1
+
     if args.write:
         pack_io.dump_json(pack, path)
+        drop_keys = {k for k, (_r, drop) in deletes.items() if drop}
+        if drop_keys:
+            rm, st = drop_materials_for(drop_keys)
+            print(f"→ 材料随删：删除 {rm} 条、剥离绑定 {st} 条")
         purged = _purge_table_refs(pack)
         purged_txt = "、".join(f"{k} {v}" for k, v in purged.items() if v) or "无"
         print(f"→ 已写回 {path}；清除外部表悬空引用 {purged_txt}")

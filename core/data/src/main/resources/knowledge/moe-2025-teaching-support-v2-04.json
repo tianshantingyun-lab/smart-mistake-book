@@ -238,7 +238,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:02-1022个na-的物质的量为",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:物质的量-阿伏加德罗常数",
      "role": "PRIMARY"
     }
    ]
@@ -288,7 +288,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:下列物质的性质变化与范德华力有关的是",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:范德华力",
      "role": "PRIMARY"
     }
    ]
@@ -309,26 +309,6 @@
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:可逆反应",
-     "role": "PRIMARY"
-    }
-   ]
-  },
-  {
-   "slug": "chem-fx-gao-san-quan-guo-zhuan-ti-lian-xi-tong-f38x09",
-   "subject": "CHEMISTRY",
-   "type": "CONCEPT_EXPLANATION",
-   "title": "（2024高三·全国·专题练习）通常人们把气",
-   "summaryMarkdown": "6．（2024高三·全国·专题练习）通常人们把气态分子中化学键解离成气态原子所吸收的能量看成该化学键的键能。",
-   "applicabilityMarkdown": "热化学方程式书写与反应热计算、比较时使用。",
-   "contentMarkdown": "6．（2024高三·全国·专题练习）通常人们把气态分子中化学键解离成气态原子所吸收的能量看成该化学键的键能。键能可以用于估算化学反应的反应热，化学反应的等于反应中断裂旧化学键吸收的能量之和与反应中形成新化学键释放的能量之和的差。",
-   "boundaryMarkdown": "该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。",
-   "derivationKind": "REVIEWED_SYNTHESIS",
-   "sourceId": "registry-kb-chemistry-methods:chemistry",
-   "sourceLocator": "化学方法类《（重点·方法·点拨）第35讲 反应热的测定与计算- （学生版）》",
-   "reviewedAtEpochMillis": 1784908800000,
-   "bindings": [
-    {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:2024-经典习题改编-按要求正确书写相关离子方程式",
      "role": "PRIMARY"
     }
    ]
@@ -493,7 +473,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:1-判断下列溶液的酸碱性-用-酸性-碱性-中性-或-不确定-填空",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:溶液的酸碱性",
      "role": "PRIMARY"
     }
    ]
@@ -513,7 +493,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:na2o2是一种常见的过氧化物-具有强氧化性和漂白性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:过氧化钠",
      "role": "PRIMARY"
     }
    ]
@@ -973,7 +953,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:下列事实不能说明元素的金属性或非金属性相对强弱的是",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:元素金属性强弱的判断",
      "role": "PRIMARY"
     }
    ]
@@ -1689,26 +1669,6 @@
    ]
   },
   {
-   "slug": "chem-fx-yi-ding-tiao-jian-xia-cun-zai-fan-ying-f45x10",
-   "subject": "CHEMISTRY",
-   "type": "CONCEPT_EXPLANATION",
-   "title": "一定条件下存在反应",
-   "summaryMarkdown": "13．一定条件下存在反应：2SO2(g)+O2(g)2SO3(g)，其正反应放热。",
-   "applicabilityMarkdown": "热化学方程式书写与反应热计算、比较时使用。",
-   "contentMarkdown": "13．一定条件下存在反应：2SO2(g)+O2(g)2SO3(g)，其正反应放热。图1、图2表示起始时容器甲、丙体积都是V，容器乙、丁体积都是；向甲、丙内都充入2a mol SO2和a mol O2并保持恒温；向乙、丁内都充入a mol SO2和0.5a mol O2并保持绝热(即与外界无热量交换)，在一定温度时开始反应。",
-   "boundaryMarkdown": "该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。",
-   "derivationKind": "REVIEWED_SYNTHESIS",
-   "sourceId": "registry-kb-chemistry-methods:chemistry",
-   "sourceLocator": "化学方法类《（重点·方法·点拨）第42讲 反应条件对化学平衡移动的影响- （学生版）》",
-   "reviewedAtEpochMillis": 1784908800000,
-   "bindings": [
-    {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:举例说明下列反应在一定条件下可以实现",
-     "role": "PRIMARY"
-    }
-   ]
-  },
-  {
    "slug": "chem-fx-zhao-chu-ge-wu-zhi-di-qi-shi-liang-zhu-f46x01",
    "subject": "CHEMISTRY",
    "type": "CONCEPT_EXPLANATION",
@@ -2044,26 +2004,6 @@
    "bindings": []
   },
   {
-   "slug": "chem-fx-zai-yi-wan-zhong-yin-ru-ke-yi-jiang-di-f46x18",
-   "subject": "CHEMISTRY",
-   "type": "CONCEPT_EXPLANATION",
-   "title": "在乙烷中引入O2可以降低反应温度",
-   "summaryMarkdown": "(2)在乙烷中引入O2可以降低反应温度，减少积碳。",
-   "applicabilityMarkdown": "复习相关考点、解答对应试题时使用。",
-   "contentMarkdown": "(2)在乙烷中引入O2可以降低反应温度，减少积碳。涉及如下反应",
-   "boundaryMarkdown": "该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。",
-   "derivationKind": "REVIEWED_SYNTHESIS",
-   "sourceId": "registry-kb-chemistry-methods:chemistry",
-   "sourceLocator": "化学方法类《（重点·方法·点拨）第43讲 化学反应速率　工业合成氨- （学生版）》",
-   "reviewedAtEpochMillis": 1784908800000,
-   "bindings": [
-    {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:举例说明下列反应在一定条件下可以实现",
-     "role": "PRIMARY"
-    }
-   ]
-  },
-  {
    "slug": "chem-fx-chang-ya-xia-f46x19",
    "subject": "CHEMISTRY",
    "type": "CONCEPT_EXPLANATION",
@@ -2338,7 +2278,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:1-判断下列溶液的酸碱性-用-酸性-碱性-中性-或-不确定-填空",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:溶液的酸碱性",
      "role": "PRIMARY"
     }
    ]
@@ -2928,7 +2868,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:1-判断下列溶液的酸碱性-用-酸性-碱性-中性-或-不确定-填空",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:溶液的酸碱性",
      "role": "PRIMARY"
     }
    ]
@@ -3469,26 +3409,6 @@
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:不同类别的物质之间的转化关系",
-     "role": "PRIMARY"
-    }
-   ]
-  },
-  {
-   "slug": "chem-fx-yi-ding-tiao-jian-xia-rong-jie-neng-li-f54x12",
-   "subject": "CHEMISTRY",
-   "type": "CONCEPT_EXPLANATION",
-   "title": "一定条件下溶解能力小的沉淀也可以转化成溶解能",
-   "summaryMarkdown": "②一定条件下溶解能力小的沉淀也可以转化成溶解能力相对较大的沉淀。",
-   "applicabilityMarkdown": "分析沉淀溶解平衡、判断沉淀生成或溶解时使用。",
-   "contentMarkdown": "②一定条件下溶解能力小的沉淀也可以转化成溶解能力相对较大的沉淀。\n(3)应用实例",
-   "boundaryMarkdown": "该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。",
-   "derivationKind": "REVIEWED_SYNTHESIS",
-   "sourceId": "registry-kb-chemistry-methods:chemistry",
-   "sourceLocator": "化学方法类《（重点·方法·点拨）第51讲 沉淀溶解平衡- （学生版）》",
-   "reviewedAtEpochMillis": 1784908800000,
-   "bindings": [
-    {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:举例说明下列反应在一定条件下可以实现",
      "role": "PRIMARY"
     }
    ]
@@ -4214,26 +4134,6 @@
    ]
   },
   {
-   "slug": "chem-fx-lie-hua-zai-yi-ding-tiao-jian-xia-ba-x-f59x11",
-   "subject": "CHEMISTRY",
-   "type": "CONCEPT_EXPLANATION",
-   "title": "裂化：在一定条件下，把相对分子质",
-   "summaryMarkdown": "裂化：在一定条件下，把相对分子质量_大__、沸点_高__的烃断裂为相对分子质量_小__、沸点_低__的烃；提高_轻质油__的产量，特别是提高_汽油__的产量。",
-   "applicabilityMarkdown": "有机推断、官能团性质判断与方程式书写时使用。",
-   "contentMarkdown": "裂化：在一定条件下，把相对分子质量_大__、沸点_高__的烃断裂为相对分子质量_小__、沸点_低__的烃；提高_轻质油__的产量，特别是提高_汽油__的产量",
-   "boundaryMarkdown": "该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。",
-   "derivationKind": "REVIEWED_SYNTHESIS",
-   "sourceId": "registry-kb-chemistry-methods:chemistry",
-   "sourceLocator": "化学方法类《（重点·方法·点拨）第56讲 烃　化石燃料- （学生版）》",
-   "reviewedAtEpochMillis": 1784908800000,
-   "bindings": [
-    {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:举例说明下列反应在一定条件下可以实现",
-     "role": "PRIMARY"
-    }
-   ]
-  },
-  {
    "slug": "chem-fx-lie-jie-zai-gao-wen-xia-shi-fen-zi-ju-f59x12",
    "subject": "CHEMISTRY",
    "type": "CONCEPT_EXPLANATION",
@@ -4513,7 +4413,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:na2o2是一种常见的过氧化物-具有强氧化性和漂白性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:过氧化钠",
      "role": "PRIMARY"
     }
    ]
@@ -4549,26 +4449,6 @@
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:na2co3-nahco3与酸反应的图像分析",
-     "role": "PRIMARY"
-    }
-   ]
-  },
-  {
-   "slug": "chem-fx-bing-tong-yu-ning-meng-quan-zai-yi-din-f61x03",
-   "subject": "CHEMISTRY",
-   "type": "CONCEPT_EXPLANATION",
-   "title": "丙酮与柠檬醛在一定条件下反应可以合成有工业价",
-   "summaryMarkdown": "2．丙酮与柠檬醛在一定条件下反应可以合成有工业价值的α-紫罗兰酮和β-紫罗兰酮，转化过程如图所示。",
-   "applicabilityMarkdown": "有机推断、官能团性质判断与方程式书写时使用。",
-   "contentMarkdown": "2．丙酮与柠檬醛在一定条件下反应可以合成有工业价值的α-紫罗兰酮和β-紫罗兰酮，转化过程如图所示",
-   "boundaryMarkdown": "该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。",
-   "derivationKind": "REVIEWED_SYNTHESIS",
-   "sourceId": "registry-kb-chemistry-methods:chemistry",
-   "sourceLocator": "化学方法类《（重点·方法·点拨）第58讲 醛、酮、羧酸、酯、酰胺- （学生版）》",
-   "reviewedAtEpochMillis": 1784908800000,
-   "bindings": [
-    {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:举例说明下列反应在一定条件下可以实现",
      "role": "PRIMARY"
     }
    ]
@@ -5108,7 +4988,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:na2o2是一种常见的过氧化物-具有强氧化性和漂白性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:过氧化钠",
      "role": "PRIMARY"
     }
    ]
@@ -5248,7 +5128,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:1-mol某醛和足量的银氨溶液反应-析出432-g-ag-则该醛不可能为",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:有关醛的定量计算",
      "role": "PRIMARY"
     }
    ]
@@ -5972,26 +5852,6 @@
    "sourceLocator": "化学方法类《（重点·方法·点拨）第64讲 物质的分离与提纯- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": []
-  },
-  {
-   "slug": "chem-fx-jian-yan-shi-ji-xuan-ze-ji-yong-liang-f68x01",
-   "subject": "CHEMISTRY",
-   "type": "CONCEPT_EXPLANATION",
-   "title": "检验试剂选择及用量是否正确",
-   "summaryMarkdown": "1．检验试剂选择及用量是否正确，对检验试剂的要求是。",
-   "applicabilityMarkdown": "离子或物质检验、实验现象描述与推断题作答时使用。",
-   "contentMarkdown": "1．检验试剂选择及用量是否正确，对检验试剂的要求是\n(1)检验试剂不能对其他物质的检验有干扰，即不能与其他被检验的物质反应，也不能生成被检验的物质。\n(2)宏观现象要明显。",
-   "boundaryMarkdown": "(1)检验试剂不能对其他物质的检验有干扰，即不能与其他被检验的物质反应，也不能生成被检验的物质。",
-   "derivationKind": "REVIEWED_SYNTHESIS",
-   "sourceId": "registry-kb-chemistry-methods:chemistry",
-   "sourceLocator": "化学方法类《（重点·方法·点拨）第65讲 简单实验方案的设计与评价- （学生版）》",
-   "reviewedAtEpochMillis": 1784908800000,
-   "bindings": [
-    {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:判断下列实验过程是否正确",
-     "role": "PRIMARY"
-    }
-   ]
   },
   {
    "slug": "chem-fx-yuan-li-huo-xing-zhi-tan-jiu-lei-jian-f68x02",
@@ -7013,7 +6873,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:有机物g-是一种调香香精-也可用作抗氧化剂-工业合成路线之一如下",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:有机合成路线的推断方法",
      "role": "PRIMARY"
     }
    ]
@@ -7323,7 +7183,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:na2o2是一种常见的过氧化物-具有强氧化性和漂白性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:过氧化钠",
      "role": "PRIMARY"
     }
    ]
@@ -7819,26 +7679,6 @@
    ]
   },
   {
-   "slug": "chem-fx-mou-rong-ye-zhong-ke-neng-han-you-f76x18",
-   "subject": "CHEMISTRY",
-   "type": "CONCEPT_EXPLANATION",
-   "title": "某溶液中可能含有Cl-、SO、CO、NH、F",
-   "summaryMarkdown": "10．某溶液中可能含有Cl-、SO、CO、NH、Fe3+、Al3+和K+，取该溶液100mL，加入过量NaOH溶液，加热，得到0.02mol气体，同时产生红褐色沉淀，过滤、洗涤。",
-   "applicabilityMarkdown": "判断离子能否大量共存、书写不能共存的原因时使用。",
-   "contentMarkdown": "10．某溶液中可能含有Cl-、SO、CO、NH、Fe3+、Al3+和K+，取该溶液100mL，加入过量NaOH溶液，加热，得到0.02mol气体，同时产生红褐色沉淀，过滤、洗涤、灼烧，得到1.6g固体；向上述滤液中加足量BaCl2溶液，得到4.66g不溶于盐酸的沉淀，由此可知原溶液中",
-   "boundaryMarkdown": "该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。",
-   "derivationKind": "REVIEWED_SYNTHESIS",
-   "sourceId": "registry-kb-chemistry-methods:chemistry",
-   "sourceLocator": "化学方法类《高考化学离子检验、推断与共存(学生版)-26页》",
-   "reviewedAtEpochMillis": 1784908800000,
-   "bindings": [
-    {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:某溶液中可能含有下列阴离子-so-so-co-cl",
-     "role": "PRIMARY"
-    }
-   ]
-  },
-  {
    "slug": "chem-fx-shi-yan-shi-yu-pei-zhi-yi-zhong-jin-ha-f76x19",
    "subject": "CHEMISTRY",
    "type": "CONCEPT_EXPLANATION",
@@ -7859,46 +7699,6 @@
    ]
   },
   {
-   "slug": "chem-fx-xiang-mou-rong-ye-zhong-jia-rong-ye-f76x20",
-   "subject": "CHEMISTRY",
-   "type": "CONCEPT_EXPLANATION",
-   "title": "向某溶液中加BaCl2溶液",
-   "summaryMarkdown": "29．向某溶液中加BaCl2溶液，产生白色沉淀，加稀HNO3沉淀不消失，则溶液中。",
-   "applicabilityMarkdown": "判断离子能否大量共存、书写不能共存的原因时使用。",
-   "contentMarkdown": "29．向某溶液中加BaCl2溶液，产生白色沉淀，加稀HNO3沉淀不消失，则溶液中",
-   "boundaryMarkdown": "该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。",
-   "derivationKind": "REVIEWED_SYNTHESIS",
-   "sourceId": "registry-kb-chemistry-methods:chemistry",
-   "sourceLocator": "化学方法类《高考化学离子检验、推断与共存(学生版)-26页》",
-   "reviewedAtEpochMillis": 1784908800000,
-   "bindings": [
-    {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:某溶液中可能含有下列阴离子-so-so-co-cl",
-     "role": "PRIMARY"
-    }
-   ]
-  },
-  {
-   "slug": "chem-fx-mou-rong-ye-zhong-da-liang-cun-zai-yi-f76x21",
-   "subject": "CHEMISTRY",
-   "type": "CONCEPT_EXPLANATION",
-   "title": "某溶液中大量存在以下五种离子",
-   "summaryMarkdown": "30．某溶液中大量存在以下五种离子： NO、SO、Fe3+、H+、M，它们的个数之比为N(NO):N(SO):N(Fe3+):N(H+):N(M)=2:3:1:3:1，则M可能。",
-   "applicabilityMarkdown": "判断离子能否大量共存、书写不能共存的原因时使用。",
-   "contentMarkdown": "30．某溶液中大量存在以下五种离子： NO、SO、Fe3+、H+、M，它们的个数之比为N(NO):N(SO):N(Fe3+):N(H+):N(M)=2:3:1:3:1，则M可能为(HNO3具有强氧化性)",
-   "boundaryMarkdown": "该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。",
-   "derivationKind": "REVIEWED_SYNTHESIS",
-   "sourceId": "registry-kb-chemistry-methods:chemistry",
-   "sourceLocator": "化学方法类《高考化学离子检验、推断与共存(学生版)-26页》",
-   "reviewedAtEpochMillis": 1784908800000,
-   "bindings": [
-    {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:某溶液中可能含有下列阴离子-so-so-co-cl",
-     "role": "PRIMARY"
-    }
-   ]
-  },
-  {
    "slug": "chem-fx-shi-yan-f76x22",
    "subject": "CHEMISTRY",
    "type": "CONCEPT_EXPLANATION",
@@ -7912,26 +7712,6 @@
    "sourceLocator": "化学方法类《高考化学离子检验、推断与共存(学生版)-26页》",
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": []
-  },
-  {
-   "slug": "chem-fx-mou-tou-ming-rong-ye-zhong-ke-neng-han-f76x23",
-   "subject": "CHEMISTRY",
-   "type": "CONCEPT_EXPLANATION",
-   "title": "某透明溶液中可能含有H+、Al3+、Mg2+",
-   "summaryMarkdown": "50．某透明溶液中可能含有H+、Al3+、Mg2+、Fe2+、Cl-、OH-、NO、S2O、CO、SO中的几种离子(浓度均为0.1mol·L-1)。",
-   "applicabilityMarkdown": "判断离子能否大量共存、书写不能共存的原因时使用。",
-   "contentMarkdown": "50．某透明溶液中可能含有H+、Al3+、Mg2+、Fe2+、Cl-、OH-、NO、S2O、CO、SO中的几种离子(浓度均为0.1mol·L-1)。常温下，对其进行如下实验操作",
-   "boundaryMarkdown": "该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。",
-   "derivationKind": "REVIEWED_SYNTHESIS",
-   "sourceId": "registry-kb-chemistry-methods:chemistry",
-   "sourceLocator": "化学方法类《高考化学离子检验、推断与共存(学生版)-26页》",
-   "reviewedAtEpochMillis": 1784908800000,
-   "bindings": [
-    {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:某溶液中可能含有下列阴离子-so-so-co-cl",
-     "role": "PRIMARY"
-    }
-   ]
   },
   {
    "slug": "chem-fx-qu-shao-liang-gai-rong-ye-jia-rong-ye-f76x24",
@@ -7949,46 +7729,6 @@
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:在饱和溶液中加入少量的溶液产生沉淀-若以ksp表示的溶度积常数-则平衡后溶液中",
-     "role": "PRIMARY"
-    }
-   ]
-  },
-  {
-   "slug": "chem-fx-mou-rong-ye-zhong-jin-han-you-f76x25",
-   "subject": "CHEMISTRY",
-   "type": "CONCEPT_EXPLANATION",
-   "title": "某溶液中仅含有Na+、Mg2+、SO、Cl-",
-   "summaryMarkdown": "70．某溶液中仅含有Na+、Mg2+、SO、Cl-四种离子其物质的量浓度之比为c(Na+):c(Mg2+):c(Cl-)=3:5:5，若Na+浓度为3mol·L-1。",
-   "applicabilityMarkdown": "判断离子能否大量共存、书写不能共存的原因时使用。",
-   "contentMarkdown": "70．某溶液中仅含有Na+、Mg2+、SO、Cl-四种离子其物质的量浓度之比为c(Na+):c(Mg2+):c(Cl-)=3:5:5，若Na+浓度为3mol·L-1。则SO的浓度为",
-   "boundaryMarkdown": "该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。",
-   "derivationKind": "REVIEWED_SYNTHESIS",
-   "sourceId": "registry-kb-chemistry-methods:chemistry",
-   "sourceLocator": "化学方法类《高考化学离子检验、推断与共存(学生版)-26页》",
-   "reviewedAtEpochMillis": 1784908800000,
-   "bindings": [
-    {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:某溶液中可能含有下列阴离子-so-so-co-cl",
-     "role": "PRIMARY"
-    }
-   ]
-  },
-  {
-   "slug": "chem-fx-mou-wu-se-rong-ye-zhong-ke-neng-han-yo-f76x26",
-   "subject": "CHEMISTRY",
-   "type": "CONCEPT_EXPLANATION",
-   "title": "150mL某无色溶液中可能含有Na+、NH、",
-   "summaryMarkdown": "91．150mL某无色溶液中可能含有Na+、NH、Mg2+、Al3+、Fe3+、Ba2+、CO、SO中的若干种，现将此溶液分成三等份，进行如下实验。",
-   "applicabilityMarkdown": "判断离子能否大量共存、书写不能共存的原因时使用。",
-   "contentMarkdown": "91．150mL某无色溶液中可能含有Na+、NH、Mg2+、Al3+、Fe3+、Ba2+、CO、SO中的若干种，现将此溶液分成三等份，进行如下实验",
-   "boundaryMarkdown": "该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。",
-   "derivationKind": "REVIEWED_SYNTHESIS",
-   "sourceId": "registry-kb-chemistry-methods:chemistry",
-   "sourceLocator": "化学方法类《高考化学离子检验、推断与共存(学生版)-26页》",
-   "reviewedAtEpochMillis": 1784908800000,
-   "bindings": [
-    {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:某溶液中可能含有下列阴离子-so-so-co-cl",
      "role": "PRIMARY"
     }
    ]
@@ -8148,7 +7888,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:按官能团的不同可以对有机物进行分类-请指出下列有机物所属的类别",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:依据官能团分类",
      "role": "PRIMARY"
     }
    ]
@@ -8303,7 +8043,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:下列离子的中心原子的杂化方式与其他三种不同的是",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:中心原子杂化类型的判断",
      "role": "PRIMARY"
     }
    ]
@@ -8448,7 +8188,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:下列离子的中心原子的杂化方式与其他三种不同的是",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:中心原子杂化类型的判断",
      "role": "PRIMARY"
     }
    ]
@@ -8468,7 +8208,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:判断下列物质中心原子的杂化方式",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:中心原子杂化类型的判断",
      "role": "PRIMARY"
     }
    ]
@@ -8813,7 +8553,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:1-比较下列分子或离子中的键角大小-填-或",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:键角大小的比较",
      "role": "PRIMARY"
     }
    ]
@@ -8933,7 +8673,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:下列离子的中心原子的杂化方式与其他三种不同的是",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:中心原子杂化类型的判断",
      "role": "PRIMARY"
     }
    ]

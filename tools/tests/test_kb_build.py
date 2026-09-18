@@ -113,13 +113,14 @@ class GateTest(unittest.TestCase):
         #   集合基础 8 节点 + 命题节点入库材料后：unbound_points 698→697
         # starred_names 96→0、duplicate_names 118→0：已修复，见下方专门断言。
         self.assertEqual(0, metrics["starred_names"].value)
+        self.assertEqual(0, metrics["bad_names"].value)
         self.assertEqual(0, metrics["duplicate_names"].value)
-        self.assertEqual(61, metrics["unbound_points"].value)
+        self.assertEqual(8, metrics["unbound_points"].value)
         self.assertEqual(892, metrics["unbound_materials"].value)
-        self.assertEqual(872, metrics["ghost_aliases"].value)
+        self.assertEqual(920, metrics["ghost_aliases"].value)
         self.assertEqual(194, metrics["latex_damage"].value)
         self.assertEqual(80, metrics["control_chars"].value)
-        self.assertEqual(698, metrics["boundary_excerpt"].value)
+        self.assertEqual(677, metrics["boundary_excerpt"].value)
         # 只留占位写法（`（见知识清单/教材）`）的条数。旧判据是"以 `定位：` 开头"，
         # 而本包每个 boundary 都这样开头，于是该项恒等于节点总数 2573、毫无信息量。
         self.assertEqual(581, metrics["locator_boundary"].value)
@@ -139,8 +140,8 @@ class GateTest(unittest.TestCase):
         self.assertEqual(set(), excerpt_ids & locator_ids)
         # 缺陷类指标修复前必须非零——否则门禁不是在测真东西。
         # （starred_names 已修到 0，移出此列；上方 assertEqual(0,…) 现充当防回归哨兵。）
-        # duplicate_names 已修到 0（上方专门断言），不在此"必须非零"列表
-        for key in ("bad_names", "unbound_points",
+        # duplicate_names / bad_names 已修到 0（上方专门断言），不在此"必须非零"列表
+        for key in ("unbound_points",
                     "unbound_materials", "ghost_aliases", "undeclared_prereq",
                     "boundary_excerpt", "locator_boundary", "latex_damage",
                     "control_chars", "chapter_locator_mismatch"):

@@ -127,7 +127,9 @@ def _apply_pack_side(pack: dict, subj: str, surv: str, merged: str,
         for topic in s["topics"]:
             for p in topic.get("knowledgePoints") or []:
                 pr = p.get("prerequisiteSlugs") or []
-                newpr = [surv if q == merged else q for q in pr]
+                # 重指后必须去重：同时含 surv 与 merged 的点会得到重复项，
+                # 违反 Kotlin 契约 "prerequisiteSlugs must not contain duplicates"
+                newpr = list(dict.fromkeys(surv if q == merged else q for q in pr))
                 if newpr != pr:
                     p["prerequisiteSlugs"] = newpr
     _mtopic["knowledgePoints"].remove(mpoint)

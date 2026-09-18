@@ -4995,7 +4995,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:在等差数列-an-中-当m-n时-d-为公差公式-利用这个公式很容易求出公差",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:等差数列的常用性质",
      "role": "PRIMARY"
     }
    ]
@@ -7725,7 +7725,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:若s奇表示奇数项的和-s偶表示偶数项的和-公差为d",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:等差数列前项和的常用性质",
      "role": "PRIMARY"
     }
    ]
@@ -17660,7 +17660,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:在等差数列-an-中-当m-n时-d-为公差公式-利用这个公式很容易求出公差",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:等差数列的常用性质",
      "role": "PRIMARY"
     }
    ]
@@ -21225,7 +21225,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:在等差数列-an-中-当m-n时-d-为公差公式-利用这个公式很容易求出公差",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:等差数列的常用性质",
      "role": "PRIMARY"
     }
    ]
@@ -22510,7 +22510,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:在等差数列-an-中-当m-n时-d-为公差公式-利用这个公式很容易求出公差",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:等差数列的常用性质",
      "role": "PRIMARY"
     }
    ]
@@ -25595,7 +25595,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:在等差数列-an-中-当m-n时-d-为公差公式-利用这个公式很容易求出公差",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:等差数列的常用性质",
      "role": "PRIMARY"
     }
    ]
@@ -32970,7 +32970,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:在等差数列-an-中-当m-n时-d-为公差公式-利用这个公式很容易求出公差",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:等差数列的常用性质",
      "role": "PRIMARY"
     }
    ]
@@ -38760,7 +38760,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:力的分解-x1",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:力的分解",
      "role": "PRIMARY"
     }
    ]
@@ -40250,7 +40250,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:向心力-x1",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:向心力",
      "role": "PRIMARY"
     }
    ]
