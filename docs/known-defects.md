@@ -593,3 +593,92 @@ this entry rather than assert security.
 **Reopen condition.** A sealed run that reports `runStatus=complete` (or an
 equivalent full-coverage status) supersedes this entry with its finding
 summary; any new high/medium finding from such a run becomes its own open KD.
+
+## KD-15 (open) · Bundled teaching-material pack is rejected on import (startup banner)
+
+**Symptom.** A freshly installed `localFirstDebug` app shows the recoverable
+startup banner 「本地知识包尚未准备好 / 错题和复习可以继续使用，自动分类会暂缓。」
+(诊断编号 `startup:knowledge:<n>`) on every launch. Reproduced 2026-09-18 on a
+clean rebuild (`gradlew clean :app:assembleLocalFirstDebug`) with `pm clear`ed
+app data — logcat:
+`com.tingyun.smartmistakebook.core.database.DatabaseContractViolationException:
+Teaching-material review cannot predate its source import` from
+`RoomKnowledgeBaseStore.importKnowledgeTeachingMaterials`. The main tree pack
+imports fine (device DB: `knowledge_node`=2624, `knowledge_source`=13); only
+the teaching-material import fails, and it is one transaction, so one violation
+blocks the whole material set.
+
+**Root cause (measured).** The six bundled sidecars
+`moe-2025-teaching-support-v2-0{1..6}.json` carry **80 materials whose
+`reviewedAtEpochMillis` is a few milliseconds before their source's
+`importedAtEpochMillis`** (per file: 20 / 24 / 1 / 19 / 11 / 5), e.g.
+`ext-che-96397bfcc6-023` reviewed 1789732985366 < imported 1789732985467. The
+contract check (`KnowledgeTeachingMaterialContract.validate`, current source
+line 111) requires `reviewedAt >= importedAt`. The inversion is a
+stamping-order artifact of the pack builder (review stamped ~0.1 s before the
+source import), not a content judgment. Verified by direct scan of the
+sidecars; the runtime failure reproduces deterministically.
+
+**Note on the stack line.** The runtime frame names
+`KnowledgeTeachingMaterialContract.kt:301` while the check sits at line 112 in
+the 228-line file; the number is Kotlin's inline-frame attribution for the
+inlined `requireValid` body. A full clean rebuild reproduces it — do not read
+it as a stale-build signal.
+
+**Fix direction.** In the pack pipeline, stamp the source import at-or-before
+the material review, or clamp `reviewedAt = max(reviewedAt, importedAt)` when
+emitting the sidecars; rebuild and let a clean install confirm the banner is
+gone. Owner: the knowledge-pack toolchain (parallel session's in-flight pack).
+
+**Reopen condition.** n/a — close when a clean install launches with no banner
+and the material import completes without the contract exception.
+
+## KD-16 (open) · Batch organize shows the fallback notice instead of the configure-model one
+
+**Symptom.** `localFirstDebug`, no model configured: 错题本 → 批量导入试卷照片 →
+「开始分题」 shows 「这次还没有全部分好，页面都已保留，可以稍后继续。」
+(`BatchImportRoute.kt:159`). The precise 「请先在“我的”里配置模型服务，再整理相邻页面。」
+(line 157) never appears. Reproduced on the 2026-09-18 clean rebuild.
+
+**Root cause.** The precise message is reachable only through
+`BatchOrganizationUnavailableException`, thrown only when
+`!modelEgressAllowed()` (`RoomBatchImportRepository.kt:215-216`). The app
+injects `modelEgressAllowed = { modelConfigurationStore != null }`
+(`SmartMistakeBookApplication.kt:269`), which is true in `localFirst`
+regardless of whether a model is configured — so the call passes the egress
+gate and dies at `require(provider.canOrganizeBatchPages())`
+(`RoomBatchImportRepository.kt:219`); that `IllegalArgumentException` lands in
+the generic `catch (_: Exception)`.
+
+**Fix direction.** Make "capability unavailable" the same domain outcome, e.g.
+throw `BatchOrganizationUnavailableException()` when
+`!provider.canOrganizeBatchPages()` instead of `require` (egress semantics
+unchanged; the precise UI wording already exists).
+
+**Reopen condition.** n/a — close when the no-model smoke shows the
+configure-model message.
+
+## KD-17 (open) · A single-capture draft has no resume entry after leaving the flow
+
+**Symptom.** 错题本 → 拍照或上传 → 拍照并整理 → (no model: the flow parks at
+「整理题目」 with the capability gate) → back. The draft persists
+(`problem_draft` row, status `EDITING`, source asset kept) but nothing lists or
+reopens it: re-entering 拍照或上传 starts fresh; 错题本 shows its plain empty
+state (it counts only committed `problem` rows via `intakeBacklogCount`) and
+复习 shows 暂无需复习题.
+
+**Evidence.** `Routes.CaptureResume` (`capture/resume/{draftId}`) has exactly
+two callers — 批量导入 (`SmartMistakeBookRoot.kt:654`) and 分题复核 (:678). The
+batch side works on device (「点此继续」 reopens the page's draft with its
+original image, verified 2026-09-18); the single-capture side has no entry.
+Device DB after the smoke: 1 batch job `COMPLETED`, 3 pages `READY`, 4 drafts
+`EDITING` (3 batch + 1 single-capture).
+
+**Fix direction (needs a product decision).** Either surface single-capture
+drafts (reuse the resume route from a pending list or the 错题本 empty state),
+or keep the user in-flow / explicitly discard when the flow cannot be reopened.
+With a model configured the window is narrow (the flow auto-continues), so
+priority is low.
+
+**Reopen condition.** n/a — close by the chosen decision plus a device check
+that the draft is reachable or resolved.
