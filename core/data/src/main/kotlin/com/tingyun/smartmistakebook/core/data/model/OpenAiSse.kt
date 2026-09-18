@@ -40,6 +40,21 @@ internal object OpenAiSse {
     }
 
     /**
+     * The chain-of-thought a reasoning model streams as its own delta. Providers spell the field
+     * differently (`reasoning` here, `reasoning_content` elsewhere); both mean the same
+     * student-visible thinking that the tutor shows while the answer is still forming.
+     */
+    fun deltaReasoning(payload: String): String? {
+        val root = runCatching { json.parseToJsonElement(payload) as? JsonObject }.getOrNull()
+            ?: return null
+        val choices = root["choices"] as? JsonArray ?: return null
+        val first = choices.firstOrNull() as? JsonObject ?: return null
+        val delta = first["delta"] as? JsonObject ?: return null
+        return (delta["reasoning"] as? JsonPrimitive)?.contentOrNull
+            ?: (delta["reasoning_content"] as? JsonPrimitive)?.contentOrNull
+    }
+
+    /**
      * Incremental delta bodies in transport order. Each emission is the raw content that arrived in
      * one SSE frame; a frame never contributes the [DONE] terminator or a blank body. Malformed
      * frames are skipped so a stray byte cannot poison an otherwise well-formed stream.

@@ -91,6 +91,7 @@ import com.tingyun.smartmistakebook.core.model.TutorVisualStep
 import com.tingyun.smartmistakebook.core.model.TutorVisualTurnAnchor
 import com.tingyun.smartmistakebook.core.model.TutorVisualTurnSurface
 import com.tingyun.smartmistakebook.core.model.WritingLayer
+import com.tingyun.smartmistakebook.core.model.MODEL_TASK_STATUS_MESSAGE_MAX_CHARS
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.net.InetAddress
@@ -105,6 +106,7 @@ import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.toList
@@ -1989,6 +1991,147 @@ class OpenAiCompatibleModelGatewayTest {
         )
         // The final event still carries a parseable tutor plan.
         assertEquals(TUTOR_SESSION_ID, (terminal.output as TutorPlanOutput).sessionId)
+    }
+
+    @Test
+    fun streamingPrefixStaysWithinTheStatusBudgetForLongAnswers() = runBlocking {
+        // A real tutor answer passes the 500-character status budget quickly. The gateway used to
+        // emit the unbounded running prefix, and persisting it aborted the whole task mid-stream
+        // ("Model task message exceeds budget"), so the answer never reached the student.
+        val longAnswer = "先看导数变号，再讨论驻点与极值的分布。" .repeat(80)
+        val gateway = OpenAiCompatibleModelGateway(
+            configurationStore = FakeConfigurationStore(CONFIGURATION),
+            assetSource = assetSource { _, _ -> asset() },
+            transport = modelTransport { _ ->
+                ModelHttpResponse(
+                    statusCode = 200,
+                    body = envelope(tutorPayload()),
+                    streamChunks = listOf(longAnswer),
+                )
+            },
+            clock = { AUTHORIZATION_NOW },
+        )
+
+        val events = gateway.execute(authorizedTutor(gateway)).toList()
+        val progressMessages = events
+            .filterIsInstance<ModelGatewayEvent.Progress>()
+            .map { it.userMessage }
+        val terminal = events.last() as ModelGatewayEvent.Completed
+
+        assertTrue(longAnswer.length > MODEL_TASK_STATUS_MESSAGE_MAX_CHARS)
+        assertTrue(progressMessages.isNotEmpty())
+        assertTrue(
+            progressMessages.all { it.length <= MODEL_TASK_STATUS_MESSAGE_MAX_CHARS },
+        )
+        // The complete answer still lands in the terminal event.
+        assertEquals(TUTOR_SESSION_ID, (terminal.output as TutorPlanOutput).sessionId)
+    }
+
+    @Test
+    fun liveReasoningFramesSurfaceBeforeTheAnswerWhileTheCallIsStillRunning() = runBlocking {
+        // A reasoning model thinks for a long time before answering. The gateway must surface that
+        // chain-of-thought as progress while the call is still in flight, bounded by the same status
+        // budget as any other progress message.
+        val gateway = OpenAiCompatibleModelGateway(
+            configurationStore = FakeConfigurationStore(CONFIGURATION),
+            assetSource = assetSource { _, _ -> asset() },
+            transport = modelTransport { request ->
+                request.onReasoningDelta?.invoke("第一步：代入定义域。")
+                delay(900)
+                request.onReasoningDelta?.invoke("第二步：讨论端点是否闭合。")
+                delay(900)
+                request.onReasoningDelta?.invoke("第三步：合并区间。")
+                delay(900)
+                ModelHttpResponse(
+                    statusCode = 200,
+                    body = envelope(tutorPayload()),
+                    streamChunks = listOf("答案是 3。"),
+                )
+            },
+            clock = { AUTHORIZATION_NOW },
+        )
+
+        val events = gateway.execute(authorizedTutor(gateway)).toList()
+        val reasoningProgress = events
+            .filterIsInstance<ModelGatewayEvent.Progress>()
+            .map { it.userMessage }
+            .filter { it.contains("定义域") }
+
+        assertTrue("reasoning must surface as live progress", reasoningProgress.isNotEmpty())
+        assertTrue(
+            "the live reasoning text stays within the status budget",
+            reasoningProgress.all { it.length <= MODEL_TASK_STATUS_MESSAGE_MAX_CHARS },
+        )
+        // The answer itself still arrives as the terminal output.
+        assertEquals(TUTOR_SESSION_ID, ((events.last() as ModelGatewayEvent.Completed).output as TutorPlanOutput).sessionId)
+    }
+
+    @Test
+    fun liveReasoningFramesStaySparseEnoughForTheEventBudget() = runBlocking {
+        // The repository rejects a task that produces too many gateway events, so the live thinking
+        // must stay sparse (a few backed-off frames) rather than one frame per poll — otherwise a
+        // long reasoning run kills its own reply.
+        val gateway = OpenAiCompatibleModelGateway(
+            configurationStore = FakeConfigurationStore(CONFIGURATION),
+            assetSource = assetSource { _, _ -> asset() },
+            transport = modelTransport { request ->
+                repeat(120) { index ->
+                    request.onReasoningDelta?.invoke("思考片段$index ")
+                    delay(40)
+                }
+                ModelHttpResponse(
+                    statusCode = 200,
+                    body = envelope(tutorPayload()),
+                    streamChunks = listOf("答案是 3。"),
+                )
+            },
+            clock = { AUTHORIZATION_NOW },
+        )
+
+        val events = gateway.execute(authorizedTutor(gateway)).toList()
+        val progressFrames = events.filterIsInstance<ModelGatewayEvent.Progress>()
+
+        assertTrue("live thinking must still surface", progressFrames.any { it.userMessage.contains("思考片段") })
+        assertTrue(
+            "progress frames must stay sparse, got ${progressFrames.size}",
+            progressFrames.size <= 16,
+        )
+        assertEquals(
+            TUTOR_SESSION_ID,
+            ((events.last() as ModelGatewayEvent.Completed).output as TutorPlanOutput).sessionId,
+        )
+    }
+
+    @Test
+    fun longStreamedRepliesKeepTheirProgressFrameCountBounded() = runBlocking {
+        // Providers stream one delta per token, so a long answer arrives as thousands of frames.
+        // The emission stride has to adapt to the transcript length, otherwise the repository's
+        // gateway-event cap kills the very reply that is still streaming.
+        val chunks = (1..2_000).map { index -> "片段$index " }
+        val gateway = OpenAiCompatibleModelGateway(
+            configurationStore = FakeConfigurationStore(CONFIGURATION),
+            assetSource = assetSource { _, _ -> asset() },
+            transport = modelTransport { _ ->
+                ModelHttpResponse(
+                    statusCode = 200,
+                    body = envelope(tutorPayload()),
+                    streamChunks = chunks,
+                )
+            },
+            clock = { AUTHORIZATION_NOW },
+        )
+
+        val events = gateway.execute(authorizedTutor(gateway)).toList()
+        val progressFrames = events.filterIsInstance<ModelGatewayEvent.Progress>()
+
+        assertTrue(
+            "progress frames must stay bounded, got ${progressFrames.size}",
+            progressFrames.size <= 32,
+        )
+        assertEquals(
+            TUTOR_SESSION_ID,
+            ((events.last() as ModelGatewayEvent.Completed).output as TutorPlanOutput).sessionId,
+        )
     }
 
     @Test

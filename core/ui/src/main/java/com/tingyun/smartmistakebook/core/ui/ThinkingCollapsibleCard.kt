@@ -21,6 +21,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -48,7 +49,11 @@ fun ThinkingCollapsibleCard(
 ) {
     if (!shouldShowThinkingCard(thinkingMarkdown, thinking)) return
 
-    var expanded by rememberSaveable { mutableStateOf(false) }
+    // 生成中自动展开：学生实时看到思考与工具调用的流式过程；答案落地后自动收起成一组。
+    var expanded by rememberSaveable { mutableStateOf(thinking) }
+    LaunchedEffect(thinking) {
+        expanded = thinking
+    }
     val thinkingBody = thinkingMarkdown?.takeIf { it.isNotBlank() }
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -88,7 +93,7 @@ fun ThinkingCollapsibleCard(
             )
         }
         AnimatedVisibility(
-            visible = expanded && !thinking && thinkingBody != null,
+            visible = expanded && thinkingBody != null,
             enter = expandVertically() + fadeIn(),
             exit = shrinkVertically() + fadeOut(),
         ) {

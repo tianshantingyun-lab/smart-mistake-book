@@ -51,6 +51,8 @@ internal object OpenAiChatCompletionsProtocol : ModelWireProtocol {
 
     override fun streamDelta(payload: String): String? = OpenAiSse.deltaContent(payload)
 
+    override fun streamReasoningDelta(payload: String): String? = OpenAiSse.deltaReasoning(payload)
+
     override fun reconstructedBody(rawSse: String): String = OpenAiSse.reconstructedChatCompletion(rawSse)
 
     override fun probeRequestBody(modelId: String, probe: ModelProbeKind): String = when (probe) {

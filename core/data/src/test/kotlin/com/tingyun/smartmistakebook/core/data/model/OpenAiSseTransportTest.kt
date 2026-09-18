@@ -115,6 +115,30 @@ class OpenAiSseTransportTest {
         assertEquals(listOf("{\"ok\":true}"), response.streamChunks)
     }
 
+    @Test
+    fun streamedReasoningDeltasReachTheLiveCallbackInArrivalOrder() = runBlocking {
+        // Reasoning models stream their chain-of-thought as its own delta; the tutor shows it while
+        // the answer is still forming, so the transport must hand every frame over as it arrives.
+        val sseBody = buildString {
+            append("data: {\"choices\":[{\"delta\":{\"reasoning\":\"先看\"}}]}\n\n")
+            append("data: {\"choices\":[{\"delta\":{\"reasoning\":\"定义域\"}}]}\n\n")
+            append("data: {\"choices\":[{\"delta\":{\"content\":\"{\\\"ok\\\":true}\"}}]}\n\n")
+            append("data: [DONE]\n\n")
+        }
+        val seen = mutableListOf<String>()
+
+        val response = SseDeliveringCall(code = 200, contentType = "text/event-stream", body = sseBody)
+            .awaitBoundedSseResponse(
+                protocol = OpenAiChatCompletionsProtocol,
+                onReasoningDelta = { delta -> seen.add(delta) },
+            ) {}
+
+        assertEquals(200, response.statusCode)
+        assertEquals(listOf("先看", "定义域"), seen)
+        // The answer still travels the normal content path.
+        assertEquals(listOf("{\"ok\":true}"), response.streamChunks)
+    }
+
     private class SseDeliveringCall(
         private val code: Int,
         private val contentType: String,

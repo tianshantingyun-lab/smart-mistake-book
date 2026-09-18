@@ -41,6 +41,7 @@ import com.tingyun.smartmistakebook.core.model.ModelRequestBudgetExceededExcepti
 import com.tingyun.smartmistakebook.core.model.ModelRequestPayloadBudget
 import com.tingyun.smartmistakebook.core.model.ModelTaskFailure
 import com.tingyun.smartmistakebook.core.model.ModelTaskKind
+import com.tingyun.smartmistakebook.core.model.MODEL_TASK_STATUS_MESSAGE_MAX_CHARS
 import com.tingyun.smartmistakebook.core.model.agentConsentMatches
 import com.tingyun.smartmistakebook.core.model.requiresImageInput
 import com.tingyun.smartmistakebook.core.model.ModelTaskOutput
@@ -121,7 +122,11 @@ import java.net.SocketTimeoutException
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.util.Arrays
+import java.util.Collections
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
@@ -250,20 +255,27 @@ internal class OpenAiCompatibleModelGateway(
                             provider = currentProvider,
                             nowEpochMillis = clock(),
                         )
-                        val response = transport.post(
-                            WireRequest(
-                                url = protocol.endpoint(baseUrl, provider.modelId, stream),
-                                headers = protocol.headers(keyChars, stream),
-                                body = requestBody,
-                                stream = stream,
-                                protocol = protocol,
-                            ),
-                            beforeEnqueue = {
-                                requireCurrentAuthorizationBeforeEnqueue(
-                                    execution = execution,
-                                    expectedConfiguration = credential.configuration,
+                        val response = awaitWithLiveReasoning(
+                            stream = stream,
+                            post = {
+                                transport.post(
+                                    WireRequest(
+                                        url = protocol.endpoint(baseUrl, provider.modelId, stream),
+                                        headers = protocol.headers(keyChars, stream),
+                                        body = requestBody,
+                                        stream = stream,
+                                        protocol = protocol,
+                                        onReasoningDelta = it,
+                                    ),
+                                    beforeEnqueue = {
+                                        requireCurrentAuthorizationBeforeEnqueue(
+                                            execution = execution,
+                                            expectedConfiguration = credential.configuration,
+                                        )
+                                    },
                                 )
                             },
+                            emit = ::emit,
                         )
                         emitStreamingThenCompletion(
                             response = response,
@@ -457,15 +469,22 @@ private suspend fun emitStreamingThenCompletion(
         emit(terminal)
         return
     }
-    // Emit a running prefix every few SSE frames so the UI can render the reply as it arrives
-    // without flooding the event stream or writing the database on every single delta. The number
-    // of frames is bounded by the transcript length, so this stays well under the repository's
-    // gateway-event cap.
+    // Emit a running prefix every few SSE frames so the UI can render the reply as it arrives.
+    // Providers stream one delta per token, so a long answer can carry thousands of frames: the
+    // stride adapts to the transcript length to keep the TOTAL number of progress frames bounded
+    // (the repository rejects a task that produces too many gateway events — a long answer used to
+    // kill its own reply at that cap).
+    val stride = maxOf(
+        STREAM_EMIT_CHUNK_INTERVAL,
+        (chunks.size + MAX_STREAM_PROGRESS_FRAMES - 1) / MAX_STREAM_PROGRESS_FRAMES,
+    )
     var lastEmitted = 0
     for (index in chunks.indices) {
-        if (index + 1 - lastEmitted >= STREAM_EMIT_CHUNK_INTERVAL) {
+        if (index + 1 - lastEmitted >= stride) {
             emit(
-                ModelGatewayEvent.Progress.of(chunks.take(index + 1).joinToString("")),
+                ModelGatewayEvent.Progress.of(
+                    streamingPrefix(chunks.take(index + 1).joinToString("")),
+                ),
             )
             lastEmitted = index + 1
         }
@@ -474,13 +493,25 @@ private suspend fun emitStreamingThenCompletion(
     // happened to land just before the end), so the UI always shows the typed body while streaming.
     if (lastEmitted != chunks.size) {
         emit(
-            ModelGatewayEvent.Progress.of(chunks.joinToString("")),
+            ModelGatewayEvent.Progress.of(streamingPrefix(chunks.joinToString(""))),
         )
     }
     emit(terminal)
 }
 
+/**
+ * Bounds the running reply prefix to the task status budget. Real answers pass 500 characters
+ * quickly, and the persistence contract rejects a longer status message — which used to abort
+ * the whole task mid-stream (a tutor answer never arrived). The complete reply still travels in
+ * the terminal event.
+ */
+private fun streamingPrefix(body: String): String =
+    body.take(MODEL_TASK_STATUS_MESSAGE_MAX_CHARS)
+
 private const val STREAM_EMIT_CHUNK_INTERVAL = 8
+
+/** 单任务进度帧的硬上限（思考帧 + 正文前缀帧合计口径见各自的常量）。 */
+private const val MAX_STREAM_PROGRESS_FRAMES = 24
 
 private fun ModelConfigurationSnapshot.toCapabilities(): ProviderCapabilitySnapshot {
     if (!isConfigured) return UNCONFIGURED_CAPABILITIES
@@ -635,6 +666,49 @@ private fun java.io.InputStream.readExactlyBounded(expectedBytes: Long): ByteArr
 }
 
 private fun failure(value: ModelTaskFailure): ModelGatewayEvent = ModelGatewayEvent.Failed(value)
+
+/**
+ * 发送请求，并在流式读取期间**实时**把思考链逐步转发成进度事件（推理模型先吐很久思考、
+ * 最后才给答案；学生该在等待时就看见它在想什么）。思考增量由传输层在读取线程回调进一个
+ * 同步缓冲区，主协程轮询转发——发射始终发生在 flow 的收集协程里，不跨协程 emit。
+ */
+private suspend fun awaitWithLiveReasoning(
+    stream: Boolean,
+    post: suspend (onReasoningDelta: ((String) -> Unit)?) -> ModelHttpResponse,
+    emit: suspend (ModelGatewayEvent) -> Unit,
+): ModelHttpResponse {
+    if (!stream) return post(null)
+    val reasoning = Collections.synchronizedList(ArrayList<String>())
+    return coroutineScope {
+        val call = async { post { delta -> reasoning.add(delta) } }
+        var emittedFrames = 0
+        var observedDeltas = 0
+        var nextEmitAtMillis = 0L
+        var backoffMillis = LIVE_REASONING_FIRST_EMIT_MILLIS
+        while (!call.isCompleted) {
+            delay(LIVE_REASONING_POLL_MILLIS)
+            val snapshot = synchronized(reasoning) { ArrayList(reasoning) }
+            if (snapshot.size == observedDeltas) continue
+            observedDeltas = snapshot.size
+            // The repository caps how many gateway events one task may produce, so the live
+            // thinking is deliberately sparse: a few frames with a growing interval, never a
+            // frame per poll.
+            if (emittedFrames >= LIVE_REASONING_MAX_FRAMES) continue
+            val now = System.currentTimeMillis()
+            if (now < nextEmitAtMillis) continue
+            emittedFrames += 1
+            nextEmitAtMillis = now + backoffMillis
+            backoffMillis = (backoffMillis * 2).coerceAtMost(LIVE_REASONING_MAX_INTERVAL_MILLIS)
+            emit(ModelGatewayEvent.Progress.of(streamingPrefix(snapshot.joinToString(""))))
+        }
+        call.await()
+    }
+}
+
+private const val LIVE_REASONING_POLL_MILLIS = 400L
+private const val LIVE_REASONING_FIRST_EMIT_MILLIS = 1_000L
+private const val LIVE_REASONING_MAX_INTERVAL_MILLIS = 8_000L
+private const val LIVE_REASONING_MAX_FRAMES = 8
 
 /**
  * Diagnostics for a failed model call: the exception class and message only. Request and

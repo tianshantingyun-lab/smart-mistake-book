@@ -35,6 +35,12 @@ internal interface ModelWireProtocol {
     /** SSE 单帧的文本增量；非文本帧返回 null。 */
     fun streamDelta(payload: String): String?
 
+    /**
+     * SSE 单帧里的思考链增量（推理模型把思考和答案分开发流）。协议族若不区分，返回 null，
+     * 界面就只显示答案本身。
+     */
+    fun streamReasoningDelta(payload: String): String? = null
+
     /** 把整段 SSE 重建成一次完整响应体（供终态解析）。 */
     fun reconstructedBody(rawSse: String): String
 

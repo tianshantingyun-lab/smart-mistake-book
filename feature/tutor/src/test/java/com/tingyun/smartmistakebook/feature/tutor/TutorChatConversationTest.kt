@@ -75,6 +75,40 @@ class TutorChatConversationTest {
     }
 
     @Test
+    fun streamingLobbyTaskSurfacesItsIncrementalBodyToo() {
+        // The lobby streams like the tutor page, and a reasoning model sends its chain-of-thought
+        // here first — the student watches it think before the answer lands.
+        val lobbyProvider = provider().copy(
+            supportedTasks = setOf(ModelTaskKind.TUTOR_LOBBY),
+            supportsStreaming = true,
+        )
+        val lobbyRequest = buildTutorLobbyRequest(
+            provider = lobbyProvider,
+            conversationId = "tutor-lobby",
+            messageOrdinal = 1,
+            studentMessage = "帮我看看这道题",
+            priorMessages = emptyList(),
+            occurredAtEpochMillis = 1,
+        )
+        val streaming = ModelTaskSnapshot(
+            taskId = "task-lobby",
+            request = lobbyRequest,
+            requestFingerprint = ModelTaskFingerprint.of(lobbyRequest),
+            status = ModelTaskStatus.STREAMING,
+            stateVersion = 2,
+            stage = ModelTaskStage.VALIDATING_OUTPUT,
+            userMessage = "先确认题目问的是哪一个量。",
+            attemptCount = 1,
+            provider = lobbyProvider,
+            output = null,
+            createdAtEpochMillis = 1,
+            updatedAtEpochMillis = 2,
+        )
+
+        assertEquals("先确认题目问的是哪一个量。", streaming.streamingReplyBody())
+    }
+
+    @Test
     fun nonStreamingRespondTaskHasNoIncrementalBodyToRender() {
         // A task that is not yet saving progress, or already finished, must not render a
         // half-typed streaming body.

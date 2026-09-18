@@ -115,12 +115,13 @@ import com.tingyun.smartmistakebook.core.database.entity.TutorSessionProblemAnch
 import com.tingyun.smartmistakebook.core.database.entity.TutorAnswerExposureEntity
 import com.tingyun.smartmistakebook.core.database.entity.TutorAnswerExposureOutcomeEntity
 import com.tingyun.smartmistakebook.core.database.entity.AppliedTutorAnswerExposureRecordEntity
+import com.tingyun.smartmistakebook.core.database.dao.ContentInstallStateDao
 import com.tingyun.smartmistakebook.core.database.entity.ContentInstallStateEntity
 import com.tingyun.smartmistakebook.core.database.entity.TutorConversationEntity
 import com.tingyun.smartmistakebook.core.database.entity.TutorMessageEntity
 import com.tingyun.smartmistakebook.core.database.entity.TutorMessageSourceAssetEntity
 
-internal const val STUDY_DATABASE_VERSION = 46
+internal const val STUDY_DATABASE_VERSION = 47
 
 /** Split-import status values mirrored into [SplitImportMigration]. */
 internal object SplitImportLedgerStrings {
@@ -232,6 +233,8 @@ internal abstract class StudyDatabase : RoomDatabase() {
 
     abstract fun knowledgeTeachingMaterialDao(): KnowledgeTeachingMaterialDao
 
+    abstract fun contentInstallStateDao(): ContentInstallStateDao
+
     abstract fun mistakeDetailDao(): MistakeDetailDao
 
     abstract fun learningDao(): LearningDao
@@ -336,6 +339,7 @@ object StudyDatabaseFactory {
             ENTRY_USER_NOTE_MIGRATION_43_44,
             TUTOR_MESSAGE_IMAGE_MIGRATION_44_45,
             KNOWLEDGE_CONTENT_LIFECYCLE_MIGRATION_45_46,
+            TUTOR_MESSAGE_THINKING_MIGRATION_46_47,
         )
             .setDriver(AndroidSQLiteDriver())
             .build()

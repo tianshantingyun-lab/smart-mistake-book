@@ -46,6 +46,11 @@ internal class WireRequest(
     val body: String,
     val stream: Boolean,
     val protocol: ModelWireProtocol,
+    /**
+     * 流式读取期间每个思考链增量到达时调用（推理模型把思考与答案分开发流）。回调是非挂起的，
+     * 由调用方自行转成事件流；不关心思考的调用方留空即可。
+     */
+    val onReasoningDelta: ((String) -> Unit)? = null,
 )
 
 internal fun interface ModelHttpTransport {
@@ -110,7 +115,11 @@ internal class OkHttpModelTransport : ModelHttpTransport {
             .build()
         val call = client.newCall(httpRequest)
         return if (request.stream) {
-            call.awaitBoundedSseResponse(request.protocol, beforeEnqueue)
+            call.awaitBoundedSseResponse(
+                protocol = request.protocol,
+                beforeEnqueue = beforeEnqueue,
+                onReasoningDelta = request.onReasoningDelta,
+            )
         } else {
             call.awaitBoundedResponse(beforeEnqueue)
         }
@@ -243,6 +252,7 @@ internal suspend fun Call.awaitBoundedResponse(
 
 internal suspend fun Call.awaitBoundedSseResponse(
     protocol: ModelWireProtocol,
+    onReasoningDelta: ((String) -> Unit)? = null,
     beforeEnqueue: suspend () -> Unit,
 ): ModelHttpResponse {
     beforeEnqueue()
@@ -259,7 +269,11 @@ internal suspend fun Call.awaitBoundedSseResponse(
                 override fun onResponse(call: Call, response: Response) {
                     try {
                         response.use {
-                            val raw = it.body.byteStream().readSse()
+                            val raw = it.body.byteStream().readSse { frame ->
+                                protocol.streamReasoningDelta(frame)?.let { delta ->
+                                    onReasoningDelta?.invoke(delta)
+                                }
+                            }
                             val body = if (it.code in 200..299) {
                                 protocol.reconstructedBody(raw)
                             } else {
@@ -310,16 +324,28 @@ private fun sseChunksOf(protocol: ModelWireProtocol, rawSse: String): List<Strin
  * budget: the provider is the only thing that bounds a response, and reasoning models stream
  * far more than the app consumes (measured 3.2 MB for a 395-char answer, 98.8% reasoning),
  * so a local cap would fail tasks whose answers are small and valid.
+ *
+ * [onFrame] receives every complete frame as it arrives (never the still-partial tail), which is
+ * what makes the streamed chain-of-thought visible while the answer is still forming.
  */
-private fun java.io.InputStream.readSse(): String {
+private fun java.io.InputStream.readSse(onFrame: ((String) -> Unit)? = null): String {
     val output = StringBuilder()
     val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
     var lastScannedEnd = 0
+    var frameScanStart = 0
     try {
         while (true) {
             val read = read(buffer)
             if (read < 0) break
             output.append(String(buffer, 0, read, StandardCharsets.UTF_8))
+            if (onFrame != null && output.isNotEmpty()) {
+                val boundary = output.lastIndexOf(SSE_FRAME_SEPARATOR)
+                if (boundary >= frameScanStart) {
+                    val completed = output.substring(frameScanStart, boundary + SSE_FRAME_SEPARATOR.length)
+                    frameScanStart = boundary + SSE_FRAME_SEPARATOR.length
+                    for (block in OpenAiSse.eventDataBlocksTerminated(completed)) onFrame(block)
+                }
+            }
             // Only the tail can contain the terminator once a chunk has been appended; scanning the
             // whole accumulated buffer on every chunk makes the read quadratic for long streams.
             // Keep a one-terminator overlap so a [DONE] split across two chunks is still caught.
@@ -331,6 +357,8 @@ private fun java.io.InputStream.readSse(): String {
         Arrays.fill(buffer, 0.toByte())
     }
 }
+
+private const val SSE_FRAME_SEPARATOR = "\n\n"
 
 /**
  * True when the accumulated SSE text contains `data: [DONE]` at or after [scannedThrough], allowing
@@ -366,6 +394,13 @@ private fun ByteArray.toIntOctets(): IntArray = IntArray(size) { this[it].toInt(
 internal val JSON_MEDIA_TYPE = "application/json; charset=utf-8".toMediaType()
 internal const val SSE_ACCEPT = "text/event-stream"
 private const val CONNECT_TIMEOUT_SECONDS = 15L
-private const val READ_TIMEOUT_SECONDS = 90L
-private const val WRITE_TIMEOUT_SECONDS = 45L
-private const val CALL_TIMEOUT_SECONDS = 110L
+
+/**
+ * Generous bounds: a reasoning model working through a real problem streams well past the
+ * previous values (a measured call was cut at 110.8s while still streaming its solution).
+ * The read timeout still detects a genuinely stalled link, so these only stop treating a slow
+ * but healthy answer as a failure.
+ */
+private const val READ_TIMEOUT_SECONDS = 300L
+private const val WRITE_TIMEOUT_SECONDS = 120L
+private const val CALL_TIMEOUT_SECONDS = 600L

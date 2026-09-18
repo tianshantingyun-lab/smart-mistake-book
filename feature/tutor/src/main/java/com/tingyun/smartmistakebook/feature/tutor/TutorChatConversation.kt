@@ -46,9 +46,11 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.tingyun.smartmistakebook.core.domain.TutorAnswerExposureKey
+import com.tingyun.smartmistakebook.core.domain.TutorHistoryBudget
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
 import com.tingyun.smartmistakebook.core.model.TutorChatHistoryEntry
+import com.tingyun.smartmistakebook.core.model.TutorLobbyInput
 import com.tingyun.smartmistakebook.core.model.TutorMoveType
 import com.tingyun.smartmistakebook.core.model.TutorPlanInput
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
@@ -71,6 +73,7 @@ import com.tingyun.smartmistakebook.core.ui.TutorMarkdownTokens
 import com.tingyun.smartmistakebook.core.ui.AiReplyRichMarkdown
 import com.tingyun.smartmistakebook.core.ui.AttachedImagesSection
 import com.tingyun.smartmistakebook.core.ui.ThinkingCollapsibleCard
+import com.tingyun.smartmistakebook.core.ui.TutorReplyMarkdown
 import com.tingyun.smartmistakebook.core.ui.TutorVisualSceneRenderer
 import com.tingyun.smartmistakebook.core.model.AttachedImage
 import kotlinx.coroutines.flow.first
@@ -125,10 +128,17 @@ internal fun ModelTaskSnapshot.canRetryTutorResponse(): Boolean =
  * show before the terminal [ModelTaskStatus.SUCCEEDED] lands. Any other status (or a blank body)
  * means there is nothing half-typed to display, so the UI keeps its idle/progress state.
  */
+/**
+ * Incremental body to render while a tutor reply is still streaming. The provider replays the
+ * reply in deltas — and a reasoning model streams its chain-of-thought first, before the answer —
+ * so both surfaces show the running status message as the half-typed body.
+ */
 internal fun ModelTaskSnapshot.streamingReplyBody(): String? {
-    if (request.input !is TutorRespondInput) return null
     if (status != ModelTaskStatus.STREAMING) return null
-    return userMessage.takeIf { it.isNotBlank() }
+    return when (request.input) {
+        is TutorRespondInput, is TutorLobbyInput -> userMessage.takeIf { it.isNotBlank() }
+        else -> null
+    }
 }
 
 private fun ModelTaskSnapshot.requiresTutorModelSettings(): Boolean {
@@ -155,20 +165,7 @@ internal fun tutorChatHistory(
             },
         )
     }
-    var totalChars = 0
-    return buildList {
-        for (message in succeeded.asReversed()) {
-            val messageChars = message.studentMessage.length + message.assistantMarkdown.length
-            if (
-                size >= TutorRespondInput.MAX_PRIOR_MESSAGES ||
-                totalChars + messageChars > TutorRespondInput.MAX_PRIOR_MESSAGE_CHARS
-            ) {
-                break
-            }
-            add(message)
-            totalChars += messageChars
-        }
-    }.asReversed()
+    return TutorHistoryBudget.bounded(succeeded)
 }
 
 private const val HIDDEN_TUTOR_ANSWER_CONTEXT =
@@ -351,7 +348,7 @@ private fun TutorAssistantReplyBubble(
                                 thinkingMarkdown = output.thinkingMarkdown,
                                 thinking = false,
                             )
-                            AiReplyRichMarkdown(
+                            TutorReplyMarkdown(
                                 markdown = output.messageMarkdown,
                                 modifier = Modifier.fillMaxWidth(),
                             )

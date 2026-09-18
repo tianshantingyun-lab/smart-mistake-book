@@ -77,6 +77,8 @@ data class TutorMessage(
     val ordinal: Int,
     val role: TutorMessageRole,
     val bodyMarkdown: String,
+    /** 模型给出的思考轨迹（折叠展示、不回喂模型）；旧消息为 null。 */
+    val thinkingMarkdown: String? = null,
     val status: TutorMessageStatus,
     val logicalOperationId: String?,
     val replyToMessageId: String?,
@@ -183,6 +185,8 @@ data class AppendTutorAssistantMessageCommand(
     val ordinal: Int,
     val replyToMessageId: String?,
     val bodyMarkdown: String,
+    /** 模型给出的思考轨迹；随消息一起展示（折叠），失败/中断的回复不落。 */
+    val thinkingMarkdown: String? = null,
     val logicalOperationId: String?,
     val status: TutorMessageStatus = TutorMessageStatus.SUCCEEDED,
     val createdAtEpochMillis: Long,

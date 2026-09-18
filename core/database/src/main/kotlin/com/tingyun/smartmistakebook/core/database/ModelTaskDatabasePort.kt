@@ -3,6 +3,7 @@ package com.tingyun.smartmistakebook.core.database
 import com.tingyun.smartmistakebook.core.model.ModelTaskFailure
 import com.tingyun.smartmistakebook.core.model.ModelTaskFingerprint
 import com.tingyun.smartmistakebook.core.model.ModelTaskLogicalOperationFingerprint
+import com.tingyun.smartmistakebook.core.model.MODEL_TASK_STATUS_MESSAGE_MAX_CHARS
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
 import com.tingyun.smartmistakebook.core.model.ModelTaskOutput
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
@@ -77,7 +78,9 @@ data class TransitionModelTaskCommand(
         require(expectedStatus.canTransitionTo(nextStatus)) {
             "Illegal model task transition: $expectedStatus -> $nextStatus"
         }
-        require(userMessage.length <= 500) { "Model task message exceeds budget" }
+        require(userMessage.length <= MODEL_TASK_STATUS_MESSAGE_MAX_CHARS) {
+            "Model task message exceeds budget"
+        }
         require(attemptCount >= 0) { "Model task attempt count must not be negative" }
         require(nextStatus != ModelTaskStatus.SUCCEEDED || output != null) {
             "A successful model task transition must include output"

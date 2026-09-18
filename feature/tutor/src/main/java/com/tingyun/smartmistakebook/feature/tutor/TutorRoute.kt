@@ -94,6 +94,7 @@ import com.tingyun.smartmistakebook.core.ui.PaperDivider
 import com.tingyun.smartmistakebook.core.ui.PrimaryActionButton
 import com.tingyun.smartmistakebook.core.ui.RootPageColumn
 import com.tingyun.smartmistakebook.core.ui.SafeMarkdownText
+import com.tingyun.smartmistakebook.core.ui.TutorReplyMarkdown
 import com.tingyun.smartmistakebook.core.ui.SectionHeader
 import com.tingyun.smartmistakebook.core.ui.SmartDimens
 
@@ -626,6 +627,11 @@ internal fun TutorTopBar(
     }
 }
 
+/**
+ * 讲题助手的回复气泡。正文走开放的富渲染路径（完整 Markdown + 数学引擎，行内公式转可读数学、
+ * 独立公式交给数学渲染），安全仍由 [TutorReplyMarkdown] 内部的 fail-closed 判定兜底：
+ * 一旦出现 HTML/链接/远程图片就自动退回受限文本，不需要每个调用点各自把关。
+ */
 @Composable
 internal fun TutorPrompt(text: String, modifier: Modifier = Modifier) {
     Row(modifier = modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
@@ -643,15 +649,13 @@ internal fun TutorPrompt(text: String, modifier: Modifier = Modifier) {
                 tint = JadeActive,
             )
         }
-        SafeMarkdownText(
+        TutorReplyMarkdown(
             markdown = text,
             modifier = Modifier
                 .weight(1f)
                 .padding(start = 10.dp)
                 .border(1.dp, Divider, RoundedCornerShape(8.dp))
                 .padding(horizontal = 12.dp, vertical = 8.dp),
-            color = Ink,
-            style = MaterialTheme.typography.bodyMedium,
         )
     }
 }

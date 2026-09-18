@@ -68,6 +68,9 @@ internal data class TutorMessageEntity(
     val role: String,
     @ColumnInfo(name = "body_markdown")
     val bodyMarkdown: String,
+    /** 模型给出的思考轨迹（折叠展示、不回喂模型）；旧行与失败行保持 NULL。 */
+    @ColumnInfo(name = "thinking_markdown")
+    val thinkingMarkdown: String? = null,
     val status: String,
     @ColumnInfo(name = "logical_operation_id")
     val logicalOperationId: String?,
