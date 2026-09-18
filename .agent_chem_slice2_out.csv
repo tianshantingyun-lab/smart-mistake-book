@@ -1,0 +1,55 @@
+material_slug,target_node_name,evidence
+chem-hj-feoh2-zhibei-zhuangzhi-chuangxin,Fe(OH)2的制备,材料标题即“Fe(OH)2 制备的装置设计与成功关键”并讲隔绝氧气制备Fe(OH)2的装置措施，与节点“Fe(OH)2的制备”同名同义。
+chem-hj-co-co2-chuzha-fangfa,气体制备,材料归纳CO与CO2混合气体的除杂方法（NaOH吸收CO2、灼热CuO转化CO），属气体制备流程中的净化除杂环节。
+chem-hj2-qiti-rongjie-xishou-fangdaoxi,吸收氨气(或HCl)时要注意防止倒吸。,材料讲气体的溶解吸收与防倒吸原则（极易溶的NH3与HCl须用倒扣漏斗和干燥管等防倒吸装置），与节点给出的防倒吸装置内容一致。
+chem-fx-you-yu-zu-cheng-de-hun-he-qi-ti-zai-cu-f06x12,平衡常数的综合计算,材料为“NO与NH3混合气体在催化剂作用下达平衡时气体体积由16 mL变为17.5 mL”的平衡计算片段，需用三段式法作综合计算。
+chem-fx-jiang-sheng-you-he-de-hun-he-qi-ti-de-f25x14,氮的氧化物,材料为“12 mL NO2和O2的混合气体量筒倒立水槽中剩余2 mL”的氮氧化物溶于水计算，属氮的氧化物性质与计算。
+chem-fx-zhong-yao-qi-ti-de-fa-sheng-zhuang-zhi-f28x01,气体制备,材料为“重要气体的发生装置”，属气体制备中的发生装置知识。
+chem-fx-ping-heng-shi-hun-he-qi-ti-de-ping-jun-f44x05,平衡常数的综合计算,材料为平衡常数计算题中“平衡时混合气体的平均摩尔质量”的填空点拨，需先按三段式法求平衡组成再计算。
+chem-fx-hun-he-qi-ti-de-zong-ya-deng-yu-xiang-f44x06,压强平衡常数,材料给出“混合气体的总压等于各组分气体的分压之和”的分压关系，是压强平衡常数Kp计算的基础。
+chem-fx-ke-yong-yu-ding-liang-ce-ding-qi-ti-de-f66x02,实验方案设计,材料讲仪器组合“可用于定量测定气体的质量”，属以定量测定气体为主的综合实验方案设计。
+chem-fx-qi-ti-de-jing-hua-f69x01,气体制备,材料讲“气体的净化”的设计原则与吸收剂选择，属气体制备中的净化环节。
+chem-fx-kong-zhi-qi-ti-de-liu-su-ji-yong-liang-f69x05,气体制备,材料讲“控制气体的流速及用量”，属气体制备装置的操作要求。
+chem-iron3-ion-detection-three-methods,Fe2＋、Fe3＋的检验方法,材料讲Fe3+的三种特征检验（KSCN显血红色、苯酚显紫色、K4[Fe(CN)6]蓝色沉淀），属节点中Fe3+的检验内容。
+chem-iron3-detection,Fe2＋、Fe3＋的检验方法,材料讲Fe3+的检验方法（滴加KSCN溶液变红且产物是可溶配合物而非沉淀），属节点中Fe3+的检验内容。
+chem-iron2-detection,Fe2＋、Fe3＋的检验方法,材料讲Fe2+的检验方法及注意事项（先加KSCN不变色再加氯水变红、加K3[Fe(CN)6]生成蓝色沉淀），属节点中Fe2+的检验内容。
+chem-chloride-detection,氯离子检验,材料讲Cl-的检验方法（硝酸酸化后加AgNO3生成不溶于酸的白色沉淀），与节点“氯离子检验”一致。
+chem-sulfate-detection,常见阴离子的检验与推断依据,材料讲SO42-的检验方法（先加稀盐酸无沉淀再加BaCl2生成白色沉淀），属节点“常见阴离子的检验与推断依据”（别名即“常见阴离子的检验方法”）。
+chem-carbonate-detection,常见阴离子的检验与推断依据,材料讲CO32-的检验方法（先加CaCl2生成白色沉淀再加盐酸放出使石灰水变浑浊的气体），属常见阴离子的检验方法。
+chem-hj-lizi-jianyan-ganrao,物质检验,材料总结SO42-、CO32-、Fe2+检验与焰色试验中其他离子干扰造成的错误结论，属物质检验（离子检验）的一般要点。
+chem-hj2-wen-youdu-qiti-fangfa,药品取用,材料讲闻有毒气体气味的正确方法（瓶口轻轻扇动使极少量气体飘进鼻孔），属实验基本操作与药品取用安全规范。
+chem-kb-electroplating-and-copper-refining,电解原理应用的四点注意事项,材料讲电镀与电解精炼铜（镀层金属作阳极、粗铜作阳极纯铜作阴极、镀液浓度不变而精炼时Cu2+浓度减小），与节点中“电解精炼铜”和“电镀时”两条要点逐条对应。
+chem-hj2-diandu-tong-dianjing-tong,电解原理应用的四点注意事项,材料讲电镀铜与电解精炼铜的电极设置（粗铜作阳极、纯铜作阴极、Ag与Au沉积为阳极泥），对应节点中“电解精炼铜”要点。
+chem-hj2-diandu-dianjing-yuanyili,电解原理应用的四点注意事项,材料讲电镀与电解精炼的电极设置与规律（一多一少一不变、两不等），对应节点中“电镀时”和“电解精炼铜”要点。
+chem-fx-cu-tong-zhong-tong-de-han-liang-wei-f17x03,电解原理应用的四点注意事项,材料讲粗铜含铜99.5%～99.7%并经电解精炼得到99.95%～99.98%的精铜，属电解精炼铜知识。
+chem-fx-dian-du-dian-jie-jing-lian-tong-f41x08,电解原理应用的四点注意事项,材料讲电镀的概念与目的（镀层金属作阳极、待镀件作阴极、镀液浓度不变），属电解原理应用中的电镀。
+chem-fx-dian-jie-jing-lian-tong-f41x11,电解原理应用的四点注意事项,材料讲电解精炼铜（Zn与Fe与Ni溶解、阳极泥沉积、Cu2+浓度减小）和电镀（镀液浓度不变），与节点该两条要点逐句对应。
+chem-fx-yi-zhi-rong-du-ji-rong-ye-zhong-mou-li-f54x06,沉淀溶解平衡体系中相关计算方法,材料讲“已知溶度积、溶液中某离子的浓度求另一种离子浓度”（在0.1 mol/L NaCl溶液中加入过量AgCl固体后算c(Ag+)），与节点内容一致。
+chem-fx-mou-rong-ye-zhong-han-you-ru-biao-suo-f76x27,电荷守恒在离子推断中的应用,材料为“某溶液Q含有如表所示离子中的5种且浓度均为0.5 mol/L”的离子推断题，需用电荷守恒推断离子存在。
+chem-fx-mou-wu-se-rong-ye-zhong-han-you-f76x30,电荷守恒在离子推断中的应用,材料为“某无色溶液中含有Na+、Ag+、Ba2+、Al3+等若干种”的离子推断题，依据实验现象与电荷守恒推断。
+chem-fx-xian-qu-san-fen-gai-rong-ye-ge-f76x36,电荷守恒在离子推断中的应用,材料为取三份该溶液分别加AgNO3、NaOH浓溶液共热、BaCl2的实验现象推断离子，属离子推断。
+chem-hj2-na-yu-yangqi-tiaojian-chanwu,过氧化钠的性质与探究,材料讲钠与氧气反应产物随条件变化（常温生成白色Na2O、点燃生成淡黄色Na2O2且O为-1价），对应节点别称“氧化钠与过氧化钠的比较”。
+chem-fx-qi-zhong-wei-fan-ying-wu-f03x17,取代反应,材料描述CH4与Cl2取代反应历程（·Cl与·CH3为自由基、生成HCl与CH3Cl），属取代反应的机理。
+chem-fx-yi-zhi-he-f10x17,氧化性、还原性强弱的比较,材料已知I-与Fe2+与SO2与Cl-与H2O2在酸性溶液中还原性的强弱顺序，属氧化性、还原性强弱的比较。
+chem-fx-yu-de-fan-ying-f37x04,吸热反应和放热反应,材料列举常见吸热反应（Ba(OH)2·8H2O与NH4Cl）与常见放热反应（中和、燃烧、铝热等），对应节点别称“常见放热反应与吸热反应”。
+chem-kb-neutralization-heat-measurement,中和热测定注意事项,材料讲中和热测定要点（碱稍过量保证酸完全中和、碎泡沫塑料保温、用环形玻璃搅拌棒、按Q＝cmΔt计算），与节点内容一致。
+chem-hj-zhonghe-re-ceding,中和热测定注意事项,材料讲中和反应反应热的测定（量热计测温差、生成1 mol水放热57.3 kJ、迅速倒碱并加盖、舍去偏差大的数据），属中和热测定注意事项。
+chem-fx-ce-ding-shi-yan-zhong-yao-you-bei-ce-l-f70x09,实验方案设计,材料讲测定实验中“被测量气体全部被测量”的意识与数据采集处理意识，属以物质含量测定为主的综合实验方案设计。
+chem-kb-ion-electron-count-relations,原子结构中微粒的关系及计算,材料讲阳离子核外电子数＝质子数－电荷数、阴离子核外电子数＝质子数＋电荷数，与节点“原子结构中微粒的关系及计算”内容一致。
+chem-hj-dianzi-buxiashui-lizi-bushangan,原电池工作原理易错知识“10”点,材料讲原电池内外电路的导电规律（电子只能在导线中流动、离子只能在电解质中移动），对应节点“电子均不能通过电解质溶液”等要点。
+chem-mo-yuanzi-jiegou-biaoshifangfa,基态原子核外电子排布的表示方法,材料讲原子（离子）结构的表示方法（核素符号、符号周围数字含义、结构示意图的分层电子排布），属核外电子排布的表示方法。
+chem-hj-tiao-ph-fenli-jinshu-lizi,沉淀溶解平衡的应用,材料讲调节pH使金属离子形成氢氧化物分步沉淀而分离（Fe2+先氧化为Fe3+再调pH至3.7～8.3），属沉淀溶解平衡的应用。
+chem-hj-zhi-jianbie-chuzha-chayi,烯烃的化学性质,材料讲烯烃与炔烃使溴水和酸性KMnO4褪色、除乙烷中乙烯用溴水洗气，属烯烃的加成与氧化性质。
+chem-hj-fangchengshi-jisuan-liucheng,n＝＝＝的关系应用,材料讲化学方程式计算的规范步骤（计量数之比等于物质的量之比、审设写标列解答），核心是n与M、V、c关系的应用。
+chem-hj2-fangchengshi-jisuan-shaoliang-guoliang,审题抓关键条件（状态、温度、压强）,材料强调化学方程式计算的规范与过量判断（不纯物须换算、气体体积必须注明是否标准状况），属审题抓关键条件与陷阱。
+chem-co2-hydrogenation-reactions,外界条件对化学平衡的影响,材料给出CO2加氢三个主反应及其热效应（甲醇化与甲烷化放热、逆水煤气变换吸热），说明低温利于放热反应而高温利于吸热反应。
+chem-fx-bei-jing-f25x13,分离提纯,材料讲用MOFs多孔材料固定N2O4以实现NO2与N2O4分离并制备HNO3，属物质分离提纯的方案选择。
+chem-fx-qi-ti-rong-yu-shui-f05x03,有关物质的量浓度的计算,材料讲“气体溶于水，计算物质的量浓度的一般思路”，对应节点别称“气体溶于水后溶液浓度的计算”。
+chem-fx-yi-rong-yu-shui-de-qi-ti-za-zhi-ke-yon-f69x02,气体制备,材料讲气体杂质吸收剂的选择（易溶于水的气体用水、酸性杂质用碱性物质、水用干燥剂），属气体制备中的净化。
+chem-fx-xing-zhi-wu-li-xing-zhi-bu-tong-hua-xu-f07x01,物理变化与化学变化的两种判断方法,材料讲同素异形体物理性质不同而化学性质有差异且相互转化是化学变化，属物理变化与化学变化的判断。
+chem-hj-ganzaoji-xuanze-duizhao,气体制备,材料讲常见干燥剂（浓硫酸、无水氯化钙、碱石灰）的适用范围与干燥装置，属气体制备中的净化干燥环节。
+chem-hj-ranshaore-gainian,燃烧热,材料讲燃烧热的概念与指定产物（C→CO2(g)、H→H2O(l)、S→SO2(g)、N→N2(g)），与节点“燃烧热”一致。
+chem-fx-li-li-zi-dian-chi-de-zheng-ji-cai-liao-f40x02,二次电池,材料讲锂离子电池的正极材料（LiFePO4、LiCoO2、LiMn2O4），对应节点别称“锂离子二次电池”。
+chem-fx-you-kong-qi-mu-tan-shui-zheng-qi-zhi-q-f06x05,n＝＝＝的关系应用,材料用元素守恒与关系式法（3C～4NH3）计算由空气、木炭、水蒸气制NH3，对应节点别称“关系式法解题的关键是建立关系式”。
+chem-hj-peizhi-rongye-zhuyi,溶液的配制步骤,材料讲溶液配制中的数据与规格要求（称量保留一位小数、容量瓶须注明规格、洗涤2～3次、近刻度改用胶头滴管），属溶液的配制步骤。
+chem-fx-wei-sheng-wu-ran-liao-dian-chi-shi-yi-f40x03,燃料电池,材料讲微生物燃料电池（有机物在负极室被微生物分解、质子经质子交换膜到正极、O2在正极得电子），属燃料电池。

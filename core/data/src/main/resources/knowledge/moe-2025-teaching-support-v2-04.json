@@ -171,7 +171,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:某兴趣小组利用电解装置-探究-铁作阳极-时发生反应的多样性-实验过程如图",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:键能",
      "role": "PRIMARY"
     }
    ]
@@ -581,7 +581,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:已知锂电池的正极反应物和产物-写出其正极反应",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:二次电池",
      "role": "PRIMARY"
     }
    ]
@@ -601,7 +601,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:有机物a是一种重要的化工原料-其结构简式如图所示",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:燃料电池",
      "role": "PRIMARY"
     }
    ]
@@ -621,7 +621,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:写出下列物质转化涉及的化学方程式",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:判断原电池正-负极的方法",
      "role": "PRIMARY"
     }
    ]
@@ -681,7 +681,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:1-某催化转化过程如图所示",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:新型化学电源",
      "role": "PRIMARY"
     }
    ]
@@ -826,7 +826,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:粗铜的电解精炼示意图如图所示",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电解原理应用的四点注意事项",
      "role": "PRIMARY"
     }
    ]
@@ -881,7 +881,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:粗铜的电解精炼示意图如图所示",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电解原理应用的四点注意事项",
      "role": "PRIMARY"
     }
    ]
@@ -1151,7 +1151,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:写出下列物质转化涉及的化学方程式",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化学平衡常数的影响因素",
      "role": "PRIMARY"
     }
    ]
@@ -1171,7 +1171,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:在酸性条件下-黄铁矿-fes2-其中s为-1价-催化氧化的反应转化如图所示",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:浓度商与化学平衡常数的表达式",
      "role": "PRIMARY"
     }
    ]
@@ -1306,7 +1306,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:如图所示是检验某无色气体a是so2和co2的混合气体的装置-按要求回答下列问题",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:平衡常数的综合计算",
      "role": "PRIMARY"
     }
    ]
@@ -1326,7 +1326,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:如图所示是检验某无色气体a是so2和co2的混合气体的装置-按要求回答下列问题",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:压强平衡常数",
      "role": "PRIMARY"
     }
    ]
@@ -1851,7 +1851,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:已知nabh4与水反应的化学方程式为nabh4-2h2o-nabo2-4h2",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:影响化学反应速率的因素",
      "role": "PRIMARY"
     }
    ]
@@ -3351,7 +3351,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:已知某100-ml溶液中含有的部分离子的浓度大小如表所示",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:沉淀溶解平衡体系中相关计算方法",
      "role": "PRIMARY"
     }
    ]
@@ -3531,7 +3531,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:已知-①环己烯可以通过1-3-丁二烯与乙烯发生环化加成反应得到",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:沉淀溶解平衡的应用",
      "role": "PRIMARY"
     }
    ]
@@ -3571,7 +3571,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:在不同温度下的沉淀溶解平衡曲线如图所示-下列说法不正确的是",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:影响沉淀溶解平衡的因素",
      "role": "PRIMARY"
     }
    ]
@@ -4026,7 +4026,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:已知-①环己烯可以通过1-3-丁二烯与乙烯发生环化加成反应得到",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:烯烃的化学性质",
      "role": "PRIMARY"
     }
    ]
@@ -4136,7 +4136,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:已知nabh4与水反应的化学方程式为nabh4-2h2o-nabo2-4h2",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:天然气的综合利用",
      "role": "PRIMARY"
     }
    ]
@@ -4626,7 +4626,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:在酸性条件下-黄铁矿-fes2-其中s为-1价-催化氧化的反应转化如图所示",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:酯和油脂的结构和性质",
      "role": "PRIMARY"
     }
    ]
@@ -4916,7 +4916,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:在酸性条件下-黄铁矿-fes2-其中s为-1价-催化氧化的反应转化如图所示",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:氨基酸的结构与性质",
      "role": "PRIMARY"
     }
    ]
@@ -5131,7 +5131,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:以混有sio2的mgco3为原料制备氧化镁的实验流程如图",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:常见有机合成路线",
      "role": "PRIMARY"
     }
    ]
@@ -5256,7 +5256,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:在酸性条件下-黄铁矿-fes2-其中s为-1价-催化氧化的反应转化如图所示",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:酯和油脂的结构和性质",
      "role": "PRIMARY"
     }
    ]
@@ -5591,7 +5591,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:如图所示是检验某无色气体a是so2和co2的混合气体的装置-按要求回答下列问题",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:实验方案设计",
      "role": "PRIMARY"
     }
    ]
@@ -5701,7 +5701,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:实验室制备溴苯的反应装置如图所示-下列关于实验操作或叙述错误的是",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:气体制备",
      "role": "PRIMARY"
     }
    ]
@@ -6056,7 +6056,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:如图所示是检验某无色气体a是so2和co2的混合气体的装置-按要求回答下列问题",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:气体制备",
      "role": "PRIMARY"
     }
    ]
@@ -6076,7 +6076,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:常温下-过量固体溶于水的ph随时间变化的关系如图所示",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:气体制备",
      "role": "PRIMARY"
     }
    ]
@@ -6096,7 +6096,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:某兴趣小组利用电解装置-探究-铁作阳极-时发生反应的多样性-实验过程如图",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:分离提纯",
      "role": "PRIMARY"
     }
    ]
@@ -6136,7 +6136,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:如图所示是检验某无色气体a是so2和co2的混合气体的装置-按要求回答下列问题",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:气体制备",
      "role": "PRIMARY"
     }
    ]
@@ -6336,7 +6336,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:完成下列反应的离子方程式",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:重结晶",
      "role": "PRIMARY"
     }
    ]
@@ -6561,7 +6561,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:关于中和反应反应热的测定实验-请回答下列问题",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:实验方案设计",
      "role": "PRIMARY"
     }
    ]
@@ -7976,7 +7976,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:已知某100-ml溶液中含有的部分离子的浓度大小如表所示",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电荷守恒在离子推断中的应用",
      "role": "PRIMARY"
     }
    ]
@@ -8036,7 +8036,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:已知某100-ml溶液中含有的部分离子的浓度大小如表所示",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电荷守恒在离子推断中的应用",
      "role": "PRIMARY"
     }
    ]
@@ -8096,7 +8096,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:某同学用na2co3和nahco3溶液进行如图所示实验-下列说法不正确的是",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电荷守恒在离子推断中的应用",
      "role": "PRIMARY"
     }
    ]
@@ -8156,7 +8156,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:已知某100-ml溶液中含有的部分离子的浓度大小如表所示",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电荷守恒在离子推断中的应用",
      "role": "PRIMARY"
     }
    ]
@@ -8216,7 +8216,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:2025-湖北卷-化合物g是某药物的关键原料-合成路线如下",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:氨的化学性质",
      "role": "PRIMARY"
     }
    ]
@@ -8321,7 +8321,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:硅及其化合物的应用范围很广-下列说法正确的是",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:配合物",
      "role": "PRIMARY"
     }
    ]
@@ -8621,7 +8621,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:写出下列物质的电子式",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电子式的书写与判断",
      "role": "PRIMARY"
     }
    ]
@@ -8641,7 +8641,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:写出下列物质的电子式",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电子式的书写与判断",
      "role": "PRIMARY"
     }
    ]
@@ -8961,7 +8961,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:写出下列原子-或离子-核外电子排布的表示方法",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:基态原子核外电子排布的表示方法",
      "role": "PRIMARY"
     }
    ]
