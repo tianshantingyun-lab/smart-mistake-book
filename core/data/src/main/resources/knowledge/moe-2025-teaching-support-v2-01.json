@@ -855,7 +855,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2025-广东佛山-三模-已知数列满足-且是关于的方程的两个根",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:函数的奇偶性-周期性-对称性关系",
      "role": "PRIMARY"
     }
    ]
@@ -2075,7 +2075,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2024-天津-一模-在中-角-的对边分别为-已知",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:函数的隐零点问题",
      "role": "PRIMARY"
     }
    ]
@@ -3870,7 +3870,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2024-四川宜宾-一模-已知函数-在锐角中-内角的对边分别为-且",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:边角互化",
      "role": "PRIMARY"
     }
    ]
@@ -3890,7 +3890,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2024-四川宜宾-一模-已知函数-在锐角中-内角的对边分别为-且",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:边角互化",
      "role": "PRIMARY"
     }
    ]
@@ -7580,7 +7580,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2025-广东佛山-三模-已知数列满足-且是关于的方程的两个根",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:组合",
      "role": "PRIMARY"
     }
    ]
@@ -7745,7 +7745,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2025-四川广安-模拟预测-已知数列满足-则使得成立的最小自然数为",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:二项式定理",
      "role": "PRIMARY"
     }
    ]
@@ -8590,7 +8590,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2025-四川广安-模拟预测-已知数列满足-则使得成立的最小自然数为",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:集合的含义与表示",
      "role": "PRIMARY"
     }
    ]
@@ -9185,7 +9185,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2025-山西-三模-已知数列的通项公式为-则下列说法正确的是",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:数列的递推公式",
      "role": "PRIMARY"
     }
    ]
@@ -12210,7 +12210,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2025-四川广安-模拟预测-已知数列满足-则使得成立的最小自然数为",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:集合的含义与表示",
      "role": "PRIMARY"
     }
    ]
@@ -15015,7 +15015,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2025-广东佛山-三模-已知数列满足-且是关于的方程的两个根",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:误解-导数为0-与-有极值-的关系致错",
      "role": "PRIMARY"
     }
    ]
@@ -16195,7 +16195,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2025-广东佛山-三模-已知数列满足-且是关于的方程的两个根",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:直线的方程",
      "role": "PRIMARY"
     }
    ]
@@ -17305,7 +17305,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2024-四川宜宾-一模-已知函数-在锐角中-内角的对边分别为-且",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:正弦定理",
      "role": "PRIMARY"
     }
    ]
@@ -21245,7 +21245,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2024-四川宜宾-一模-已知函数-在锐角中-内角的对边分别为-且",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:三角恒等变换",
      "role": "PRIMARY"
     }
    ]
@@ -21325,7 +21325,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2024-四川宜宾-一模-已知函数-在锐角中-内角的对边分别为-且",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:三角恒等变换",
      "role": "PRIMARY"
     }
    ]
@@ -21560,7 +21560,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2024-四川宜宾-一模-已知函数-在锐角中-内角的对边分别为-且",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:正弦定理",
      "role": "PRIMARY"
     }
    ]
@@ -23150,7 +23150,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2025-广东佛山-三模-已知数列满足-且是关于的方程的两个根",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:直线的方程",
      "role": "PRIMARY"
     }
    ]
@@ -23250,7 +23250,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2025-广东佛山-三模-已知数列满足-且是关于的方程的两个根",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:圆的方程",
      "role": "PRIMARY"
     }
    ]
@@ -27175,7 +27175,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2025-广东佛山-三模-已知数列满足-且是关于的方程的两个根",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:直线的方程",
      "role": "PRIMARY"
     }
    ]
@@ -27435,7 +27435,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2025-广东佛山-三模-已知数列满足-且是关于的方程的两个根",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:圆的方程",
      "role": "PRIMARY"
     }
    ]
@@ -30810,7 +30810,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2025-江苏-模拟预测-函数满足-且-设-则的前项的和为",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:裂项相消法中常见的裂项技巧",
      "role": "PRIMARY"
     }
    ]
@@ -33510,7 +33510,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2025-广东佛山-三模-已知数列满足-且是关于的方程的两个根",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:复数的概念",
      "role": "PRIMARY"
     }
    ]
@@ -35635,7 +35635,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2024-四川宜宾-一模-已知函数-在锐角中-内角的对边分别为-且",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:三角恒等变换",
      "role": "PRIMARY"
     }
    ]
@@ -36460,7 +36460,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2025-四川广安-模拟预测-已知数列满足-则使得成立的最小自然数为",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:集合的含义与表示",
      "role": "PRIMARY"
     }
    ]
@@ -36965,7 +36965,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2025-新疆喀什-模拟预测-已知数列中-则",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:数列的递推公式",
      "role": "PRIMARY"
     }
    ]
@@ -37130,7 +37130,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2025-云南昭通-模拟预测-已知数列是等差数列-且-数列的前项和为-且",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:由sn求an的步骤",
      "role": "PRIMARY"
     }
    ]
