@@ -295,6 +295,8 @@
   2. 本轮结构修复因此**绕过 build，直接表驱动改成品**（`shorten_topic_names` / `relocate_chapter_points`），每个转换独立/幂等/无损/有门。
   3. `node_actions` 要可用，需**基于成品 slug 重建**（对齐坐标系），或明确它只作用于候选层。
 - **证据**：`[本轮实测]` 324 delete slug 全不在成品；成品 167 章层 vs staging 352 章层。
+
+- **裁定（2026-09-19 收口）**：`node_actions.csv` **作废**，不再作为任何生成链的权威输入；`build.py` 继续停用。「知识点动作」的权威日志改为**五张表 + git 历史**：`point_rename.csv`（改名）、`point_delete.csv`（删除，含 drop_materials）、`point_merge.csv`（合并）、`material_rebind.csv`（材料改绑）、`chapter_point_relocation.csv`（归位/主题跨章）。理由：这五张表全程经过"逐条校验 + 幂等 + 无损 + 门"的实际执行，与成品坐标系一致且有 git 提交可溯源；`node_actions` 的 871 行既对不上成品、也无人再执行。若将来要恢复生成链，应基于**当前成品**从这五张表重放，而不是复活 `node_actions`。
 - **处置**：已绕过（直接改成品）。node_actions 的重建/作废**单列待决**——它牵涉"候选层→成品"的晋升链是否还存在。
 
 ---
