@@ -85,6 +85,36 @@ class OpenAiSseTransportTest {
         assertTrue(thrown is InvalidModelResponseException)
     }
 
+    @Test
+    fun reasoningHeavyStreamsStillSurfaceTheirAnswer() = runBlocking {
+        // Reasoning models stream chain-of-thought as their own deltas, far more than the app
+        // consumes: a measured call to deepseek/deepseek-v4.1-flash (image + JSON mode, no
+        // max_tokens) produced a 3.2MB stream for a 395-char answer, 98.8% of it reasoning.
+        // The transport reads the stream to its [DONE] terminator with no local byte budget, so
+        // the size of the deltas must never decide whether the answer arrives.
+        val reasoningFrame =
+            "data: {\"choices\":[{\"delta\":{\"reasoning\":\"" + "思".repeat(2_000) + "\"}}]}\n\n"
+        val sseBody = buildString {
+            repeat(560) { append(reasoningFrame) }
+            append("data: {\"choices\":[{\"delta\":{\"content\":\"{\\\"ok\\\":true}\"}}]}\n\n")
+            append("data: [DONE]\n\n")
+        }
+        assertTrue(
+            "The fixture must be far larger than the old 2MB transport cap",
+            sseBody.toByteArray(Charsets.UTF_8).size > 2 * 1024 * 1024,
+        )
+        val call = SseDeliveringCall(
+            code = 200,
+            contentType = "text/event-stream",
+            body = sseBody,
+        )
+
+        val response = call.awaitBoundedSseResponse(OpenAiChatCompletionsProtocol) {}
+
+        assertEquals(200, response.statusCode)
+        assertEquals(listOf("{\"ok\":true}"), response.streamChunks)
+    }
+
     private class SseDeliveringCall(
         private val code: Int,
         private val contentType: String,

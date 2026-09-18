@@ -223,11 +223,7 @@ internal suspend fun Call.awaitBoundedResponse(
                 override fun onResponse(call: Call, response: Response) {
                     try {
                         response.use {
-                            val declaredLength = it.body.contentLength()
-                            if (declaredLength > MAX_RESPONSE_BYTES) {
-                                throw InvalidModelResponseException()
-                            }
-                            val bytes = it.body.byteStream().readAtMost(MAX_RESPONSE_BYTES)
+                            val bytes = it.body.byteStream().readFully()
                             val body = bytes.toString(StandardCharsets.UTF_8)
                             Arrays.fill(bytes, 0.toByte())
                             if (continuation.isActive) {
@@ -263,11 +259,7 @@ internal suspend fun Call.awaitBoundedSseResponse(
                 override fun onResponse(call: Call, response: Response) {
                     try {
                         response.use {
-                            val declaredLength = it.body.contentLength()
-                            if (declaredLength > MAX_RESPONSE_BYTES) {
-                                throw InvalidModelResponseException()
-                            }
-                            val raw = it.body.byteStream().readSseAtMost(MAX_RESPONSE_BYTES)
+                            val raw = it.body.byteStream().readSse()
                             val body = if (it.code in 200..299) {
                                 protocol.reconstructedBody(raw)
                             } else {
@@ -313,17 +305,20 @@ private fun sseChunksOf(protocol: ModelWireProtocol, rawSse: String): List<Strin
     return chunks
 }
 
-private fun java.io.InputStream.readSseAtMost(maxBytes: Int): String {
+/**
+ * Reads the SSE body up to its `[DONE]` terminator. There is deliberately no local byte
+ * budget: the provider is the only thing that bounds a response, and reasoning models stream
+ * far more than the app consumes (measured 3.2 MB for a 395-char answer, 98.8% reasoning),
+ * so a local cap would fail tasks whose answers are small and valid.
+ */
+private fun java.io.InputStream.readSse(): String {
     val output = StringBuilder()
     val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
-    var total = 0
     var lastScannedEnd = 0
     try {
         while (true) {
             val read = read(buffer)
             if (read < 0) break
-            total += read
-            if (total > maxBytes) throw InvalidModelResponseException()
             output.append(String(buffer, 0, read, StandardCharsets.UTF_8))
             // Only the tail can contain the terminator once a chunk has been appended; scanning the
             // whole accumulated buffer on every chunk makes the read quadratic for long streams.
@@ -349,16 +344,14 @@ internal fun containsDoneTerminatorAfter(accumulated: CharSequence, scannedThrou
 
 private const val SSE_DONE_TERMINATOR = "data: [DONE]"
 
-private fun java.io.InputStream.readAtMost(maxBytes: Int): ByteArray {
-    val output = ByteArrayOutputStream(minOf(maxBytes, 16 * 1024))
+/** Reads a non-streaming body to its end; the provider bounds the size, not the client. */
+private fun java.io.InputStream.readFully(): ByteArray {
+    val output = ByteArrayOutputStream(16 * 1024)
     val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
-    var total = 0
     try {
         while (true) {
             val read = read(buffer)
             if (read < 0) break
-            total += read
-            if (total > maxBytes) throw InvalidModelResponseException()
             output.write(buffer, 0, read)
         }
         return output.toByteArray()
@@ -376,4 +369,3 @@ private const val CONNECT_TIMEOUT_SECONDS = 15L
 private const val READ_TIMEOUT_SECONDS = 90L
 private const val WRITE_TIMEOUT_SECONDS = 45L
 private const val CALL_TIMEOUT_SECONDS = 110L
-private const val MAX_RESPONSE_BYTES = 2 * 1024 * 1024

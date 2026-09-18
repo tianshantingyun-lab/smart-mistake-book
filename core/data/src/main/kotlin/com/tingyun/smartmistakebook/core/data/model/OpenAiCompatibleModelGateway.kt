@@ -294,12 +294,16 @@ internal class OpenAiCompatibleModelGateway(
                 } catch (_: SecurityException) {
                     emit(failure(CONFIGURATION_CHANGED))
                 } catch (timeout: SocketTimeoutException) {
+                    logModelCallFailure(timeout)
                     emit(failure(TIMEOUT))
                 } catch (network: IOException) {
+                    logModelCallFailure(network)
                     emit(failure(NETWORK_UNAVAILABLE))
                 } catch (invalid: InvalidModelResponseException) {
+                    logModelCallFailure(invalid)
                     emit(failure(INVALID_RESPONSE))
-                } catch (_: IllegalArgumentException) {
+                } catch (invalid: IllegalArgumentException) {
+                    logModelCallFailure(invalid)
                     emit(failure(INVALID_RESPONSE))
                 } finally {
                     Arrays.fill(keyChars, '\u0000')
@@ -631,6 +635,20 @@ private fun java.io.InputStream.readExactlyBounded(expectedBytes: Long): ByteArr
 }
 
 private fun failure(value: ModelTaskFailure): ModelGatewayEvent = ModelGatewayEvent.Failed(value)
+
+/**
+ * Diagnostics for a failed model call: the exception class and message only. Request and
+ * response bodies are never logged — they carry student photos and text — and the credential
+ * never reaches the log either.
+ */
+private fun logModelCallFailure(error: Throwable) {
+    android.util.Log.e(
+        MODEL_CALL_LOG_TAG,
+        "Model call failed: ${error.javaClass.name}: ${error.message}",
+    )
+}
+
+private const val MODEL_CALL_LOG_TAG = "SmartMistakeBook"
 
 private fun invalidPreEnqueueAuthorization() = ModelEgressAuthorizationException(
     ModelFailureCode.EGRESS_AUTHORIZATION_INVALID,
