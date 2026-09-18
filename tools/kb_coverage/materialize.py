@@ -72,7 +72,7 @@ def _source_entry(top_dir: str, subject: str) -> dict:
         "edition": "2026/2027版",
         "sourceUri": "https://www.example.edu/desktop-kb-source",
         "licenseStatus": "REFERENCE_ONLY",
-        "contentFingerprint": hashlib.sha256(top_dir.encode("utf-8")).hexdigest().upper(),
+        "contentFingerprint": hashlib.sha256(f"{top_dir}|{subject}".encode("utf-8")).hexdigest().upper(),
         "importedAtEpochMillis": _now_ms(),
         "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
         "licenseExpression": None,
