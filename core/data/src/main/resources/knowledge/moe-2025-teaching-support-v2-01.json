@@ -193,6 +193,22 @@
    "licenseExpression": null,
    "licenseUri": null,
    "attributionText": "五三精讲册直抽改写（REVIEWED_SYNTHESIS），仅内部教学参考。"
+  },
+  {
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-biology:biology",
+   "subject": "BIOLOGY",
+   "sourceType": "AUTHORIZED_EDUCATION_MATERIAL",
+   "title": "2027版5·3 A版 高考总复习（精讲册）",
+   "publisher": "曲一线·五三",
+   "edition": "2027版",
+   "sourceUri": "https://www.example.edu/wusan-2027-a-jingjiang",
+   "licenseStatus": "REFERENCE_ONLY",
+   "contentFingerprint": "D25D4C0DDB4F8973E327855319C0699CD7AF8CA6DD2229AA27CB0AD550864C85",
+   "importedAtEpochMillis": 1784908800000,
+   "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
+   "licenseExpression": null,
+   "licenseUri": null,
+   "attributionText": "五三精讲册视觉转写改写（REVIEWED_SYNTHESIS），仅内部教学参考。"
   }
  ],
  "materials": [
@@ -42587,6 +42603,326 @@
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:水解平衡常数-能水解的盐表示为ma",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-bio-v-9e71e81f",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "噬菌体侵染细菌实验的同位素标记",
+   "summaryMarkdown": "用³²P和³⁵S分别标记T2噬菌体的DNA和蛋白质，证明DNA是遗传物质",
+   "applicabilityMarkdown": "遗传物质探究实验的误差分析",
+   "contentMarkdown": "①病毒增殖过程：T2噬菌体专门寄生在大肠杆菌体内；合成T2噬菌体的原料（四种脱氧核苷酸和氨基酸）以及噬菌体蛋白质的合成场所核糖体，均由大肠杆菌提供。②标记方法：先分别用含³²P或³⁵S的培养基培养大肠杆菌，再用上述大肠杆菌培养T2噬菌体，得到DNA含³²P或蛋白质含³⁵S的噬菌体。③实验过程：用³²P标记的T2噬菌体侵染未标记的大肠杆菌，搅拌、离心后上清液放射性很低、沉淀物放射性很高；用³⁵S标记的T2噬菌体侵染后上清液放射性很高、沉淀物放射性很低。④误差分析：保温时间过短，部分噬菌体未侵染大肠杆菌；保温时间过长，部分大肠杆菌已经裂解，两者都会使上清液放射性强度升高；搅拌不充分会使沉淀物放射性强度升高。⑤结论：子代噬菌体中检测到³²P而未检测到³⁵S，说明T2噬菌体的DNA进入了大肠杆菌而蛋白质没有进入，即T2噬菌体的遗传物质是DNA。",
+   "boundaryMarkdown": "不能用¹⁴C和¹⁸O标记区分蛋白质和DNA，因为蛋白质和DNA都含有C和O；标记蛋白质和DNA应分别选择S和P",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-biology:biology",
+   "sourceLocator": "五三生物精讲册 P0093",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:噬菌体侵染细菌实验",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-bio-v-43387eae",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "基因突变的概念特点与诱因分析",
+   "summaryMarkdown": "碱基的替换、增添或缺失改变基因的碱基序列，突变具普遍性、低频性和不定向性",
+   "applicabilityMarkdown": "基因突变实例分析与诱变育种",
+   "contentMarkdown": "①概念：DNA分子中发生碱基的替换、增添或缺失，而引起的基因碱基序列的改变叫基因突变；发生在基因内部的碱基序列变化才属于基因突变。②原因：外因包括物理因素（紫外线、X射线及其他辐射）、化学因素（亚硝酸盐、碱基类似物等）和生物因素（某些病毒的遗传物质）；内因是DNA复制偶尔发生错误等。③实例：镰状细胞贫血由血红蛋白基因发生碱基替换引起；用光学显微镜能观察到红细胞形状的变化，但不能观察到基因突变。④与癌变的关系：原癌基因表达的蛋白质是细胞正常生长和增殖所必需的，抑癌基因表达的蛋白质能抑制细胞的生长和增殖或促进细胞凋亡；二者发生突变或过量表达（多个基因累积突变）可导致细胞癌变，癌细胞具有能够无限增殖、形态结构发生改变和细胞膜上糖蛋白等减少而易分散转移的特征。⑤特点与意义：具普遍性、低频性、不定向性和随机性，是产生新基因的途径，也是生物变异的根本来源，为生物进化提供丰富的原材料。",
+   "boundaryMarkdown": "光学显微镜下只能观察到红细胞形状等变化，不能观察到基因突变；基因突变能产生新基因，但不能决定生物进化的方向",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-biology:biology",
+   "sourceLocator": "五三生物精讲册 P0102",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:基因突变",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-bio-v-2d385e66",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "内环境的组成理化性质与作用",
+   "summaryMarkdown": "细胞外液构成内环境，其渗透压、酸碱度和温度相对稳定",
+   "applicabilityMarkdown": "内环境成分与生理过程判断",
+   "contentMarkdown": "①组成：体液包括细胞内液（约占2/3）和细胞外液（约占1/3）；细胞外液又称内环境，主要包括血浆、组织液和淋巴液，还包括脑脊液等。②内在联系：血浆与组织液之间通过毛细血管壁相互渗透；血浆、淋巴液、组织液的成分及各成分含量相近但不完全相同，最主要的差别是血浆中蛋白质含量较高。③理化性质：37 ℃时人的血浆渗透压约为770 kPa，其大小主要与无机盐、蛋白质的含量有关，细胞外液渗透压的90%以上来源于Na⁺和Cl⁻；正常人血浆的pH为7.35~7.45，与HCO₃⁻等物质有关。④作用：内环境是体内绝大多数细胞生活的直接环境，也是细胞与外界环境进行物质交换的媒介。⑤判断依据：组织液、血浆和淋巴液中的成分或发生在其中的过程属于内环境，而细胞内的成分和与外界相通的部位（消化道、膀胱、肺泡等）的成分以及发生在其中的过程都不属于内环境。",
+   "boundaryMarkdown": "淀粉、血红蛋白、解旋酶、消化酶和尿液等不属于内环境成分；蛋白质作用于肠道上皮细胞的过程发生在消化道中，不属于内环境",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-biology:biology",
+   "sourceLocator": "五三生物精讲册 P0112",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:内环境",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-bio-v-d17b0c83",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "动物激素的发现与研究激素的方法",
+   "summaryMarkdown": "促胰液素由小肠黏膜产生并随血液运输，研究激素常用切除法、饲喂法和注射法",
+   "applicabilityMarkdown": "激素发现史与实验探究设计",
+   "contentMarkdown": "①促胰液素的发现：沃泰默发现稀盐酸注入小肠肠腔能引起胰腺分泌胰液，而稀盐酸注入血液则不引起胰腺分泌胰液，切除神经只留血管后重复该实验胰液仍分泌；斯他林和贝利斯剪下一段小肠、刮下黏膜，将黏膜与稀盐酸混合后提取液注入同一条狗的静脉，结果胰腺分泌胰液。说明在盐酸的作用下小肠黏膜细胞产生了一种化学物质，进入血液后随血流到达胰腺并引起胰液的分泌，被称作促胰液素。②睾丸分泌雄激素的研究：公鸡摘除睾丸后雄性性征明显消失，移植回睾丸后公鸡特征恢复。③研究激素的常用方法：切除法（减法原理，对照组不切除或做假手术）、饲喂法（加法原理，适用于甲状腺激素、性激素等）和注射法（加法原理，适用于各种激素）；实验设计思路为取材分组→变量处理→培养、观察、记录→得出结论。④注意事项：选择性别、年龄、体重和生理状况相似的动物平均分组，每组要有数量相等的若干只；多肽和蛋白质类激素在消化道内会被水解，故不宜口服。",
+   "boundaryMarkdown": "激素通过体液（血液）运输，与神经调节的反射弧途径不同；多肽和蛋白质类激素如胰岛素只能注射不能口服",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-biology:biology",
+   "sourceLocator": "五三生物精讲册 P0124",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:激素",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-bio-v-3a742ffd",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "生长素的发现、极性运输与两重性",
+   "summaryMarkdown": "生长素主要由芽和幼嫩的叶合成并极性运输，低浓度促进生长、高浓度抑制生长",
+   "applicabilityMarkdown": "生长素合成运输与生理作用分析",
+   "contentMarkdown": "①发现历程：达尔文父子观察到胚芽鞘的向光性与尖端有关，提出胚芽鞘的尖端受单侧光刺激后向下面的伸长区传递了某种影响；鲍森·詹森证明这种影响可以透过琼脂片传递给下部；拜尔证明胚芽鞘的弯曲生长是由尖端产生的影响在其下部分布不均匀造成的；温特证明胚芽鞘的弯曲生长确实是由一种化学物质引起的，并把它命名为生长素。②合成与运输：主要在芽、幼嫩的叶和发育中的种子中合成；在胚芽鞘、芽、幼叶和幼根中只能从形态学上端运输到形态学下端，即极性运输；在成熟组织中可通过输导组织进行非极性运输。③作用方式与生理特点：细胞水平上促进细胞伸长生长、诱导细胞分化；器官水平上影响器官的生长、发育。一般情况下生长素浓度较低时促进生长、浓度过高时则抑制生长，即具有两重性；不同浓度的生长素对植物生长的作用效果可能相同。④顶端优势：顶芽产生的生长素向下运输，使侧芽处生长素浓度较高而生长受到抑制。",
+   "boundaryMarkdown": "抑制生长不等于不生长，凡生长状况差于对照组（自然生长或清水处理组）的即可认为生长受到抑制；生长素的产生与光照无关，有光无光都可产生",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-biology:biology",
+   "sourceLocator": "五三生物精讲册 P0140",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:生长素",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-bio-v-01747e25",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "群落的物种组成与种间关系",
+   "summaryMarkdown": "物种丰富度与优势种决定群落性质，种间关系有原始合作、互利共生、寄生、竞争和捕食",
+   "applicabilityMarkdown": "种间关系曲线与丰富度调查分析",
+   "contentMarkdown": "①群落与物种组成：群落是在相同时间聚集在一定地域中各种生物种群的集合；物种丰富度是一个群落中的物种数目，可采用样方法调查某区域内植物的物种丰富度，可采用取样器取样法调查土壤中小动物类群的物种丰富度。②规律与特点：不同群落的物种丰富度往往不同，一般越靠近热带地区，森林群落单位面积内的物种越丰富；优势种不仅数量很多，对群落中其他物种的影响也很大；群落中的物种组成会随着时间和环境的变化而改变，是区别不同群落的重要特征，也是决定群落性质最重要的因素。③种间关系：原始合作是双方受益、分开后各自也能独立生活；互利共生是长期共生、相互依存、彼此有利，数量上呈现同步且平行的变化；寄生通常对宿主有害、对寄生生物有利；种间竞争是争夺资源和空间，数量上呈现你增我减的变化；捕食是一种生物以另一种生物为食，数量上呈现先增加先减少与后增加后减少的变化，波峰在前的是被被捕食者。",
+   "boundaryMarkdown": "原始合作与互利共生的区别在于分开后双方能否独立生活；捕食关系的数量曲线中先出现波峰的是被被捕食者，不能颠倒",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-biology:biology",
+   "sourceLocator": "五三生物精讲册 P0151",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:群落的结构",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-bio-v-51670035",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "生物多样性的层次价值与保护",
+   "summaryMarkdown": "生物多样性包括遗传、物种和生态系统多样性，间接价值明显大于直接价值",
+   "applicabilityMarkdown": "生物多样性价值判断与保护措施",
+   "contentMarkdown": "①生态足迹：又称生态占用，指在现有技术条件下，维持某一人口单位生存所需的生产资源和吸纳废物的土地及水域的面积；生态足迹的值越大，代表人类所需的资源越多，对生态和环境的影响就越大；生活方式不同，生态足迹的大小可能不同，如与食用蔬菜相比，吃牛肉会增大生态足迹。②生物多样性的层次：包括遗传多样性（基因多样性）、物种多样性和生态系统多样性；同种生物的不同个体间的差异可体现遗传（基因）多样性。③价值：直接价值包括实用价值（食用、药用、作为工业原料等）和非实用价值（科研、旅游观赏、文学艺术创作等）；间接价值主要体现在调节生态系统的功能等方面，如森林和草地具有防风固沙、水土保持作用。④保护措施：就地保护是在原地对被保护的生态系统或物种建立自然保护区以及国家公园等，是最有效的保护；易地保护是把保护对象迁至异地进行专门保护。",
+   "boundaryMarkdown": "生物多样性的间接价值明显大于其直接价值；保护生物多样性最有效的措施是就地保护而不是易地保护",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-biology:biology",
+   "sourceLocator": "五三生物精讲册 P0164",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:生物多样性",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-bio-v-77687789",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "动物细胞培养的条件与传代过程",
+   "summaryMarkdown": "动物细胞培养需无菌无毒、适宜温度pH渗透压和含5%CO₂的气体环境",
+   "applicabilityMarkdown": "动物细胞培养条件与过程分析",
+   "contentMarkdown": "①概念与地位：动物细胞培养是从动物体中取出相关的组织，将它分散成单个细胞，然后在适宜的培养条件下让这些细胞生长和增殖的技术。②营养条件：培养液中除含细胞所需的各种营养物质（糖类、氨基酸、无机盐、维生素等）外，通常还会添加血清等天然成分。③无菌无毒环境：培养用具和培养液等均需灭菌，并需在无菌环境下操作。④温度、pH和渗透压：哺乳动物细胞培养的温度多以（36.5±0.5）℃为宜；多数动物细胞生存的适宜pH为7.2~7.4；适宜的渗透压可维持细胞正常形态。⑤气体环境：O₂是细胞代谢所必需的，CO₂主要维持培养液的pH，因此需置于含有95%空气和5%CO₂的混合气体的CO₂培养箱中进行培养。⑥过程与特点：用胰蛋白酶或胶原蛋白酶等处理将组织分散成单个细胞后进行原代培养；细胞贴壁生长，当贴壁细胞分裂生长到表面相互接触时通常会因接触抑制而停止分裂增殖，需用胰蛋白酶等处理后再用离心法收集，进行传代培养。",
+   "boundaryMarkdown": "使用胰蛋白酶和胶原蛋白酶处理动物组织时需要控制两种酶的处理时间；原代培养和传代培养中的细胞都不止分裂一次，不能认为只有传代培养才发生多次分裂",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-biology:biology",
+   "sourceLocator": "五三生物精讲册 P0176",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:动物细胞培养",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-che-v-b5982d09",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "晶体的结构特征与获得途径",
+   "summaryMarkdown": "晶体内部微粒在三维空间里周期性有序排列；据此表现自范性、固定熔点与各向异性，可用X射线衍射测定结构",
+   "applicabilityMarkdown": "晶体与非晶体的辨析及结构测定方法选择",
+   "contentMarkdown": "①结构特征：晶体内部原子在三维空间里呈周期性有序排列，这是晶体区别于非晶体的根本标志。②性质特征：自范性（能自发呈现多面体外形）、固定熔点、各向异性（沿不同方向物理性质不同）。③获得途径：熔融态物质凝固、气态物质凝华、溶质从溶液中析出。④结构测定：X射线衍射实验，可确定晶胞的形状、大小以及微粒在晶胞中的位置。⑤判断某固体是否为晶体不能只看外形是否规则，应依据有无固定熔点、是否表现各向异性，或用X射线衍射实验验证。",
+   "boundaryMarkdown": "非晶体没有自范性和固定熔点，不能仅凭外形规则与否判断晶体",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "五三化学精讲册 P0056（书内页码 54）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:晶体",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-che-v-d5af5f7d",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "过渡晶体与石墨混合型晶体",
+   "summaryMarkdown": "四类典型晶体之间存在过渡晶体，离子键成分百分数越大越接近离子晶体；石墨是典型的混合型晶体",
+   "applicabilityMarkdown": "晶体类型归属判断及石墨结构与导电性成因分析",
+   "contentMarkdown": "①纯粹的分子晶体、共价晶体、金属晶体、离子晶体四种典型晶体并不多，大多数晶体是它们之间的过渡晶体。②过渡晶体的性质与离子键成分的百分数有关：离子键成分的百分数越大，性质上与纯粹的离子晶体越接近，通常当作离子晶体处理；百分数越小，越接近共价晶体。电负性差值越大，离子键成分的百分数越大，例如Na₂O>MgO>Al₂O₃。③石墨属于混合型晶体：同层内碳原子采取sp²杂化，以共价键（σ键）结合形成平面六元并环结构。④层与层之间靠范德华力维系，每个碳原子的配位数为3；另有1个未参与杂化的2p电子，其p轨道相互平行且重叠，电子可在整个碳原子平面中运动，使石墨具有类似金属晶体的导电性。",
+   "boundaryMarkdown": "石墨是混合型晶体，不能简单归为分子晶体或共价晶体",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "五三化学精讲册 P0057（书内页码 55）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:过渡晶体与混合型晶体",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-che-v-3f3a2278",
+   "subject": "CHEMISTRY",
+   "type": "REPRESENTATION_GUIDE",
+   "title": "分数坐标、原子间距与晶胞投影",
+   "summaryMarkdown": "用截距法确定原子分数坐标；由晶胞边长与位置关系求原子最短距离；投影图用于描述晶胞的空间排布",
+   "applicabilityMarkdown": "晶胞分数坐标书写、原子最短距离计算与投影图判断",
+   "contentMarkdown": "①单位换算：1 pm=10⁻¹⁰ cm=10⁻¹² m，1 nm=10⁻⁷ cm=10⁻⁹ m。②截距法确定分数坐标：以某顶点原子为原点、晶胞参数为单位长度建立坐标系；确定某原子坐标时，过该原子作三个平行于坐标轴的平面，三个平面在三条坐标轴上的截距占晶胞边长的分数即为该原子的分数坐标。如体心M点三个截距均为1/2，分数坐标为（1/2，1/2，1/2）；金刚石晶胞中体内原子的分数坐标为1/4或3/4。③原子间距：简单立方d=2r=a；体心立方d=2r=(√3/2)a；面心立方d=2r=(√2/2)a；金刚石型d=2r=(√3/4)a。④也可由两原子的分数坐标按d=√［(x₁-x₂)²+(y₁-y₂)²+(z₁-z₂)²］×a计算。",
+   "boundaryMarkdown": "面心立方与体心立方的最短距离公式不同，不能混用",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "五三化学精讲册 P0060（书内页码 58）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:晶胞",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-che-v-24ee18c0",
+   "subject": "CHEMISTRY",
+   "type": "DERIVATION",
+   "title": "用盖斯定律叠加计算反应热",
+   "summaryMarkdown": "反应热只与始态和终态有关而与途径无关；用虚拟路径法、留元法与消元法叠加已知热化学方程式求目标反应热",
+   "applicabilityMarkdown": "由已知热化学方程式计算目标反应的反应热",
+   "contentMarkdown": "①盖斯定律的内容：不管化学反应是一步完成还是分几步完成，其反应热是相同的，即化学反应的反应热只与反应体系的始态和终态有关，而与反应的途径无关。②应用：有些反应很难直接测其反应热，可用盖斯定律间接计算。③虚拟路径法：若由A到D有两条路径，则ΔH=ΔH₁+ΔH₂+ΔH₃。④留元法：对比已知热化学方程式和目标热化学方程式，找出目标方程式中有、且已知方程式中只出现一次的物质X，判断X在同侧还是异侧，据此统一化学计量数并将已知ΔH乘以相应倍数再相加。⑤消元法：消去目标方程式中没有、但已知方程式中出现两次的物质Y，将已知方程式作化学计量数调整或适当颠倒后叠加。⑥部分题目需要同时使用留元法和消元法。⑦也可由反应物与生成物总能量、键能或活化能计算ΔH。",
+   "boundaryMarkdown": "同侧相减、异侧相加，倍数关系要与ΔH同步",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "五三化学精讲册 P0064（书内页码 62）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:盖斯定律",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-che-v-3becf5ca",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "电极反应式书写的四步法",
+   "summaryMarkdown": "按确定电极反应物和产物、确定得失电子数、配电荷守恒、配原子守恒四步书写，燃料电池先写总反应再写正极",
+   "applicabilityMarkdown": "原电池与燃料电池电极反应式的书写与判断",
+   "contentMarkdown": "①第一步确定电极反应物和产物：根据题给信息（装置图或总反应式等）判断正、负极，列出电极上的反应物和产物。②第二步确定得、失电子数：根据元素化合价的变化列出得、失电子的数目。③第三步配电荷守恒：根据环境补离子，酸性溶液选H⁺，碱性溶液选OH⁻，熔融氧化物选O²⁻，熔融碳酸盐选CO₃²⁻，锂电池选Li⁺。④第四步配原子守恒：利用原子守恒配平其他物质，有时需补上H₂O。⑤燃料电池先写出总反应式（与燃烧反应一致，若产物能与电解质反应则以最终生成的物质为准），再写正极反应式。⑥注意：碱性溶液中不可能有CO₂、H⁺生成，酸性溶液中不可能有NH₃、OH⁻生成；两式相加得总反应式时应先调整化学计量数使得失电子数目相等。",
+   "boundaryMarkdown": "配电荷守恒必须结合介质环境，不能随意补H⁺或OH⁻",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "五三化学精讲册 P0073（书内页码 71）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电极反应式",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-che-v-048a0af3",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "中和滴定图像特殊点的分析",
+   "summaryMarkdown": "解离子平衡图像先明确坐标轴意义，再看曲线变化趋势，最后抓起点、反应一半点、中性点、恰好中和点与过量点",
+   "applicabilityMarkdown": "酸碱中和滴定曲线及离子浓度关系判断",
+   "contentMarkdown": "①解题策略：先明确坐标轴的意义，再看曲线的变化趋势，最后抓特殊点。②起点：可定性或定量判断酸、碱的相对强弱，如0.1 mol·L⁻¹ HA溶液的pH>1，说明HA为弱酸。③反应一半点：溶质为NaA和HA且n(NaA)=n(HA)，此时溶液pH<7，离子浓度关系为c(A⁻)>c(Na⁺)>c(H⁺)>c(OH⁻)。④中性点：溶质为NaA和少量HA，此时pH=7，c(Na⁺)=c(A⁻)>c(H⁺)=c(OH⁻)。⑤恰好中和点：溶质为NaA，此时pH>7，c(Na⁺)>c(A⁻)>c(OH⁻)>c(H⁺)。⑥过量一倍点：溶质为NaA和NaOH且n(NaA)=n(NaOH)，c(Na⁺)>c(OH⁻)>c(A⁻)>c(H⁺)。⑦沉淀溶解平衡图像中，曲线上任意一点的Q=Ksp，曲线上方的点Q>Ksp有沉淀析出，曲线下方的点Q<Ksp无沉淀析出。",
+   "boundaryMarkdown": "恰好中和时溶液不一定呈中性，此时离子浓度顺序由盐的性质决定",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "五三化学精讲册 P0109（书内页码 106）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:滴定曲线",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-che-v-aec50af6",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "蒸馏、升华与重结晶操作要点",
+   "summaryMarkdown": "蒸馏时温度计水银球位于支管口、冷凝水逆流、烧瓶加沸石；重结晶按加热溶解到干燥的步骤操作",
+   "applicabilityMarkdown": "物质分离操作中仪器使用与操作规范的判断",
+   "contentMarkdown": "①升华：用于分离含易升华组分的混合物。②蒸馏：用于分离互溶且沸点有一定差距的液体，一般相差30 ℃及以上；温度计的水银球位于蒸馏烧瓶的支管口处；蒸馏烧瓶内要加沸石或碎瓷片，防止暴沸；冷凝管水流方向为下口进、上口出。③洗气：利用溶解性不同除去气体中的杂质气体，也可利用化学反应除杂，长管进气、短管出气；如Cl₂中混HCl用饱和食盐水、CO₂中混SO₂用饱和碳酸氢钠溶液、CO中混CO₂用碱石灰。④渗析：用于分离胶体与溶液。⑤重结晶：操作步骤为加热溶解→趁热过滤→冷却结晶→过滤、洗涤、干燥；选择溶剂时要求杂质在此溶剂中的溶解度很大或很小，被提纯物质在此溶剂中的溶解度受温度影响较大，便于冷却结晶。⑥干燥剂的选择：酸性干燥剂不能干燥碱性气体，碱性干燥剂不能干燥酸性气体，强氧化性干燥剂不能干燥还原性气体，浓硫酸可干燥H₂和SO₂，无水CaCl₂不能干燥NH₃。",
+   "boundaryMarkdown": "温度计位置与冷凝水流向是蒸馏装置的高频易错点",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "五三化学精讲册 P0145（书内页码 142）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:蒸馏",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-che-v-076daee4",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "实验操作与现象描述的规范表述",
+   "summaryMarkdown": "滴定终点判断、沉淀洗涤、分液操作都有固定表述；实验设计按操作、现象、结论的顺序作答",
+   "applicabilityMarkdown": "实验简答题的规范表述与采分点书写",
+   "contentMarkdown": "①证明沉淀完全：静置，取沉淀后的上层清液，加入××试剂，若没有沉淀生成，说明沉淀完全。②沉淀洗涤：目的是除去沉淀表面附着或包夹的可溶性离子；操作是沿玻璃棒将洗涤剂注入过滤器中至浸没沉淀，静置，让其自然流出，重复2至3次；判断洗净的方法是取少量最后一次洗涤液，滴加××试剂，若不出现对应现象即已洗净。③分液操作：关闭活塞，将混合液倒入分液漏斗，右手心顶住塞子、左手握住活塞，斜向上倒置并充分振荡后放气，再静置分层；先打开上口塞子再打开活塞，下层液体从下口沿烧杯内壁流下，上层液体从上口倒出。④判断滴定终点：当加入最后半滴标准溶液后，溶液由某色刚好变为另一色，且半分钟内不变色。⑤实验设计类表述按操作→现象→结论的顺序，模板为取样、加入××→有××生成→说明××。⑥现象描述要准确全面：溶液颜色由××变成××、液面上升或下降、变浑浊、生成××沉淀、发生倒吸、产生大量气泡、有气体逸出等。",
+   "boundaryMarkdown": "滴定终点必须写“半分钟内不变色”，否则答案不完整",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "五三化学精讲册 P0152（书内页码 149）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:现象描述答题模板",
      "role": "PRIMARY"
     }
    ]

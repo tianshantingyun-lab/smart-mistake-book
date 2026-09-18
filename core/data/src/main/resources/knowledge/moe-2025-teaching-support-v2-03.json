@@ -161,6 +161,22 @@
    "licenseExpression": null,
    "licenseUri": null,
    "attributionText": "桌面教辅资料直抽改写（REVIEWED_SYNTHESIS），仅内部教学参考。"
+  },
+  {
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-biology:biology",
+   "subject": "BIOLOGY",
+   "sourceType": "AUTHORIZED_EDUCATION_MATERIAL",
+   "title": "2027版5·3 A版 高考总复习（精讲册）",
+   "publisher": "曲一线·五三",
+   "edition": "2027版",
+   "sourceUri": "https://www.example.edu/wusan-2027-a-jingjiang",
+   "licenseStatus": "REFERENCE_ONLY",
+   "contentFingerprint": "D25D4C0DDB4F8973E327855319C0699CD7AF8CA6DD2229AA27CB0AD550864C85",
+   "importedAtEpochMillis": 1784908800000,
+   "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
+   "licenseExpression": null,
+   "licenseUri": null,
+   "attributionText": "五三精讲册视觉转写改写（REVIEWED_SYNTHESIS），仅内部教学参考。"
   }
  ],
  "materials": [
@@ -41535,6 +41551,346 @@
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:排列",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-bio-v-bc45776f",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "真核细胞、原核细胞与病毒比较",
+   "summaryMarkdown": "从结构、细胞壁、遗传与增殖比较真核细胞、原核细胞与病毒并归纳实例",
+   "applicabilityMarkdown": "细胞类型判断与实例辨析",
+   "contentMarkdown": "①结构：真核细胞有以核膜为界限的细胞核，细胞质中有多种复杂的细胞器；原核细胞无细胞核，只有核糖体一种细胞器，但可具有拟核；病毒无细胞结构，主要由蛋白质和一种核酸组成，部分病毒（如HIV、流感病毒）还含有包膜中的磷脂等。②细胞壁：动物细胞无细胞壁，植物细胞的细胞壁主要由纤维素和果胶组成，大多数真菌细胞主要为几丁质，原核细胞绝大多数具有细胞壁且成分主要为肽聚糖。③遗传与增殖：三者的遗传物质均为DNA（RNA病毒的遗传物质为RNA）；真核细胞以有丝分裂、无丝分裂和减数分裂增殖，原核细胞主要为二分裂，病毒通过复制增殖并营寄生生活，复制所需的能量、原料和场所均由宿主细胞提供。④实例：菠菜、衣藻、酵母菌和霉菌属于真核细胞，大肠杆菌、乳酸菌、蓝细菌、放线菌和支原体属于原核细胞，T2噬菌体为DNA病毒，HIV、流感病毒和烟草花叶病毒为RNA病毒。",
+   "boundaryMarkdown": "蓝细菌不含叶绿体但含藻蓝素和叶绿素，能进行光合作用而属于自养型生物；支原体无细胞壁，青霉素等抑制细胞壁合成的抗生素对其无效",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-biology:biology",
+   "sourceLocator": "五三生物精讲册 P0005",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:原核细胞和真核细胞",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-bio-v-44987725",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "蛋白质的结构层次与功能多样性",
+   "summaryMarkdown": "氨基酸脱水缩合形成肽链并经盘曲折叠成蛋白质，结构多样性决定功能多样性",
+   "applicabilityMarkdown": "蛋白质结构与功能分析",
+   "contentMarkdown": "①基本单位：组成人体蛋白质的氨基酸有21种，其中13种为非必需氨基酸、8种为必需氨基酸；氨基酸种类和理化性质的差异由R基的不同导致，其种类和含量是评价食品中蛋白质营养价值的主要依据。②连接方式：氨基酸在核糖体上经脱水缩合形成肽链，n个氨基酸形成的一条肽链含（n－1）个肽键、脱去（n－1）个水分子；连接不同肽链或同一肽链不同部分的化学键为肽键，肽链之间还可形成二硫键等。③结构多样性的原因：直接原因是氨基酸的种类、数目、排列顺序不同以及肽链的盘曲、折叠方式及其形成的空间结构不同；根本原因是DNA（基因）的碱基排列顺序具有多样性。④功能多样性：既有肌肉、头发中的结构蛋白，又有催化（大多数酶）、运输（血红蛋白、转运蛋白）、调节（蛋白质类激素）和免疫（抗体和细胞因子）等功能蛋白。⑤检测：蛋白质与双缩脲试剂在碱性条件下生成紫色络合物，含2个及以上肽键的小分子肽也可发生紫色反应。",
+   "boundaryMarkdown": "斐林试剂需甲乙液等量混匀后立即使用且需水浴加热，双缩脲试剂则先加A液再加B液且不需加热；脂肪等脂质不属于生物大分子",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-biology:biology",
+   "sourceLocator": "五三生物精讲册 P0009",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:蛋白质的结构及其多样性",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-bio-v-9e661bda",
+   "subject": "BIOLOGY",
+   "type": "REPRESENTATION_GUIDE",
+   "title": "流动镶嵌模型的要点与细胞膜功能",
+   "summaryMarkdown": "磷脂双分子层构成基本支架，糖被在膜外侧，膜具有一定流动性和选择透过性",
+   "applicabilityMarkdown": "膜结构模型解读与功能分析",
+   "contentMarkdown": "①制备材料：选哺乳动物成熟红细胞，因其无细胞核和众多具膜细胞器。②成分：脂质主要是磷脂，动物细胞膜含少量胆固醇，胆固醇对磷脂分子运动有双重调节作用；功能越复杂的细胞膜，蛋白质的种类和数量越多；糖类与细胞表面的识别、细胞间的信息传递有关。③流动镶嵌模型：磷脂双分子层构成膜的基本支架，磷脂的亲水端朝向膜两侧、疏水端向内；蛋白质镶、嵌或贯穿于磷脂双分子层，其分布体现膜的不对称性；糖被位于细胞膜的外侧，是细胞膜上的蛋白质或脂质结合的糖类分子，而不是指糖蛋白或糖脂。④特性：具有一定的流动性，原因是磷脂分子和大多数膜蛋白都可以运动；功能特性是选择透过性。⑤功能：将细胞与外界环境分隔开；控制物质进出细胞；进行细胞间的信息交流，方式有物质传递（如激素、神经递质）、通道传递（如胞间连丝）和接触传递（如精卵识别）。",
+   "boundaryMarkdown": "细胞间的信息交流发生在细胞与细胞之间，不发生在细胞内部或物质与细胞之间；水分子既能通过磷脂分子运动产生的间隙跨膜运输，也能通过水通道蛋白通过细胞膜",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-biology:biology",
+   "sourceLocator": "五三生物精讲册 P0012",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞膜的结构和功能",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-bio-v-d0339cd6",
+   "subject": "BIOLOGY",
+   "type": "REPRESENTATION_GUIDE",
+   "title": "物质出入细胞的方式及影响因素",
+   "summaryMarkdown": "被动运输不耗能，主动运输需载体和能量，胞吞胞吐依赖膜的流动性",
+   "applicabilityMarkdown": "运输方式判断与实例辨析",
+   "contentMarkdown": "①被动运输：自由扩散和协助扩散都从高浓度一侧向低浓度一侧运输，都不消耗能量；自由扩散不需要转运蛋白协助，如O₂、CO₂等气体和甘油、性激素、苯等脂溶性小分子；协助扩散需要转运蛋白协助，如哺乳动物成熟红细胞吸收葡萄糖、水分子通过水通道蛋白的运输。②主动运输：从低浓度一侧向高浓度一侧运输，既消耗能量又需要载体蛋白协助，如小肠上皮细胞吸收葡萄糖和氨基酸，以及细胞吸收Na⁺、K⁺、Ca²⁺等离子。③胞吞与胞吐：都消耗能量、不需要转运蛋白协助但需要特定的膜蛋白参与，并依赖膜的流动性；胞吞如吞噬细胞吞噬抗原，胞吐如胰岛素、消化酶、抗体等分泌物的分泌和多数神经递质的释放。④影响因素：温度可通过影响蛋白质的构象和膜的流动性影响物质运输；凡影响细胞呼吸和相关酶活性的因素都能通过影响ATP的产生影响主动运输。",
+   "boundaryMarkdown": "一种转运蛋白往往只适合转运特定的物质，因此转运蛋白的数量或功能改变都会影响运输速率；葡萄糖进入成熟红细胞为协助扩散，进入小肠上皮细胞则为主动运输",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-biology:biology",
+   "sourceLocator": "五三生物精讲册 P0020",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:物质出入细胞的方式",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-bio-v-bbe8dfd4",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "酶的本质、特性与相关实验分析",
+   "summaryMarkdown": "酶是活细胞产生的具催化作用的有机物，具高效性、专一性和作用条件较温和",
+   "applicabilityMarkdown": "酶相关实验与曲线分析",
+   "contentMarkdown": "①本质：绝大多数酶是蛋白质、少数是RNA；酶在活细胞中产生，但在细胞内、外均可发挥催化作用。②作用机理：酶通过降低化学反应的活化能加快反应速率，与无机催化剂相比降低活化能的作用更显著，且酶在反应前后性质不变、可重复利用。③高效性验证：在等量H₂O₂溶液中，加入2滴新鲜肝脏研磨液的试管产生气泡最多、卫生香复燃最明显，加入FeCl₃溶液的试管现象次之，90 ℃水浴加热和不处理组气泡很少；FeCl₃作为已知的无机催化剂，在本实验中起阳性对照作用。④专一性：一种酶只能催化一种或一类化学反应，如脲酶只能催化尿素分解；也有些酶可作用于一类结构相近的底物，催化一类物质分解。⑤作用条件较温和：酶在最适温度和pH条件下活性最高；高温、强酸和强碱会使酶的空间结构遭到破坏而永久失活，低温条件下酶的活性很低但空间结构稳定，因此酶制剂适宜在低温下保存。",
+   "boundaryMarkdown": "酶只改变化学反应的速率，不改变最终生成物的量；低温只是抑制酶的活性而不使酶失活，故酶制剂宜低温保存",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-biology:biology",
+   "sourceLocator": "五三生物精讲册 P0025",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:酶的特性",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-bio-v-2d005678",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "减数分裂的概念与四分体辨析",
+   "summaryMarkdown": "染色体复制一次而细胞分裂两次，同源染色体的联会与互换是配子多样性的基础",
+   "applicabilityMarkdown": "减数分裂图像与概念判断",
+   "contentMarkdown": "①适用范围与特点：适用于进行有性生殖的生物，特点是染色体复制一次、细胞分裂两次；结果是成熟生殖细胞中染色体和核DNA数目比原始生殖细胞减少一半。②相关概念辨析：1个四分体等于1对同源染色体，即2条染色体、4条染色单体、4个核DNA分子、8条脱氧核苷酸链；同源染色体的形态和大小一般都相同，一条来自父方、一条来自母方；姐妹染色单体位于1条染色体上。③减数分裂Ⅰ：前期同源染色体联会形成四分体，四分体中的非姐妹染色单体之间可发生互换；中期同源染色体排列在赤道板两侧；后期同源染色体分离、非同源染色体自由组合；末期结束时细胞一分为二，染色体数和核DNA数均减半。④数目变化：减数分裂前的间期染色体数为2n、核DNA由2n增至4n；初级精（卵）母细胞中染色体数为2n、核DNA为4n；减数分裂Ⅱ的细胞中染色体数为n、核DNA为2n，最终形成的子细胞中染色体数和核DNA数均为n。",
+   "boundaryMarkdown": "1个四分体含4条染色单体而不是4条染色体；着丝粒分裂发生在减数分裂Ⅱ后期，此时细胞内没有同源染色体",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-biology:biology",
+   "sourceLocator": "五三生物精讲册 P0056",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:减数分裂",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-bio-v-0e598e79",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "孟德尔一对相对性状杂交实验的假说演绎",
+   "summaryMarkdown": "按假说—演绎法分析高茎与矮茎的杂交实验，最终得出基因的分离定律",
+   "applicabilityMarkdown": "分离定律实验过程与测交验证",
+   "contentMarkdown": "①实验材料：豌豆自花传粉、闭花受粉，自然状态下一般为纯种；具有多对易于区分的相对性状且能够稳定地遗传给后代；花较大，子代个体数量多。②杂交操作：花蕾期去除母本未成熟花的全部雄蕊后套袋，待雌蕊成熟时授以父本花粉再套袋，即人工去雄→套袋→人工授粉→套袋。③实验现象：P高茎×矮茎，F₁全部表现为高茎；F₁自交所得F₂出现性状分离，高茎与矮茎的比例为3∶1。④假说：生物的性状是由遗传因子决定的，体细胞中的遗传因子成对存在，产生配子时成对的遗传因子彼此分离，配子中只含有每对遗传因子中的一个；受精时雌雄配子随机结合，结合方式有4种。⑤演绎推理与验证：若假说正确，F₁（Dd）与矮茎（dd）测交，后代应出现高茎∶矮茎＝1∶1；实际结果与预期结果相符，假说正确，得出基因的分离定律。",
+   "boundaryMarkdown": "测交的实质是用隐性纯合子检测待测个体产生的配子种类及比例；豌豆的去雄必须在花蕾期（花药未成熟时）进行，否则会发生自交",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-biology:biology",
+   "sourceLocator": "五三生物精讲册 P0064",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:一对相对性状的杂交实验",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-bio-v-82f919b9",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "两对相对性状杂交实验的数据分析",
+   "summaryMarkdown": "先分别分析每一对相对性状，再用乘法原理把9∶3∶3∶1拆成(3∶1)(3∶1)",
+   "applicabilityMarkdown": "自由组合定律实验与数据推算",
+   "contentMarkdown": "①实验现象：P黄色圆粒×绿色皱粒，F₁全为黄色圆粒；F₁自交所得F₂出现黄色圆粒、黄色皱粒、绿色圆粒、绿色皱粒四种类型，比例为9∶3∶3∶1。②结果分析：F₂中圆粒∶皱粒＝3∶1，说明种子粒形的遗传遵循分离定律；F₂中黄色∶绿色＝3∶1，说明种子粒色的遗传遵循分离定律；F₂中出现两种亲本类型和两种新类型，说明不同性状之间进行了自由组合。③数学关系：9∶3∶3∶1＝(3∶1)(3∶1)，数据分析时可依据此关系将多对性状拆开、逐一分析。④解释：两对相对性状由两对遗传因子控制；F₁产生配子时成对的遗传因子彼此分离，不同对的遗传因子自由组合，产生的雌雄配子均为比例相等的四种；受精时雌雄配子随机结合产生子代，F₂共有9种基因型、4种表型。⑤验证：F₁（YyRr）与绿色皱粒（yyrr）测交，测交后代的表型比例为1∶1∶1∶1，实际结果与演绎推理的预测结果一致，假说正确，得出基因的自由组合定律。",
+   "boundaryMarkdown": "F₂中9∶3∶3∶1的前提是两对基因独立遗传且各种配子和个体存活率相同；测交后代比例为1∶1∶1∶1说明F₁产生四种比例相等的配子",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-biology:biology",
+   "sourceLocator": "五三生物精讲册 P0072",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:两对相对性状杂交实验过程",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-bio-v-2f7dbb98",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "摩尔根果蝇眼色实验的假说演绎",
+   "summaryMarkdown": "用红眼与白眼果蝇的杂交和测交实验证明基因在染色体上",
+   "applicabilityMarkdown": "伴性遗传实验分析与推断",
+   "contentMarkdown": "①萨顿假说：基因在染色体上，依据是基因和染色体的行为存在着明显的平行关系。②实验材料：果蝇体积小、易饲养、繁殖快、后代多，染色体少（2n＝8）易于观察。③现象与问题：红眼雌蝇与白眼雄蝇杂交，F₁全为红眼；F₁雌雄交配所得F₂中红眼与白眼的数量比为3∶1，且白眼性状的表现总是与性别相关联。④假说：控制果蝇白眼的基因（用w表示）在X染色体上，而Y染色体上不含有它的等位基因；据此可圆满解释F₁与F₂的性状分离情况。⑤演绎与验证：用测交实验验证，第一次测交为F₁红眼雌×亲本白眼雄，后代红眼雌、红眼雄、白眼雌、白眼雄的比例为1∶1∶1∶1，与演绎推理的预测结果一致，假说正确，说明控制红眼和白眼的基因位于X染色体上，即基因在染色体上。⑥延伸：摩尔根和他的学生们发明了测定基因位于染色体上相对位置的方法，说明了基因在染色体上呈线性排列。",
+   "boundaryMarkdown": "第一次测交实验不能证明基因只位于X染色体上，因为若基因位于X、Y染色体的同源区段，后代的表现型比例与第一次测交结果相同",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-biology:biology",
+   "sourceLocator": "五三生物精讲册 P0081",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:基因位于染色体上的实验证据",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-bio-v-51ae858d",
+   "subject": "BIOLOGY",
+   "type": "REPRESENTATION_GUIDE",
+   "title": "转录与翻译的场所条件及产物比较",
+   "summaryMarkdown": "转录以DNA一条链为模板合成RNA，翻译在核糖体上以mRNA为模板合成肽链",
+   "applicabilityMarkdown": "基因表达过程的比较与判断",
+   "contentMarkdown": "①转录：场所主要在细胞核，其次在线粒体、叶绿体（真核生物）；以DNA分子的一条链为模板，以四种核糖核苷酸为原料，需要RNA聚合酶和能量；产物是mRNA、tRNA和rRNA。②翻译：场所是核糖体；以mRNA为模板、以氨基酸为原料，需要tRNA转运氨基酸、需要能量以及与蛋白质合成相关的酶；产物是肽链。③方向：转录时子链延伸方向为5′端→3′端、模板链方向为3′端→5′端；翻译时肽链延伸方向为氨基端→羧基端。④分子关系：mRNA上决定1个氨基酸的3个相邻碱基叫密码子，密码子具有简并性，一种氨基酸可对应一种或几种密码子、可由一种或几种tRNA转运，但一种tRNA只能转运一种氨基酸。⑤结构拓展：真核生物基因内部存在外显子序列和内含子序列，内含子转录出的序列会被切除、不参与翻译过程；真核生物中转录和翻译不能同时进行，而原核生物以及真核生物的叶绿体、线粒体中可边转录边翻译。",
+   "boundaryMarkdown": "启动子和终止子位于DNA上，用于启动和终止转录；起始密码子和终止密码子位于mRNA上，用于启动和终止翻译，两组概念不能混用",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-biology:biology",
+   "sourceLocator": "五三生物精讲册 P0097",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:基因的表达",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-bio-v-6a817433",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "自然选择与种群基因频率的定向改变",
+   "summaryMarkdown": "种群是生物进化的基本单位，自然选择使基因频率定向改变并决定进化方向",
+   "applicabilityMarkdown": "进化理论与基因频率计算",
+   "contentMarkdown": "①达尔文自然选择学说：过度繁殖是基础，遗传和变异是内因，生存斗争是手段，适者生存、不适者被淘汰是结果；适应的形成是自然选择的结果，适应具有普遍性和相对性，其相对性的根本原因是遗传的稳定性与环境不断变化之间的矛盾。②共同由来学说：地球上所有的生物都是由原始的共同祖先进化来的，最直接、最重要的证据是化石。③现代生物进化理论：种群是生物进化的基本单位，基因库是一个种群中全部个体所含有的全部基因，基因频率是在一个种群基因库中某个基因占全部等位基因数的比值，生物进化的实质是种群基因频率的定向改变。④可遗传变异（基因突变、染色体变异和基因重组）为进化提供原材料，但变异是不定向的；自然选择直接选择的是个体的表型，间接选择的是基因型，从而使种群基因频率发生定向改变，决定生物进化的方向。⑤隔离是物种形成的必要条件，其实质是不同群体间的个体在自然条件下基因不能自由交流。",
+   "boundaryMarkdown": "突变和基因重组只能提供进化的原材料，不能决定生物进化的方向；自然选择直接作用的是个体的表型而不是基因型",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-biology:biology",
+   "sourceLocator": "五三生物精讲册 P0109",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:自然选择",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-bio-v-10d9ec32",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "兴奋在神经纤维上的传导与突触传递",
+   "summaryMarkdown": "神经纤维上以电信号双向传导且不衰减，突触处经神经递质单向传递并出现延搁",
+   "applicabilityMarkdown": "膜电位变化与突触传递分析",
+   "contentMarkdown": "①静息电位：静息时膜主要对K⁺有通透性，K⁺外流使膜电位表现为外正内负。②动作电位：受到刺激时膜对Na⁺的通透性增加，Na⁺内流使膜电位变为外负内正。③传导机制：兴奋部位与未兴奋部位之间形成局部电流，膜内电流由兴奋区流向未兴奋区、膜外电流方向相反，从而使兴奋向两侧传导。④传导特点：在离体的神经纤维上兴奋可以双向传导，且传导过程中电位变化总是一样的、不会随传导距离的增加而衰减。⑤突触传递：轴突末梢有兴奋传来时，突触小泡向突触前膜移动并释放神经递质，递质经扩散与突触后膜上的受体特异性结合，引起突触后膜的离子通道发生变化、引发突触后膜电位变化；神经递质发挥作用后会与受体分开，并迅速被降解或回收进细胞。⑥神经递质：来源于突触小泡，释放方式为胞吐；神经递质不进入突触后神经元，因此突触处兴奋只能单向传递，且因经历递质的释放、扩散及对突触后膜作用的过程而出现突触延搁，速度比在神经纤维上慢。",
+   "boundaryMarkdown": "神经递质发挥作用后会被降解或回收，不能持续起作用；兴奋在突触处单向传递，而在离体的神经纤维上可双向传导",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-biology:biology",
+   "sourceLocator": "五三生物精讲册 P0116",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:兴奋的产生和传导",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-bio-v-d9b6bb60",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "免疫系统的组成与抗原抗体辨析",
+   "summaryMarkdown": "免疫器官、免疫细胞与免疫活性物质构成免疫系统，抗体由浆细胞产生",
+   "applicabilityMarkdown": "免疫系统组成与抗原抗体判断",
+   "contentMarkdown": "①免疫器官：骨髓是各种免疫细胞的发生地；胸腺是T细胞分化、发育、成熟的场所；脾在胃的左侧，含大量淋巴细胞，也参与制造新的血细胞与清除衰老的血细胞。②免疫细胞：来自骨髓的造血干细胞，包括淋巴细胞和吞噬细胞；辅助性T细胞辅助B细胞、细胞毒性T细胞产生免疫应答，细胞毒性T细胞参与细胞免疫，B细胞参与体液免疫；巨噬细胞和树突状细胞均具有吞噬消化、抗原处理和呈递功能，属于抗原呈递细胞（APC）。③免疫活性物质：由免疫细胞或其他细胞产生的发挥免疫作用的物质，包括抗体、细胞因子（白细胞介素、干扰素、肿瘤坏死因子等）和溶菌酶等。④抗原与抗体：抗原是能与免疫细胞表面的受体结合、引发免疫反应的物质，一般是大分子的非己成分，也可以是自身衰老或损伤的细胞；抗体是机体产生的能与抗原特异性结合的蛋白质（免疫球蛋白），主要由浆细胞产生，一种抗体只能与特定抗原结合。",
+   "boundaryMarkdown": "溶菌酶是一种碱性蛋白质、能破坏某些细菌的细胞壁，溶酶体是含有多种水解酶的细胞器，二者不能混为一谈；一种病原体可携带多种抗原",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-biology:biology",
+   "sourceLocator": "五三生物精讲册 P0134",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:免疫系统的组成和功能",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-bio-v-936b224b",
+   "subject": "BIOLOGY",
+   "type": "REPRESENTATION_GUIDE",
+   "title": "种群数量特征的关系与密度调查方法",
+   "summaryMarkdown": "种群密度是最基本的数量特征，样方法与标记重捕法适用于不同对象",
+   "applicabilityMarkdown": "种群密度计算与调查方法选择",
+   "contentMarkdown": "①种群与数量特征：种群是在一定的空间范围内同种生物所有个体形成的集合；种群密度是种群最基本的数量特征；直接决定种群密度的因素是出生率和死亡率、迁入率和迁出率。②相互关系：年龄结构可预测种群数量的变化趋势，它通过影响出生率和死亡率影响种群密度；性别比例通过影响出生率间接影响种群密度，因此年龄结构和性别比例不直接决定种群密度。③逐个计数法：适用于调查分布范围较小、个体较大的种群，如调查某山坡上的珙桐密度。④样方法：适用于植物或活动范围小、活动能力弱的动物，关键是随机取样；统计每个样方中调查对象的数量后取所有样方数的平均值计算种群密度；样方大小应根据调查对象适当调整，如调查草本植物时样方的大小以1 m²为宜，样方数量不宜太少。⑤标记重捕法：适用于活动范围大、活动能力强的动物，计算公式为N＝N₁×N₂/N₀（N₁为第一次捕获并标记的个体数、N₂为重捕个体数、N₀为重捕中被标记的个体数）。",
+   "boundaryMarkdown": "种群数量多不等于种群密度大，因为种群密度强调单位面积或单位体积中的个体数；标记物脱落或标记个体被重捕机会减小都会使估算结果偏大",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-biology:biology",
+   "sourceLocator": "五三生物精讲册 P0145",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:种群的数量特征",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-bio-v-14239bc1",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "生态系统能量流动的过程与特点",
+   "summaryMarkdown": "能量单向流动并逐级递减，相邻两个营养级的能量传递效率一般为10%~20%",
+   "applicabilityMarkdown": "能量流动计算与去向分析",
+   "contentMarkdown": "①概念理解：能量流动的源头是生产者固定的太阳能；能量传递的形式是有机物中的化学能，途径是食物链和食物网。②第一营养级：生产者固定的能量，一部分通过呼吸作用以热能形式散失，一部分用于生长、发育和繁殖而储存于体内，后者可流向下一营养级、被分解者利用或未被利用；同化量等于呼吸作用散失的能量与用于生长、发育和繁殖的能量之和。③中间营养级：摄入量等于同化量与粪便量之和；粪便量属于上一营养级生物的同化量，也属于上一营养级流向分解者的能量。最高营养级与中间营养级相似，但没有流向下一营养级的能量。④特点与传递效率：能量单向流动，原因是生物之间的捕食关系一般不可逆转；能量逐级递减，原因是各营养级生物的呼吸消耗；能量传递效率是某一营养级同化量与上一营养级同化量的比值，相邻两个营养级的能量传递效率一般为10%~20%。",
+   "boundaryMarkdown": "粪便量不属于该营养级的同化量，而属于上一营养级同化量中流向分解者的部分；能量传递效率是相邻两个营养级同化量的比值，不是摄入量的比值",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-biology:biology",
+   "sourceLocator": "五三生物精讲册 P0158",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:能量流动",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-bio-v-5308dcca",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "培养基的成分与分类",
+   "summaryMarkdown": "培养基含碳源、氮源、水和无机盐，按物理性质和功能分类",
+   "applicabilityMarkdown": "培养基分析与培养条件判断",
+   "contentMarkdown": "①营养成分：培养基一般都含有水、碳源、氮源和无机盐等营养物质；碳源能构成细胞物质，有机碳源既是碳源又是能源，来源包括无机碳源（CO₂、NaHCO₃、CaCO₃等）和有机碳源（糖类、脂质、蛋白质、牛肉膏、蛋白胨等）；氮源用于合成蛋白质、核酸及其他含氮的物质，来源包括无机氮源（N₂、硝酸盐等）和有机氮源（蛋白胨、尿素等）。②按物理性质划分：液体培养基常用于扩大培养；半固体培养基可观察微生物的运动；固体培养基可用于微生物的分离、鉴定和计数。③按功能划分：选择培养基允许特定种类的微生物生长，同时抑制或阻止其他种类微生物生长；鉴别培养基利用不同微生物代谢产物的差异，使添加的特定化学试剂或指示剂与培养基中的成分发生反应并产生可见的特征性变化，从而区分不同类型微生物。",
+   "boundaryMarkdown": "选择培养基用于让目标微生物生长而抑制其他微生物，鉴别培养基用于通过特征性变化区分不同类型微生物，二者的作用不能混淆",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-biology:biology",
+   "sourceLocator": "五三生物精讲册 P0168",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:微生物的培养",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-bio-v-a5927a34",
+   "subject": "BIOLOGY",
+   "type": "REPRESENTATION_GUIDE",
+   "title": "基因工程的基本操作程序与表达载体",
+   "summaryMarkdown": "目的基因的筛选获取、表达载体的构建与导入受体细胞",
+   "applicabilityMarkdown": "基因工程流程与载体构建分析",
+   "contentMarkdown": "①目的基因的筛选与获取：目的基因是用于改变受体细胞性状或获得预期表达产物等的基因，主要是指编码蛋白质的基因；获取方法有PCR、人工合成法、基因文库法等。②基因表达载体的构建：这是基因工程的核心步骤，目的是让目的基因在受体细胞中稳定存在并遗传给下一代、并使目的基因能够表达和发挥作用；基因表达载体由目的基因、启动子、终止子和标记基因等组成，其中启动子位于基因的上游，是RNA聚合酶识别和结合的部位、驱动基因的转录；终止子位于基因的下游，功能是终止转录；标记基因便于重组DNA分子的筛选。③将目的基因导入受体细胞：植物细胞常用花粉管通道法（我国科学家独创）和农杆菌转化法（Ti质粒上的T-DNA可转移并整合到被侵染细胞的染色体DNA上）；动物细胞常用显微注射法，将目的基因注入动物的受精卵中；微生物细胞常用Ca²⁺处理法，使细胞处于一种能吸收周围环境中DNA分子的生理状态。",
+   "boundaryMarkdown": "启动子、终止子位于DNA上，起始密码子和终止密码子位于mRNA上，四者的位置和功能不能混用；构建载体时选择双酶切可避免目的基因和载体的自身环化与反向连接",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-biology:biology",
+   "sourceLocator": "五三生物精讲册 P0190",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:基因工程",
      "role": "PRIMARY"
     }
    ]

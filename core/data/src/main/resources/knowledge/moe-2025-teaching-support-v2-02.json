@@ -193,6 +193,22 @@
    "licenseExpression": null,
    "licenseUri": null,
    "attributionText": "五三精讲册直抽改写（REVIEWED_SYNTHESIS），仅内部教学参考。"
+  },
+  {
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-math:math",
+   "subject": "MATH",
+   "sourceType": "AUTHORIZED_EDUCATION_MATERIAL",
+   "title": "2027版5·3 A版 高考总复习（精讲册）",
+   "publisher": "曲一线·五三",
+   "edition": "2027版",
+   "sourceUri": "https://www.example.edu/wusan-2027-a-jingjiang",
+   "licenseStatus": "REFERENCE_ONLY",
+   "contentFingerprint": "377D44166DBA34CCB0FD1356B741DB203AD37833B0E7644BAF15A9627B7FC743",
+   "importedAtEpochMillis": 1784908800000,
+   "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
+   "licenseExpression": null,
+   "licenseUri": null,
+   "attributionText": "五三精讲册视觉转写改写（REVIEWED_SYNTHESIS），仅内部教学参考。"
   }
  ],
  "materials": [
@@ -43477,6 +43493,246 @@
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:溶度积",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-mat-v-cc9274f0",
+   "subject": "MATH",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "正弦定理的内容与常用变形",
+   "summaryMarkdown": "a/sinA=b/sinB=c/sinC=2R 及其边角互化变形，用于解三角形与求外接圆半径。",
+   "applicabilityMarkdown": "已知两角及一边、两边及一边对角解三角形",
+   "contentMarkdown": "①内容：在 △ABC 中，a/sinA=b/sinB=c/sinC=2R，其中 R 为 △ABC 外接圆的半径。②变形公式：a:b:c=sinA:sinB:sinC；a=2RsinA，b=2RsinB，c=2RsinC；sinA=a/(2R)，sinB=b/(2R)，sinC=c/(2R)；(a+b+c)/(sinA+sinB+sinC)=2R。③作用：已知两角及任一边可求其余边角；已知两边及其中一边的对角，可先由正弦定理求另一角，但此时三角形可能无解、一解或两解，须结合大边对大角与内角和等于 180° 讨论。④三角形中的常用结论：a>b ⇔ A>B ⇔ sinA>sinB；sin(A+B)=sinC，cos(A+B)=-cosC；在斜 △ABC 中 tanA+tanB+tanC=tanA·tanB·tanC。⑤边角互化时不要轻易在等式两边同除以可能为零的式子（如 sinA、cosB）。",
+   "boundaryMarkdown": "由 sinB 的值直接断定只有一解，遗漏 B 为钝角的两解情形。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-math:math",
+   "sourceLocator": "五三数学精讲册 P69",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:正弦定理",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-mat-v-9efb9fe4",
+   "subject": "MATH",
+   "type": "REPRESENTATION_GUIDE",
+   "title": "等比数列的通项与前n项和公式",
+   "summaryMarkdown": "通项 aₙ=a₁qⁿ⁻¹、求和公式的两分支，以及由 Sₙ 形式判定等比数列的充要条件。",
+   "applicabilityMarkdown": "求通项、求前n项和、判断数列类型",
+   "contentMarkdown": "①定义：如果一个数列从第 2 项起，每一项与它前一项的比都等于同一个常数，那么这个数列叫做等比数列，这个常数叫做等比数列的公比，通常用字母 q(q≠0) 表示，符号表示为 aₙ₊₁/aₙ=q（n∈N*）。②通项公式：aₙ=a₁qⁿ⁻¹；推广：aₙ=aₘ·qⁿ⁻ᵐ（m，n∈N*）。③前 n 项和公式：Sₙ=na₁（q=1）；Sₙ=a₁(1-qⁿ)/(1-q)=(a₁-aₙq)/(1-q)（q≠1），使用求和公式前必须先讨论公比 q 是否等于 1。④等比中项：如果在 a 与 b 中间插入一个数 G，使 a，G，b 成等比数列，那么 G 叫做 a 与 b 的等比中项，此时 G²=ab，注意 G 可取 ±√(ab) 且要求 ab>0。⑤等价判定：当 q≠0 且 q≠1 时，Sₙ=k-k·qⁿ（k≠0）是数列 {aₙ} 为等比数列的充要条件，此时 k=a₁/(1-q)。",
+   "boundaryMarkdown": "用求和公式时不讨论 q=1，或由 G²=ab 只取 G=√(ab) 而丢掉负值。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-math:math",
+   "sourceLocator": "五三数学精讲册 P90",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:等比数列的有关公式",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-mat-v-ee751f75",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "几何体外接球半径的三条思路",
+   "summaryMarkdown": "公式法、补形法与双面定球心法求外接球半径，并附内切球的等体积法与轴截面法。",
+   "applicabilityMarkdown": "求几何体外接球的表面积与体积",
+   "contentMarkdown": "①公式法：正方体的外接球直径 2R=正方体对角线长=√3a（a 为正方体棱长）；长方体的外接球直径 2R=长方体对角线长=√(a²+b²+c²)（a，b，c 为长、宽、高）。②补形法：墙角模型的特征为 PA⊥AB，PA⊥AC，AB⊥AC；垂直模型的特征为 AB⊥BC，PC⊥BC，PC⊥AB 或 AB⊥BC，BC⊥PC，PA⊥AB；对棱相等模型满足 AB=CD，AD=BC，AC=BD，均可补成长方体求解。③双面定球心法：在三棱锥 P-ABC 中，先选定底面 △ABC，定出外接圆圆心 O₁；再选定侧面 △PAB，定出外接圆圆心 O₂；分别过 O₁ 作平面 ABC 的垂线、过 O₂ 作平面 PAB 的垂线，两垂线的交点即为外接球的球心 O。④内切球：设半径为 r，由 V=V₁+V₂+V₃ 得 r=3V/S表；也可用轴截面法，作出含切点、球心等元素的截面，利用三角形相似求解。",
+   "boundaryMarkdown": "不满足补形条件（侧棱垂直于底面或对棱相等）时硬套补形法，导致球心位置错误。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-math:math",
+   "sourceLocator": "五三数学精讲册 P102",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:求解几何体外接球的半径的思路",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-mat-v-34f239f8",
+   "subject": "MATH",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "二项式定理与二项式系数性质",
+   "summaryMarkdown": "展开式、通项公式，以及二项式系数的对称性、最值与各项系数和结论。",
+   "applicabilityMarkdown": "求指定项、指定项系数、系数和、最大项",
+   "contentMarkdown": "①二项式定理：(a+b)ⁿ=C(n，0)aⁿ+C(n，1)aⁿ⁻¹b+…+C(n，k)aⁿ⁻ᵏbᵏ+…+C(n，n)bⁿ（n∈N*）；各项的系数 C(n，k)（k=0，1，2，…，n）叫做二项式系数。②通项公式：T(k+1)=C(n，k)aⁿ⁻ᵏbᵏ，它表示展开式的第 k+1 项。③易混点：二项式系数只与项数有关，与 a、b 的取值无关；项的系数是指该项中除变量外的常数部分，还与 a、b 的取值有关。④对称性：与首末两端等距离的两个二项式系数相等，即 C(n，m)=C(n，n-m)。⑤增减性与最大值：当 k<(n+1)/2 时 C(n，k) 随 k 的增加而增大，由对称性知后半部分随 k 的增加而减小；n 为偶数时中间一项最大，n 为奇数时中间两项相等且同时最大。⑥系数和：C(n，0)+C(n，1)+…+C(n，n)=2ⁿ；奇数项与偶数项的二项式系数和相等，都等于 2ⁿ⁻¹。",
+   "boundaryMarkdown": "把展开式的第 k+1 项写成第 k 项，或把二项式系数误当作该项的系数。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-math:math",
+   "sourceLocator": "五三数学精讲册 P148",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:二项式定理",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-mat-v-5e784db3",
+   "subject": "MATH",
+   "type": "REPRESENTATION_GUIDE",
+   "title": "方差、标准差与分层抽样的数字特征",
+   "summaryMarkdown": "方差与标准差的两个等价计算公式，以及分层随机抽样下总样本均值与总样本方差的合成。",
+   "applicabilityMarkdown": "求数据的方差与标准差、分层抽样合成计算",
+   "contentMarkdown": "①方差：s²=(1/n)[(x₁-x̄)²+(x₂-x̄)²+…+(xₙ-x̄)²]=(1/n)Σ(xᵢ-x̄)²，也可写成 (1/n)Σxᵢ²-x̄²。②标准差：s=√[(1/n)((x₁-x̄)²+(x₂-x̄)²+…+(xₙ-x̄)²)]=√[(1/n)Σ(xᵢ-x̄)²]，方差与标准差都可度量样本数据与其平均数的偏离程度，且标准差与原数据单位一致。③按比例分配分层（两层）随机抽样所得样本的合成：若第一层样本量为 n₁、平均数为 x̄₁、方差为 s₁²，第二层样本量为 n₂、平均数为 x̄₂、方差为 s₂²，则总样本平均数 x̄=(n₁/(n₁+n₂))x̄₁+(n₂/(n₁+n₂))x̄₂，总样本方差 s²=(n₁/(n₁+n₂))[s₁²+(x̄₁-x̄)²]+(n₂/(n₁+n₂))[s₂²+(x̄₂-x̄)²]。",
+   "boundaryMarkdown": "由方差求标准差时忘记开方，或忽略各层平均数与总平均数之差的平方项而直接加权平均方差。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-math:math",
+   "sourceLocator": "五三数学精讲册 P166",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:方差与标准差",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-che-v-981c1ed6",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "晶胞的概念与晶体中的配位数",
+   "summaryMarkdown": "晶胞是描述晶体结构的基本单元，在晶体中无隙并置排列；离子晶体与金属晶体中微粒的配位数有规律",
+   "applicabilityMarkdown": "晶胞概念判断与NaCl、金属钠晶胞配位数分析",
+   "contentMarkdown": "①概念：晶胞是描述晶体结构的基本单元，是从晶体中截取出来的具有代表性的最小重复单位。②晶胞在晶体中的排列呈无隙并置：相邻晶胞之间没有任何空隙，所有晶胞平行排列、取向相同，一般而言晶胞都是平行六面体。③离子晶体中离子的配位数指1个离子周围最邻近的异性离子的数目，例如NaCl晶胞中Na⁺和Cl⁻的配位数均为6。④金属晶体中原子的配位数指1个原子周围最邻近的原子的数目，例如金属Na晶胞中Na原子的配位数为8。⑤判断配位数时要看清是异性离子还是同种微粒，并注意顶点、棱、面上的微粒被多个晶胞共用。",
+   "boundaryMarkdown": "配位数只数最邻近的微粒，不能把同种微粒与异性离子混为一谈",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "五三化学精讲册 P0056（书内页码 54）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:晶胞",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-che-v-71f367fb",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "熔沸点高低比较的分类模型",
+   "summaryMarkdown": "先比晶体类型，再按分子晶体、共价晶体、离子晶体、金属晶体四类分别比较微粒间作用力的强弱",
+   "applicabilityMarkdown": "晶体熔沸点高低比较类选择题与填空题",
+   "contentMarkdown": "①不同类型晶体：熔沸点一般规律为共价晶体>离子晶体>分子晶体，不同金属晶体差别较大。②分子晶体：先看能否形成分子间氢键，分子间氢键越多越强则熔沸点越高，如H₂O>H₂S、乙二醇>乙醇；形成分子内氢键则降低熔沸点，如邻羟基苯甲醛<对羟基苯甲醛。不能形成氢键时，组成和结构相似的物质相对分子质量越大、范德华力越强，熔沸点越高，如HI>HBr>HCl；相对分子质量接近时分子极性越大，熔沸点越高，如CO>N₂；互为同分异构体的烷烃支链越多沸点越低，如正戊烷>异戊烷>新戊烷。③共价晶体：成键原子半径越小、键长越短、键能越大，熔沸点越高，如金刚石>SiC>单晶硅。④离子晶体：阴、阳离子所带电荷数越多、离子半径越小，离子键越强，如MgO>NaCl>CsCl。⑤金属晶体：金属阳离子半径越小、所带电荷数越多，金属键越强，如Al>Mg>Na。",
+   "boundaryMarkdown": "氢键分分子间与分子内，分子内氢键反而降低熔沸点",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "五三化学精讲册 P0058（书内页码 56）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:晶体熔-沸点高低的比较方法",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-che-v-c0628413",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "中和反应反应热测定的关键操作",
+   "summaryMarkdown": "测定中和反应反应热时的保温、碱稍过量、终止温度取最高温度及搅拌器选择等操作要点",
+   "applicabilityMarkdown": "中和反应反应热测定的误差分析与原因说明",
+   "contentMarkdown": "①计算公式中各符号含义：c为反应后生成溶液的比热容，近似为4.18 J·g⁻¹·℃⁻¹；t₁为起始温度；t₂为终止温度；n为生成H₂O的物质的量。②杯盖、隔热层、外壳的作用是保温，减少热量损失，否则测得的温度变化偏小、结果偏低。③为保证酸被完全中和，通常采用稍过量的碱，使酸完全反应。④终止温度t₂应取反应过程中的最高温度，不能取反应结束后温度下降后的读数。⑤玻璃搅拌器不能用铜质搅拌器代替，铜导热性好会使热量散失。⑥用醋酸溶液代替盐酸测定时，因醋酸电离吸热，测得反应热的绝对值低于57.3 kJ·mol⁻¹。",
+   "boundaryMarkdown": "终止温度取最高温度，不能用反应结束后的温度读数",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "五三化学精讲册 P0063（书内页码 61）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:中和热",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-che-v-3bd50175",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "比较反应热大小的四步分析法",
+   "summaryMarkdown": "从能量变化、物质状态、反应程度、反应关系四个角度比较ΔH的大小，必要时借助能量图",
+   "applicabilityMarkdown": "反应热大小比较类选择题的判断",
+   "contentMarkdown": "①一看能量变化：看反应是吸热还是放热。吸热反应ΔH>0，放热反应ΔH<0，故ΔH的大小关系为吸热反应>放热反应。②二看物质状态：若两个反应仅是物质状态不同，可写出不同状态之间的转化式，利用盖斯定律找出相应ΔH的关系。如已知2H₂(g)+O₂(g)===2H₂O(g) ΔH₁和2H₂(g)+O₂(g)===2H₂O(l) ΔH₂，可写出H₂O(l)===H₂O(g) ΔH₃，则ΔH₁=ΔH₂+2ΔH₃，已知汽化吸热ΔH₃>0，故ΔH₁>ΔH₂。③三看反应程度：同一可燃物完全燃烧比不完全燃烧放出的热量更多，ΔH更小。④四看反应关系：找出多个反应之间的关系，用盖斯定律比较。⑤对物质状态不同的反应，也可画出能量图，由图比较ΔH的大小。",
+   "boundaryMarkdown": "ΔH为负值时放热越多ΔH越小，不能按绝对值直接比较",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "五三化学精讲册 P0065（书内页码 63）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:反应热大小的比较",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-che-v-86c9b476",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "化学反应方向的判据与判断",
+   "summaryMarkdown": "放热和熵增都有自发进行的倾向，但都不能单独作为判据；用ΔG=ΔH-TΔS判断反应能否自发进行",
+   "applicabilityMarkdown": "判断反应自发性的正误及温度对反应方向的影响",
+   "contentMarkdown": "①焓判据：放热过程中体系能量降低，ΔH<0，具有自发进行的倾向，但有些吸热反应也可以自发进行，故焓变只是影响反应方向的一种因素。②熵判据：同种物质熵值大小的顺序为气态>液态>固态；体系的混乱度增加即熵增，ΔS>0，反应有自发进行的倾向，但有些熵减过程也能自发进行。③复合判据：ΔG=ΔH-TΔS，ΔG<0时反应能自发进行，ΔG=0时反应达到平衡状态，ΔG>0时反应不能自发进行。④ΔH<0且ΔS>0时ΔG永远为负值，任何温度下均能自发进行；ΔH>0且ΔS<0时ΔG永远为正值，任何温度下均不能自发进行。⑤ΔH>0且ΔS>0时低温下不能自发、高温下能自发；ΔH<0且ΔS<0时低温下能自发、高温下不能自发。",
+   "boundaryMarkdown": "吸热或熵减的反应也可能自发，单一判据不能直接下结论",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "五三化学精讲册 P0090（书内页码 87）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:自发反应",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-che-v-533653f6",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "常见离子检验与干扰排除",
+   "summaryMarkdown": "离子检验用沉淀法、气体法、显色法；检验混合体系时先检验干扰性气体、除尽后再检验目标微粒",
+   "applicabilityMarkdown": "离子检验方案设计及干扰因素排除",
+   "contentMarkdown": "①气体检验中干扰因素的排除：一般方法是检验干扰性气体→除去干扰性气体→确认干扰性气体已经除尽→检验其余气体。②沉淀法：Cl⁻、Br⁻、I⁻用AgNO₃溶液和稀硝酸，分别生成白色AgCl、浅黄色AgBr、黄色AgI沉淀；SO₄²⁻用稀盐酸和BaCl₂溶液生成白色沉淀；Fe²⁺用K₃[Fe(CN)₆]溶液生成蓝色沉淀；Al³⁺用NaOH溶液先生成白色沉淀后溶解。③气体法：NH₄⁺用浓NaOH溶液加热，产生能使湿润红色石蕊试纸变蓝的气体；CO₃²⁻、SO₃²⁻用稀硫酸和品红溶液检验。④显色法：Br⁻、I⁻用氯水和CCl₄萃取分层显色；Fe³⁺用KSCN溶液变红或苯酚溶液显紫色；Na⁺、K⁺用焰色试验，K⁺的焰色要透过蓝色钴玻璃观察。⑤干扰排除：Cl⁻的干扰离子SO₄²⁻加过量Ba(NO₃)₂溶液除去，CO₃²⁻、OH⁻加稀硝酸酸化；SO₄²⁻的干扰离子CO₃²⁻、SO₃²⁻加盐酸酸化。",
+   "boundaryMarkdown": "检验前必须除尽干扰离子，否则现象相同会得出错误结论",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "五三化学精讲册 P0143（书内页码 140）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:物质检验",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "wusan-che-v-0faa7f85",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "制备实验的思维模型与方案评价",
+   "summaryMarkdown": "制备实验按制备、分离提纯、验纯、测纯、精纯五个环节设计；方案从科学性、绿色化学、安全性、规范性评价",
+   "applicabilityMarkdown": "制备实验方案设计及方案评价类简答题",
+   "contentMarkdown": "①制备实验思维模型：制备环节（反应装置选取、条件控制如控温与调节pH）；分离提纯环节（方法选择、仪器名称用法、操作注意事项、具体做法的目的）；验纯环节（针对杂质取样、溶解、加检验试剂、观察现象、得出结论）；测纯环节（针对产品设计纯度测定方案）；精纯环节（方法选择与实验方案设计）。②注意：反应物或生成物易与空气中成分反应时，反应前应先将装置内空气排尽；制备易吸水或易水解的物质时，应在制备或收集装置后接干燥装置；吸收溶解度大的气体应加防倒吸装置。③方案评价视角：科学性、可行性（原理是否可行、操作是否安全合理、步骤是否简单、速率是否合适、效果是否明显）；绿色化学（原料是否易得安全无毒、利用率与产率是否高、有无污染）；安全性（防倒吸、防爆炸、防氧化、防吸水）；规范性（减少易挥发反应物损失可加冷凝回流装置、仪器拆卸与组装顺序相反、操作与加试剂顺序等）。",
+   "boundaryMarkdown": "易与空气成分反应或易水解的物质，装置连接必须考虑排空气与末端干燥",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "registry-wusan-2027-a-version-jingjiang-chemistry:chemistry",
+   "sourceLocator": "五三化学精讲册 P0147（书内页码 144）",
+   "reviewedAtEpochMillis": 1784908800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:实验方案设计",
      "role": "PRIMARY"
     }
    ]
