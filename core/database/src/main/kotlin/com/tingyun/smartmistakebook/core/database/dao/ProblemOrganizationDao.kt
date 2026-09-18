@@ -5,6 +5,7 @@ import androidx.room3.Insert
 import androidx.room3.OnConflictStrategy
 import androidx.room3.Query
 import androidx.room3.Transaction
+import androidx.room3.Upsert
 import com.tingyun.smartmistakebook.core.database.entity.KnowledgeNodeEntity
 import com.tingyun.smartmistakebook.core.database.entity.KnowledgeNodeSourceBindingEntity
 import com.tingyun.smartmistakebook.core.database.entity.KnowledgeSearchFeatureEntity
@@ -182,6 +183,43 @@ internal interface ProblemOrganizationDao {
 
     @Query("SELECT * FROM knowledge_node WHERE knowledge_node_id IN (:ids)")
     suspend fun readKnowledgeNodesByIds(ids: Set<String>): List<KnowledgeNodeEntity>
+
+    // ---- 内容调和用的读/写面（见 BundledKnowledgeBaseInstaller）----
+
+    /**
+     * 某个内容包登记在库里的**全部**节点——调和用它算"包里有、库里没有的"和
+     * "库里有、包里没有的（该退役了）"。
+     *
+     * 不能按 subject 读：2020 样例包与 2025 四科包在 MATH 等科目上重叠，按科读会把
+     * 另一个包的节点混进来，于是它们会被误判成"包里没有"而遭退役。
+     */
+    @Query("SELECT * FROM knowledge_node WHERE taxonomy_version = :taxonomyVersion")
+    suspend fun readKnowledgeNodesByTaxonomy(taxonomyVersion: String): List<KnowledgeNodeEntity>
+
+    /**
+     * 按主键 upsert 节点内容。**必须是 upsert 而不是 REPLACE**：REPLACE 会先删后插，
+     * 而 8 张表以 RESTRICT 引用 `knowledge_node`，删除会被外键直接拒绝。
+     */
+    @Upsert
+    suspend fun upsertKnowledgeNodes(nodes: List<KnowledgeNodeEntity>)
+
+    /**
+     * 退役一个节点。**永不物删**——学生错题绑定/掌握度/复习队列还引用着它。
+     * `status != 'RETIRED'` 的条件让重复调用是空操作（幂等）。
+     */
+    @Query(
+        "UPDATE knowledge_node SET status = 'RETIRED', superseded_by = :supersededBy " +
+            "WHERE knowledge_node_id = :id AND status != 'RETIRED'",
+    )
+    suspend fun retireKnowledgeNode(id: String, supersededBy: String?): Int
+
+    /**
+     * 删掉这些节点的检索特征。退役必须同时做这一步：自愈逻辑
+     * （`ensureKnowledgeSearchIndex`）靠"已索引数 ≥ 已审校数"判断是否需要补建，
+     * 若退役节点仍留着特征行，两个计数会永久漂移，自愈要么空转要么反复补建。
+     */
+    @Query("DELETE FROM knowledge_search_feature WHERE knowledge_node_id IN (:ids)")
+    suspend fun deleteSearchFeaturesForNodes(ids: Set<String>)
 
     @Query("SELECT * FROM knowledge_source WHERE source_id IN (:ids)")
     suspend fun readKnowledgeSourcesByIds(ids: Set<String>): List<KnowledgeSourceEntity>

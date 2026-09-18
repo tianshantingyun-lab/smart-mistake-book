@@ -5,6 +5,7 @@ import androidx.room3.Insert
 import androidx.room3.OnConflictStrategy
 import androidx.room3.Query
 import androidx.room3.Transaction
+import androidx.room3.Upsert
 import com.tingyun.smartmistakebook.core.database.ImmutablePayloadConflictException
 import com.tingyun.smartmistakebook.core.database.entity.KnowledgeTeachingMaterialEntity
 import com.tingyun.smartmistakebook.core.database.entity.KnowledgeTeachingMaterialNodeBindingEntity
@@ -66,6 +67,37 @@ internal interface KnowledgeTeachingMaterialDao {
     @Query("SELECT * FROM knowledge_teaching_material WHERE material_id IN (:ids)")
     suspend fun readByIds(ids: Set<String>): List<KnowledgeTeachingMaterialEntity>
 
+    // ---- 内容调和用的读/写面（见 BundledKnowledgeBaseInstaller）----
+
+    /**
+     * 某个内容包登记在库里的**全部**材料。按 `stable_code` 前缀匹配——它的构法是
+     * `"$packId:$subject:teaching:$slug"`，所以前缀 `"$packId:"` 恰好圈定这个包，
+     * 不会把另一个包的侧车混进来。
+     */
+    @Query("SELECT * FROM knowledge_teaching_material WHERE stable_code LIKE :packPrefix || '%'")
+    suspend fun readByStableCodePrefix(packPrefix: String): List<KnowledgeTeachingMaterialEntity>
+
+    /** upsert 而非 REPLACE：REPLACE 先删后插，会撞上引用材料的 RESTRICT 外键。 */
+    @Upsert
+    suspend fun upsertMaterials(materials: List<KnowledgeTeachingMaterialEntity>)
+
+    /**
+     * 退役一条材料。学生可能用过它生成的复习题，所以**永不物删**；退役后它不再进
+     * 新的讲题参考与复习题。`status != 'RETIRED'` 保证重复调用是空操作。
+     */
+    @Query(
+        "UPDATE knowledge_teaching_material SET status = 'RETIRED' " +
+            "WHERE material_id = :id AND status != 'RETIRED'",
+    )
+    suspend fun retireMaterial(id: String): Int
+
+    @Query("DELETE FROM knowledge_teaching_material_node_binding WHERE material_id IN (:materialIds)")
+    suspend fun deleteBindingsForMaterials(materialIds: Set<String>)
+
+    /**
+     * 某条材料当前的绑定——调和时用来判断"绑定要不要改"。绑定表是纯内容
+     * （没有学生数据引用它），所以按 (material_id, knowledge_node_id) 做主键 upsert/删除即可。
+     */
     @Query(
         """
         SELECT * FROM knowledge_teaching_material_node_binding
