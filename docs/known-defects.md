@@ -633,6 +633,8 @@ gone. Owner: the knowledge-pack toolchain (parallel session's in-flight pack).
 **Reopen condition.** n/a — close when a clean install launches with no banner
 and the material import completes without the contract exception.
 
+**Verified fixed (2026-09-19, pack toolchain).** 三处根因一并修复并过真机：①材料 `reviewedAt < importedAt` 494 条全量对齐（并统一同 sourceId 跨卷副本的 `importedAt` 取最早值——聚合 `distinctBy` 首现口径）；②`KnowledgeTeachingMaterialContract` 的**总量上限**才是更早的阻断（材料 2048 / 绑定 16384 / 总字符 4M 实为 11302 条材料），按用户 2026-09-19 决定全部取消，只留结构不变量；③2020 旧包 2 条材料引用主包源、与主包 id/指纹撞唯一性 → 侧车补独立源。新增 `BundledTeachingMaterialsContractTest`（内置包直接过 DB 导入契约）。真机复核：clean install 无横幅，`knowledge_teaching_material` = **10412 行**（此前 0），`knowledge_node` 2605、`knowledge_source` 54。
+
 ## KD-16 (open) · Batch organize shows the fallback notice instead of the configure-model one
 
 **Symptom.** `localFirstDebug`, no model configured: 错题本 → 批量导入试卷照片 →
