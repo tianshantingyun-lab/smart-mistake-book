@@ -40,6 +40,8 @@ import com.tingyun.smartmistakebook.core.domain.SplitImportQuestionSummary
 import com.tingyun.smartmistakebook.core.domain.SplitImportRepository
 import com.tingyun.smartmistakebook.core.domain.SplitImportStatus
 import com.tingyun.smartmistakebook.core.domain.SplitImportConfirmState
+import com.tingyun.smartmistakebook.core.domain.SplitRegion
+import com.tingyun.smartmistakebook.core.model.NormalizedSourceRegion
 import com.tingyun.smartmistakebook.core.ui.Ink
 import com.tingyun.smartmistakebook.core.ui.InkSecondary
 import com.tingyun.smartmistakebook.core.ui.JadeActive
@@ -315,7 +317,6 @@ private fun SplitRegionThumb(
     question: SplitImportQuestionSummary,
     sourceUri: String,
 ) {
-    val region = question.region
     androidx.compose.material3.Surface(
         modifier = Modifier
             .size(width = 72.dp, height = 96.dp)
@@ -328,11 +329,20 @@ private fun SplitRegionThumb(
                 imageUri = sourceUri,
                 contentDescription = "题目区域",
                 expanded = false,
+                sourceRegion = question.region.toSourceRegion(),
                 modifier = Modifier.fillMaxSize(),
             )
         }
     }
 }
+
+/** The review list shows each question's own cropped area, not the whole source page. */
+private fun SplitRegion.toSourceRegion() = NormalizedSourceRegion(
+    left = left,
+    top = top,
+    right = right,
+    bottom = bottom,
+)
 
 @Composable
 internal fun PrimaryActionButton(
