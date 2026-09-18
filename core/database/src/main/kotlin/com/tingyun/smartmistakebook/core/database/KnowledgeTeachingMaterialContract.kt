@@ -130,6 +130,24 @@ object KnowledgeTeachingMaterialContract {
         }
     }
 
+    /**
+     * **逐条**校验一条材料：通过返回 null，不通过返回原因。
+     *
+     * 调和循环用它实现"坏对象只跳过自己"。整批校验是全有或全无的——KD-15 就是
+     * 80 条材料的 `reviewedAt` 早于来源 `importedAt` 几毫秒，把整个材料集挡在门外、
+     * 每次启动弹横幅。
+     *
+     * 复用 [validate] 本身（只传这一条材料）而不是另写规则：两套规则迟早漂移。
+     */
+    fun problemWith(
+        material: KnowledgeTeachingMaterialRecord,
+        bindings: List<KnowledgeTeachingMaterialNodeBindingRecord>,
+        nodes: List<KnowledgeNodeSeedRecord>,
+        sources: List<KnowledgeSourceSeedRecord>,
+    ): String? = runCatching {
+        validate(listOf(material), bindings, nodes, sources)
+    }.exceptionOrNull()?.message
+
     private fun validateDerivationLicense(
         material: KnowledgeTeachingMaterialRecord,
         source: KnowledgeSourceSeedRecord,

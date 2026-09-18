@@ -10,6 +10,9 @@ import com.tingyun.smartmistakebook.core.database.AnswerRevealWriteResult
 import com.tingyun.smartmistakebook.core.database.AssessmentEventSeedRecord
 import com.tingyun.smartmistakebook.core.database.AssessmentItemSnapshotSeedRecord
 import com.tingyun.smartmistakebook.core.database.CommitProblemDraftCommand
+import com.tingyun.smartmistakebook.core.database.ContentInstallStateRecord
+import com.tingyun.smartmistakebook.core.database.KnowledgeContentUpdateCommand
+import com.tingyun.smartmistakebook.core.database.KnowledgeContentUpdateResult
 import com.tingyun.smartmistakebook.core.database.CommitProblemDraftResult
 import com.tingyun.smartmistakebook.core.database.AppendProblemDraftSourceAssetCommand
 import com.tingyun.smartmistakebook.core.database.AppendProblemDraftSourceAssetResult
@@ -2106,6 +2109,27 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
         nodes: List<KnowledgeNodeSeedRecord>,
         bindings: List<KnowledgeNodeSourceBindingSeedRecord>,
     ) = Unit
+
+    /**
+     * 夹具按"调和即全部接收"实现：这些用例测的是讲题/复习链路，不是调和本身
+     * （调和的逐对象行为由 `BundledKnowledgeBaseInstallerTest` 覆盖）。
+     */
+    override suspend fun applyKnowledgeContentUpdate(
+        command: KnowledgeContentUpdateCommand,
+    ): KnowledgeContentUpdateResult = KnowledgeContentUpdateResult(
+        nodesInserted = command.nodes.size,
+        materialsInserted = command.materials.size,
+        relationsInserted = command.relations.size,
+    )
+
+    private val installStates = mutableMapOf<String, ContentInstallStateRecord>()
+
+    override suspend fun readContentInstallState(packId: String): ContentInstallStateRecord? =
+        installStates[packId]
+
+    override suspend fun recordContentInstallState(record: ContentInstallStateRecord) {
+        installStates[record.packId] = record
+    }
 
     override suspend fun applyReviewedKnowledgePack(
         command: ApplyReviewedKnowledgePackCommand,

@@ -345,6 +345,74 @@ data class ResolveKnowledgeGroundingCommand(
     val resolvedAtEpochMillis: Long,
 )
 
+/**
+ * 一次**内容调和**：让库里的内容等于这份包。
+ *
+ * 与 [ApplyReviewedKnowledgePackCommand] 的语义差别是根本的：那个是"把这些东西追加进库"，
+ * 这个是"对齐"——包里有库里没有的插入，两边都有但不同的原地更新，**库里有包里没有的退役**
+ * （永不物删：外键有 8 张表是 RESTRICT，而 `knowledge_mastery_state` 挂了学生掌握度）。
+ *
+ * 它消灭的失败：改前安装器只在"库里一行都没有"时导入，否则要求逐行完全相等——于是
+ * 发布后任何一次内容改动（哪怕只是改一个节点名）都会让知识库整包停摆、横幅常驻。
+ *
+ * [nodeRetirements] 是 `nodeId -> 取代它的节点`；值为 null 表示**没有唯一目标**
+ * （删除或拆分），那两类在历史界面只能显示旧名。
+ *
+ * **调和不做合并的学生数据重指**：合并靠账本事件 `KC_MERGED` 在投影时生效，
+ * 因此不重写任何历史行、重放仍逐字段可复现。
+ */
+data class KnowledgeContentUpdateCommand(
+    val packId: String,
+    val contentVersion: String,
+    val nodes: List<KnowledgeNodeSeedRecord>,
+    val sources: List<KnowledgeSourceSeedRecord>,
+    val nodeSourceBindings: List<KnowledgeNodeSourceBindingSeedRecord>,
+    val relations: List<KnowledgeNodeRelationRecord>,
+    val materials: List<KnowledgeTeachingMaterialRecord>,
+    val materialBindings: List<KnowledgeTeachingMaterialNodeBindingRecord>,
+    val nodeRetirements: Map<String, String?> = emptyMap(),
+    /**
+     * **材料的来源是另一组**（`KnowledgeBasePack.teachingSources`，来自侧车的 `sources[]`），
+     * 与节点的 [sources] 不重叠。合成一组会让每条材料都查不到自己的来源、被
+     * "Every teaching material needs a reviewed source" 整批挡掉——这是实测踩到的。
+     */
+    val teachingSources: List<KnowledgeSourceSeedRecord> = emptyList(),
+)
+
+/**
+ * 一次调和做了什么。
+ *
+ * [skipped] 是**逐条校验未通过而被跳过**的对象（"packId:kind:id: 原因"）。
+ * 它必须可见、不可静默——逐对象跳过修掉了"一条坏数据挡住整包"，但如果不说，
+ * 就会退化成"静默少更新"，那比整包停摆更难发现。
+ */
+data class KnowledgeContentUpdateResult(
+    val nodesInserted: Int = 0,
+    val nodesUpdated: Int = 0,
+    val nodesRetired: Int = 0,
+    val materialsInserted: Int = 0,
+    val materialsUpdated: Int = 0,
+    val materialsRetired: Int = 0,
+    val relationsInserted: Int = 0,
+    val relationsDeleted: Int = 0,
+    val skipped: List<String> = emptyList(),
+)
+
+/**
+ * 内容调和的进度锚点（每个随包内容包一行）。
+ *
+ * `contentVersion` 与随包台账一致 ⟺ 上一次调和跑完了——这一行由调用方在**最后**写，
+ * 所以它既是快速路径的依据，也是"装到一半崩了"的检测点（崩在中途则版本没推进，
+ * 下次启动重跑同一份差分即收敛）。
+ */
+data class ContentInstallStateRecord(
+    val packId: String,
+    val contentVersion: String,
+    val appliedAtEpochMillis: Long,
+    val skippedCount: Int = 0,
+    val skippedDetail: String = "",
+)
+
 data class ApplyReviewedKnowledgePackCommand(
     val sources: List<KnowledgeSourceSeedRecord>,
     val nodes: List<KnowledgeNodeSeedRecord>,

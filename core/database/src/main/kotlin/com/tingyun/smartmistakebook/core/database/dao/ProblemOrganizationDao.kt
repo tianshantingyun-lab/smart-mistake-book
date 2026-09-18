@@ -221,6 +221,33 @@ internal interface ProblemOrganizationDao {
     @Query("DELETE FROM knowledge_search_feature WHERE knowledge_node_id IN (:ids)")
     suspend fun deleteSearchFeaturesForNodes(ids: Set<String>)
 
+    @Upsert
+    suspend fun upsertKnowledgeSources(sources: List<KnowledgeSourceEntity>)
+
+    /**
+     * 按复合主键删一条节点—来源绑定。绑定是纯内容（没有学生数据引用它），
+     * 所以这里可以真删；与节点/材料的"退役而非物删"不同。
+     */
+    @Query(
+        "DELETE FROM knowledge_node_source_binding " +
+            "WHERE knowledge_node_id = :nodeId AND source_id = :sourceId " +
+            "AND source_locator = :sourceLocator",
+    )
+    suspend fun deleteKnowledgeNodeSourceBinding(
+        nodeId: String,
+        sourceId: String,
+        sourceLocator: String,
+    )
+
+    @Query("DELETE FROM knowledge_node_source_binding WHERE knowledge_node_id IN (:nodeIds)")
+    suspend fun deleteKnowledgeNodeSourceBindingsForNodes(nodeIds: Set<String>)
+
+    /** 调和用：节点—来源绑定是纯内容（无学生数据引用），整体替换即可。 */
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun importKnowledgeNodeSourceBindings(
+        bindings: List<KnowledgeNodeSourceBindingEntity>,
+    )
+
     @Query("SELECT * FROM knowledge_source WHERE source_id IN (:ids)")
     suspend fun readKnowledgeSourcesByIds(ids: Set<String>): List<KnowledgeSourceEntity>
 

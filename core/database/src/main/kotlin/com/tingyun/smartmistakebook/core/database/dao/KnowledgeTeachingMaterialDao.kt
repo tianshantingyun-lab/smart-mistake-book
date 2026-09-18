@@ -94,6 +94,29 @@ internal interface KnowledgeTeachingMaterialDao {
     @Query("DELETE FROM knowledge_teaching_material_node_binding WHERE material_id IN (:materialIds)")
     suspend fun deleteBindingsForMaterials(materialIds: Set<String>)
 
+    /** 按复合主键删一条绑定（绑定是纯内容，无学生数据引用，可真删）。 */
+    @Query(
+        "DELETE FROM knowledge_teaching_material_node_binding " +
+            "WHERE material_id = :materialId AND knowledge_node_id = :knowledgeNodeId",
+    )
+    suspend fun deleteBinding(materialId: String, knowledgeNodeId: String)
+
+    @Upsert
+    suspend fun upsertBindings(bindings: List<KnowledgeTeachingMaterialNodeBindingEntity>)
+
+    /**
+     * 这些材料里**仍有绑定**的那些。
+     *
+     * 调和用它找出"绑定全部失效"的材料：目标节点退役或移出包之后，材料会剩 0 条绑定——
+     * 而检索、讲题参考、复习题全都要经过绑定表，所以 0 绑定的材料等于不可达。
+     * 不退役它就会留一条永远进不了任何链路的行，也会让"材料总数"这类统计虚高。
+     */
+    @Query(
+        "SELECT DISTINCT material_id FROM knowledge_teaching_material_node_binding " +
+            "WHERE material_id IN (:materialIds)",
+    )
+    suspend fun readBoundMaterialIds(materialIds: Set<String>): List<String>
+
     /**
      * 某条材料当前的绑定——调和时用来判断"绑定要不要改"。绑定表是纯内容
      * （没有学生数据引用它），所以按 (material_id, knowledge_node_id) 做主键 upsert/删除即可。

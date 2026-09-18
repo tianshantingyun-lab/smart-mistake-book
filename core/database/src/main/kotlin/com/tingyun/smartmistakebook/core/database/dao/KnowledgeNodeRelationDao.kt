@@ -55,6 +55,9 @@ internal interface KnowledgeNodeRelationDao {
     @Query("DELETE FROM knowledge_node_relation WHERE relation_id IN (:ids)")
     suspend fun deleteByIds(ids: Set<String>)
 
+    @Query("DELETE FROM knowledge_node_relation WHERE dependent_knowledge_node_id IN (:dependentIds)")
+    suspend fun deleteByDependents(dependentIds: Set<String>)
+
     @Upsert
     suspend fun upsertAll(relations: List<KnowledgeNodeRelationEntity>)
 

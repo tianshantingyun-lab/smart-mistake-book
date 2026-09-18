@@ -43,6 +43,7 @@ internal data class KnowledgeBasePack(
 
 internal object BundledKnowledgePackResources {
     private const val TEACHING_SIDECAR_INDEX = "knowledge/moe-2025-teaching-support-v2-index.json"
+    private const val UPDATE_MANIFEST = "knowledge/moe-2025-update-manifest.json"
     private const val INDEXED_PACK_ID = "moe-2025-four-subjects-v1"
     private val resourceNames = listOf(
         "knowledge/moe-2020-foundation-v1.json",
@@ -68,6 +69,19 @@ internal object BundledKnowledgePackResources {
     }
 
     fun load(): List<KnowledgeBasePack> = bundledPacks
+
+    /**
+     * 取代映射台账（哪个知识点退役了、被谁取代）。
+     *
+     * **缺失按"没有任何退役记录"处理**，不是错误：2020 样例包没有台账，台账本身也是后加
+     * 的文件。缺失时调和仍会正常退役（包里有、库里没有就是差异），只是那些退役没有 1:1
+     * 重定向，历史界面按"显示旧名"处理。文件在但**内容不合规**则直接报错——
+     * 那是"我们以为记了、其实记错了"，比缺失更危险。
+     */
+    val updateManifest: KnowledgeUpdateManifest? by lazy {
+        val raw = runCatching { readClasspathResource(UPDATE_MANIFEST) }.getOrNull() ?: return@lazy null
+        ReviewedKnowledgeUpdateManifestJsonCodec.decode(raw)
+    }
 
     private fun loadResource(resourceName: String): KnowledgeBasePack {
         // 容量不设上限（2026-09-19 用户决定）：资源大小不再设门，装不下由侧车滚动机制解决。

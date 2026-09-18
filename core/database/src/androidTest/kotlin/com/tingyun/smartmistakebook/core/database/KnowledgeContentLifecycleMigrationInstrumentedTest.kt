@@ -50,7 +50,9 @@ class KnowledgeContentLifecycleMigrationInstrumentedTest {
                 SQLiteDatabase.OPEN_READONLY,
             ).use { database ->
                 assertEquals(STUDY_DATABASE_VERSION, database.version)
-                assertEquals(46, database.version)
+                // 这里**不**再钉一个字面量版本号：v46 是本次迁移落地的版本，但之后每加一版
+                // 它都会过期、让用例无故变红（实际发生过：v47 落地时它报 expected 46 but was 47）。
+                // 要钉的是"迁移跑到了当前版本、且旧行没被倒填"，不是"当前版本恰好是 46"。
 
                 // 存量节点：ACTIVE，且没有取代目标——退役是将来事实，迁移不倒填
                 assertRow(database, "knowledge_node", "knowledge_node_id", "legacy-node") { c ->

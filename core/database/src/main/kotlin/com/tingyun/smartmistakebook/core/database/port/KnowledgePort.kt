@@ -2,6 +2,9 @@ package com.tingyun.smartmistakebook.core.database.port
 
 import com.tingyun.smartmistakebook.core.database.ApplyApprovedKnowledgeResearchPackCommand
 import com.tingyun.smartmistakebook.core.database.ApplyReviewedKnowledgePackCommand
+import com.tingyun.smartmistakebook.core.database.ContentInstallStateRecord
+import com.tingyun.smartmistakebook.core.database.KnowledgeContentUpdateCommand
+import com.tingyun.smartmistakebook.core.database.KnowledgeContentUpdateResult
 import com.tingyun.smartmistakebook.core.database.DecideKnowledgeResearchReviewBundleCommand
 import com.tingyun.smartmistakebook.core.database.KnowledgeGroundingRequestRecord
 import com.tingyun.smartmistakebook.core.database.KnowledgeGroundingResolutionRecord
@@ -117,6 +120,22 @@ interface KnowledgeWritePort {
         nodes: List<KnowledgeNodeSeedRecord>,
         bindings: List<KnowledgeNodeSourceBindingSeedRecord>,
     )
+
+    /**
+     * 内容调和：让库里的内容等于这份包（插入 / 原地更新 / 退役；退役**永不物删**）。
+     *
+     * 与 [importKnowledgeBase] 的区别是语义——那个是"追加"，只在库里一行都没有时可用；
+     * 这个是"对齐"，因此是发布后更新知识库的唯一通道。逐对象判定，坏对象只跳过自己。
+     */
+    suspend fun applyKnowledgeContentUpdate(
+        command: KnowledgeContentUpdateCommand,
+    ): KnowledgeContentUpdateResult
+
+    /** 读调和进度。返回 null 表示这个包从未被调和过（走全量）。 */
+    suspend fun readContentInstallState(packId: String): ContentInstallStateRecord?
+
+    /** 写调和进度。**必须在调和全部做完之后调用**——它是"跑完了"的唯一凭据。 */
+    suspend fun recordContentInstallState(record: ContentInstallStateRecord)
 
     suspend fun applyReviewedKnowledgePack(
         command: ApplyReviewedKnowledgePackCommand,

@@ -513,6 +513,16 @@ internal class RoomStudyDatabase(
         bindings = bindings,
     )
 
+    override suspend fun applyKnowledgeContentUpdate(
+        command: KnowledgeContentUpdateCommand,
+    ): KnowledgeContentUpdateResult = knowledgeBase.applyKnowledgeContentUpdate(command)
+
+    override suspend fun readContentInstallState(packId: String): ContentInstallStateRecord? =
+        knowledgeBase.readContentInstallState(packId)
+
+    override suspend fun recordContentInstallState(record: ContentInstallStateRecord) =
+        knowledgeBase.recordContentInstallState(record)
+
     override suspend fun applyReviewedKnowledgePack(
         command: ApplyReviewedKnowledgePackCommand,
     ): List<KnowledgeGroundingResolutionRecord> =

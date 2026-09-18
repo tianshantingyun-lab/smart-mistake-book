@@ -3,6 +3,7 @@ package com.tingyun.smartmistakebook.core.database
 import androidx.room3.withWriteTransaction
 import com.tingyun.smartmistakebook.core.database.dao.KnowledgeGroundingSummaryRow
 import com.tingyun.smartmistakebook.core.database.dao.ReviewedKnowledgeCoverageRow
+import com.tingyun.smartmistakebook.core.database.entity.ContentInstallStateEntity
 import com.tingyun.smartmistakebook.core.database.entity.KnowledgeGroundingRequestEntity
 import com.tingyun.smartmistakebook.core.database.entity.KnowledgeGroundingResolutionEntity
 import com.tingyun.smartmistakebook.core.database.entity.KnowledgeNodeEntity
@@ -15,6 +16,7 @@ import com.tingyun.smartmistakebook.core.database.entity.KnowledgeTeachingMateri
 import com.tingyun.smartmistakebook.core.database.entity.PracticeUnitKnowledgeBindingEntity
 import com.tingyun.smartmistakebook.core.database.port.KnowledgeReadPort
 import com.tingyun.smartmistakebook.core.database.port.PracticeUnitKnowledgeBindingRecord
+import com.tingyun.smartmistakebook.core.model.KnowledgeNodeVerificationStatus
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -333,8 +335,252 @@ internal class RoomKnowledgeBaseStore(
         )
     }
 
-    suspend fun applyReviewedKnowledgePack(
-        command: ApplyReviewedKnowledgePackCommand,
+    /**
+     * **内容调和**：让库里的内容等于这份包。
+     *
+     * 三条性质，各有它消灭的失败：
+     *
+     * 1. **逐对象判定**（插入 / 更新 / 退役）。整批全有或全无的写法让一条坏数据就能让
+     *    整包停摆——KD-15 正是这个形态：80 条材料的 `reviewedAt` 比来源 `importedAt`
+     *    早几毫秒，另外一万条一起被挡在门外、每次启动弹横幅。这里改为逐条校验，
+     *    坏的那条跳过并记进 [KnowledgeContentUpdateResult.skipped]，其余照常落地。
+     * 2. **退役而非物删**。8 张表以 RESTRICT 引用 `knowledge_node`，而
+     *    `knowledge_mastery_state` / `learner_knowledge_mastery_state` 挂着学生的错题绑定、
+     *    掌握度与复习队列——物删要么被外键挡住，要么对 CASCADE 表静默带走学生数据。
+     * 3. **不重写人工确认**。包里的节点在库里可能已被 `USER_CONFIRMED` 提升过；
+     *    调和只升不降，不把学生的确认改回包里的值。
+     *
+     * **崩溃安全靠差分的幂等性，不靠大事务**：每个对象独立判定，任一步崩掉，下次启动
+     * 重跑同一份差分即收敛；`content_install_state` 的版本行由调用方在**最后**推进，
+     * 所以"版本已推进"⟺"上一次跑完了"。
+     *
+     * 不做的事：**合并的学生数据重指**。那由账本事件 `KC_MERGED` 在投影时生效，
+     * 从而不重写任何历史行、重放仍逐字段可复现。
+     */
+    suspend fun applyKnowledgeContentUpdate(
+        command: KnowledgeContentUpdateCommand,
+    ): KnowledgeContentUpdateResult {
+        val dao = database.problemOrganizationDao()
+        val materialDao = database.knowledgeTeachingMaterialDao()
+        val relationDao = database.knowledgeNodeRelationDao()
+        val skipped = mutableListOf<String>()
+
+        // ---- 来源：只补缺，不改已存在的 ----
+        // 来源是溯源记录不是内容。改它要动 content_fingerprint，而那个列有唯一索引——
+        // 重算后与另一条来源撞索引就会把整批拖垮。缺什么补什么即可。
+        //
+        // 节点来源与材料来源是**两组**（`sources` / `teachingSources`），必须都补：
+        // 只补一组会让另一组的使用方全部因"缺来源"被挡掉。
+        val allSources = command.sources + command.teachingSources
+        val sourcesById = allSources.associateBy(KnowledgeSourceSeedRecord::sourceId)
+        val existingSourceIds = dao.readKnowledgeSourcesByIds(sourcesById.keys)
+            .mapTo(hashSetOf(), KnowledgeSourceEntity::sourceId)
+        val sourcesToInsert = allSources
+            .distinctBy(KnowledgeSourceSeedRecord::sourceId)
+            .filter { it.sourceId !in existingSourceIds }
+        if (sourcesToInsert.isNotEmpty()) {
+            dao.upsertKnowledgeSources(sourcesToInsert.map { it.toEntity() })
+        }
+
+        // ---- 节点 ----
+        val nodesById = command.nodes.associateBy(KnowledgeNodeSeedRecord::knowledgeNodeId)
+        val existingNodes = dao.readKnowledgeNodesByTaxonomy(command.packId)
+            .associateBy(KnowledgeNodeEntity::knowledgeNodeId)
+
+        val nodesToUpsert = mutableListOf<KnowledgeNodeSeedRecord>()
+        var nodesInserted = 0
+        var nodesUpdated = 0
+        for (node in command.nodes) {
+            val problem = KnowledgeBaseImportContract.problemWith(node, nodesById)
+            if (problem != null) {
+                skipped += "node:${node.knowledgeNodeId}: $problem"
+                continue
+            }
+            val existing = existingNodes[node.knowledgeNodeId]
+            // 只升不降：库里已人工确认过的，调和不得把它改回包里的值。
+            val desired = if (
+                existing != null &&
+                existing.verificationStatus ==
+                KnowledgeNodeVerificationStatus.USER_CONFIRMED.name &&
+                node.verificationStatus != KnowledgeNodeVerificationStatus.USER_CONFIRMED.name
+            ) {
+                node.copy(
+                    verificationStatus = KnowledgeNodeVerificationStatus.USER_CONFIRMED.name,
+                )
+            } else {
+                node
+            }
+            when {
+                existing == null -> {
+                    nodesInserted++
+                    nodesToUpsert += desired
+                }
+                existing != desired.toEntity() -> {
+                    nodesUpdated++
+                    nodesToUpsert += desired
+                }
+            }
+        }
+        if (nodesToUpsert.isNotEmpty()) {
+            dao.upsertKnowledgeNodes(nodesToUpsert.map(KnowledgeNodeSeedRecord::toEntity))
+        }
+
+        val retainedNodeIds = command.nodes
+            .filterNot { node -> skipped.any { it.startsWith("node:${node.knowledgeNodeId}:") } }
+            .mapTo(hashSetOf(), KnowledgeNodeSeedRecord::knowledgeNodeId)
+
+        // ---- 节点退役 ----
+        val standingIds = existingNodes.keys - command.nodes
+            .mapTo(hashSetOf(), KnowledgeNodeSeedRecord::knowledgeNodeId)
+        var nodesRetired = 0
+        for (nodeId in standingIds) {
+            if (dao.retireKnowledgeNode(nodeId, command.nodeRetirements[nodeId]) > 0) {
+                nodesRetired++
+            }
+        }
+        if (standingIds.isNotEmpty()) {
+            // 与退役同步：自愈逻辑靠"已索引数 ≥ 已审校数"判断是否补建，退役节点若留着
+            // 特征行，两个计数会永久漂移。
+            dao.deleteSearchFeaturesForNodes(standingIds)
+        }
+
+        // ---- 节点—来源绑定：纯内容，整体替换 ----
+        val packNodeIds = command.nodes.mapTo(hashSetOf(), KnowledgeNodeSeedRecord::knowledgeNodeId)
+        if (packNodeIds.isNotEmpty()) {
+            dao.deleteKnowledgeNodeSourceBindingsForNodes(packNodeIds)
+        }
+        val bindingsToInsert = command.nodeSourceBindings.filter { it.knowledgeNodeId in retainedNodeIds }
+        if (bindingsToInsert.isNotEmpty()) {
+            dao.importKnowledgeNodeSourceBindings(
+                bindingsToInsert.map(KnowledgeNodeSourceBindingSeedRecord::toEntity),
+            )
+        }
+
+        // ---- 前置边：纯内容，整体替换 ----
+        if (packNodeIds.isNotEmpty()) {
+            relationDao.deleteByDependents(packNodeIds)
+        }
+        val relationsToInsert = command.relations.filter {
+            it.dependentKnowledgeNodeId in retainedNodeIds &&
+                it.prerequisiteKnowledgeNodeId in retainedNodeIds
+        }
+        if (relationsToInsert.isNotEmpty()) {
+            relationDao.upsertAll(relationsToInsert.map(KnowledgeNodeRelationRecord::toEntity))
+        }
+
+        // ---- 材料 ----
+        val existingMaterials = materialDao
+            .readByStableCodePrefix("${command.packId}:")
+            .associateBy(KnowledgeTeachingMaterialEntity::materialId)
+        val acceptedNodes = command.nodes.filter { it.knowledgeNodeId in retainedNodeIds }
+
+        val materialsToUpsert = mutableListOf<KnowledgeTeachingMaterialRecord>()
+        var materialsInserted = 0
+        var materialsUpdated = 0
+        val acceptedMaterialIds = mutableSetOf<String>()
+        // 材料先按 (nodeId -> 材料) 分组，好在校验时只喂给它自己那几条绑定——
+        // 契约的逐条入口就是把"这一条材料 + 它的绑定"当一批校验。
+        val bindingsByMaterial = command.materialBindings.groupBy(
+            KnowledgeTeachingMaterialNodeBindingRecord::materialId,
+        )
+        for (material in command.materials) {
+            val ownBindings = bindingsByMaterial[material.materialId].orEmpty()
+            if (ownBindings.isEmpty()) {
+                // 无绑定的材料在装载时会被静默剔除，等于白写；这里显式记账而不是无声丢弃。
+                skipped += "material:${material.materialId}: 没有任何知识节点绑定"
+                continue
+            }
+            val problem = KnowledgeTeachingMaterialContract.problemWith(
+                material = material,
+                bindings = ownBindings,
+                nodes = acceptedNodes,
+                sources = command.teachingSources,
+            )
+            if (problem != null) {
+                skipped += "material:${material.materialId}: $problem"
+                continue
+            }
+            acceptedMaterialIds += material.materialId
+            val existing = existingMaterials[material.materialId]
+            if (existing == null) {
+                materialsInserted++
+                materialsToUpsert += material
+            } else if (existing != material.toEntity()) {
+                materialsUpdated++
+                materialsToUpsert += material
+            }
+        }
+        if (materialsToUpsert.isNotEmpty()) {
+            materialDao.upsertMaterials(materialsToUpsert.map(KnowledgeTeachingMaterialRecord::toEntity))
+        }
+
+        // ---- 材料绑定：纯内容，整体替换 ----
+        val allPackMaterialIds = command.materials.mapTo(hashSetOf(), KnowledgeTeachingMaterialRecord::materialId)
+        if (allPackMaterialIds.isNotEmpty()) {
+            materialDao.deleteBindingsForMaterials(allPackMaterialIds)
+        }
+        val materialBindingsToInsert = command.materialBindings.filter {
+            it.materialId in acceptedMaterialIds &&
+                it.knowledgeNodeId in retainedNodeIds
+        }
+        if (materialBindingsToInsert.isNotEmpty()) {
+            materialDao.upsertBindings(
+                materialBindingsToInsert.map(KnowledgeTeachingMaterialNodeBindingRecord::toEntity),
+            )
+        }
+
+        // ---- 材料退役 ----
+        var materialsRetired = 0
+        for (materialId in existingMaterials.keys - allPackMaterialIds) {
+            if (materialDao.retireMaterial(materialId) > 0) materialsRetired++
+        }
+        // **绑定全部失效的材料同样要退役**：目标节点退役或移出包之后，材料会剩 0 条绑定，
+        // 而检索/讲题参考/复习题全都要经过绑定表——0 绑定等于不可达，留着只会让统计虚高，
+        // 还会在下次装载时被静默剔除（unbound 材料的处理不一致正是本文档前面抱怨过的形态）。
+        if (allPackMaterialIds.isNotEmpty()) {
+            val stillBound = materialDao.readBoundMaterialIds(allPackMaterialIds).toHashSet()
+            for (materialId in allPackMaterialIds - stillBound) {
+                if (materialDao.retireMaterial(materialId) > 0) materialsRetired++
+            }
+        }
+
+        return KnowledgeContentUpdateResult(
+            nodesInserted = nodesInserted,
+            nodesUpdated = nodesUpdated,
+            nodesRetired = nodesRetired,
+            materialsInserted = materialsInserted,
+            materialsUpdated = materialsUpdated,
+            materialsRetired = materialsRetired,
+            relationsInserted = relationsToInsert.size,
+            relationsDeleted = 0,
+            skipped = skipped,
+        )
+    }
+
+    suspend fun readContentInstallState(packId: String): ContentInstallStateRecord? =
+        database.contentInstallStateDao().read(packId)?.let { entity ->
+            ContentInstallStateRecord(
+                packId = entity.packId,
+                contentVersion = entity.contentVersion,
+                appliedAtEpochMillis = entity.appliedAtEpochMillis,
+                skippedCount = entity.skippedCount,
+                skippedDetail = entity.skippedDetail,
+            )
+        }
+
+    suspend fun recordContentInstallState(record: ContentInstallStateRecord) {
+        database.contentInstallStateDao().upsert(
+            ContentInstallStateEntity(
+                packId = record.packId,
+                contentVersion = record.contentVersion,
+                appliedAtEpochMillis = record.appliedAtEpochMillis,
+                skippedCount = record.skippedCount,
+                skippedDetail = record.skippedDetail,
+            ),
+        )
+    }
+
+    suspend fun applyReviewedKnowledgePack(        command: ApplyReviewedKnowledgePackCommand,
     ): List<KnowledgeGroundingResolutionRecord> = database.withWriteTransaction {
         applyReviewedKnowledgePackInTransaction(command)
     }

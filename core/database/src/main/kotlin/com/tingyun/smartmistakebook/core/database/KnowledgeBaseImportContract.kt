@@ -65,8 +65,21 @@ object KnowledgeBaseImportContract {
         validateBindings(bindings, newSourcesById, newNodesById, sourcesById)
     }
 
-    fun validateSourcesOnly(sources: List<KnowledgeSourceSeedRecord>) {
-        requireImport(sources.size <= MAX_IMPORT_RECORDS) {
+    /**
+     * **逐条**校验一个节点：通过返回 null，不通过返回原因。
+     *
+     * 调和循环用它实现"坏对象只跳过自己"——整批校验是全有或全无的，一个越界字段会让
+     * 整包停摆（KD-15 就是这个形态：80 条材料的时间戳倒挂，把另外一万条一起挡在门外）。
+     *
+     * 复用 [validateNode] 本身而不是另写一套规则：两套规则迟早会漂移，而漂移的方向是
+     * "校验说没问题、导入却拒绝"或反过来。
+     */
+    fun problemWith(
+        node: KnowledgeNodeSeedRecord,
+        nodesById: Map<String, KnowledgeNodeSeedRecord>,
+    ): String? = runCatching { validateNode(node, nodesById) }.exceptionOrNull()?.message
+
+    fun validateSourcesOnly(sources: List<KnowledgeSourceSeedRecord>) {        requireImport(sources.size <= MAX_IMPORT_RECORDS) {
             "A knowledge-source import is too large"
         }
         sources.uniqueBy(KnowledgeSourceSeedRecord::sourceId, "source ids")
