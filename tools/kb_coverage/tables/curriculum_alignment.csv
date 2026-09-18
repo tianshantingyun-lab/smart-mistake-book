@@ -43,8 +43,8 @@ MATH,required-functions-candidate-023,COVERED,三角恒等变换,能运用上述
 MATH,required-functions-candidate-024,PARTIAL,三角函数的图象与性质,"会用三角函数解决简单的实际问题,体会可以利用三角函数构建刻画事物周期变化的数学模型",应用建模面未单设节点
 MATH,required-functions-candidate-025,COVERED,函数零点的定义,"结合学过的函数图象,了解函数零点与方程解的关系",
 MATH,required-functions-candidate-026,COVERED,函数零点存在定理,"了解函数零点存在定理,探索用二分法求方程近似解的思路",二分法另见 二分法
-MATH,required-functions-candidate-027,NOT_COVERED,,会选择合适的函数类型刻画现实问题的变化规律,指数/对数/线性函数模型比较未设节点
-MATH,required-functions-candidate-028,NOT_COVERED,,"比较对数函数、一元一次函数、指数函数增长速度的差异,理解对数增长、直线上升、指数爆炸等术语的现实含义",同上
+MATH,required-functions-candidate-027,COVERED,函数模型与增长速度的比较,会选择合适的函数类型刻画现实问题的变化规律,2026-09-18 第四批直抽材料闭合
+MATH,required-functions-candidate-028,COVERED,函数模型与增长速度的比较,"比较对数函数、一元一次函数、指数函数增长速度的差异,理解指数爆炸、对数增长、直线上升等术语的现实含义",2026-09-18 第四批直抽材料闭合
 MATH,required-functions-candidate-029,NOT_COVERED,,收集、阅读一些现实生活、生产实际或者经济领域中的数学模型,论文型学术活动，非知识点对象
 MATH,required-geometry-algebra-candidate-001,COVERED,平面向量的概念,"通过对力、速度、位移等的分析,了解平面向量的实际背景,理解平面向量的意义和两个向量相等的含义",
 MATH,required-geometry-algebra-candidate-002,PARTIAL,平面向量的概念,理解平面向量的几何表示和基本要素,几何表示(模/方向/零向量)未单设节点，另见 向量的模与夹角
@@ -76,7 +76,7 @@ MATH,required-geometry-algebra-candidate-027,COVERED,空间点线面的位置关
 MATH,required-geometry-algebra-candidate-028,NOT_COVERED,,",论文型学术活动，非知识点对象",
 MATH,required-probability-statistics-candidate-001,COVERED,随机事件,"理解样本点和有限样本空间的含义,理解随机事件与样本点的关系",并/交运算面未单设
 MATH,required-probability-statistics-candidate-002,COVERED,古典概型,"理解古典概型,能计算古典概型中简单随机事件的概率",
-MATH,required-probability-statistics-candidate-003,PARTIAL,随机事件,"通过实例,理解概率的性质,掌握随机事件概率的运算法则",互斥加法公式未单设节点
+MATH,required-probability-statistics-candidate-003,COVERED,概率的基本性质,"理解概率的性质,掌握随机事件概率的运算法则",2026-09-18 第四批直抽材料闭合
 MATH,required-probability-statistics-candidate-004,PARTIAL,随机事件,"结合实例,会用频率估计概率",频率估计概率未单设节点
 MATH,required-probability-statistics-candidate-005,COVERED,随机事件的相互独立性,"了解两个随机事件独立性的含义,能利用独立性计算概率",
 MATH,required-probability-statistics-candidate-006,NOT_COVERED,,",统计基础概念未设节点",
@@ -260,7 +260,7 @@ MATH,elective-b-models-candidate-001,NOT_COVERED,,",一维线性模型未设节�
 MATH,elective-b-models-candidate-002,NOT_COVERED,,",二维线性模型未设节点",
 MATH,elective-b-models-candidate-003,NOT_COVERED,,",三维线性模型/投入产出未设节点",
 MATH,elective-b-models-candidate-004,PARTIAL,圆锥曲线的综合问题,"了解二次曲线模型的含义和特征,体会二次曲线模型的实际意义",建模面未单设
-MATH,elective-b-models-candidate-005,PARTIAL,指数函数及其性质,"理解指数函数模型,感受增长率是常数的事物的单调变化",建模应用面未单设
+MATH,elective-b-models-candidate-005,COVERED,函数模型与增长速度的比较,"理解指数函数模型,感受增长率是常数的事物的单调变化",2026-09-18 第四批直抽材料闭合
 MATH,elective-b-models-candidate-006,PARTIAL,三角函数的图象与性质,理解波动等周期现象可以用三角函数刻画,建模应用面未单设
 MATH,elective-b-models-candidate-007,NOT_COVERED,,",参数方程未设节点",
 MATH,elective-b-models-candidate-008,NOT_COVERED,,",空间参数方程未设节点",

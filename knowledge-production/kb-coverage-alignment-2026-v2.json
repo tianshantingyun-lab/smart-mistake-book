@@ -631,13 +631,13 @@
      "module": "必修：函数",
      "scopeSummary": false,
      "sourceLocator": "candidate:moe:2025:math:curriculum-text，PDF 第 25 页，必修：函数，原始编号 ①；DRAFT_UNREVIEWED 机械提取候选，尚未完成人工细化与审校",
-     "status": "NOT_COVERED",
-     "targetRef": null,
+     "status": "COVERED",
+     "targetRef": "kb:moe-2025-four-subjects-v1:math:atomic:函数模型与增长速度的比较",
      "evidencePhrase": "会选择合适的函数类型刻画现实问题的变化规律",
      "reviewState": "AI_REVIEWED",
      "reviewer": "Qwen3.8-27B（用户指定语义判定通道，2026-09-16 决定）",
      "reviewedAt": "2026-09-18",
-     "note": "指数/对数/线性函数模型比较未设节点"
+     "note": "2026-09-18 第四批直抽材料闭合"
     },
     {
      "candidateRef": "candidate:moe:2025:math:curriculum-text/required-functions-candidate-028",
@@ -645,13 +645,13 @@
      "module": "必修：函数",
      "scopeSummary": false,
      "sourceLocator": "candidate:moe:2025:math:curriculum-text，PDF 第 25 页，必修：函数，原始编号 ②；DRAFT_UNREVIEWED 机械提取候选，尚未完成人工细化与审校",
-     "status": "NOT_COVERED",
-     "targetRef": null,
-     "evidencePhrase": "比较对数函数、一元一次函数、指数函数增长速度的差异,理解对数增长、直线上升、指数爆炸等术语的现实含义",
+     "status": "COVERED",
+     "targetRef": "kb:moe-2025-four-subjects-v1:math:atomic:函数模型与增长速度的比较",
+     "evidencePhrase": "比较对数函数、一元一次函数、指数函数增长速度的差异,理解指数爆炸、对数增长、直线上升等术语的现实含义",
      "reviewState": "AI_REVIEWED",
      "reviewer": "Qwen3.8-27B（用户指定语义判定通道，2026-09-16 决定）",
      "reviewedAt": "2026-09-18",
-     "note": "同上"
+     "note": "2026-09-18 第四批直抽材料闭合"
     },
     {
      "candidateRef": "candidate:moe:2025:math:curriculum-text/required-functions-candidate-029",
@@ -1093,13 +1093,13 @@
      "module": "必修：概率与统计",
      "scopeSummary": false,
      "sourceLocator": "candidate:moe:2025:math:curriculum-text，PDF 第 33 页，必修：概率与统计，原始编号 ③；DRAFT_UNREVIEWED 机械提取候选，尚未完成人工细化与审校",
-     "status": "PARTIAL",
-     "targetRef": "kb:moe-2025-four-subjects-v1:math:atomic:随机事件",
-     "evidencePhrase": "通过实例,理解概率的性质,掌握随机事件概率的运算法则",
+     "status": "COVERED",
+     "targetRef": "kb:moe-2025-four-subjects-v1:math:atomic:概率的基本性质",
+     "evidencePhrase": "理解概率的性质,掌握随机事件概率的运算法则",
      "reviewState": "AI_REVIEWED",
      "reviewer": "Qwen3.8-27B（用户指定语义判定通道，2026-09-16 决定）",
      "reviewedAt": "2026-09-18",
-     "note": "互斥加法公式未单设节点"
+     "note": "2026-09-18 第四批直抽材料闭合"
     },
     {
      "candidateRef": "candidate:moe:2025:math:curriculum-text/required-probability-statistics-candidate-004",
@@ -3669,13 +3669,13 @@
      "module": "选修B：模型",
      "scopeSummary": false,
      "sourceLocator": "candidate:moe:2025:math:curriculum-text，PDF 第 65 页，选修B：模型，原始编号 3；DRAFT_UNREVIEWED 机械提取候选，尚未完成人工细化与审校",
-     "status": "PARTIAL",
-     "targetRef": "kb:moe-2025-four-subjects-v1:math:atomic:指数函数及其性质",
+     "status": "COVERED",
+     "targetRef": "kb:moe-2025-four-subjects-v1:math:atomic:函数模型与增长速度的比较",
      "evidencePhrase": "理解指数函数模型,感受增长率是常数的事物的单调变化",
      "reviewState": "AI_REVIEWED",
      "reviewer": "Qwen3.8-27B（用户指定语义判定通道，2026-09-16 决定）",
      "reviewedAt": "2026-09-18",
-     "note": "建模应用面未单设"
+     "note": "2026-09-18 第四批直抽材料闭合"
     },
     {
      "candidateRef": "candidate:moe:2025:math:curriculum-text/elective-b-models-candidate-006",
@@ -4324,13 +4324,13 @@
    ],
    "counts": {
     "total": 308,
-    "COVERED": 126,
-    "PARTIAL": 41,
-    "NOT_COVERED": 141,
+    "COVERED": 130,
+    "PARTIAL": 39,
+    "NOT_COVERED": 139,
     "UNDECIDED": 0,
-    "coverageNumerator": 126,
+    "coverageNumerator": 130,
     "coverageDenominator": 308,
-    "coverage": 0.4091
+    "coverage": 0.4221
    }
   },
   {
@@ -9322,11 +9322,11 @@
   }
  ],
  "total": {
-  "COVERED": 348,
-  "PARTIAL": 75,
-  "NOT_COVERED": 238,
+  "COVERED": 352,
+  "PARTIAL": 73,
+  "NOT_COVERED": 236,
   "UNDECIDED": 0,
-  "coverageNumerator": 348,
+  "coverageNumerator": 352,
   "coverageDenominator": 661
  },
  "publishedRule": "覆盖率 = COVERED / (总数 − UNDECIDED)；分子、分母、UNDECIDED 绝对数同时公布"
