@@ -124,7 +124,7 @@
    "sourceUri": "https://www.example.edu/desktop-kb-source",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "DA44D7822E4E91D760B228E72495E4CE137101298124C0695FF0474FDFBE032B",
-   "importedAtEpochMillis": 1789669775241,
+   "importedAtEpochMillis": 1789669649286,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -140,7 +140,7 @@
    "sourceUri": "https://www.example.edu/desktop-kb-source",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "35F0C03E99DD5E9D9DB8814B589AAB6804DCE7A5B4A35BC2E6DA76A4311544B7",
-   "importedAtEpochMillis": 1789743755181,
+   "importedAtEpochMillis": 1789733277691,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -40487,7 +40487,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-e35c96096a:math",
    "sourceLocator": "桌面资料 2026年新高考资料 / 2026年新高考资料/一轮复习/2026年体育单招数学零基础一轮总复习/资料/1.1集合的概念（讲义）（学生版）.docx（块 9a51501f22-001）",
-   "reviewedAtEpochMillis": 1789669775137,
+   "reviewedAtEpochMillis": 1789669776241,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:集合的含义与表示",
@@ -40507,7 +40507,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-d8b718d85a:biology",
    "sourceLocator": "桌面资料 2026年新高考资料(4) / 2026年新高考资料(4)/一轮复习/2026年高考生物一轮复习讲义+练习+课件（新教材新高考）/2026版/第一单元 细胞的概述及其分子组成/第03讲 糖类和脂质（复习讲义）（全国通用）（教师版）.docx（块 ef246a12be-007）",
-   "reviewedAtEpochMillis": 1789743755069,
+   "reviewedAtEpochMillis": 1789743756181,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:脂质",
@@ -41327,7 +41327,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-7b2647b433:math",
    "sourceLocator": "桌面资料 27版五三 / 27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/重难突破/专题七  立体几何与空间向量/培优12 空间几何体的动态和探索问题/讲解册PPT/培优12　空间几何体的动态和探索问题.pptx（块 88b0dbcf63-013）",
-   "reviewedAtEpochMillis": 1789743755069,
+   "reviewedAtEpochMillis": 1789743762720,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:动点问题没有取舍",

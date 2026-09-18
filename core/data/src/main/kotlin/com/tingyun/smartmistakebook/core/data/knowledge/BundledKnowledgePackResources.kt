@@ -42,7 +42,6 @@ internal data class KnowledgeBasePack(
 )
 
 internal object BundledKnowledgePackResources {
-    private const val MAX_RESOURCE_CHARS = 12_000_000
     private const val TEACHING_SIDECAR_INDEX = "knowledge/moe-2025-teaching-support-v2-index.json"
     private const val INDEXED_PACK_ID = "moe-2025-four-subjects-v1"
     private val resourceNames = listOf(
@@ -71,16 +70,13 @@ internal object BundledKnowledgePackResources {
     fun load(): List<KnowledgeBasePack> = bundledPacks
 
     private fun loadResource(resourceName: String): KnowledgeBasePack {
+        // 容量不设上限（2026-09-19 用户决定）：资源大小不再设门，装不下由侧车滚动机制解决。
         val json = readClasspathResource(resourceName)
-        require(json.length <= MAX_RESOURCE_CHARS) { "Bundled knowledge pack is too large" }
         val base = ReviewedKnowledgePackJsonCodec.decode(json)
         val sidecarNames = teachingSidecarsByPack[base.packId]
             ?: if (base.packId == INDEXED_PACK_ID) indexedSidecarNames else emptyList()
         val sidecars = sidecarNames.map { sidecarName ->
             val sidecarJson = readClasspathResource(sidecarName)
-            require(sidecarJson.length <= MAX_RESOURCE_CHARS) {
-                "Bundled teaching-material sidecar is too large"
-            }
             ReviewedTeachingMaterialSidecarJsonCodec.decode(sidecarJson, base)
         }
         val allMaterials = sidecars.flatMap(ReviewedTeachingMaterialSidecar::materials)

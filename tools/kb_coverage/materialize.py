@@ -73,7 +73,9 @@ def _source_entry(top_dir: str, subject: str) -> dict:
         "sourceUri": "https://www.example.edu/desktop-kb-source",
         "licenseStatus": "REFERENCE_ONLY",
         "contentFingerprint": hashlib.sha256(f"{top_dir}|{subject}".encode("utf-8")).hexdigest().upper(),
-        "importedAtEpochMillis": _now_ms(),
+        # 源导入时间取过去时刻：契约要求 material.reviewedAt >= source.importedAt，
+        # 若同刻抓取，写入顺序会让 source 比 material 晚几毫秒 → 整批导入被拒（KD-15）。
+        "importedAtEpochMillis": _now_ms() - 60_000,
         "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
         "licenseExpression": None,
         "licenseUri": None,

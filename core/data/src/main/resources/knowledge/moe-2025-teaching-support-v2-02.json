@@ -124,7 +124,7 @@
    "sourceUri": "https://www.example.edu/desktop-kb-source",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "D45C35EA10D42D32A8A0A578557911B78B313C048345E31D7AB2381426DFFAA0",
-   "importedAtEpochMillis": 1789734290871,
+   "importedAtEpochMillis": 1789732985467,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -140,7 +140,7 @@
    "sourceUri": "https://www.example.edu/desktop-kb-source",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "35F0C03E99DD5E9D9DB8814B589AAB6804DCE7A5B4A35BC2E6DA76A4311544B7",
-   "importedAtEpochMillis": 1789736628000,
+   "importedAtEpochMillis": 1789733277691,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -156,7 +156,7 @@
    "sourceUri": "https://www.example.edu/desktop-kb-source",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "A260977C1AF61A08745DC6E7DF5F37300664058178B807E6D755BD2527F5F596",
-   "importedAtEpochMillis": 1789736628658,
+   "importedAtEpochMillis": 1789733277957,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -172,7 +172,7 @@
    "sourceUri": "https://www.example.edu/desktop-kb-source",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "4B8F903AC2C5A9739CDCC344BA479B913BC40B09177389C4BFCF34FCEECA5001",
-   "importedAtEpochMillis": 1789736631460,
+   "importedAtEpochMillis": 1789733278373,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -220,7 +220,7 @@
    "sourceUri": "https://www.example.edu/desktop-kb-source",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "25ACA917ED65BEC02141841019A23530CB07CA7F2004AF86BAF310C50D2B4D38",
-   "importedAtEpochMillis": 1789750367955,
+   "importedAtEpochMillis": 1789739866250,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -40725,7 +40725,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-e35c96096a:math",
    "sourceLocator": "桌面资料 2026年新高考资料 / 2026年新高考资料/一轮复习/2026年体育单招数学零基础一轮总复习/资料/1.1集合的概念（讲义）（学生版）.docx（块 9a51501f22-003）",
-   "reviewedAtEpochMillis": 1789669649169,
+   "reviewedAtEpochMillis": 1789669650286,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:集合的含义与表示",
@@ -40745,7 +40745,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-e35c96096a:math",
    "sourceLocator": "桌面资料 2026年新高考资料 / 2026年新高考资料/一轮复习/2026年体育单招数学零基础一轮总复习/资料/1.1集合的概念（讲义）（学生版）.docx（块 9a51501f22-005）",
-   "reviewedAtEpochMillis": 1789669649169,
+   "reviewedAtEpochMillis": 1789669650286,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:集合中元素的特征",
@@ -40765,7 +40765,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-e35c96096a:math",
    "sourceLocator": "桌面资料 2026年新高考资料 / 2026年新高考资料/一轮复习/2026年体育单招数学零基础一轮总复习/资料/1.1集合的概念（讲义）（学生版）.docx（块 9a51501f22-004）",
-   "reviewedAtEpochMillis": 1789669649169,
+   "reviewedAtEpochMillis": 1789669650286,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:元素与集合的关系",
@@ -40785,7 +40785,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-e35c96096a:math",
    "sourceLocator": "桌面资料 2026年新高考资料 / 2026年新高考资料/一轮复习/2026年体育单招数学零基础一轮总复习/资料/1.1集合的概念（讲义）（学生版）.docx（块 9a51501f22-002）",
-   "reviewedAtEpochMillis": 1789669649169,
+   "reviewedAtEpochMillis": 1789669650286,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:集合的分类",
@@ -40805,7 +40805,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-e35c96096a:math",
    "sourceLocator": "桌面资料 2026年新高考资料 / 2026年新高考资料/一轮复习/2026年体育单招数学零基础一轮总复习/资料/1.2集合间的基本关系（讲义）（学生版）.docx（块 43995b893f-001）",
-   "reviewedAtEpochMillis": 1789669649169,
+   "reviewedAtEpochMillis": 1789669650286,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:子集与集合的相等",
@@ -40825,7 +40825,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-e35c96096a:math",
    "sourceLocator": "桌面资料 2026年新高考资料 / 2026年新高考资料/一轮复习/2026年体育单招数学零基础一轮总复习/资料/1.2集合间的基本关系（讲义）（学生版）.docx（块 43995b893f-002）",
-   "reviewedAtEpochMillis": 1789669649169,
+   "reviewedAtEpochMillis": 1789669650286,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:子集与集合的相等",
@@ -40845,7 +40845,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-e35c96096a:math",
    "sourceLocator": "桌面资料 2026年新高考资料 / 2026年新高考资料/一轮复习/2026年体育单招数学零基础一轮总复习/资料/1.2集合间的基本关系（讲义）（学生版）.docx（块 43995b893f-003）",
-   "reviewedAtEpochMillis": 1789669649169,
+   "reviewedAtEpochMillis": 1789669650286,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:空集",
@@ -40865,7 +40865,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-e35c96096a:math",
    "sourceLocator": "桌面资料 2026年新高考资料 / 2026年新高考资料/一轮复习/2026年体育单招数学零基础一轮总复习/资料/1.3集合的基本运算（讲义）（学生版）.docx（块 16d279315a-001）",
-   "reviewedAtEpochMillis": 1789669649169,
+   "reviewedAtEpochMillis": 1789669650286,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:交集与并集",
@@ -40885,7 +40885,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-e35c96096a:math",
    "sourceLocator": "桌面资料 2026年新高考资料 / 2026年新高考资料/一轮复习/2026年体育单招数学零基础一轮总复习/资料/1.3集合的基本运算（讲义）（学生版）.docx（块 16d279315a-002）",
-   "reviewedAtEpochMillis": 1789669649169,
+   "reviewedAtEpochMillis": 1789669650286,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:交集与并集",
@@ -40905,7 +40905,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-e35c96096a:math",
    "sourceLocator": "桌面资料 2026年新高考资料 / 2026年新高考资料/一轮复习/2026年体育单招数学零基础一轮总复习/资料/1.3集合的基本运算（讲义）（学生版）.docx（块 16d279315a-003）",
-   "reviewedAtEpochMillis": 1789669649169,
+   "reviewedAtEpochMillis": 1789669650286,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:补集",
@@ -40925,7 +40925,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（四川专用）/第01讲 物质的分类及转化（复习讲义）（四川专用）（教师版）.docx（块 96397bfcc6-010）",
-   "reviewedAtEpochMillis": 1789734290771,
+   "reviewedAtEpochMillis": 1789734291871,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:物理变化",
@@ -40945,7 +40945,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（湖南专用）/第01讲 钠及其重要化合物（复习讲义）（湖南专用）（学生版）.docx（块 9cf4374c80-005）",
-   "reviewedAtEpochMillis": 1789734290771,
+   "reviewedAtEpochMillis": 1789734291871,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:氧化钠",
@@ -40965,7 +40965,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高三化学一轮复习讲义（新高考通用）/资料/第五章 第21讲 硫及其化合物（学生版）.docx（块 d9699faeed-003）",
-   "reviewedAtEpochMillis": 1789734290771,
+   "reviewedAtEpochMillis": 1789734291871,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:二氧化硫",
@@ -40985,7 +40985,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（四川专用）/第03讲 氮及其重要化合物（复习讲义）（四川专用）（学生版）.docx（块 5215a08d59-015）",
-   "reviewedAtEpochMillis": 1789734290771,
+   "reviewedAtEpochMillis": 1789734291871,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:硝酸",
@@ -41005,7 +41005,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（湖南专用）/第03讲 电解池、金属的腐蚀与防护（复习讲义）（湖南专用）（学生版）.docx（块 42dee98d13-013）",
-   "reviewedAtEpochMillis": 1789734290771,
+   "reviewedAtEpochMillis": 1789734291871,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:金属腐蚀的类型",
@@ -41025,7 +41025,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（安徽专用）/第03讲 镁、铝及其重要化合物（复习讲义）（安徽专用）（教师版）.docx（块 aa594dae5a-002）",
-   "reviewedAtEpochMillis": 1789734290771,
+   "reviewedAtEpochMillis": 1789734291871,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:镁的化学性质",
@@ -41045,7 +41045,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习讲义+练习+课件（新教材新高考）/2026版/第五章 物质结构与性质 元素周期律/第02讲 原子结构与性质（复习讲义）（全国通用）（教师版）.docx（块 d7fc4505d9-003）",
-   "reviewedAtEpochMillis": 1789734290771,
+   "reviewedAtEpochMillis": 1789734291871,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:核素",
@@ -41065,7 +41065,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题03 化学键 分子结构与性质（知识清单）（全国通用）（学生版）.docx（块 d63da64959-022）",
-   "reviewedAtEpochMillis": 1789734290771,
+   "reviewedAtEpochMillis": 1789734291871,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电子式",
@@ -41085,7 +41085,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题03 化学键 分子结构与性质（知识清单）（全国通用）（教师版）.docx（块 df6d15950b-001）",
-   "reviewedAtEpochMillis": 1789734290771,
+   "reviewedAtEpochMillis": 1789734291871,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化学键",
@@ -41105,7 +41105,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习考点精讲精练（新高考通用）/2026版/专题03  分子结构与性质  化学键（高效培优讲义）（学生版）.docx（块 03fa851aab-003）",
-   "reviewedAtEpochMillis": 1789734290771,
+   "reviewedAtEpochMillis": 1789734291871,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:离子键",
@@ -41125,7 +41125,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习考点精讲精练（新高考通用）/2026版/专题03  分子结构与性质  化学键（高效培优讲义）（学生版）.docx（块 03fa851aab-003）",
-   "reviewedAtEpochMillis": 1789734290771,
+   "reviewedAtEpochMillis": 1789734291871,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:共价键",
@@ -41145,7 +41145,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（湖南专用）/第02讲 铁及其重要化合物（复习讲义）（湖南专用）（学生版）.docx（块 564f5081fb-016）",
-   "reviewedAtEpochMillis": 1789734290771,
+   "reviewedAtEpochMillis": 1789734291871,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:铁及其化合物的转化关系",
@@ -41165,7 +41165,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（湖南专用）/第02讲 铁及其重要化合物（复习讲义）（湖南专用）（学生版）.docx（块 564f5081fb-016）",
-   "reviewedAtEpochMillis": 1789734290771,
+   "reviewedAtEpochMillis": 1789734291871,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:铁盐",
@@ -41185,7 +41185,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（湖南专用）/第02讲 铁及其重要化合物（复习讲义）（湖南专用）（学生版）.docx（块 564f5081fb-016）",
-   "reviewedAtEpochMillis": 1789734290771,
+   "reviewedAtEpochMillis": 1789734291871,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:亚铁盐",
@@ -41205,7 +41205,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-d8b718d85a:biology",
    "sourceLocator": "桌面资料 2026年新高考资料(4) / 2026年新高考资料(4)/一轮复习/2026年高考生物一轮复习讲义+练习+课件（新教材新高考）/2026版/第一单元 细胞的概述及其分子组成/第02讲 细胞中的元素和化合物（复习讲义）（全国通用）（教师版）.docx（块 5ac0808c8d-007）",
-   "reviewedAtEpochMillis": 1789736627901,
+   "reviewedAtEpochMillis": 1789736629000,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:无机盐",
@@ -41225,7 +41225,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-d8b718d85a:biology",
    "sourceLocator": "桌面资料 2026年新高考资料(4) / 2026年新高考资料(4)/一轮复习/2026年高考生物一轮复习知识清单（全国通用）/2026版/第02讲 细胞中的元素和化合物（知识清单）（全国通用）（教师版）.docx（块 899608dc9f-006）",
-   "reviewedAtEpochMillis": 1789736627901,
+   "reviewedAtEpochMillis": 1789736629000,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:无机盐",
@@ -41245,7 +41245,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-d8b718d85a:biology",
    "sourceLocator": "桌面资料 2026年新高考资料(4) / 2026年新高考资料(4)/一轮复习/2026年高考生物一轮复习知识清单（全国通用）/2026版/第03讲 糖类和脂质（知识清单）（全国通用）（教师版）.docx（块 f8ce7af1fa-002）",
-   "reviewedAtEpochMillis": 1789736627901,
+   "reviewedAtEpochMillis": 1789736629000,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:脂质",
@@ -41265,7 +41265,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-d8b718d85a:biology",
    "sourceLocator": "桌面资料 2026年新高考资料(4) / 2026年新高考资料(4)/一轮复习/2026年高考生物一轮复习讲义+练习+课件（新教材新高考）/2026版/第一单元 细胞的概述及其分子组成/第04讲 蛋白质和核酸（复习讲义）（全国通用）（教师版）.docx（块 31cabeac93-006）",
-   "reviewedAtEpochMillis": 1789736627901,
+   "reviewedAtEpochMillis": 1789736629000,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:蛋白质相关计算题",
@@ -41285,7 +41285,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-d8b718d85a:biology",
    "sourceLocator": "桌面资料 2026年新高考资料(4) / 2026年新高考资料(4)/一轮复习/2026年高考生物一轮复习讲义+练习+课件（新教材新高考）/2026版/第一单元 细胞的概述及其分子组成/第04讲 蛋白质和核酸（复习讲义）（全国通用）（教师版）.docx（块 31cabeac93-007）",
-   "reviewedAtEpochMillis": 1789736627901,
+   "reviewedAtEpochMillis": 1789736629000,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:蛋白质相关计算题",
@@ -41305,7 +41305,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-2452b2cbe4:biology",
    "sourceLocator": "桌面资料 6. 2026生物总复习 / 6. 2026生物总复习/2027年新高考资料【上新中】/2027年高考生物一轮/【4】2027届高考生物一轮复习知识清单填空/2027届高三生物一轮复习知识清单4：分子与细胞基础.docx（块 c244f5f146-030）",
-   "reviewedAtEpochMillis": 1789736627901,
+   "reviewedAtEpochMillis": 1789736629658,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:酶的作用和本质",
@@ -41325,7 +41325,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-2452b2cbe4:biology",
    "sourceLocator": "桌面资料 6. 2026生物总复习 / 6. 2026生物总复习/2027年新高考资料【上新中】/2027年高考生物一轮/【1】2027年高考生物一轮复习讲义（考点详解）/第8讲 酶和ATP.docx（块 b4db603e6e-001）",
-   "reviewedAtEpochMillis": 1789736627901,
+   "reviewedAtEpochMillis": 1789736629658,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:酶的作用和本质",
@@ -41345,7 +41345,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-2452b2cbe4:biology",
    "sourceLocator": "桌面资料 6. 2026生物总复习 / 6. 2026生物总复习/2027年新高考资料【上新中】/2027年高考生物一轮/【4】2027届高考生物一轮复习知识清单填空/2027届高三生物一轮复习知识清单4：分子与细胞基础.docx（块 c244f5f146-035）",
-   "reviewedAtEpochMillis": 1789736627901,
+   "reviewedAtEpochMillis": 1789736629658,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:atp的结构和功能",
@@ -41365,7 +41365,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-2452b2cbe4:biology",
    "sourceLocator": "桌面资料 6. 2026生物总复习 / 6. 2026生物总复习/2027年新高考资料【上新中】/2027年高考生物一轮/【1】2027年高考生物一轮复习讲义（考点详解）/第三单元 第10课时 细胞的能量“货币”ATP.docx（块 43f6e87739-001）",
-   "reviewedAtEpochMillis": 1789736627901,
+   "reviewedAtEpochMillis": 1789736629658,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:atp的结构和功能",
@@ -41385,7 +41385,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-d8b718d85a:biology",
    "sourceLocator": "桌面资料 2026年新高考资料(4) / 2026年新高考资料(4)/一轮复习/2026年高考生物一轮复习讲义+练习+课件（新教材新高考）/2026版/第五单元 基因的传递规律/第17讲 伴性遗传和人类遗传病（复习讲义）（全国通用）（教师版）.docx（块 8a7ed95291-003）",
-   "reviewedAtEpochMillis": 1789736627901,
+   "reviewedAtEpochMillis": 1789736629000,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:基因",
@@ -41405,7 +41405,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-2452b2cbe4:biology",
    "sourceLocator": "桌面资料 6. 2026生物总复习 / 6. 2026生物总复习/2027年新高考资料【上新中】/2027年高考生物一轮/【1】2027年高考生物一轮复习讲义（考点详解）/第19讲 自由组合定律.docx（块 9f29504169-001）",
-   "reviewedAtEpochMillis": 1789736627901,
+   "reviewedAtEpochMillis": 1789736629658,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:自由组合定律的内容",
@@ -41425,7 +41425,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-d8b718d85a:biology",
    "sourceLocator": "桌面资料 2026年新高考资料(4) / 2026年新高考资料(4)/一轮复习/2026年高考生物一轮复习讲义+练习+课件（新教材新高考）/2026版/第五单元 基因的传递规律/第15讲 分离定律（复习讲义）（全国通用）（教师版）.docx（块 3ae2bc681b-007）",
-   "reviewedAtEpochMillis": 1789736627901,
+   "reviewedAtEpochMillis": 1789736629000,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:孟德尔规律的应用",
@@ -41445,7 +41445,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-d8b718d85a:biology",
    "sourceLocator": "桌面资料 2026年新高考资料(4) / 2026年新高考资料(4)/一轮复习/【1】2026届高三生物一轮复习讲义/微专题8：分离定律重点题型的解题建模.docx（块 466860a72c-001）",
-   "reviewedAtEpochMillis": 1789736627901,
+   "reviewedAtEpochMillis": 1789736629000,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:孟德尔规律的应用",
@@ -41465,7 +41465,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-d8b718d85a:biology",
    "sourceLocator": "桌面资料 2026年新高考资料(4) / 2026年新高考资料(4)/一轮复习/2026年高考生物一轮复习讲义+练习+课件（新教材新高考）/2026版/第七单元 生物的变异和进化/第23讲 生物的进化（复习讲义）（全国通用）（解析版）.docx（块 85683e529a-022）",
-   "reviewedAtEpochMillis": 1789736627901,
+   "reviewedAtEpochMillis": 1789736629000,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:共同进化",
@@ -41485,7 +41485,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-d8b718d85a:biology",
    "sourceLocator": "桌面资料 2026年新高考资料(4) / 2026年新高考资料(4)/一轮复习/2026年高考生物一轮复习知识清单（全国通用）/2026版/第23讲 生物的进化（知识清单）（全国通用）（教师版）.docx（块 a31d151554-004）",
-   "reviewedAtEpochMillis": 1789736627901,
+   "reviewedAtEpochMillis": 1789736629000,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:共同进化",
@@ -41505,7 +41505,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-d8b718d85a:biology",
    "sourceLocator": "桌面资料 2026年新高考资料(4) / 2026年新高考资料(4)/一轮复习/2026年高考生物一轮复习讲义+练习+课件（新教材新高考）/2026版/第八单元 稳态与调节/第24讲  内环境与稳态（复习讲义）（全国通用）（教师版）.docx（块 0f9277266d-012）",
-   "reviewedAtEpochMillis": 1789736627901,
+   "reviewedAtEpochMillis": 1789736629000,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:稳态",
@@ -41525,7 +41525,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-2452b2cbe4:biology",
    "sourceLocator": "桌面资料 6. 2026生物总复习 / 6. 2026生物总复习/2027年新高考资料【上新中】/2027年高考生物一轮/【1】2027年高考生物一轮复习讲义（考点详解）/第八单元 第32课时 人体的内环境与稳态.docx（块 9561124d9a-009）",
-   "reviewedAtEpochMillis": 1789736627901,
+   "reviewedAtEpochMillis": 1789736629658,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:稳态",
@@ -41545,7 +41545,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-2452b2cbe4:biology",
    "sourceLocator": "桌面资料 6. 2026生物总复习 / 6. 2026生物总复习/2027年新高考资料【上新中】/2027年高考生物一轮/【1】2027年高考生物一轮复习讲义（考点详解）/第31讲 神经调节的结构基础和基本方式.docx（块 74b6cc56e2-004）",
-   "reviewedAtEpochMillis": 1789736627901,
+   "reviewedAtEpochMillis": 1789736629658,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:反射",
@@ -41565,7 +41565,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-d8b718d85a:biology",
    "sourceLocator": "桌面资料 2026年新高考资料(4) / 2026年新高考资料(4)/专项复习/高考生物必背知识清单及晨读晚默   填空版+背诵版(完整版)/第2章 神经调节-【晨读晚默】备战高考生物必背知识清单/第2章 神经调节（背诵版）.docx（块 58af510b8f-004）",
-   "reviewedAtEpochMillis": 1789736627901,
+   "reviewedAtEpochMillis": 1789736629000,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:反射",
@@ -41585,7 +41585,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-d8b718d85a:biology",
    "sourceLocator": "桌面资料 2026年新高考资料(4) / 2026年新高考资料(4)/一轮复习/2026年高考生物一轮复习知识清单（全国通用）/2026版/第28讲 免疫调节（知识清单）（全国通用）（教师版）.docx（块 e3e58fbb89-002）",
-   "reviewedAtEpochMillis": 1789736627901,
+   "reviewedAtEpochMillis": 1789736629000,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:抗体",
@@ -41605,7 +41605,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-d8b718d85a:biology",
    "sourceLocator": "桌面资料 2026年新高考资料(4) / 2026年新高考资料(4)/专项复习/高考生物必背知识清单及晨读晚默   填空版+背诵版(完整版)/第4章 免疫调节-【晨读晚默】备战高考生物必背知识清单/第4章 免疫调节（背诵版）.docx（块 1222baea36-003）",
-   "reviewedAtEpochMillis": 1789736627901,
+   "reviewedAtEpochMillis": 1789736629000,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:抗体",
@@ -41625,7 +41625,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-d8b718d85a:biology",
    "sourceLocator": "桌面资料 2026年新高考资料(4) / 2026年新高考资料(4)/专项复习/高考生物必背知识清单及晨读晚默   填空版+背诵版(完整版)/第3章 基因工程、第4章 生物技术的安全性与伦理问题-【晨读晚默】备战高考生物必背知识清单/第3章 基因工程、第4章 生物技术的安全性与伦理问题（背诵版）.docx（块 a9f9b647f3-001）",
-   "reviewedAtEpochMillis": 1789736627901,
+   "reviewedAtEpochMillis": 1789736629000,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:载体",
@@ -41645,7 +41645,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-d8b718d85a:biology",
    "sourceLocator": "桌面资料 2026年新高考资料(4) / 2026年新高考资料(4)/专项复习/高考生物必背知识清单及晨读晚默   填空版+背诵版(完整版)/第3章 基因工程、第4章 生物技术的安全性与伦理问题-【晨读晚默】备战高考生物必背知识清单/第3章 基因工程、第4章 生物技术的安全性与伦理问题（背诵版）.docx（块 a9f9b647f3-006）",
-   "reviewedAtEpochMillis": 1789736627901,
+   "reviewedAtEpochMillis": 1789736629000,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:载体",
@@ -41665,7 +41665,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-d8b718d85a:biology",
    "sourceLocator": "桌面资料 2026年新高考资料(4) / 2026年新高考资料(4)/专项复习/高考生物必背知识清单及晨读晚默   填空版+背诵版(完整版)/第3章 基因工程、第4章 生物技术的安全性与伦理问题-【晨读晚默】备战高考生物必背知识清单/第3章 基因工程、第4章 生物技术的安全性与伦理问题（背诵版）.docx（块 a9f9b647f3-005）",
-   "reviewedAtEpochMillis": 1789736627901,
+   "reviewedAtEpochMillis": 1789736629000,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:pcr技术",
@@ -41685,7 +41685,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-7b2647b433:biology",
    "sourceLocator": "桌面资料 27版五三 / 27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/附赠一轮复习随堂讲解PPT/知识精讲/第二十四章 基因工程  精讲册PPT.pptx（块 90a8e2b6e2-010）",
-   "reviewedAtEpochMillis": 1789736627901,
+   "reviewedAtEpochMillis": 1789736632460,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:pcr技术",
@@ -43765,7 +43765,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-7b2647b433:chemistry",
    "sourceLocator": "桌面资料 27版五三 / 27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.化学.5·3A版/一、本书电子教参/第六章化学键分子和晶体的结构与性质/5_精讲册PDF/3_06-第六章　化学键分子和晶体的结构与性质.pdf（块 b476eb0452-004）",
-   "reviewedAtEpochMillis": 1789750367854,
+   "reviewedAtEpochMillis": 1789750368955,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:离子键",
@@ -43785,7 +43785,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-7b2647b433:chemistry",
    "sourceLocator": "桌面资料 27版五三 / 27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.化学.5·3A版/一、本书电子教参/第六章化学键分子和晶体的结构与性质/5_精讲册PDF/3_06-第六章　化学键分子和晶体的结构与性质.pdf（块 b476eb0452-002）",
-   "reviewedAtEpochMillis": 1789750367854,
+   "reviewedAtEpochMillis": 1789750368955,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:配位化合物",
@@ -43805,7 +43805,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-7b2647b433:chemistry",
    "sourceLocator": "桌面资料 27版五三 / 27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.化学.5·3A版/一、本书电子教参/第六章化学键分子和晶体的结构与性质/5_精讲册PDF/3_06-第六章　化学键分子和晶体的结构与性质.pdf（块 b476eb0452-020）",
-   "reviewedAtEpochMillis": 1789750367854,
+   "reviewedAtEpochMillis": 1789750368955,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:共价键及键参数易混易错点",
@@ -43825,7 +43825,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-7b2647b433:chemistry",
    "sourceLocator": "桌面资料 27版五三 / 27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.化学.5·3A版/一、本书电子教参/第六章化学键分子和晶体的结构与性质/5_精讲册PDF/3_06-第六章　化学键分子和晶体的结构与性质.pdf（块 b476eb0452-030）",
-   "reviewedAtEpochMillis": 1789750367854,
+   "reviewedAtEpochMillis": 1789750368955,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:分子晶体",
@@ -43845,7 +43845,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-7b2647b433:chemistry",
    "sourceLocator": "桌面资料 27版五三 / 27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.化学.5·3A版/一、本书电子教参/第七章化学反应的热效应/5_精讲册PDF/3_07-第七章　化学反应的热效应.pdf（块 25e960af7a-003）",
-   "reviewedAtEpochMillis": 1789750367854,
+   "reviewedAtEpochMillis": 1789750368955,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:中和热测定注意事项",
@@ -43865,7 +43865,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-7b2647b433:chemistry",
    "sourceLocator": "桌面资料 27版五三 / 27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.化学.5·3A版/一、本书电子教参/第七章化学反应的热效应/5_精讲册PDF/3_07-第七章　化学反应的热效应.pdf（块 25e960af7a-011）",
-   "reviewedAtEpochMillis": 1789750367854,
+   "reviewedAtEpochMillis": 1789750368955,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:活化能",
@@ -43885,7 +43885,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-7b2647b433:chemistry",
    "sourceLocator": "桌面资料 27版五三 / 27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.化学.5·3A版/一、本书电子教参/第八章化学反应与电能/5_精讲册PDF/3_08-第八章　化学反应与电能.pdf（块 62064c1daf-014）",
-   "reviewedAtEpochMillis": 1789750367854,
+   "reviewedAtEpochMillis": 1789750368955,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电解原理",
@@ -43905,7 +43905,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-7b2647b433:chemistry",
    "sourceLocator": "桌面资料 27版五三 / 27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.化学.5·3A版/一、本书电子教参/第八章化学反应与电能/5_精讲册PDF/3_08-第八章　化学反应与电能.pdf（块 62064c1daf-014）",
-   "reviewedAtEpochMillis": 1789750367854,
+   "reviewedAtEpochMillis": 1789750368955,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电解原理易错点",
@@ -43925,7 +43925,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-7b2647b433:chemistry",
    "sourceLocator": "桌面资料 27版五三 / 27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.化学.5·3A版/一、本书电子教参/第八章化学反应与电能/5_精讲册PDF/3_08-第八章　化学反应与电能.pdf（块 62064c1daf-016）",
-   "reviewedAtEpochMillis": 1789750367854,
+   "reviewedAtEpochMillis": 1789750368955,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:原电池",
@@ -43945,7 +43945,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-7b2647b433:chemistry",
    "sourceLocator": "桌面资料 27版五三 / 27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.化学.5·3A版/一、本书电子教参/第八章化学反应与电能/5_精讲册PDF/3_08-第八章　化学反应与电能.pdf（块 62064c1daf-030）",
-   "reviewedAtEpochMillis": 1789750367854,
+   "reviewedAtEpochMillis": 1789750368955,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:可充电电池题目的解答思路",
@@ -43965,7 +43965,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-7b2647b433:chemistry",
    "sourceLocator": "桌面资料 27版五三 / 27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.化学.5·3A版/一、本书电子教参/第八章化学反应与电能/5_精讲册PDF/3_08-第八章　化学反应与电能.pdf（块 62064c1daf-032）",
-   "reviewedAtEpochMillis": 1789750367854,
+   "reviewedAtEpochMillis": 1789750368955,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电化学综合计算的三种常用方法",
@@ -43985,7 +43985,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-7b2647b433:chemistry",
    "sourceLocator": "桌面资料 27版五三 / 27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.化学.5·3A版/一、本书电子教参/第八章化学反应与电能/5_精讲册PDF/3_08-第八章　化学反应与电能.pdf（块 62064c1daf-032）",
-   "reviewedAtEpochMillis": 1789750367854,
+   "reviewedAtEpochMillis": 1789750368955,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:原电池",
@@ -44005,7 +44005,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-7b2647b433:chemistry",
    "sourceLocator": "桌面资料 27版五三 / 27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.化学.5·3A版/一、本书电子教参/第十章水溶液中的离子反应与平衡/5_精讲册PDF/3_10-第十章　水溶液中的离子反应与平衡.pdf（块 1d09ecb78a-015）",
-   "reviewedAtEpochMillis": 1789750367854,
+   "reviewedAtEpochMillis": 1789750368955,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:滴定操作",
@@ -44025,7 +44025,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-7b2647b433:chemistry",
    "sourceLocator": "桌面资料 27版五三 / 27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.化学.5·3A版/一、本书电子教参/第十章水溶液中的离子反应与平衡/5_精讲册PDF/3_10-第十章　水溶液中的离子反应与平衡.pdf（块 1d09ecb78a-013）",
-   "reviewedAtEpochMillis": 1789750367854,
+   "reviewedAtEpochMillis": 1789750368955,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:中和滴定",
@@ -44045,7 +44045,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-7b2647b433:chemistry",
    "sourceLocator": "桌面资料 27版五三 / 27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.化学.5·3A版/一、本书电子教参/第十三章化学实验基本方法/5_精讲册PDF/3_13-第十三章　化学实验基本方法.pdf（块 e9d119178a-012）",
-   "reviewedAtEpochMillis": 1789750367854,
+   "reviewedAtEpochMillis": 1789750368955,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:物质检验",
@@ -44065,7 +44065,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-7b2647b433:chemistry",
    "sourceLocator": "桌面资料 27版五三 / 27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.化学.5·3A版/一、本书电子教参/第十四章实验方案的设计与评价/5_精讲册PDF/3_14-第十四章　实验方案的设计与评价.pdf（块 0160cf76f9-012）",
-   "reviewedAtEpochMillis": 1789750367854,
+   "reviewedAtEpochMillis": 1789750368955,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:实验方案设计",
@@ -44085,7 +44085,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-7b2647b433:chemistry",
    "sourceLocator": "桌面资料 27版五三 / 27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.化学.5·3A版/一、本书电子教参/第九章化学反应速率与化学平衡/5_精讲册PDF/3_09-第九章　化学反应速率与化学平衡.pdf（块 862daf9cec-002）",
-   "reviewedAtEpochMillis": 1789750367854,
+   "reviewedAtEpochMillis": 1789750368955,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:关于化学反应速率易错易混点",
@@ -44105,7 +44105,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-7b2647b433:chemistry",
    "sourceLocator": "桌面资料 27版五三 / 27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.化学.5·3A版/一、本书电子教参/第九章化学反应速率与化学平衡/5_精讲册PDF/3_09-第九章　化学反应速率与化学平衡.pdf（块 862daf9cec-014）",
-   "reviewedAtEpochMillis": 1789750367854,
+   "reviewedAtEpochMillis": 1789750368955,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:影响化学平衡的因素",
@@ -44125,7 +44125,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-7b2647b433:chemistry",
    "sourceLocator": "桌面资料 27版五三 / 27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.化学.5·3A版/一、本书电子教参/第九章化学反应速率与化学平衡/5_精讲册PDF/3_09-第九章　化学反应速率与化学平衡.pdf（块 862daf9cec-026）",
-   "reviewedAtEpochMillis": 1789750367854,
+   "reviewedAtEpochMillis": 1789750368955,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:压强平衡常数",
@@ -44145,7 +44145,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-7b2647b433:chemistry",
    "sourceLocator": "桌面资料 27版五三 / 27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.化学.5·3A版/一、本书电子教参/第五章原子结构元素周期律/5_精讲册PDF/3_05-第五章　原子结构元素周期律.pdf（块 ed2c3e836f-002）",
-   "reviewedAtEpochMillis": 1789750367854,
+   "reviewedAtEpochMillis": 1789750368955,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:原子结构易混易错知识点",
@@ -44165,7 +44165,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-7b2647b433:chemistry",
    "sourceLocator": "桌面资料 27版五三 / 27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.化学.5·3A版/一、本书电子教参/第三章金属及其化合物/5_精讲册PDF/3_03-第三章　金属及其化合物.pdf（块 c9252b0263-001）",
-   "reviewedAtEpochMillis": 1789750367854,
+   "reviewedAtEpochMillis": 1789750368955,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:钠和钠的氧化物易错知识点",
@@ -44185,7 +44185,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-7b2647b433:chemistry",
    "sourceLocator": "桌面资料 27版五三 / 27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.化学.5·3A版/一、本书电子教参/第八章化学反应与电能/5_精讲册PDF/3_08-第八章　化学反应与电能.pdf（块 62064c1daf-031）",
-   "reviewedAtEpochMillis": 1789750367854,
+   "reviewedAtEpochMillis": 1789750368955,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:一次电池",
@@ -44205,7 +44205,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-7b2647b433:chemistry",
    "sourceLocator": "桌面资料 27版五三 / 27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.化学.5·3A版/一、本书电子教参/第三章金属及其化合物/5_精讲册PDF/3_03-第三章　金属及其化合物.pdf（块 c9252b0263-010）",
-   "reviewedAtEpochMillis": 1789750367854,
+   "reviewedAtEpochMillis": 1789750368955,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:铁的氧化物",

@@ -18,10 +18,9 @@ import java.security.MessageDigest
  * score, difficulty, or scheduling metadata.
  */
 object KnowledgeTeachingMaterialContract {
-    private const val MAX_MATERIALS_PER_IMPORT = 2_048
-    private const val MAX_BINDINGS_PER_IMPORT = 16_384
+    // 容量不设总量上限（用户 2026-09-19 决定）：材料数/绑定数/总字符数都不再设门。
+    // 只保留每条材料自身的结构约束（绑定数 1..16、恰好一个 PRIMARY）。
     private const val MAX_BINDINGS_PER_MATERIAL = 16
-    private const val MAX_TOTAL_MARKDOWN_CHARS = 4_000_000
     private val uppercaseSha256 = Regex("[A-F0-9]{64}")
     private val materialTypes = enumValues<KnowledgeTeachingMaterialType>().mapTo(hashSetOf()) {
         it.name
@@ -43,10 +42,9 @@ object KnowledgeTeachingMaterialContract {
         requireValid(materials.isNotEmpty()) {
             "Knowledge teaching-material bindings require imported materials"
         }
-        requireValid(materials.size <= MAX_MATERIALS_PER_IMPORT) {
-            "Knowledge teaching-material import is too large"
-        }
-        requireValid(bindings.size in materials.size..MAX_BINDINGS_PER_IMPORT) {
+        // 不设总量上限（用户 2026-09-19 决定：知识库容量不设限，越全越好）。
+        // 只保留结构不变量：每条材料至少一个绑定，故 bindings 数不少于 materials 数。
+        requireValid(bindings.size >= materials.size) {
             "Knowledge teaching-material binding count is invalid"
         }
         requireValid(materials.map(KnowledgeTeachingMaterialRecord::materialId).distinct().size == materials.size) {
@@ -72,7 +70,6 @@ object KnowledgeTeachingMaterialContract {
             KnowledgeTeachingMaterialNodeBindingRecord::materialId,
         )
 
-        var totalMarkdownChars = 0L
         materials.forEach { material ->
             id(material.materialId, "materialId")
             id(material.stableCode, "stableCode")
@@ -94,15 +91,6 @@ object KnowledgeTeachingMaterialContract {
             requireValid(material.reviewedAtEpochMillis > 0) {
                 "material.reviewedAtEpochMillis must be positive"
             }
-            totalMarkdownChars = Math.addExact(
-                totalMarkdownChars,
-                (
-                    material.summaryMarkdown.length +
-                        material.applicabilityMarkdown.length +
-                        material.contentMarkdown.length +
-                        material.boundaryMarkdown.length
-                    ).toLong(),
-            )
             val source = sourcesById[material.sourceId]
                 ?: invalid("Every teaching material needs a reviewed source")
             requireValid(source.subject == material.subject) {
@@ -121,9 +109,7 @@ object KnowledgeTeachingMaterialContract {
                 "Every teaching material needs exactly one primary knowledge point"
             }
         }
-        requireValid(totalMarkdownChars <= MAX_TOTAL_MARKDOWN_CHARS) {
-            "Knowledge teaching-material markdown exceeds the import budget"
-        }
+        // 总量字符预算同样取消（2026-09-19：容量不设限）。
 
         bindings.forEach { binding ->
             val material = materialsById[binding.materialId]

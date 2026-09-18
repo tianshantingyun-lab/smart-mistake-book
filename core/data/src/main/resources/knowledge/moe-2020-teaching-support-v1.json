@@ -1,55 +1,68 @@
 {
-  "schemaVersion": 1,
-  "packId": "moe-2020-foundation-v1",
-  "sources": [],
-  "materials": [
+ "schemaVersion": 1,
+ "packId": "moe-2020-foundation-v1",
+ "sources": [
+  {
+   "sourceId": "source:moe-2020:math:teaching",
+   "subject": "MATH",
+   "sourceType": "AUTHORIZED_EDUCATION_MATERIAL",
+   "title": "2020 版课标数学基础包（内置）",
+   "publisher": "教育部课标（内置整理）",
+   "edition": "2020版",
+   "sourceUri": "https://www.example.edu/moe-2020-foundation",
+   "licenseStatus": "REFERENCE_ONLY",
+   "contentFingerprint": "ABE9CBE5617954D551C41EA4BA5E049E4F92059459CD9491EA9E963984FCF361",
+   "importedAtEpochMillis": 1784764700000
+  }
+ ],
+ "materials": [
+  {
+   "slug": "read-function-monotonicity-from-graph-method",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "从函数图象判断单调区间的方法",
+   "summaryMarkdown": "按定义域分段，从左向右观察函数值随自变量增大而上升还是下降，再用区间表示对应范围。",
+   "applicabilityMarkdown": "适用于题面已经给出函数图象，并要求读取增区间、减区间或比较某段变化趋势的情况。",
+   "contentMarkdown": "1. 先确认图象实际覆盖的定义域，不把空点或断点两侧强行连成一个区间。\n2. 从左向右移动：函数值整体上升的连续部分记为增区间，整体下降的连续部分记为减区间。\n3. 转折点用于分开相邻区间；端点是否写入要服从定义域和题目的区间约定。\n4. 最后回到图象逐段核对，避免把横坐标范围写成纵坐标范围。",
+   "boundaryMarkdown": "这种方法只读取图象呈现的单调性，不代替导数证明；局部波动、间断点和定义域缺口必须单独处理。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "source:moe-2020:math:teaching",
+   "sourceLocator": "课程内容·函数性质（PDF第27页）",
+   "reviewedAtEpochMillis": 1784764800000,
+   "bindings": [
     {
-      "slug": "read-function-monotonicity-from-graph-method",
-      "subject": "MATH",
-      "type": "METHOD_MODEL",
-      "title": "从函数图象判断单调区间的方法",
-      "summaryMarkdown": "按定义域分段，从左向右观察函数值随自变量增大而上升还是下降，再用区间表示对应范围。",
-      "applicabilityMarkdown": "适用于题面已经给出函数图象，并要求读取增区间、减区间或比较某段变化趋势的情况。",
-      "contentMarkdown": "1. 先确认图象实际覆盖的定义域，不把空点或断点两侧强行连成一个区间。\n2. 从左向右移动：函数值整体上升的连续部分记为增区间，整体下降的连续部分记为减区间。\n3. 转折点用于分开相邻区间；端点是否写入要服从定义域和题目的区间约定。\n4. 最后回到图象逐段核对，避免把横坐标范围写成纵坐标范围。",
-      "boundaryMarkdown": "这种方法只读取图象呈现的单调性，不代替导数证明；局部波动、间断点和定义域缺口必须单独处理。",
-      "derivationKind": "REVIEWED_SYNTHESIS",
-      "sourceId": "source:moe-2020:math",
-      "sourceLocator": "课程内容·函数性质（PDF第27页）",
-      "reviewedAtEpochMillis": 1784764800000,
-      "bindings": [
-        {
-          "knowledgeNodeId": "kb:moe-2020-foundation-v1:math:atomic:read-monotonicity-from-graph",
-          "role": "PRIMARY"
-        },
-        {
-          "knowledgeNodeId": "kb:moe-2020-foundation-v1:math:atomic:express-monotonicity-symbolically",
-          "role": "SUPPORTING"
-        }
-      ]
+     "knowledgeNodeId": "kb:moe-2020-foundation-v1:math:atomic:read-monotonicity-from-graph",
+     "role": "PRIMARY"
     },
     {
-      "slug": "express-function-monotonicity-worked-example",
-      "subject": "MATH",
-      "type": "WORKED_EXAMPLE",
-      "title": "把图象变化写成单调区间的示例",
-      "summaryMarkdown": "示例展示如何把图象中的上升、下降段转换为规范的区间表达，并说明转折点为何用于分段。",
-      "applicabilityMarkdown": "适用于学生已经能看出图象升降，但容易混淆横纵坐标、区间端点或增减区间写法的情况。",
-      "contentMarkdown": "例如，一幅函数图象的定义域为 $[-3,4]$：从 $x=-3$ 到 $x=1$ 持续上升，从 $x=1$ 到 $x=4$ 持续下降。先把转折位置 $x=1$ 作为分界，再按横坐标范围表达：函数在 $[-3,1]$ 上递增，在 $[1,4]$ 上递减。这里写的是自变量所在的区间，不是函数值从多少变到多少；同一个转折点可以同时作为相邻两个闭区间的端点，前提是函数在该点有定义且采用教材中的闭区间表述约定。",
-      "boundaryMarkdown": "示例中的端点处理不能机械套用到所有题；遇到开区间、间断点或题目明确规定的定义域时，应按实际定义域调整。",
-      "derivationKind": "REVIEWED_SYNTHESIS",
-      "sourceId": "source:moe-2020:math",
-      "sourceLocator": "课程内容·函数性质（PDF第27页）",
-      "reviewedAtEpochMillis": 1784764800000,
-      "bindings": [
-        {
-          "knowledgeNodeId": "kb:moe-2020-foundation-v1:math:atomic:express-monotonicity-symbolically",
-          "role": "PRIMARY"
-        },
-        {
-          "knowledgeNodeId": "kb:moe-2020-foundation-v1:math:atomic:read-monotonicity-from-graph",
-          "role": "PREREQUISITE"
-        }
-      ]
+     "knowledgeNodeId": "kb:moe-2020-foundation-v1:math:atomic:express-monotonicity-symbolically",
+     "role": "SUPPORTING"
     }
-  ]
+   ]
+  },
+  {
+   "slug": "express-function-monotonicity-worked-example",
+   "subject": "MATH",
+   "type": "WORKED_EXAMPLE",
+   "title": "把图象变化写成单调区间的示例",
+   "summaryMarkdown": "示例展示如何把图象中的上升、下降段转换为规范的区间表达，并说明转折点为何用于分段。",
+   "applicabilityMarkdown": "适用于学生已经能看出图象升降，但容易混淆横纵坐标、区间端点或增减区间写法的情况。",
+   "contentMarkdown": "例如，一幅函数图象的定义域为 $[-3,4]$：从 $x=-3$ 到 $x=1$ 持续上升，从 $x=1$ 到 $x=4$ 持续下降。先把转折位置 $x=1$ 作为分界，再按横坐标范围表达：函数在 $[-3,1]$ 上递增，在 $[1,4]$ 上递减。这里写的是自变量所在的区间，不是函数值从多少变到多少；同一个转折点可以同时作为相邻两个闭区间的端点，前提是函数在该点有定义且采用教材中的闭区间表述约定。",
+   "boundaryMarkdown": "示例中的端点处理不能机械套用到所有题；遇到开区间、间断点或题目明确规定的定义域时，应按实际定义域调整。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "source:moe-2020:math:teaching",
+   "sourceLocator": "课程内容·函数性质（PDF第27页）",
+   "reviewedAtEpochMillis": 1784764800000,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2020-foundation-v1:math:atomic:express-monotonicity-symbolically",
+     "role": "PRIMARY"
+    },
+    {
+     "knowledgeNodeId": "kb:moe-2020-foundation-v1:math:atomic:read-monotonicity-from-graph",
+     "role": "PREREQUISITE"
+    }
+   ]
+  }
+ ]
 }

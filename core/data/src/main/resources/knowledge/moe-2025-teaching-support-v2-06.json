@@ -44,7 +44,7 @@
    "sourceUri": "https://www.example.edu/desktop-kb-source",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "DA44D7822E4E91D760B228E72495E4CE137101298124C0695FF0474FDFBE032B",
-   "importedAtEpochMillis": 1789732626547,
+   "importedAtEpochMillis": 1789669649286,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -60,7 +60,7 @@
    "sourceUri": "https://www.example.edu/desktop-kb-source",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "D45C35EA10D42D32A8A0A578557911B78B313C048345E31D7AB2381426DFFAA0",
-   "importedAtEpochMillis": 1789739865892,
+   "importedAtEpochMillis": 1789732985467,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -124,7 +124,7 @@
    "sourceUri": "https://www.example.edu/desktop-kb-source",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "1959862E778D2A1D7D2EE9090A0A63B43B58107476639538E7E8AC1B178E0645",
-   "importedAtEpochMillis": 1789750373146,
+   "importedAtEpochMillis": 1789743761720,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -140,7 +140,7 @@
    "sourceUri": "https://www.example.edu/desktop-kb-source",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "76E45DFAA54E87666698DBFB15E71C331C3C7336A9F486CD7BD1E6E4FE13483D",
-   "importedAtEpochMillis": 1789750373870,
+   "importedAtEpochMillis": 1789739845865,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -2450,7 +2450,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-e35c96096a:math",
    "sourceLocator": "桌面资料 2026年新高考资料 / 2026年新高考资料/一轮复习/2026年大一轮复习讲义数学课件讲义练习/基础版/Word版题库/第二章 函数/第12节 函数模型及其应用.DOCX（块 dee9797238-001）",
-   "reviewedAtEpochMillis": 1789732626465,
+   "reviewedAtEpochMillis": 1789732627547,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:函数模型与增长速度的比较",
@@ -2470,7 +2470,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-e35c96096a:math",
    "sourceLocator": "桌面资料 2026年新高考资料 / 2026年新高考资料/一轮复习/2026年大一轮复习讲义数学课件讲义练习/基础版/大一轮精准复习/第二章 §2.12　函数模型的应用.docx（块 e1f6626956-002）",
-   "reviewedAtEpochMillis": 1789732626465,
+   "reviewedAtEpochMillis": 1789732627547,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:函数模型与增长速度的比较",
@@ -2490,7 +2490,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-e35c96096a:math",
    "sourceLocator": "桌面资料 2026年新高考资料 / 2026年新高考资料/一轮复习/2026年高考数学一轮复习讲义+练习+课件（新教材新高考）/2026版/第十章 计数原理、概率、随机变量及其分布/第05讲 古典概型与概率的基本性质（复习讲义）（全国通用）（学生版）.docx（块 2a298112a3-004）",
-   "reviewedAtEpochMillis": 1789732626465,
+   "reviewedAtEpochMillis": 1789732627547,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:概率的基本性质",
@@ -2510,7 +2510,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-e35c96096a:math",
    "sourceLocator": "桌面资料 2026年新高考资料 / 2026年新高考资料/一轮复习/2026年高考数学一轮复习讲义+练习+课件（新教材新高考）/2026版/第十章 计数原理、概率、随机变量及其分布/第05讲 古典概型与概率的基本性质（复习讲义）（全国通用）（学生版）.docx（块 2a298112a3-002）",
-   "reviewedAtEpochMillis": 1789732626465,
+   "reviewedAtEpochMillis": 1789732627547,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:古典概型",
@@ -2530,7 +2530,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-e35c96096a:math",
    "sourceLocator": "桌面资料 2026年新高考资料 / 2026年新高考资料/一轮复习/2026年高考数学一轮复习讲义+练习+课件（新教材新高考）/2026版/第十章 计数原理、概率、随机变量及其分布/第05讲 古典概型与概率的基本性质（复习讲义）（全国通用）（学生版）.docx（块 2a298112a3-003）",
-   "reviewedAtEpochMillis": 1789732626465,
+   "reviewedAtEpochMillis": 1789732627547,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:古典概型",
@@ -2550,7 +2550,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题03 化学键 分子结构与性质（知识清单）（全国通用）（教师版）.docx（块 df6d15950b-012）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:分子的性质",
@@ -2570,7 +2570,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题02 水的电离和溶液的酸碱性（知识清单）（全国通用）（教师版）.docx（块 6c2b1eeb5f-005）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:溶液的ph",
@@ -2590,7 +2590,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题02 原电池、化学电源（知识清单）（全国通用）（学生版）.docx（块 786c31d6e4-009）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电极反应式",
@@ -2610,7 +2610,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习讲义+练习+课件（新教材新高考）/2026版/第五章 物质结构与性质 元素周期律/第03讲 分子结构与性质、化学键（复习讲义）（全国通用）（教师版）.docx（块 debd9107b2-032）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:分子的极性",
@@ -2630,7 +2630,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-7b2647b433:chemistry",
    "sourceLocator": "桌面资料 27版五三 / 27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.化学.新高考版.高三.全一册_学生用书全一册/二、附赠一轮复习随堂讲解PPT/讲解册PPT/12_第十二章　生命活动的物质基础　有机合成.pptx（块 8179029ae7-025）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739867250,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:合成高分子",
@@ -2650,7 +2650,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习考点精讲精练（新高考通用）/2026版/专题01 物质的分类及转化（高效培优讲义）（教师版）.docx（块 b0ee88eeed-017）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:分散系的分类",
@@ -2670,7 +2670,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习考点精讲精练（新高考通用）/2026版/专题03  电解池 金属的腐蚀与防护（高效培优讲义）（教师版）.docx（块 d931f0e7db-003）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电解和电解池",
@@ -2690,7 +2690,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（湖南专用）/第04讲 金属材料及金属矿物的开发利用（复习讲义）（湖南专用）（教师版）.docx（块 11292e024d-012）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:常见金属材料",
@@ -2710,7 +2710,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习考点精讲精练（新高考通用）/2026版/专题02 化学平衡状态、化学平衡的移动（高效培优讲义）（教师版）.docx（块 992d57859a-011）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:勒夏特列原理",
@@ -2730,7 +2730,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（湖南专用）/第03讲 分子结构与性质、化学键（复习讲义）（湖南专用）（教师版）.docx（块 d23d27f750-019）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:分子空间构型",
@@ -2750,7 +2750,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/二轮复习/2026年高考化学二轮复习高效培优讲义（全国通用）/2026版/专题01 化学与STSE、传统文化（培优讲义）（学生版）.docx（块 4d8fbdc64c-001）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:基本营养物质",
@@ -2770,7 +2770,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题01 化学反应的热效应（知识清单）（全国通用）（教师版）.docx（块 7feb6686e1-003）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:热化学方程式",
@@ -2790,7 +2790,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（福建专用）/第八章 水溶液中的离子反应与平衡/第04讲 沉淀溶解平衡（教师版）.docx（块 fef615606b-002）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:沉淀溶解平衡",
@@ -2810,7 +2810,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（安徽专用）/第02讲 烃（复习讲义）（安徽专用）（教师版）.docx（块 4fdc080203-011）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:苯的化学性质",
@@ -2830,7 +2830,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学大一轮复习卓越讲义重难点/资料/（重点·方法·点拨）第57讲 卤代烃　醇　酚- （教师版）.docx（块 4ddeefaa27-001）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:卤代烃的概念",
@@ -2850,7 +2850,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学大一轮复习卓越讲义重难点/资料/（重点·方法·点拨）第58讲 醛、酮、羧酸、酯、酰胺- （学生版）.docx（块 9a101eff14-001）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:醛-酮的概念",
@@ -2870,7 +2870,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习讲义+练习+课件（新教材新高考）/2026版/第九章 有机化学基础/专题05 有机合成与推断（知识清单）（全国通用）（教师版）.docx（块 b32088729d-002）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:已知两个醛分子在naoh溶液作用下可以发生加成反应-生成一种羟基醛",
@@ -2890,7 +2890,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（四川专用）/第02讲 烃（复习讲义）（教师版）.docx（块 042f4a1023-024）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:煤的综合利用",
@@ -2910,7 +2910,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习考点精讲精练（新高考通用）/2026版/专题03  铝及其重要化合物（高效培优讲义）（教师版）.docx（块 1ced0078c6-003）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:铝的物理性质",
@@ -2930,7 +2930,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题01 物质及其变化（知识清单）（全国通用）（学生版）.docx（块 2b8a636a64-019）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:胶体知识易错点",
@@ -2950,7 +2950,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习举一反三（新高考通用）/资料/2026版/第02讲 铁及其重要化合物（举一反三讲义）（学生版）.docx（块 af6a532ca1-001）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:铁的制备和性质",
@@ -2970,7 +2970,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题03 电解池、金属的腐蚀与防护（知识清单）（全国通用）（学生版）.docx（块 e2850176cd-006）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:简单的电镀实验",
@@ -2990,7 +2990,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-7b2647b433:chemistry",
    "sourceLocator": "桌面资料 27版五三 / 27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.化学.新高考版.高三.全一册_学生用书全一册/二、附赠一轮复习随堂讲解PPT/讲解册PPT/8_第八章　化学反应与电能.pptx（块 5c8ab8324c-045）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739867250,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:了解电镀原理",
@@ -3010,7 +3010,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题03 氮及其化合物（知识清单）（全国通用）（学生版）.docx（块 84c9f9347b-009）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:常见喷泉的类型",
@@ -3030,7 +3030,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题04 碳、硅及无机非金属材料（知识清单）（全国通用）（学生版）.docx（块 8cf031c9fe-015）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:各种硅酸的结构",
@@ -3050,7 +3050,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题01 化学反应的热效应（知识清单）（全国通用）（教师版）.docx（块 7feb6686e1-005）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:盖斯定律的应用",
@@ -3070,7 +3070,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（安徽专用）/第03讲 分子结构与性质、化学键（复习讲义）（安徽专用）（学生版）.docx（块 cb77b90f2c-028）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:键角大小的比较",
@@ -3090,7 +3090,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题05 化学反应速率和化学平衡图像（知识清单）（全国通用）（学生版）.docx（块 5795d1e881-001）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:速率-时间图像",
@@ -3110,7 +3110,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（黑吉辽蒙专用）/第01讲   电离平衡（复习讲义）（黑吉辽蒙专用）（教师版）.docx（块 c07d9578b6-002）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:弱电解质的电离",
@@ -3130,7 +3130,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（四川专用）/第02讲  水的电离和溶液的酸碱性（复习讲义）（四川专用）（教师版）.docx（块 1e82fabdbf-019）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:溶液ph的计算",
@@ -3150,7 +3150,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（福建专用）/第五章 物质结构与性质 元素周期律/第03讲 分子结构与性质 化学键（复习讲义）（福建专用）（教师版）.docx（块 52e4b9ee73-016）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:vsepr模型",
@@ -3170,7 +3170,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（福建专用）/第九章 有机化学基础/第02讲 烃（教师版）.docx（块 024618b63e-008）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:炔烃的化学性质",
@@ -3190,7 +3190,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学大一轮复习卓越讲义重难点/资料/（重点·方法·点拨）第58讲 醛、酮、羧酸、酯、酰胺- （学生版）.docx（块 9a101eff14-003）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:羧酸的化学性质",
@@ -3210,7 +3210,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习讲义+练习+课件（新教材新高考）/2026版/第九章 有机化学基础/专题02 烃（知识清单）（全国通用）（教师版）.docx（块 9129741016-003）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:烷烃的化学性质",
@@ -3230,7 +3230,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学大一轮复习卓越讲义重难点/资料/（重点·方法·点拨）第57讲 卤代烃　醇　酚- （教师版）.docx（块 4ddeefaa27-004）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:醇的结构和性质",
@@ -3250,7 +3250,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学大一轮复习卓越讲义重难点/资料/（重点·方法·点拨）第57讲 卤代烃　醇　酚- （教师版）.docx（块 4ddeefaa27-009）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:酚的结构和性质",
@@ -3270,7 +3270,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习考点精讲精练（新高考通用）/2026版/专题03  铝及其重要化合物（高效培优讲义）（教师版）.docx（块 1ced0078c6-004）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:铝的制备和用途",
@@ -3290,7 +3290,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题02 铁及其重要化合物（知识清单）（全国通用）（教师版）.docx（块 f93b82f3a2-004）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:铁盐的性质及应用",
@@ -3310,7 +3310,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高三化学一轮复习讲义（新高考通用）/资料/第五章 第21讲 硫及其化合物（学生版）.docx（块 d9699faeed-001）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:硫转化为硫化亚铁",
@@ -3330,7 +3330,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题01 化学反应的热效应（知识清单）（全国通用）（学生版）.docx（块 45d8808041-012）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:规避两个易失分点",
@@ -3350,7 +3350,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题03 化学键 分子结构与性质（知识清单）（全国通用）（学生版）.docx（块 d63da64959-029）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:有关化学键易错点",
@@ -3370,7 +3370,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习讲义+练习+课件（新教材新高考）/2026版/第七章 化学反应速率与化学平衡/第05讲 化学反应速率与化学平衡图像（复习讲义）（全国通用）（学生版）.docx（块 128c010eef-012）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:常规图像解题分析",
@@ -3390,7 +3390,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题05 化学反应速率和化学平衡图像（知识清单）（全国通用）（教师版）.docx（块 47e9f5af2f-018）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:多重平衡体系规则",
@@ -3410,7 +3410,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习·知识清单（新高考通用）/资料/第20讲　化学反应速率（学生版）.docx（块 5bbd870f70-003）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:催化剂与化学反应",
@@ -3430,7 +3430,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习讲义+练习+课件（新教材新高考）/2026版/第九章 有机化学基础/第01讲 有机化合物的结构特点与研究方法（复习讲义）（全国通用）（教师版）.docx（块 d361f74c03-005）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:一些有机物的命名",
@@ -3450,7 +3450,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习讲义+练习+课件（新教材新高考）/2026版/第九章 有机化学基础/专题01 有机化合物的结构特点与研究方法（知识清单）（全国通用）（教师版）.docx（块 95860fb410-020）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:有机物命名易错点",
@@ -3470,7 +3470,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（四川专用）/第04讲 沉淀溶解平衡（复习讲义）（四川专用）（教师版）.docx（块 1a9ac8e309-013）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:ksp的影响因素",
@@ -3490,7 +3490,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高三化学一轮复习讲义（新高考通用）/资料/第七章　第33讲　分子的性质　配合物与超分子（学生版）.docx（块 416151960a-001）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:羧酸的结构和性质",
@@ -3510,7 +3510,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习·知识清单（新高考通用）/资料/第29讲 糖类　油脂　蛋白质　高分子材料（学生版）.docx（块 a18e148bcb-001）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:糖类的组成和分类",
@@ -3530,7 +3530,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-7b2647b433:chemistry",
    "sourceLocator": "桌面资料 27版五三 / 27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.化学.新高考版.高三.全一册_学生用书全一册/二、附赠一轮复习随堂讲解PPT/讲解册PPT/12_第十二章　生命活动的物质基础　有机合成.pptx（块 8179029ae7-003）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739867250,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:糖类的结构和性质",
@@ -3550,7 +3550,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（福建专用）/第九章 有机化学基础/第02讲 烃（教师版）.docx（块 024618b63e-017）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:苯分子的空间结构",
@@ -3570,7 +3570,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学大一轮复习/资料/第九章 第4讲 醛  酮（讲义及教师版） .docx（块 044d85b5d2-001）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:几种重要的醛-酮",
@@ -3590,7 +3590,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学大一轮复习/资料/第九章 第4讲 醛  酮（讲义及教师版） .docx（块 044d85b5d2-002）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:醛-酮的化学性质",
@@ -3610,7 +3610,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习讲义+练习+课件（新教材新高考）/2026版/第九章 有机化学基础/专题05 有机合成与推断（知识清单）（全国通用）（教师版）.docx（块 b32088729d-005）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:有关醛的定量计算",
@@ -3630,7 +3630,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（湖南专用）/第03讲 常用物质的制备（复习讲义）（湖南专用）（教师版）.docx（块 c0b9fecf2c-018）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:酯化反应实验探究",
@@ -3650,7 +3650,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题01 物质及其变化（知识清单）（全国通用）（教师版）.docx（块 3638d9188e-012）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:各类物质的化学通性",
@@ -3670,7 +3670,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（四川专用）/第02讲 硫及其重要化合物（复习讲义）（四川专用）（教师版）.docx（块 6679c4dab3-005）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:硫化钠转化为单质硫",
@@ -3690,7 +3690,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习考点精讲精练（新高考通用）/2026版/专题03 化学平衡常数及其相关计算（高效培优讲义）（教师版）.docx（块 7ba48831b9-005）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化学平衡常数的应用",
@@ -3710,7 +3710,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习讲义+练习+课件（新教材新高考）/2026版/第五章 物质结构与性质 元素周期律/第03讲 分子结构与性质、化学键（复习讲义）（全国通用）（教师版）.docx（块 debd9107b2-004）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化学键与物质的类别",
@@ -3730,7 +3730,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习讲义+练习+课件（新教材新高考）/2026版/第九章 有机化学基础/专题05 有机合成与推断（知识清单）（全国通用）（教师版）.docx（块 b32088729d-017）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:常见的限制条件总结",
@@ -3750,7 +3750,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（四川专用）/第04讲  金属材料及金属矿物的开发利用（复习讲义）（四川专用）（教师版）.docx（块 af4dd3fb51-016）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:自然资源的开发利用",
@@ -3770,7 +3770,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习讲义+练习+课件（新教材新高考）/2026版/第八章 水溶液中的离子反应与平衡/专题04 沉淀溶解平衡（知识清单）（全国通用）（学生版）.docx（块 ffadd732ea-013）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:有关ksp的易错点",
@@ -3790,7 +3790,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（福建专用）/第八章 水溶液中的离子反应与平衡/第03讲 盐类的水解（学生版）.docx（块 02696f8b9c-008）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:盐类水解的三个误区",
@@ -3810,7 +3810,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（安徽专用）/第02讲 烃（复习讲义）（安徽专用）（教师版）.docx（块 4fdc080203-012）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:苯及其同系物的性质",
@@ -3830,7 +3830,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学大一轮复习/资料/第九章 第3讲 卤代烃、醇和酚（讲义及教师版） .docx（块 46e6110aa6-001）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:卤代烃的性质及应用",
@@ -3850,7 +3850,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学大一轮复习卓越讲义重难点/资料/（重点·方法·点拨）第60讲 合成高分子　有机合成路线设计- （学生版）.docx（块 ac039fce3c-001）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:基本概念",
@@ -3870,7 +3870,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学大一轮复习/资料/第九章 第2讲 烃（讲义及教师版） .docx（块 6711cf9801-001）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:脂肪烃的结构和性质",
@@ -3890,7 +3890,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学大一轮复习/资料/第九章 第3讲 卤代烃、醇和酚（讲义及教师版） .docx（块 46e6110aa6-008）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:酚的概念和物理性质",
@@ -3910,7 +3910,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学大一轮复习卓越讲义重难点/资料/（重点·方法·点拨）第58讲 醛、酮、羧酸、酯、酰胺- （教师版）.docx（块 138d8deb9f-001）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:醛和酮的结构和性质",
@@ -3930,7 +3930,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学大一轮复习卓越讲义重难点/资料/（重点·方法·点拨）第58讲 醛、酮、羧酸、酯、酰胺- （教师版）.docx（块 138d8deb9f-007）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:胺-酰的结构和性质",
@@ -3950,7 +3950,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题02 离子反应（知识清单）（全国通用）（学生版）.docx（块 12d2586885-025）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:离子方程式题设错方式",
@@ -3970,7 +3970,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高三化学一轮复习讲义（新高考通用）/资料/第一章　第2讲　离子反应　离子方程式（学生版）.docx（块 2e94dddfed-004）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:离子共存问题解题要点",
@@ -3990,7 +3990,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（福建专用）/第三章 金属及其化合物/第04讲 金属材料及金属矿物的开发利用（教师版）.docx（块 e2fc9d535c-015）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:金属及其化合物的制备",
@@ -4010,7 +4010,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-7b2647b433:chemistry",
    "sourceLocator": "桌面资料 27版五三 / 27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.化学.新高考版.高三.全一册_学生用书全一册/二、附赠一轮复习随堂讲解PPT/讲解册PPT/9_第九章　化学反应速率与化学平衡.pptx（块 1880b6dbb6-141）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739867250,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:多重平衡体系解题技巧",
@@ -4030,7 +4030,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题01 化学反应速率及其影响因素（知识清单）（全国通用）（教师版）.docx（块 be450e5021-001）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化学反应速率及其计算",
@@ -4050,7 +4050,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习讲义+练习+课件（新教材新高考）/2026版/第九章 有机化学基础/第01讲 有机化合物的结构特点与研究方法（复习讲义）（全国通用）（教师版）.docx（块 d361f74c03-004）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:有机物分类易混易错点",
@@ -4070,7 +4070,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习讲义+练习+课件（新教材新高考）/2026版/第八章 水溶液中的离子反应与平衡/专题04 沉淀溶解平衡（知识清单）（全国通用）（教师版）.docx（块 79644b1cee-001）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:溶度积和离子积的关系",
@@ -4090,7 +4090,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习讲义+练习+课件（新教材新高考）/2026版/第八章 水溶液中的离子反应与平衡/专题04 沉淀溶解平衡（知识清单）（全国通用）（教师版）.docx（块 79644b1cee-021）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:沉淀溶解平衡易错六点",
@@ -4110,7 +4110,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题02 水的电离和溶液的酸碱性（知识清单）（全国通用）（教师版）.docx（块 6c2b1eeb5f-024）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:水的电离易错-七-点",
@@ -4130,7 +4130,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题03 铝及其重要化合物（知识清单）（全国通用）（教师版）.docx（块 4ba4052b22-009）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:含铝物质的制备和转化",
@@ -4150,7 +4150,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题03 铝及其重要化合物（知识清单）（全国通用）（学生版）.docx（块 5cfa9e1433-008）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:铝及其化合物的易错点",
@@ -4170,7 +4170,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题01 物质及其变化（知识清单）（全国通用）（学生版）.docx（块 2b8a636a64-016）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:对氧化物认识的几个误区",
@@ -4190,7 +4190,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题02 离子反应（知识清单）（全国通用）（学生版）.docx（块 12d2586885-024）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电离方程式的-易错点",
@@ -4210,7 +4210,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习讲义+练习+课件（新教材新高考）/2026版/第六章 化学反应与能量/第02讲 原电池、化学电源（复习讲义）（全国通用）（教师版）.docx（块 447c937000-016）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:制作一个氢氧燃料电池",
@@ -4230,7 +4230,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题04 金属材料及金属矿物的开发利用（知识清单）（全国通用）（教师版）.docx（块 c16f7b5af8-011）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:镁及其化合物的难点释疑",
@@ -4250,7 +4250,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题03 化学键 分子结构与性质（知识清单）（全国通用）（学生版）.docx（块 d63da64959-036）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:有关配合物的易混易错点",
@@ -4270,7 +4270,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习讲义+练习+课件（新教材新高考）/2026版/第九章 有机化学基础/专题01 有机化合物的结构特点与研究方法（知识清单）（全国通用）（学生版）.docx（块 1d4b3bfdba-011）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:有机物组成和结构的确定",
@@ -4290,7 +4290,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题01 电离平衡（知识清单）（全国通用）（学生版）.docx（块 a54083ac3c-014）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电离平衡中的7个易错点",
@@ -4310,7 +4310,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题02 水的电离和溶液的酸碱性（知识清单）（全国通用）（教师版）.docx（块 6c2b1eeb5f-027）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:酸-碱稀释时的两个误区",
@@ -4330,7 +4330,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题02 原子结构与性质（知识清单）（全国通用）（学生版）.docx（块 516cbdd1d5-012）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:原子结构易混易错知识点",
@@ -4350,7 +4350,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习·知识清单（新高考通用）/资料/第29讲 糖类　油脂　蛋白质　高分子材料（学生版）.docx（块 a18e148bcb-002）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:有关蛋白质的易混易错点",
@@ -4370,7 +4370,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题03 铝及其重要化合物（知识清单）（全国通用）（教师版）.docx（块 4ba4052b22-001）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:铝元素的原子结构和存在",
@@ -4390,7 +4390,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高三化学一轮复习讲义（新高考通用）/资料/第四章 第16讲 镁、铝及其化合物（学生版）.docx（块 17a285c08a-001）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:一种重要的复盐-明矾",
@@ -4410,7 +4410,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题01 物质及其变化（知识清单）（全国通用）（学生版）.docx（块 2b8a636a64-015）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:常见的物质分类的几个误区",
@@ -4430,7 +4430,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题02 离子反应（知识清单）（全国通用）（学生版）.docx（块 12d2586885-023）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电解质的电离的-易错点",
@@ -4450,7 +4450,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习举一反三（新高考通用）/资料/2026版/第04讲 碳、硅及无机非金属材料（举一反三讲义）（学生版）.docx（块 095a44dcdd-013）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:常见的与量无关的离子反应",
@@ -4470,7 +4470,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题01 元素周期表 元素周期律（知识清单）（全国通用）（学生版）.docx（块 cdf8a7a9f6-006）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:位-构-性-关系的应用",
@@ -4490,7 +4490,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习考点精讲精练（新高考通用）/2026版/专题01  元素周期表  元素周期律（高效培优讲义）（教师版）.docx（块 3b3b553aaf-018）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:元素的-位-构-性-关系",
@@ -4510,7 +4510,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题03 氮及其化合物（知识清单）（全国通用）（学生版）.docx（块 84c9f9347b-014）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:氮及化合物的-十大-误区",
@@ -4530,7 +4530,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题05 化学反应速率和化学平衡图像（知识清单）（全国通用）（教师版）.docx（块 47e9f5af2f-008）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:含量-转化率-投料比图像",
@@ -4550,7 +4550,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习举一反三（新高考通用）/资料/2026版/第05讲 化学反应速率与化学平衡图像（举一反三讲义，8大题型）（原卷版）.docx（块 7189609516-014）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化工生产中的复杂图像分析",
@@ -4570,7 +4570,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题03 化学键 分子结构与性质（知识清单）（全国通用）（学生版）.docx（块 d63da64959-031）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:共价键及键参数易混易错点",
@@ -4590,7 +4590,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习讲义+练习+课件（新教材新高考）/2026版/第九章 有机化学基础/专题01 有机化合物的结构特点与研究方法（知识清单）（全国通用）（学生版）.docx（块 1d4b3bfdba-009）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:含官能团的链状有机物命名",
@@ -4610,7 +4610,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题02 水的电离和溶液的酸碱性（知识清单）（全国通用）（学生版）.docx（块 254546a036-019）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:酸碱中和滴定-八-个提醒",
@@ -4630,7 +4630,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题04 金属材料及金属矿物的开发利用（知识清单）（全国通用）（教师版）.docx（块 c16f7b5af8-013）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:金属材料和金属的冶炼易错点",
@@ -4650,7 +4650,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题02 硫及其化合物（知识清单）（全国通用）（教师版）.docx（块 7d5cacfb3f-024）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:硫及其重要化合物的知识盲点",
@@ -4670,7 +4670,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题04 碳、硅及无机非金属材料（知识清单）（全国通用）（学生版）.docx（块 8cf031c9fe-011）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:碳-硅及其化合物的知识盲点",
@@ -4690,7 +4690,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习考点精讲精练（新高考通用）/2026版/专题04 碳、硅及无机非金属材料（高效培优讲义）（学生版）.docx（块 162fe731c5-012）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:硅及其化合物的-七大-误区",
@@ -4710,7 +4710,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（四川专用）/第01讲 化学反应的热效应（学生版）.docx（块 64bd06eed2-006）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:分析图像书写热化学方程式",
@@ -4730,7 +4730,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题03 化学键 分子结构与性质（知识清单）（全国通用）（学生版）.docx（块 d63da64959-035）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:有关分子的性质的易混易错点",
@@ -4750,7 +4750,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题04 化学反应的方向 化学反应的调控（知识清单）（全国通用）（学生版）.docx（块 21b5cf973a-007）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:平衡类问题需考虑的几个方面",
@@ -4770,7 +4770,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题01 化学反应速率及其影响因素（知识清单）（全国通用）（教师版）.docx（块 be450e5021-021）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:关于化学反应速率易错易混点",
@@ -4790,7 +4790,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题03 化学平衡常数及相关计算（知识清单）（全国通用）（教师版）.docx（块 466de1195b-014）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:有关化学平衡常数易混易错点",
@@ -4810,7 +4810,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（安徽专用）/第03讲 盐类的水解（复习讲义）（安徽专用）（学生版）.docx（块 30a632ab5e-017）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:微粒浓度的大小比较理论依据",
@@ -4830,7 +4830,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题03 盐类的水解（知识清单）（全国通用）（学生版）.docx（块 6a488d0c96-013）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:六种盐溶液蒸干后产物的判断",
@@ -4850,7 +4850,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习讲义+练习+课件（新教材新高考）/2026版/第九章 有机化学基础/专题02 烃（知识清单）（全国通用）（教师版）.docx（块 9129741016-011）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:芳香烃的用途及对环境的影响",
@@ -4870,7 +4870,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习讲义+练习+课件（新教材新高考）/2026版/第十章 化学实验基础与探究/专题14 有机化学基础（四）（教师版）.docx（块 0fc99142ee-004）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:糖类的结构和性质易混易错点",
@@ -4890,7 +4890,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学大一轮复习/资料/第九章 第7讲 合成高分子 .docx（块 581fb521c0-011）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:有关合成高分子的易混易错点",
@@ -4910,7 +4910,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题02 化学平衡状态 化学平衡的移动（知识清单）（全国通用）（学生版）.docx（块 e0e62d3438-013）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:关于化学平衡状态的易错易混点",
@@ -4930,7 +4930,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习举一反三（新高考通用）/资料/2026版/第03讲 氧化还原反应（举一反三讲义）（学生版）.docx（块 b0471d5c46-005）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:根据反应事实判断性质的强弱",
@@ -4950,7 +4950,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题03 氧化还原反应（知识清单）（全国通用）（教师版）.docx（块 ba84dd3a28-025）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:氧化性-还原性强弱比较易错点",
@@ -4970,7 +4970,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习讲义+练习+课件（新教材新高考）/2026版/第九章 有机化学基础/专题02 烃（知识清单）（全国通用）（教师版）.docx（块 9129741016-021）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:芳香烃的结构和性质易混易错点",
@@ -4990,7 +4990,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学大一轮复习/资料/第九章 第3讲 卤代烃、醇和酚（讲义及教师版） .docx（块 46e6110aa6-001）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:卤代烃的结构和性质易混易错点",
@@ -5010,7 +5010,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学大一轮复习/资料/第九章 第3讲 卤代烃、醇和酚（讲义及教师版） .docx（块 46e6110aa6-008）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:醇和酚的结构和性质易混易错点",
@@ -5030,7 +5030,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学大一轮复习/资料/第九章 第4讲 醛  酮（讲义及教师版） .docx（块 044d85b5d2-001）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:醛和酮的结构和性质易混易错点",
@@ -5050,7 +5050,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题03 铝及其重要化合物（知识清单）（全国通用）（学生版）.docx（块 5cfa9e1433-006）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:铝及其化合物之间的性质与应用",
@@ -5070,7 +5070,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题04 化学反应的方向 化学反应的调控（知识清单）（全国通用）（教师版）.docx（块 98d680c240-009）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化学反应的方向和调控易混易错点",
@@ -5090,7 +5090,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题03 氧化还原反应（知识清单）（全国通用）（学生版）.docx（块 0600a8a550-014）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:根据题给信息写出对应的方程式",
@@ -5110,7 +5110,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学大一轮复习卓越讲义重难点/资料/（重点·方法·点拨）第58讲 醛、酮、羧酸、酯、酰胺- （学生版）.docx（块 9a101eff14-004）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:胺和酰胺的结构和性质易混易错点",
@@ -5130,7 +5130,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题02 铁及其重要化合物（知识清单）（全国通用）（学生版）.docx（块 022fc6418a-012）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:铁-铁的氧化物和氢氧化物的易错点",
@@ -5150,7 +5150,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学大一轮复习/资料/第五章 第2讲 化学键、电子式及化学用语（讲义及教师版） .docx（块 3079478842-001）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:甲-乙-丙三种有机物的结构如下",
@@ -5170,7 +5170,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习考点精讲精练（新高考通用）/2026版/专题04 化学反应的方向、化学反应的调控（高效培优讲义）（教师版）.docx（块 c0f8c1e205-011）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:乙烯是石油化工最基本的原料之一",
@@ -5190,7 +5190,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习讲义+练习+课件（新教材新高考）/2026版/第九章 有机化学基础/专题01 有机化合物的结构特点与研究方法（知识清单）（全国通用）（学生版）.docx（块 1d4b3bfdba-016）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:有机物分子式和结构确定易混易错点",
@@ -5210,7 +5210,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题02 原子结构与性质（知识清单）（全国通用）（学生版）.docx（块 516cbdd1d5-014）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:核外电子运动状态和电子排布易错点",
@@ -5230,7 +5230,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学大一轮复习卓越讲义重难点/资料/（重点·方法·点拨）第60讲 合成高分子　有机合成路线设计- （教师版）.docx（块 5c9f18fce0-001）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:合成高分子反应的化学方程式的书写",
@@ -5250,7 +5250,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/二轮复习/【1】2026年高考化学【二轮·析考点·练题型】提升突破复习讲义（全国通用）/考点08 化学与STSE、传统文化（学生版）（全国通用）.docx（块 f9dca8cbf2-004）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:醛的应用和对环境-健康产生的影响",
@@ -5270,7 +5270,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习讲义+练习+课件（新教材新高考）/2026版/第九章 有机化学基础/专题05 有机合成与推断（知识清单）（全国通用）（学生版）.docx（块 d3a055d224-004）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:根据试剂或特征现象推知官能团的种类",
@@ -5290,7 +5290,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习讲义+练习+课件（新教材新高考）/2026版/第九章 有机化学基础/专题05 有机合成与推断（知识清单）（全国通用）（学生版）.docx（块 d3a055d224-007）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:一种药物中间体-h-的合成路线如下",
@@ -5310,7 +5310,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题03 氧化还原反应（知识清单）（全国通用）（教师版）.docx（块 ba84dd3a28-002）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:氢化钠-nah-广泛应用于工业生产",
@@ -5330,7 +5330,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题02 离子反应（知识清单）（全国通用）（学生版）.docx（块 12d2586885-008）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:竞争型离子方程式的书写-先强后弱法",
@@ -5350,7 +5350,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题02 离子反应（知识清单）（全国通用）（学生版）.docx（块 12d2586885-009）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:配比型离子方程式的书写-少定多变法",
@@ -5370,7 +5370,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题02 水的电离和溶液的酸碱性（知识清单）（全国通用）（学生版）.docx（块 254546a036-011）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:溶质为碱的溶液-h-全部来自水的电离",
@@ -5390,7 +5390,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题01 元素周期表 元素周期律（知识清单）（全国通用）（学生版）.docx（块 cdf8a7a9f6-018）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:掌握周期表的结构及周期表中的一些特殊规律",
@@ -5410,7 +5410,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习讲义+练习+课件（新教材新高考）/2026版/第八章 水溶液中的离子反应与平衡/第01讲 电离平衡（复习讲义）（全国通用）（解析版）.docx（块 87fdb465a4-012）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:从-定性-和-定量-两个角度理解电离平衡",
@@ -5430,7 +5430,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题02 硫及其化合物（知识清单）（全国通用）（教师版）.docx（块 7d5cacfb3f-007）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:硫酸是中学化学实验室的常见药品-其性质有",
@@ -5450,7 +5450,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题02 原电池、化学电源（知识清单）（全国通用）（学生版）.docx（块 786c31d6e4-006）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:手机-电脑的锂电池是一次电池还是二次电池",
@@ -5470,7 +5470,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习讲义+练习+课件（新教材新高考）/2026版/第七章 化学反应速率与化学平衡/第03讲 化学平衡常数及其相关计算（复习讲义）（全国通用）（教师版）.docx（块 15c0a2510b-002）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:在一定温度下-已知以下三个反应的平衡常数",
@@ -5490,7 +5490,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习讲义+练习+课件（新教材新高考）/2026版/第九章 有机化学基础/专题05 有机合成与推断（知识清单）（全国通用）（学生版）.docx（块 d3a055d224-001）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:4-溴甲基-1-环己烯的一种合成路线如下",
@@ -5510,7 +5510,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习讲义+练习+课件（新教材新高考）/2026版/第九章 有机化学基础/专题05 有机合成与推断（知识清单）（全国通用）（教师版）.docx（块 b32088729d-005）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:黄酮哌酯是一种解痉药-可通过如下路线合成",
@@ -5530,7 +5530,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习讲义+练习+课件（新教材新高考）/2026版/第九章 有机化学基础/专题05 有机合成与推断（知识清单）（全国通用）（教师版）.docx（块 b32088729d-001）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:1-根据的结构特征-预测其可能的化学性质",
@@ -5550,7 +5550,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（黑吉辽蒙专用）/第05讲 有机合成与推断（复习讲义）（黑吉辽蒙专用）（学生版）.docx（块 33e93a5fc9-006）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:依据题目提供的新信息进行推断未知有机物的结构",
@@ -5570,7 +5570,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习讲义+练习+课件（新教材新高考）/2026版/第九章 有机化学基础/专题05 有机合成与推断（知识清单）（全国通用）（教师版）.docx（块 b32088729d-002）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:支气管扩张药物特布他林-h-的一种合成路线如下",
@@ -5590,7 +5590,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题03 电解池、金属的腐蚀与防护（知识清单）（全国通用）（教师版）.docx（块 841d0e5e17-009）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:查阅资料-了解工业生产中提高电镀质量的方法",
@@ -5610,7 +5610,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题03 氮及其化合物（知识清单）（全国通用）（教师版）.docx（块 9f644c9d54-020）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:久置的浓硝酸呈黄色-如何除去-怎样保存浓硝酸",
@@ -5630,7 +5630,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题05 化学反应速率和化学平衡图像（知识清单）（全国通用）（学生版）.docx（块 5795d1e881-013）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:一种新型煤气化燃烧集成制氢发生的主要反应如下",
@@ -5650,7 +5650,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题03 铝及其重要化合物（知识清单）（全国通用）（教师版）.docx（块 4ba4052b22-007）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:基于-两性-类比推测be-zn及其化合物的性质",
@@ -5670,7 +5670,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮复习知识清单（全国通用）/2026版/专题03 铝及其重要化合物（知识清单）（全国通用）（学生版）.docx（块 5cfa9e1433-010）",
-   "reviewedAtEpochMillis": 1789739845765,
+   "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:等质量的铝与足量的盐酸-氢氧化钠溶液分别反应",
@@ -6350,7 +6350,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-7b2647b433:math",
    "sourceLocator": "桌面资料 27版五三 / 27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/1.链接教材/提分资料包/27版53B-链接教材正文.pdf（块 93e7d67ed2-003）",
-   "reviewedAtEpochMillis": 1789750367854,
+   "reviewedAtEpochMillis": 1789750374146,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:利用基本不等式求最值",
@@ -6370,7 +6370,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-7b2647b433:math",
    "sourceLocator": "桌面资料 27版五三 / 27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/1.链接教材/提分资料包/27版53B-链接教材正文.pdf（块 93e7d67ed2-023）",
-   "reviewedAtEpochMillis": 1789750367854,
+   "reviewedAtEpochMillis": 1789750374146,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:圆锥曲线的综合问题",
@@ -6390,7 +6390,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-7b2647b433:math",
    "sourceLocator": "桌面资料 27版五三 / 27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/1.链接教材/提分资料包/27版53B-链接教材正文.pdf（块 93e7d67ed2-026）",
-   "reviewedAtEpochMillis": 1789750367854,
+   "reviewedAtEpochMillis": 1789750374146,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:椭圆的离心率",
@@ -6410,7 +6410,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-7b2647b433:math",
    "sourceLocator": "桌面资料 27版五三 / 27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/2.数学建模/提分资料包/27版53B-数学建模正文.pdf（块 743101f89f-014）",
-   "reviewedAtEpochMillis": 1789750367854,
+   "reviewedAtEpochMillis": 1789750374146,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:椭圆",
@@ -6430,7 +6430,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-7b2647b433:math",
    "sourceLocator": "桌面资料 27版五三 / 27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/2.数学建模/提分资料包/27版53B-数学建模正文.pdf（块 743101f89f-001）",
-   "reviewedAtEpochMillis": 1789750367854,
+   "reviewedAtEpochMillis": 1789750374146,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:函数模型与增长速度的比较",
@@ -6450,7 +6450,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-48689b61de:physics",
    "sourceLocator": "桌面资料 2026年新高考资料(1) / 2026年新高考资料(1)/专项复习/【1】2026年高考物理强基第一章讲义/物理强基讲义-第一章1-2节.pdf（块 3747c2c400-001）",
-   "reviewedAtEpochMillis": 1789750367854,
+   "reviewedAtEpochMillis": 1789750374870,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:瞬时速度",
@@ -6470,7 +6470,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-48689b61de:physics",
    "sourceLocator": "桌面资料 2026年新高考资料(1) / 2026年新高考资料(1)/专项复习/【1】2026年高考物理强基第一章讲义/物理强基讲义-第一章3-4节.pdf（块 a833eaa9d7-001）",
-   "reviewedAtEpochMillis": 1789750367854,
+   "reviewedAtEpochMillis": 1789750374870,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:曲线运动的基本概念与处理思想",
@@ -6490,7 +6490,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-48689b61de:physics",
    "sourceLocator": "桌面资料 2026年新高考资料(1) / 2026年新高考资料(1)/专项复习/【1】2026年高考物理强基第一章讲义/物理强基讲义-第一章3-4节.pdf（块 a833eaa9d7-005）",
-   "reviewedAtEpochMillis": 1789750367854,
+   "reviewedAtEpochMillis": 1789750374870,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:非惯性参考系",
@@ -6510,7 +6510,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-48689b61de:physics",
    "sourceLocator": "桌面资料 2026年新高考资料(1) / 2026年新高考资料(1)/专项复习/【1】2026年高考物理强基第一章讲义/物理强基讲义-第一章5-6节.pdf（块 1cac87e4fb-004）",
-   "reviewedAtEpochMillis": 1789750367854,
+   "reviewedAtEpochMillis": 1789750374870,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:关联速度的分析-运动分解的核心思想",
@@ -6530,7 +6530,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-48689b61de:physics",
    "sourceLocator": "桌面资料 2026年新高考资料(1) / 2026年新高考资料(1)/专项复习/【1】2026年高考物理强基第一章讲义/物理强基讲义-第一章3-4节.pdf（块 a833eaa9d7-002）",
-   "reviewedAtEpochMillis": 1789750367854,
+   "reviewedAtEpochMillis": 1789750374870,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:抛体运动的规律及其应用",

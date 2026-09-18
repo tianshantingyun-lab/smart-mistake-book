@@ -108,7 +108,7 @@
    "sourceUri": "https://www.example.edu/desktop-kb-source",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "DA44D7822E4E91D760B228E72495E4CE137101298124C0695FF0474FDFBE032B",
-   "importedAtEpochMillis": 1789675200896,
+   "importedAtEpochMillis": 1789669649286,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -124,7 +124,7 @@
    "sourceUri": "https://www.example.edu/desktop-kb-source",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "D45C35EA10D42D32A8A0A578557911B78B313C048345E31D7AB2381426DFFAA0",
-   "importedAtEpochMillis": 1789734513246,
+   "importedAtEpochMillis": 1789732985467,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -40547,7 +40547,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-e35c96096a:math",
    "sourceLocator": "桌面资料 2026年新高考资料 / 2026年新高考资料/一轮复习/2026年大一轮复习讲义数学课件讲义练习/基础版/Word版题库/第九章　统计与成对数据的统计分析/第2节　用样本估计总体.docx（块 412e7eb94a-001）",
-   "reviewedAtEpochMillis": 1789675200800,
+   "reviewedAtEpochMillis": 1789675201896,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:百分位数",
@@ -40567,7 +40567,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-e35c96096a:math",
    "sourceLocator": "桌面资料 2026年新高考资料 / 2026年新高考资料/一轮复习/2026年大一轮复习讲义数学课件讲义练习/基础版/Word版题库/第九章　统计与成对数据的统计分析/第2节　用样本估计总体.docx（块 412e7eb94a-001）",
-   "reviewedAtEpochMillis": 1789675200800,
+   "reviewedAtEpochMillis": 1789675201896,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:众数、中位数与平均数",
@@ -40587,7 +40587,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-e35c96096a:math",
    "sourceLocator": "桌面资料 2026年新高考资料 / 2026年新高考资料/一轮复习/2026年大一轮复习讲义数学课件讲义练习/基础版/Word版题库/第九章　统计与成对数据的统计分析/第2节　用样本估计总体.docx（块 412e7eb94a-001）",
-   "reviewedAtEpochMillis": 1789675200800,
+   "reviewedAtEpochMillis": 1789675201896,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:方差与标准差",
@@ -40607,7 +40607,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-e35c96096a:math",
    "sourceLocator": "桌面资料 2026年新高考资料 / 2026年新高考资料/一轮复习/2026年大一轮复习讲义数学课件讲义练习/基础版/Word版题库/第九章　统计与成对数据的统计分析/第2节　用样本估计总体.docx（块 412e7eb94a-002）",
-   "reviewedAtEpochMillis": 1789675200800,
+   "reviewedAtEpochMillis": 1789675201896,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:方差与标准差",
@@ -40627,7 +40627,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（四川专用）/第01讲 氯及其重要化合物（复习讲义）（四川专用）（学生版）.docx（块 287f03dd74-006）",
-   "reviewedAtEpochMillis": 1789734513143,
+   "reviewedAtEpochMillis": 1789734514246,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:氯气",
@@ -40647,7 +40647,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（四川专用）/第01讲 氯及其重要化合物（复习讲义）（四川专用）（学生版）.docx（块 287f03dd74-006）",
-   "reviewedAtEpochMillis": 1789734513143,
+   "reviewedAtEpochMillis": 1789734514246,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:次氯酸和次氯酸盐",
@@ -40667,7 +40667,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（湖南专用）/第03讲 氮及其重要化合物（复习讲义）（湖南专用）（学生版）.docx（块 64710ef7e8-016）",
-   "reviewedAtEpochMillis": 1789734513143,
+   "reviewedAtEpochMillis": 1789734514246,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:氨",
@@ -40687,7 +40687,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（湖南专用）/第03讲 氮及其重要化合物（复习讲义）（湖南专用）（学生版）.docx（块 64710ef7e8-016）",
-   "reviewedAtEpochMillis": 1789734513143,
+   "reviewedAtEpochMillis": 1789734514246,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:铵盐",
@@ -40707,7 +40707,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高考化学一轮课件+讲义+练习（黑吉辽蒙专用）/第03讲 氮及其重要化合物（复习讲义）（黑吉辽蒙专用）（学生版）.docx（块 9bf6d767cc-002）",
-   "reviewedAtEpochMillis": 1789734513143,
+   "reviewedAtEpochMillis": 1789734514246,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:氮气",
@@ -40727,7 +40727,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高三化学一轮复习讲义（新高考通用）/资料/第四章 第13讲 碱金属　钠及其重要化合物的转化（教师版）.docx（块 39a20a4b89-001）",
-   "reviewedAtEpochMillis": 1789734513143,
+   "reviewedAtEpochMillis": 1789734514246,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:碱金属元素易错知识点",
@@ -40747,7 +40747,7 @@
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "desktop-src-c099d2d6fc:chemistry",
    "sourceLocator": "桌面资料 2026年新高考资料(3) / 2026年新高考资料(3)/一轮复习/2026年高三化学一轮复习讲义（新高考通用）/资料/第四章 第13讲 碱金属　钠及其重要化合物的转化（教师版）.docx（块 39a20a4b89-001）",
-   "reviewedAtEpochMillis": 1789734513143,
+   "reviewedAtEpochMillis": 1789734514246,
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:焰色试验-易错点",
