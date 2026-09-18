@@ -114,12 +114,12 @@ class GateTest(unittest.TestCase):
         # starred_names 96→0、duplicate_names 118→0：已修复，见下方专门断言。
         self.assertEqual(0, metrics["starred_names"].value)
         self.assertEqual(0, metrics["duplicate_names"].value)
-        self.assertEqual(657, metrics["unbound_points"].value)
+        self.assertEqual(541, metrics["unbound_points"].value)
         self.assertEqual(892, metrics["unbound_materials"].value)
-        self.assertEqual(849, metrics["ghost_aliases"].value)
+        self.assertEqual(836, metrics["ghost_aliases"].value)
         self.assertEqual(194, metrics["latex_damage"].value)
         self.assertEqual(80, metrics["control_chars"].value)
-        self.assertEqual(833, metrics["boundary_excerpt"].value)
+        self.assertEqual(752, metrics["boundary_excerpt"].value)
         # 只留占位写法（`（见知识清单/教材）`）的条数。旧判据是"以 `定位：` 开头"，
         # 而本包每个 boundary 都这样开头，于是该项恒等于节点总数 2573、毫无信息量。
         self.assertEqual(581, metrics["locator_boundary"].value)

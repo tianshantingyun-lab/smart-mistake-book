@@ -51,10 +51,10 @@ class RealPackTest(unittest.TestCase):
         renames = rp.load_renames()
         self.assertEqual(0, rp.rename(pack, renames))
 
-    def test_shipped_point_count_is_2309(self):
+    def test_shipped_point_count_is_2193(self):
         from kb_build import delete_points as dp
         pack = pack_io.load_json(pack_io.pack_path())
-        self.assertEqual(2309, dp._point_count(pack))
+        self.assertEqual(2193, dp._point_count(pack))
 
 
 if __name__ == "__main__":

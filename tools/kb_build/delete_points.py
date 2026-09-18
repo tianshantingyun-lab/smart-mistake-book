@@ -89,7 +89,7 @@ def _purge_table_refs(pack: dict) -> dict[str, int]:
     known = {(s["subject"], k["slug"]) for s in pack["subjects"] for t in s["topics"]
              for k in t.get("knowledgePoints") or []}
     purged = {}
-    for name in ("chapter_map.csv", "alias_map.csv"):
+    for name in ("chapter_map.csv", "alias_map.csv", "chapter_point_relocation.csv"):
         path = tables.TABLES_DIR / name
         if not path.exists():
             continue
