@@ -12,7 +12,7 @@
    "sourceUri": "https://www.example.edu/material",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "B3FB665273D9BEF9111CF26765CBC4832E7DBF079FBB86ED9B5180B342A5A7ED",
-   "importedAtEpochMillis": 1784908800000,
+   "importedAtEpochMillis": 1784908740000,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -28,7 +28,7 @@
    "sourceUri": "https://www.example.edu/material",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "141BC7543D1F60756E0F118EADD2C3B63A93922A2762DCA19AA52040CC410CF9",
-   "importedAtEpochMillis": 1784908800000,
+   "importedAtEpochMillis": 1784908740000,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -44,7 +44,7 @@
    "sourceUri": "https://www.example.edu/material",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "5D34E47EC83122AABE602E9EA14F9769079E43F62019F8653383B8A2BC270D67",
-   "importedAtEpochMillis": 1784908800000,
+   "importedAtEpochMillis": 1784908740000,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -60,7 +60,7 @@
    "sourceUri": "https://www.example.edu/material",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "204807CBBD6C980FEFC2D1823C4289A9136B0ECAFC7E0B7A828AEC692307D2EC",
-   "importedAtEpochMillis": 1784908800000,
+   "importedAtEpochMillis": 1784908740000,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -76,7 +76,7 @@
    "sourceUri": "https://www.example.edu/material",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "5E0CCFA89DB5C2B9FB3279358FCF12759728AA6641BAC67329E9945E0C0F9C4F",
-   "importedAtEpochMillis": 1784908800000,
+   "importedAtEpochMillis": 1784908740000,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -92,7 +92,7 @@
    "sourceUri": "https://www.example.edu/material",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "A4BE0949E5E1C364A983D1B7BFD368B80480822CD4F7AA80D052E822B9BD2E87",
-   "importedAtEpochMillis": 1784908800000,
+   "importedAtEpochMillis": 1784908740000,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -108,7 +108,7 @@
    "sourceUri": "https://www.example.edu/desktop-kb-source",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "DA44D7822E4E91D760B228E72495E4CE137101298124C0695FF0474FDFBE032B",
-   "importedAtEpochMillis": 1789669649286,
+   "importedAtEpochMillis": 1789669590286,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -124,7 +124,7 @@
    "sourceUri": "https://www.example.edu/desktop-kb-source",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "D45C35EA10D42D32A8A0A578557911B78B313C048345E31D7AB2381426DFFAA0",
-   "importedAtEpochMillis": 1789732985467,
+   "importedAtEpochMillis": 1789732926467,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -140,7 +140,7 @@
    "sourceUri": "https://www.example.edu/desktop-kb-source",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "35F0C03E99DD5E9D9DB8814B589AAB6804DCE7A5B4A35BC2E6DA76A4311544B7",
-   "importedAtEpochMillis": 1789733277691,
+   "importedAtEpochMillis": 1789733218691,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -156,7 +156,7 @@
    "sourceUri": "https://www.example.edu/desktop-kb-source",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "A260977C1AF61A08745DC6E7DF5F37300664058178B807E6D755BD2527F5F596",
-   "importedAtEpochMillis": 1789733277957,
+   "importedAtEpochMillis": 1789733218957,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -172,7 +172,7 @@
    "sourceUri": "https://www.example.edu/desktop-kb-source",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "4B8F903AC2C5A9739CDCC344BA479B913BC40B09177389C4BFCF34FCEECA5001",
-   "importedAtEpochMillis": 1789733278373,
+   "importedAtEpochMillis": 1789733219373,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -188,7 +188,7 @@
    "sourceUri": "https://www.example.edu/wusan-2027-a-jingjiang",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "2011B658897C1A5FB7A4F28711CE553EDB9329E95695B8F9EFE01088DA48CF60",
-   "importedAtEpochMillis": 1784908800000,
+   "importedAtEpochMillis": 1784908740000,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -204,7 +204,7 @@
    "sourceUri": "https://www.example.edu/wusan-2027-a-jingjiang",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "377D44166DBA34CCB0FD1356B741DB203AD37833B0E7644BAF15A9627B7FC743",
-   "importedAtEpochMillis": 1784908800000,
+   "importedAtEpochMillis": 1784908740000,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -220,7 +220,39 @@
    "sourceUri": "https://www.example.edu/desktop-kb-source",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "25ACA917ED65BEC02141841019A23530CB07CA7F2004AF86BAF310C50D2B4D38",
-   "importedAtEpochMillis": 1789739866250,
+   "importedAtEpochMillis": 1789739807250,
+   "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
+   "licenseExpression": null,
+   "licenseUri": null,
+   "attributionText": "桌面教辅资料直抽改写（REVIEWED_SYNTHESIS），仅内部教学参考。"
+  },
+  {
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "subject": "MATH",
+   "sourceType": "AUTHORIZED_EDUCATION_MATERIAL",
+   "title": "桌面教辅资料 · 02-【数学】2027版高中《解题觉醒》",
+   "publisher": "教辅汇编（桌面原始资料）",
+   "edition": "2026/2027版",
+   "sourceUri": "https://www.example.edu/desktop-kb-source",
+   "licenseStatus": "REFERENCE_ONLY",
+   "contentFingerprint": "0D9B438CAD876C4C5AFFCE5034AFABF05936D3E5542D321353B677D66DF46A6D",
+   "importedAtEpochMillis": 1789757064890,
+   "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
+   "licenseExpression": null,
+   "licenseUri": null,
+   "attributionText": "桌面教辅资料直抽改写（REVIEWED_SYNTHESIS），仅内部教学参考。"
+  },
+  {
+   "sourceId": "desktop-src-3dd32e4bb8:biology",
+   "subject": "BIOLOGY",
+   "sourceType": "AUTHORIZED_EDUCATION_MATERIAL",
+   "title": "桌面教辅资料 · 06-【生物】2027版高中《解题觉醒》",
+   "publisher": "教辅汇编（桌面原始资料）",
+   "edition": "2026/2027版",
+   "sourceUri": "https://www.example.edu/desktop-kb-source",
+   "licenseStatus": "REFERENCE_ONLY",
+   "contentFingerprint": "5D75315E89621BA93E56C9CCC2010CB3CA2F4CA40B59962C12B1CC393820C670",
+   "importedAtEpochMillis": 1789757064890,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -44209,6 +44241,2546 @@
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:铁的氧化物",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-006",
+   "subject": "MATH",
+   "type": "MISCONCEPTION_GUIDE",
+   "title": "连续放缩要验等号能否同取",
+   "summaryMarkdown": "连续两次使用基本不等式求最值时，两次放缩的等号若不能同时成立，所得最小值是错误答案。",
+   "applicabilityMarkdown": "用基本不等式求最值时若需要两次（或多次）放缩，必须先写出每次的等号条件并检验是否有公共解，常见于“已知和求分式和最值”的题目。",
+   "contentMarkdown": "**典型错解**：已知 $x+y=1$（$x$、$y>0$），求 $\\frac{1}{x}+\\frac{9}{y}$ 的最小值。若先由 $xy\\le\\left(\\frac{x+y}{2}\\right)^2=\\frac14$ 得 $\\frac{1}{xy}\\ge4$，再用 $\\frac{1}{x}+\\frac{9}{y}\\ge2\\sqrt{\\frac{9}{xy}}\\ge2\\sqrt{9\\times4}=12$，就得到错误答案 12。\\n\\n**错因**：第一次放缩 $xy\\le\\left(\\frac{x+y}{2}\\right)^2$ 当且仅当 $x=y=\\frac12$ 时取等号；第二次放缩 $\\frac{1}{x}+\\frac{9}{y}\\ge2\\sqrt{\\frac{9}{xy}}$ 当且仅当 $\\frac{1}{x}=\\frac{9}{y}$ 即 $y=9x$ 时取等号。$x=y=\\frac12$ 与 $y=9x$ 不能同时成立，两次放缩的等号不能在同一点取到，所以最小值不是 12。\\n\\n**正确做法一（1 的代换）**：$\\frac{1}{x}+\\frac{9}{y}=\\left(\\frac{1}{x}+\\frac{9}{y}\\right)(x+y)=10+\\frac{9x}{y}+\\frac{y}{x}\\ge10+2\\sqrt{9}=16$，当且仅当 $\\frac{9x}{y}=\\frac{y}{x}$ 且 $x+y=1$，即 $x=\\frac14$、$y=\\frac34$ 时取等号。\\n\\n**正确做法二（权方和不等式一次到位）**：$\\frac{1}{x}+\\frac{9}{y}=\\frac{1^2}{x}+\\frac{3^2}{y}\\ge\\frac{(1+3)^2}{x+y}=16$，当且仅当 $\\frac{1}{x}=\\frac{3}{y}$ 时取等号。\\n\\n**检查口诀**：逐次写出等号条件，判断它们是否有公共解；没有公共解说明放缩过度，必须换方法。",
+   "boundaryMarkdown": "只有各次放缩的等号条件存在公共解（且该解落在定义域内）时，多次放缩的结论才成立；必须逐次写出等号条件分别检验，只验证其中一次不算通过；放宽不等号方向、忽略“当且仅当”的条件都会导致错误的最小值。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-006）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:连续使用基本不等式忽略等号同时成立致错",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-006b",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "用基本不等式搭桥求最值",
+   "summaryMarkdown": "条件中同时出现 $ax+by$ 与 $xy$ 时，用基本不等式把它们联系起来，构造只含一个整体的不等式再解。",
+   "applicabilityMarkdown": "已知正数 $x$、$y$ 满足 $ax+by=f(xy)$（其中 $a$、$b$ 为正数，$f(xy)$ 为 $cxy+d$ 的形式），求 $ax+by$ 或 $xy$ 的最值。",
+   "contentMarkdown": "**识别（见招）**：已知正数 $x$、$y$ 满足 $ax+by=f(xy)$（其中 $a$、$b$ 都为正数，$f(xy)$ 为 $cxy+d$ 的形式），求 $ax+by$（或 $xy$）的最值；目标式与条件中的另一个整体往往无法直接消元。\\n\\n**出招**：将 $ax+by$ 与 $xy$ 以基本不等式作为桥梁建立关系。\\n\\n**第一步**：根据基本不等式变形得到 $ax+by\\ge2\\sqrt{abxy}$，建立关于 $ax+by$（或关于 $xy$）的不等式。\\n\\n**第二步**：解关于 $ax+by$（或 $xy$）的不等式，即可求得 $ax+by$（或 $xy$）的最值，注意验证等号能否取到。\\n\\n**常用桥梁**：① $x+y\\ge2\\sqrt{xy}$（和与积互相转化）；② $xy\\le\\left(\\frac{x+y}{2}\\right)^2$（用和的上界消去积）；③ 先把条件通分变形，如由 $\\frac{1}{x}+\\frac{1}{y}=5$ 得 $x+y=5xy$，使条件中只出现 $x+y$ 与 $xy$ 两个整体。\\n\\n**结果形式**：转化后通常得到关于整体的一元二次不等式或形如 $t+\\frac{4}{t}\\le5$ 的不等式，如由 $5=x+y+\\frac{x+y}{xy}$ 与 $xy\\le\\frac{(x+y)^2}{4}$ 得 $(x+y)^2-5(x+y)+4\\le0$，解得 $1\\le x+y\\le4$，即最小值为 1、最大值为 4。",
+   "boundaryMarkdown": "桥梁不等式的方向必须与目标一致（求和的最大值要用积的上界，求积的最大值要用和的上界），方向用反会得到相反的结论；$x$、$y$ 必须为正数；整体换元后要写出新元的取值范围再解不等式；求得范围后要检验端点处等号能否取到，取不到时端点只是界限而非最值。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-006）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:利用基本不等式求最值",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-009",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "判别式法求分式函数值域",
+   "summaryMarkdown": "把 $y=f(x)$ 整理成关于 $x$ 的整式方程，用 $y$ 作参数、由判别式 $\\Delta\\ge0$ 求 $y$ 的范围即得值域。",
+   "applicabilityMarkdown": "分子分母含二次的分式函数（如 $y=\\frac{5x}{x^2-3x+4}$）求值域；已知函数定义域为 R 时也可优先考虑此法。",
+   "contentMarkdown": "**方法**：函数 $y=f(x)=\\frac{5x}{x^2-3x+4}$ 的定义域为 R，此时可考虑用判别式法求解。把 $y=\\frac{5x}{x^2-3x+4}$ 变形得 $y(x^2-3x+4)=5x$，整理得 $yx^2-(3y+5)x+4y=0$。\\n\\n当 $y=0$ 时，方程有解；当 $y\\ne0$ 时，$\\Delta=(3y+5)^2-16y^2\\ge0$，解得 $-\\frac{5}{7}\\le y<0$ 或 $0<y\\le5$。综上所述，函数 $f(x)$ 的值域为 $-\\frac{5}{7}\\le y\\le5$。\\n\\n**一般步骤**：① 先将原函数整理成一个关于 $x$ 的整式方程，此时把 $y$ 看作参数；② 对 $y=0$ 与 $y\\ne0$ 分两种情况讨论：$y=0$ 时直接检验方程是否有解，$y\\ne0$ 时通过判别式大于等于 0 得到 $y$ 的范围；③ 结合 $y=0$ 是否有解综合得出值域。\\n\\n**使用条件**：当给定的函数定义域是 R 时，也可考虑用判别式法；若定义域不是 R，用判别式法时需要对产生的增根分情况讨论，此时不建议用判别式法。",
+   "boundaryMarkdown": "必须先把原函数整理成一个关于 $x$ 的整式方程，并把 $y=0$ 与 $y\\ne0$ 分两种情况讨论，漏掉 $y=0$ 的检验会丢解；定义域不是 R 时判别式法容易产生增根，需逐一代回检验；分子分母有公因式时应先约分并重新确定定义域，否则值域会被扩大或缩小。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-009）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:判别式法-主要用于含有二次的分式函数-形如",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-010",
+   "subject": "MATH",
+   "type": "MISCONCEPTION_GUIDE",
+   "title": "解函数不等式勿漏定义域",
+   "summaryMarkdown": "由单调性把 $f(g(x))<f(h(x))$ 转化为 $g(x)<h(x)$ 时，必须同时保证 $g(x)$ 与 $h(x)$ 都落在 $f$ 的定义域内。",
+   "applicabilityMarkdown": "用单调性解函数不等式 $f(g(x))<f(h(x))$ 时，若 $f(x)$ 的定义域有限制（如含对数、根式、分母），最后求出的解集必须与定义域约束取交集。",
+   "contentMarkdown": "**转化链条**：通过导数得到 $f(x)$ 单调递增后，把不等式 $f(x+4)<f(x^2-2)$ 转化为 $x+4<x^2-2$，解 $x^2-x-6>0$ 得 $x<-2$ 或 $x>3$，所以原不等式的解集为 $x<-2$ 或 $x>3$。这里因为 $f(x)$ 的定义域恰好是 R，转化是等价的。\\n\\n**易错点**：如果函数 $f(x)$ 的定义域有限制，最后求解集时一定不要忽略。若 $f(x)$ 的定义域为 $D$，解不等式 $f(g(x))<f(h(x))$ 时容易忽略隐含条件 $g(x)\\in D$ 且 $h(x)\\in D$，得到的解集会被扩大。\\n\\n**正确做法**：① 先用单调性把函数不等式转化为 $g(x)<h(x)$；② 再补上 $g(x)\\in D$ 与 $h(x)\\in D$ 两个条件；③ 三者取交集才是原不等式的解集。\\n\\n**练习提醒**：见到 $f$ 的解析式里含分母、偶次根式、对数时，先求出定义域再动笔转化，避免最后多出无效解。",
+   "boundaryMarkdown": "定义域限制在抽象函数问题中往往被“隐藏”（题目只给 $f(x_0)$ 一类的条件），必须从解析式的结构反推出定义域；转化 $f(g(x))<f(h(x))$ 得到的只是必要条件，漏掉定义域约束会扩大解集；取交集时注意把三段条件分别解出后再合并，不要直接把不等号连写。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-010）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:利用单调性解不等式时忽略定义域致错",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-011b",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "轴对称的等价式与推论",
+   "summaryMarkdown": "函数图象关于直线 $x=a$ 对称等价于 $f(a+x)=f(a-x)$，并可由 $f(x)=f(2a-x)$、$f(x+a)=f(b-x)$ 直接读出对称轴。",
+   "applicabilityMarkdown": "已知（或可推出）函数满足 $f(a+x)=f(a-x)$、$f(x)=f(2a-x)$、$f(x+a)=f(b-x)$ 一类等式，判断对称轴位置或利用对称性求函数值、比较大小。",
+   "contentMarkdown": "**基本原理**：已知函数 $f(x)$ 的定义域为 R。由轴对称的性质可知，到对称轴距离相等的两个自变量所对应的函数值相等。\\n\\n**核心等价式**：函数 $f(x)$ 的图象关于直线 $x=a$ 对称 $\\Leftrightarrow f(a+x)=f(a-x)$，口诀是括号外的 $x$ 反号、括号内的 $a$ 不变“。\\n\\n**推论一**：$f(x)=f(2a-x)\\Leftrightarrow$ 函数 $f(x)$ 的图象关于直线 $x=a$ 对称。\\n\\n**推论二**：$f(x+a)=f(b-x)\\Leftrightarrow$ 函数 $f(x)$ 的图象关于直线 $x=\\frac{a+b}{2}$ 对称。\\n\\n**证明思路**：因为 $f(x)=f(2a-x)$，用 $a+x$ 替换 $x$ 得 $f(a+x)=f(2a-(a+x))=f(a-x)$，所以函数 $f(x)$ 的图象关于直线 $x=a$ 对称，反之亦然；推论二则用 $x+\\frac{b-a}{2}$ 替换 $x$ 化为推论一的形式，即 $f\\left(x+\\frac{a+b}{2}\\right)=f\\left(\\frac{a+b}{2}-x\\right)$，所以图象关于直线 $x=\\frac{a+b}{2}$ 对称。\\n\\n**识别要点**：两个函数值相等、且两个括号内的自变量之和恒为常数（如 $x_1+x_2=2a$）时，图象关于直线 $x=\\frac{x_1+x_2}{2}$ 对称；反之由对称轴也能写出这样的等式。”",
+   "boundaryMarkdown": "只能由等式推出对称轴，不能由“函数值相等”推出别的关系；自变量之和必须是常数才能得到一条固定的对称轴，自变量之和不固定时不能判定；用替换法证明时注意两个括号要同时替换、保持结构一致；偶函数情形是 $a=0$ 的特例（图象关于直线 $x=0$ 对称）。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-011）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:关于线对称",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-012",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "中心对称的等价式与推论",
+   "summaryMarkdown": "函数图象关于点 $(a$，$b)$ 中心对称等价于 $f(a+x)+f(a-x)=2b$，即 $f(a+x)=-f(a-x)+2b$。",
+   "applicabilityMarkdown": "已知函数满足 $f(a+x)+f(a-x)=2b$、$f(x)=-f(2a-x)+2b$、$f(x+a)=-f(b-x)+2c$ 一类等式，判断对称中心位置或利用对称中心求函数值、求和。",
+   "contentMarkdown": "**基本原理**：由中心对称的性质可知，到对称中心距离相等的两个自变量所对应的函数值之和为对称中心纵坐标的 2 倍。\\n\\n**核心等价式**：函数 $f(x)$ 的图象关于点 $(a$，$b)$ 中心对称 $\\Leftrightarrow f(a+x)+f(a-x)=2b$，即 $f(a+x)=-f(a-x)+2b$。\\n\\n**推论一**：$f(x)=-f(2a-x)+2b\\Leftrightarrow$ 函数 $f(x)$ 的图象关于点 $(a$，$b)$ 中心对称。\\n\\n**推论二**：$f(x+a)=-f(b-x)+2c\\Leftrightarrow$ 函数 $f(x)$ 的图象关于点 $\\left(\\frac{a+b}{2}$，$c\\right)$ 中心对称。\\n\\n**证明思路**：因为 $f(x)+f(2a-x)=2b$，用 $a+x$ 替换 $x$ 得 $f(a+x)+f(2a-(a+x))=f(a+x)+f(a-x)=2b$，所以图象关于点 $(a$，$b)$ 中心对称，反之亦然；推论二用 $x+\\frac{b-a}{2}$ 替换 $x$ 即可化为推论一的形式。\\n\\n**三条常用提醒**：① 函数 $f(x)$ 的图象关于点 $(a$，$b)$ 中心对称，需要用等式表达时通常转化为 $f(a+x)=-f(a-x)+2b$（或 $f(x)=-f(2a-x)+2b$）；② 看到等式 $f(x+a)=-f(b-x)+2c$ 时，要能转化为图象关于点 $\\left(\\frac{a+b}{2}$，$c\\right)$ 中心对称；③ 特别地，$f(x)=-f(2a-x)\\Leftrightarrow$ 图象关于点 $(a$，$0)$ 中心对称，$f(x)=-f(-x)+2a\\Leftrightarrow$ 图象关于点 $(0$，$a)$ 中心对称，这两种情况经常考查。",
+   "boundaryMarkdown": "两个函数值必须相加等于常数 2 倍才构成中心对称，只写“函数值相等”是轴对称而不是中心对称；对称中心的横坐标由括号内自变量之和的一半给出、纵坐标由函数值之和的一半给出，两者不能混用；等式中的常数项 $2b$ 不要漏写（漏掉就变成关于 $(a$，$0)$ 对称）。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-012）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:关于点对称",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-014",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "双对称推导函数周期",
+   "summaryMarkdown": "函数有两条对称轴或两个对称中心时周期为 $2|b-a|$，有一条对称轴加一个对称中心时周期为 $4|b-a|$。",
+   "applicabilityMarkdown": "已知函数图象的对称轴、对称中心（或已知 $f(x+a)$ 为奇函数、$f(x+b)$ 为偶函数），要求函数的周期或求大自变量处的函数值时。",
+   "contentMarkdown": "**① 两条对称轴**：已知函数 $f(x)$ 的图象关于直线 $x=a$ 和直线 $x=b$ 对称，则 $f(x)$ 是周期为 $2|b-a|$ 的周期函数。特别地，当 $f(x)$ 为偶函数（图象关于直线 $x=0$ 对称）且图象关于直线 $x=a$ 对称时，$f(x)$ 是周期为 $2|a|$ 的周期函数。\\n\\n**证明**：因为图象关于直线 $x=a$ 和 $x=b$ 对称，所以 $f(x)=f(2a-x)$ 且 $f(x)=f(2b-x)$，于是 $f(2a-x)=f(2b-(2a-x))$，用 $2a-x$ 替换 $x$ 得 $f(x)=f(x+2b-2a)$，所以 $f(x)$ 是周期为 $2|b-a|$ 的周期函数。\\n\\n**② 两个对称中心**：已知 $f(x)$ 的图象关于点 $(a$，$0)$ 和点 $(b$，$0)$ 中心对称，则 $f(x)$ 是周期为 $2|b-a|$ 的周期函数。特别地，当 $f(x)$ 为奇函数且其图象关于点 $(a$，$0)$ 中心对称时，$f(x)$ 是周期为 $2|a|$ 的周期函数。\\n\\n**③ 一条对称轴加一个对称中心**：已知 $f(x)$ 的图象关于点 $(a$，$0)$ 中心对称且关于直线 $x=b$ 对称，则 $f(x)$ 是周期为 $4|b-a|$ 的周期函数，俗称一轴一心四周期“。\\n\\n**证明思路**：由中心对称得 $f(x)+f(2a-x)=0$，由轴对称得 $f(x)=f(2b-x)$；把 $x$ 换成 $2b-2a+x$ 依次代入可得 $f(x)+f(2b-2a+x)=0$，再代入一次得 $f(2b-2a+x)+f(4b-4a+x)=0$，两式比较即得 $f(x+4b-4a)=f(x)$。\\n\\n**记忆要点**：两条对称轴、两个对称中心都得到 $2|b-a|$；一轴一心得到 $4|b-a|$。一般地，根据一条对称轴加一个对称中心推导出来的周期函数能找到 $f(x)$ 与 $f(2b-2a+x)$ 之间的关系式，即可能存在”半周期“。”",
+   "boundaryMarkdown": "两条对称轴（或两个对称中心）之间的距离 $|b-a|$ 只算半个周期，写周期时要乘 2；一轴一心时要乘 4，乘错倍数是最常见的错误；对称轴必须是“图象的对称轴”而不是单调区间的分界点，判断前先确认对称性成立；由 $f(x+a)$ 为奇函数只能推出图象关于点 $(a$，$0)$ 中心对称、由 $f(x+b)$ 为偶函数只能推出图象关于直线 $x=b$ 对称，不能直接得到周期。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-014）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:函数的奇偶性-周期性-对称性关系",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-019",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "复合方程由外向内求解",
+   "summaryMarkdown": "解复合方程 $f(g(x))=m$ 的实根个数时，先由外层方程 $f(u)=m$ 解出 $u$，再分别讨论内层方程 $g(x)=u_i$ 的实根个数并求和。",
+   "applicabilityMarkdown": "复合方程 $f(g(x))=m$（$m\\in R$）的实根个数问题，且外层方程 $f(u)=m$ 容易解出具体根时。",
+   "contentMarkdown": "**适用情形**：探讨关于 $x$ 的复合方程 $f(g(x))=m$（$m\\in R$）实数根的个数“相关问题时，如果方程能解，一般采用由外向内一层一层去处理。\\n\\n**第一步**：设 $u=g(x)$，解关于 $u$ 的方程 $f(u)=m$，得到若干实数根 $u_1$、$u_2$、$\\cdots$，或确定方程的根 $u_1$、$u_2$、$\\cdots$ 的范围。\\n\\n**第二步**：分别探讨关于 $x$ 的方程 $g(x)=u_1$、$g(x)=u_2$、$\\cdots$ 的实数根的个数（或结合图象观察函数 $y=g(x)$ 的图象与函数 $y=u_i$（$i=1$、$2$、$\\cdots$）的图象的交点个数），各个方程的实数根个数之和即是关于 $x$ 的复合方程 $f(g(x))=m$（$m\\in R$）实数根的个数，也可以根据实数根个数之和求方程中参数的取值范围。\\n\\n**要点**：由外向内就是”先解外层，再把外层的每个根当作内层方程的常数“，逐个求出内层实根个数后求和。\\n\\n**示例思路**：解方程 $|f(x)+g(x)|=1$ 时，先设 $u=f(x)+g(x)$，由 $|u|=1$ 解得 $u_1=-1$、$u_2=1$，再分别解 $f(x)+g(x)=1$ 与 $f(x)+g(x)=-1$，两个方程实根个数之和即为原方程的实根个数。”",
+   "boundaryMarkdown": "只有当外层方程可以解出具体根或能确定根的范围时才便于由外向内；每个外层根 $u_i$ 都要检验是否落在内层函数的值域内，不在值域内则不产生实根；内层方程要按分段函数的定义域分段讨论；不同外层根对应的内层实根可能重复，计数时要先去重；把实根个数问题转化为图象交点个数时注意重根（切点）只算一个交点。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-019）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:嵌套函数的零点问题",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-020",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "复合方程由内向外与整体替换",
+   "summaryMarkdown": "含参复合方程外层不易解时改用由内向外：先研究内层 $u=g(x)$ 的性质与值域并画图，再讨论外层方程 $f(u)=m$ 的实根情况。",
+   "applicabilityMarkdown": "已知复合方程 $f(g(x))=m$ 的实根个数求参数的取值范围，且外层方程含参不易解时；含 $f^2(x)$、$f(f(x))$ 的方程（嵌套、等高线）问题。",
+   "contentMarkdown": "**由内向外的一般步骤**：探讨已知关于 $x$ 的复合方程 $f(g(x))=m$（$m\\in R$）实数根的个数，求参数取值范围“相关问题时，当外层方程容易解，可以使用前面的由外向内；但含参方程往往没法解，此时需要由内向外处理。\\n\\n**第一步**：构建合适的复合函数，设 $u=g(x)$，得到函数 $u=g(x)$ 的性质与值域（主要是单调性），如有必要，则画出函数图象。\\n\\n**第二步**：确定关于 $u$ 的方程 $f(u)=m$ 的实数根的个数情况，或求出参数的取值范围。\\n\\n**由内到外的三种替换类型**：\\n\\n- **类型一**：将函数中的某个整体替换为 $t$，如把方程 $9e^2\\left(\\frac{\\ln x}{x}\\right)^2-3e(3-m)\\cdot\\frac{\\ln x}{x}+1-3m=0$ 看成 $t=\\frac{\\ln x}{x}$ 与 $9e^2t^2-3e(3-m)t+1-3m=0$ 复合而成：先研究直线 $y=t$ 与函数 $y=\\frac{\\ln x}{x}$ 图象的交点个数，再研究关于 $t$ 的方程 $9e^2t^2-3e(3-m)t+1-3m=0$ 的实根分布情况。\\n- **类型二**：含 $f^2(x)$ 的表达式中将 $f(x)$ 换成 $t$。如方程 $f^2(x)-(2m+1)f(x)+m^2=0$ 有 7 个不同的实根求 $m$ 的范围时，把 $f(x)$ 换成 $t$，转化为研究直线 $y=t$ 与函数 $f(x)$ 图象的交点个数以及方程 $t^2-(2m+1)t+m^2=0$ 实根的分布情况。\\n- **类型三**：$f(f(x))$ 的表达式中将 $f(x)$ 换成 $t$。如判断方程 $f(f(x))+k=0$ 的零点个数时，把 $f(x)$ 换成 $t$，转化为研究直线 $y=t$ 与 $f(x)$ 图象的交点个数以及方程 $f(t)=-k$ 的实根分布情况。\\n\\n**等高线视角**：复合函数根的问题常与等高线问题结合。对于函数 $f(x)$，若存在互不相等的实数 $a$、$b$、$c$、$\\cdots$ 使 $f(a)=f(b)=f(c)=\\cdots=t$，则称直线 $y=t$ 为函数 $f(x)$ 的等高线。画出函数 $y=f(x)$ 的图象，该图象与直线 $y=t$ 的交点的横坐标就是方程 $f(x)=t$ 的实数根。”",
+   "boundaryMarkdown": "由内向外时必须先求出内层函数的值域（分段函数要逐段求），外层方程的根 $t$ 只有落在内层值域内才能产生实根；内层函数含参或分段时要画图逐段讨论；换元后要写出新元 $t$ 的取值范围再讨论外层方程根的情况；得到的参数范围要与原题的根的个数条件核对；数等高线的交点个数时注意切点（重根）只算一个交点。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-020）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:嵌套函数的零点问题",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-021",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "函数图象的切线方程",
+   "summaryMarkdown": "函数 $f(x)$ 在点 $(x_0$，$f(x_0))$ 处的切线斜率为 $f'(x_0)$，切线方程可写成点斜式 $y-f(x_0)=f'(x_0)(x-x_0)$。",
+   "applicabilityMarkdown": "求曲线在某点处的切线方程；已知切线方程或斜率反求参数；用切线放缩比较函数值大小。",
+   "contentMarkdown": "**切线方程的求法**：已知函数 $f(x)$ 连续，且当 $x=x_0$ 时导函数值 $f'(x_0)$ 存在，则函数 $f(x)$ 的图象在 $(x_0$，$f(x_0))$ 处切线的斜率为 $f'(x_0)$。关键点是：点 $(x_0$，$f(x_0))$ 既是切线上的点，也是函数 $f(x)$ 图象上的点。\\n\\n于是在 $(x_0$，$f(x_0))$ 处函数 $f(x)$ 的图象的切线方程用点斜式表示为 $y-f(x_0)=f'(x_0)(x-x_0)$，用斜截式表示为 $y=f'(x_0)x+[f(x_0)-f'(x_0)x_0]$。\\n\\n**解题步骤**：① 判断题目要求的是在某点“还是”过某点“的切线；② 求导数并算出切点处的斜率；③ 代入点斜式并整理（斜截式便于直接读出斜率与 $y$ 轴截距）。\\n\\n**在点处切线的刻画**：斜率为 $f'(x_0)$、过点 $(x_0$，$f(x_0))$；这两个条件保证了该直线也是曲线在切点处的”最贴近“的直线，用于切线放缩时要注意等号在切点处取得。”",
+   "boundaryMarkdown": "要先看题目说的是“在某点”还是“过某点”：在某点的切线中这个点一定是切点，可直接求斜率；若该点不在曲线上却说“过”该点，就不能把该点当切点；求导后算斜率的点必须是切点横坐标；切线与曲线在切点附近只有一个公共点，但切线可能与曲线在别处还有交点，不能据公共点个数判断切线。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-021）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:曲线-在-某点处的切线问题",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-022",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "求过某点的切线方程",
+   "summaryMarkdown": "切线过某点时切点未知，需设切点 $P(x_0$，$y_0)$、写出切线方程，再由“切线过已知点”解出 $x_0$，有几个解就有几条切线。",
+   "applicabilityMarkdown": "求过点 $A(m$，$n)$ 的曲线的切线方程；已知过某点的切线的条数或某条切线求参数。",
+   "contentMarkdown": "**方法**：若求过点 $A(m$，$n)$ 的切线方程，则切点未知，过程如下：设切点为 $P(x_0$，$y_0)$，则斜率 $k=f'(x_0)$，过切点的切线方程为 $y-y_0=f'(x_0)(x-x_0)$；又因为切线过点 $A(m$，$n)$，所以 $n-y_0=f'(x_0)(m-x_0)$，然后解出 $x_0$ 的值（$x_0$ 有几个值，就有几条切线）。\\n\\n**两个条件缺一不可**：① 切点在曲线上（$y_0=f(x_0)$）；② 点 $A$ 在切线上，即 $n-y_0=f'(x_0)(m-x_0)$。把 ① 代入 ② 消去 $y_0$ 后得到只含 $x_0$ 的方程，解出 $x_0$ 即可写出每条切线。\\n\\n**注意区分**：若点 $A$ 恰在曲线上，过 $A$ 的切线可能不止一条——一条是以 $A$ 为切点的切线，其余是以别处为切点却经过 $A$ 的切线，判断时仍按上述方程解 $x_0$ 来定。",
+   "boundaryMarkdown": "切点未知时必须设切点，不能直接把给定点当切点求斜率；解出 $x_0$ 的每一个值都要写出一条完整切线，不能只写一条；方程 $n-y_0=f'(x_0)(m-x_0)$ 无解时说明过该点没有切线；切点必须在函数的定义域内，含对数、根式时尤其要检验。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-022）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:曲线-过-某点的切线问题",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-022b",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "两曲线的公切线",
+   "summaryMarkdown": "公切线同时是两条曲线的切线，由“斜率相等”与“$y$ 轴截距相等”两个条件列方程组求切点。",
+   "applicabilityMarkdown": "求两条曲线的公切线方程；已知公切线的条数或公切线过某点求参数范围。",
+   "contentMarkdown": "**方法**：如果直线 $l$ 既是函数 $f(x)$ 的图象在 $(x_1$，$f(x_1))$ 处的切线，又是函数 $g(x)$ 的图象在 $(x_2$，$g(x_2))$ 处的切线，则直线 $l$ 的方程既可以表示为 $y=f'(x_1)x+[f(x_1)-f'(x_1)x_1]$，也可以表示为 $y=g'(x_2)x+[g(x_2)-g'(x_2)x_2]$。\\n\\n于是有 $\\begin{cases}f'(x_1)=g'(x_2)\\\\f(x_1)-f'(x_1)x_1=g(x_2)-g'(x_2)x_2\\end{cases}$，我们常根据这两个式子来处理公切线问题：第一个式子表示两条切线斜率相等，第二个式子表示两条切线在 $y$ 轴上的截距相等。\\n\\n**解题流程**：① 分别在两条曲线上设切点 $(x_1$，$f(x_1))$ 与 $(x_2$，$g(x_2))$；② 写出斜率相等与截距相等的方程组；③ 消元（通常先消去 $x_2$ 或参数）得到只含一个未知量的方程，解出切点横坐标后写出公切线方程。",
+   "boundaryMarkdown": "两个切点是两条曲线上各自不同的点，不能用同一个点代替；方程组消元后要讨论解的个数（公切线可能不止一条，也可能不存在）；两曲线相切于同一点的情形要单独处理（此时两个切点重合）；切点必须落在各自的定义域内；由公切线方程反求参数时要把切点条件与方程一并代入，不能只用一个条件。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-022）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:两曲线的公切线问题",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-023b",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "导数逆向构造解函数不等式",
+   "summaryMarkdown": "已知导函数满足的不等式时，逆用求导法则构造新函数，由新函数的单调性解函数不等式。",
+   "applicabilityMarkdown": "题目给出 $f'(x)$ 与 $f(x)$ 的混合不等式（如 $f'(x)+f(x)>0$）并给出某个函数值，要求解形如 $f(x)>c$ 的不等式。",
+   "contentMarkdown": "**逆向构造问题**：对于已知导函数满足一个不等式，去解一个函数不等式的问题，一般称为逆向构造问题。例如已知 $f(x)+f'(x)>0$，且 $f(0)=1$，求不等式 $f(x)<e^{-x}$ 的解集。\\n\\n**一般处理步骤**：\\n\\n① **第一步**：逆用求导法则，构造一个新函数，新函数的导函数能通过题目中所给的导函数不等式判断与 0 的关系。\\n② **第二步**：求出新函数的导函数，得到新函数的单调性。\\n③ **第三步**：利用新函数的单调性解决问题（把待解不等式化为两个函数值的大小关系）。\\n\\n**示例思路**：条件为 $f'(x)>-f(x)$，即 $f'(x)+f(x)>0$，系数只有常数（$f'(x)$ 系数为 1、$f(x)$ 系数为 1），用 $e^x$ 来构、和的形式用积“来构，联想到构造函数 $g(x)=e^xf(x)$，则 $g'(x)=e^x[f'(x)+f(x)]>0$，$g(x)$ 单调递增；把 $f(x)>\\frac{1}{e^x}$ 化为 $e^xf(x)>1$，即 $g(x)>g(\\ln 3)$（用 $f(\\ln 3)=\\frac13$ 算出 $g(\\ln 3)=e^{\\ln3}f(\\ln 3)=1$），于是 $x>\\ln 3$。”",
+   "boundaryMarkdown": "构造函数的选择必须由所给不等式的结构决定（和为积、差为商），构造出的新函数求导后要与已知不等式形式完全一致才能判断符号；解不等式时要先化为 $g(x_1)>g(x_2)$ 的同一函数值形式，不能直接比较；转化时注意把常数化为某个函数值（如把 1 化为 $g(\\ln 3)$），否则无法用单调性；用单调性化去 $f$ 之后还要注意定义域限制。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-023）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:导数构造法解函数不等式",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-024",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "逆向构造的常用类型与万能公式",
+   "summaryMarkdown": "列出常见导函数不等式对应的构造函数，并用万能构造公式 $g'(x)f(x)+f'(x)=\\frac{[e^{g(x)}f(x)]'}{e^{g(x)}}$ 统一处理。",
+   "applicabilityMarkdown": "按所给导函数不等式的结构（常数系数、含 $x$ 系数、与三角混合）快速选准构造函数；处理系数不规范的构造题。",
+   "contentMarkdown": "**五种逆向构造工具**：① 逆用加减法：$f'(x)\\pm g'(x)=[f(x)\\pm g(x)]'$；② 逆用乘法：$g'(x)f(x)+g(x)f'(x)=[g(x)f(x)]'$；③ 逆用除法：$\\frac{g(x)f'(x)-g'(x)f(x)}{[g(x)]^2}=\\left[\\frac{f(x)}{g(x)}\\right]'$（$g(x)\\ne0$）；④ 逆用复合求导：$g'(f(x))\\cdot f'(x)=[g(f(x))]'$；⑤ 万能构造公式：$g'(x)f(x)+f'(x)=\\frac{e^{g(x)}g'(x)f(x)+e^{g(x)}f'(x)}{e^{g(x)}}=\\frac{[e^{g(x)}f(x)]'}{e^{g(x)}}$，把 $f'(x)$ 的系数化为 1 后，即可根据 $g'(x)$ 得到原函数 $g(x)$，进而直接逆向构造。例如 $nf(x)+f'(x)=\\frac{ne^{nx}f(x)+e^{nx}f'(x)}{e^{nx}}=\\frac{[e^{nx}f(x)]'}{e^{nx}}$（$n\\ne0$）。\\n\\n**常见构造对照**：\\n\\n| 已知不等式（$>0$ 或 $<0$） | 构造函数 |\\n|---|---|\\n| $f'(x)>g'(x)$ | $h(x)=f(x)-g(x)$ |\\n| $f'(x)>a$（$a\\ne0$） | $h(x)=f(x)-ax$ |\\n| $f'(x)+g'(x)>0$ | $h(x)=f(x)+g(x)$ |\\n| $f'(x)+f(x)>0$ | $h(x)=e^xf(x)$ |\\n| $f'(x)+kf(x)>0$ | $h(x)=e^{kx}f(x)$ |\\n| $f'(x)-f(x)>0$ | $h(x)=\\frac{f(x)}{e^x}$ |\\n| $f'(x)-kf(x)>0$ | $h(x)=\\frac{f(x)}{e^{kx}}$ |\\n| $xf'(x)+f(x)>0$ | $h(x)=xf(x)$ |\\n| $xf'(x)+nf(x)>0$ | $h(x)=x^nf(x)$ |\\n| $xf'(x)-f(x)>0$ | $h(x)=\\frac{f(x)}{x}$ |\\n| $xf'(x)-nf(x)>0$ | $h(x)=\\frac{f(x)}{x^n}$ |\\n| $\\frac{f'(x)}{f(x)}>0$ | $f(x)>0$ 时 $h(x)=\\ln f(x)$；$f(x)<0$ 时 $h(x)=\\ln[-f(x)]$ |\\n| $f'(x)\\sin x+f(x)\\cos x>0$ | $h(x)=f(x)\\sin x$ |\\n| $f'(x)\\cos x-f(x)\\sin x>0$ | $h(x)=f(x)\\cos x$ |\\n| $f'(x)\\sin x-f(x)\\cos x>0$ | $h(x)=\\frac{f(x)}{\\sin x}$ |\\n| $f'(x)\\cos x+f(x)\\sin x>0$ | $h(x)=\\frac{f(x)}{\\cos x}$ |\\n\\n**记忆口诀**：系数只有常数（$f'(x)$ 系数为 1、$f(x)$ 系数为 $k$）时，用 $e^{kx}$ 来构，和为积、差为商“；系数含 $x$（$f'(x)$ 系数为 $x$、$f(x)$ 系数为 $n$）时，用 $x^n$ 来构，”和为积、差为商“。”",
+   "boundaryMarkdown": "表中不等式方向为 $>0$ 时的构造，方向为 $<0$ 时同样构造这两个函数、只是由导数负号判断单调递减；构造出的函数必须与已知不等式的系数完全对应（系数是 $k$ 就用 $e^{kx}$，是 $x$ 就用 $xf(x)$），系数不匹配则导数无法化为已知形式；$\\frac{f'(x)}{f(x)}>0$ 要先判断 $f(x)$ 的正负再取对数，符号判断错会构造出错误的函数；三角混合型要注意 $(\\sin x)'$、$(\\cos x)'$ 的符号。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-024）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:导数构造法解函数不等式",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-035",
+   "subject": "MATH",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "函数零点存在定理的两条结论",
+   "summaryMarkdown": "连续函数在区间端点函数值异号时区间内至少有一个零点；若再加单调性则有且仅有一个零点。",
+   "applicabilityMarkdown": "判断零点所在区间、证明零点存在且唯一、讨论含参函数零点个数时。",
+   "contentMarkdown": "**结论 1（存在性）**：如果函数 $f(x)$ 在 $[a$，$b]$ 上连续不断，且 $f(a)f(b)<0$，则函数 $f(x)$ 在 $(a$，$b)$ 上至少有一个零点。\\n\\n**结论 2（存在且唯一）**：如果函数 $f(x)$ 在 $[a$，$b]$ 上连续并具有单调性（递增或递减均可），且 $f(a)f(b)<0$，则函数 $f(x)$ 在 $(a$，$b)$ 上有且仅有一个零点。\\n\\n**使用要点**：① 前提是函数在该闭区间上连续不断（中学阶段遇到的初等函数在其定义域内的闭区间上都连续）；② $f(a)f(b)<0$ 只说明区间内至少有一个零点，个数必须结合单调性判断；③ 反过来，函数有零点时不一定有 $f(a)f(b)<0$（如 $f(x)=x^2$ 在 $[-1$，$1]$ 上有零点但两端点函数值同号）；④ 证明唯一性时常用导数说明单调性。",
+   "boundaryMarkdown": "端点函数值异号只是“存在零点”的充分不必要条件，端点同号时区间内也可能有零点（如重根）；两条结论都要求在闭区间上连续；单调性必须在该区间上成立，区间内先增后减时可能有多个零点；零点存在定理只能判定零点的存在与唯一，不能求出零点的具体值；把结论用于含参问题时，区间端点往往与参数有关，要先确定参数范围。\\n",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-035）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:函数零点存在定理",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-036",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "零点存在定理的找点技巧",
+   "summaryMarkdown": "用目标导向代特殊值、结合参数取值和放缩三种技巧，快速找出使 $f(x_0)$ 与端点函数值异号的 $x_0$。",
+   "applicabilityMarkdown": "用零点存在定理证明零点存在时，$f(a)f(b)<0$ 中的 $a$、$b$ 不好取，需要人为找出满足 $f(x_0)>0$（或 $<0$）的点。",
+   "contentMarkdown": "**找点的三种技巧（找 $x_0$ 使 $f(x_0)>0$ 或 $f(x_0)<0$）**：\\n\\n① 以目标 $f(x_0)>0$（或 $f(x_0)<0$）为导向，代入常见特殊值，如 $0$、$\\frac1e$、$\\frac12$、$\\pm1$、$\\sqrt e$、$e$ 等；\\n② 从式子形式出发，代入与式子中参数有关的值，如 $\\ln a$、$a$、$a^2$、$e^a$ 等；\\n③ 使用放缩法确定 $x_0$：首先在草稿纸上分析函数解析式中各部分的趋势，然后将解析式进行放缩，从而确定 $x_0$。例如当 $x_0<0$ 时，有 $0<e^{x_0}<1$；当 $x_0>1$ 时，有 $0<\\frac{\\ln x_0}{x_0}\\le\\frac1e$ 等。\\n\\n**求函数 $f(x)$ 零点个数的一般步骤**：\\n\\n① 第一步：先通过导函数 $f'(x)$ 分析函数 $f(x)$ 的单调性；\\n② 第二步：根据函数零点存在定理确定函数 $f(x)$ 在每个单调区间上的零点个数为 0 还是 1；\\n③ 第三步：最终得到函数 $f(x)$ 的零点个数。\\n\\n**提醒**：切勿忘记函数的零点、方程的实数根、两个函数图象的交点横坐标之间可以相互转化，转化后选择最容易处理的形式。",
+   "boundaryMarkdown": "找点必须有明确的符号目标（使 $f(x_0)$ 与端点函数值异号），否则取点没有意义；取点前先确定单调区间，所取两点必须落在同一单调区间内；用放缩找点时放缩方向要与需要判断的符号一致；与参数有关的取点（如取 $x=\\ln a$）要确认它落在定义域内；零点存在定理只给出存在性，个数要靠单调性逐段确认。\\n",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-036）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:函数零点存在定理",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-036b",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "已知零点个数求参数的切入点",
+   "summaryMarkdown": "从直接法（讨论参数对单调性的影响并分类）或分离参数法（分离后转化为两图象交点个数）入手求参数范围。",
+   "applicabilityMarkdown": "已知函数零点个数求参数的取值范围；含参函数的零点、两图象交点个数问题。",
+   "contentMarkdown": "**切入点 1 直接法**：对函数进行求导，观察参数是否影响函数的单调性。若参数不影响单调性，分析零点个数，通过函数极值和 0 的关系求解；若参数影响单调性，确定参数的分类标准，在每个范围内研究零点的个数是否符合题意，将满足题意的参数的各个小范围并在一起，即所求参数范围。\\n\\n**切入点 2 分离参数法**：有两种情况——\\n\\n（1）由 $f(x)=0$ 分离出参数 $a$，得 $a=g(x)$，利用导数求函数 $y=g(x)$ 的单调性、极值和最值，进而画出 $y=g(x)$ 的大致图象，再根据直线 $y=a$ 与 $y=g(x)$ 的图象的交点个数得参数的取值范围；\\n\\n（2）将函数 $f(x)$ 分成两个函数，一个为容易求导的不含参函数（具有明显的凹凸性），另一个为含参的一次函数，或一个为凹函数、一个为凸函数，观察它们图象的变化趋势，找到临界位置（两函数图象相切），求出此时参数的值，再根据零点个数，数形结合，即可求得参数的取值范围。\\n\\n**提醒**：切勿忘记函数的零点、方程的实数根、两个函数图象的交点横坐标之间可以相互转化。",
+   "boundaryMarkdown": "直接法适合参数影响单调性、需要分类讨论的题目，分类标准要完整（通常由极值点与参数的关系给出）；分离参数法要求参数与变量容易分离且分离后的函数便于研究，若分离后必须用洛必达法则才能解决则不宜使用；转化为图象交点个数时要注意相切（重根）情形，以及水平直线过图象端点、极值点等临界情形；分离参数时原函数的定义域仍要保留（分母不为零、对数真数为正）；分类讨论后要检查每一类是否真的满足零点个数要求，避免把“至多”当成“恰好”。\\n",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-036）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:导数与函数零点问题",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-037",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "隐极值点代换",
+   "summaryMarkdown": "当 $f'(x_0)=0$ 无法解出时，用 $f'(x_0)=0$ 消去参数或化简 $f(x_0)$，再由 $x_0$ 的范围确定极值的范围，从而证明不等式。",
+   "applicabilityMarkdown": "证明 $f(x)>a$ 或 $f(x)<a$ 一类不等式，而极值点方程 $f'(x_0)=0$ 很难解或无法解时。",
+   "contentMarkdown": "**问题背景**：对于证明不等式 $f(x)>a$（$a\\in R$）或 $f(x)<a$（$a\\in R$）的问题，我们可以先将函数 $f(x)$ 求导得 $f'(x)$，于是函数 $f(x)$ 的极值点 $x_0$ 满足 $f'(x_0)=0$，解出 $x_0$ 进而求出极值 $f(x_0)$，确定 $f(x)$ 的值域，进而判断不等式 $f(x)>a$、$f(x)<a$ 是否成立。\\n\\n**然而**：若方程 $f'(x_0)=0$ 很难解或者根本无法解，是否一定要把极值 $f(x_0)$ 的具体值求出来？其实只要确定出极值 $f(x_0)$ 的取值范围就行。虽然 $f'(x_0)=0$ 很难解，但存在一个这样的 $x_0$，此时可以把 $x_0$ 称为隐极值点（即隐零点），并采取隐极值点代换的方法处理。\\n\\n**三个步骤**：\\n\\n① 第一步：求导后得到 $f'(x_0)=0$；\\n② 第二步：根据 $f'(x_0)=0$ 代换参数，或对极值 $f(x_0)$ 的表达式进行转化，得到一个仅含有 $x_0$、形式简单且容易求取值范围的式子；\\n③ 第三步：根据隐极值点 $x_0$ 的取值范围，确定极值 $f(x_0)$ 的取值范围，进而证明不等式。\\n\\n**示例思路**：证明 $f(x)=x\\ln x-\\frac{1}{e^x}-2x>-3$ 时，$f'(x)=\\ln x+\\frac{1}{e^x}-1=0$ 无法直接解出，先用导数说明 $f'(x)$ 单调递增且有唯一零点 $x_0\\in(1$，$e)$；再由 $f'(x_0)=0$ 得 $\\frac{1}{e^{x_0}}=\\ln x_0-1$，代入化简得 $f(x_0)=(x_0+1)\\ln x_0-2x_0-1$，构建函数 $h(x)=(x+1)\\ln x-2x-1$ 证明 $h(x)>h(1)=-3$，从而 $f(x)\\ge f(x_0)>-3$。",
+   "boundaryMarkdown": "使用前必须先用零点存在定理配合单调性说明隐零点 $x_0$ 的存在性与唯一性，并给出 $x_0$ 所在区间；代换时要整体替换掉参数或复杂的指数、对数项，使 $f(x_0)$ 只含 $x_0$；$x_0$ 的范围决定 $f(x_0)$ 的范围，区间端点取错会影响结论中的等号；最后要将 $f(x_0)$ 的范围与目标值比较，并注意极值点是极小值还是极大值；隐零点代换只是求范围的工具，不能据此求出 $x_0$ 的具体值。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-037）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:函数的隐零点问题",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-038",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "恒成立求参的分离参数法",
+   "summaryMarkdown": "把参数与变量彻底分离开，把含参问题化为不含参问题，再用导数研究分离后函数的单调性、极值与最值。",
+   "applicabilityMarkdown": "含参不等式恒成立或能成立问题，以及由零点个数求参数范围的问题，参数与变量容易分离且分离后的函数便于研究时。",
+   "contentMarkdown": "**1. 分离参数的一般思路**：对于一个含参问题，可以通过分离参数，将参数与变量彻底分离开来，从而把一个含参问题转化为一个非含参问题，进而通过导数研究分离后得到的函数的单调性、极值与最值，最终解决问题。\\n\\n**2. 使用分离参数的要求**：\\n\\n① 参数与变量可以比较容易地分离开；\\n② 分离参数后得到的函数的形式不复杂，通过导数来研究单调性、极值以及最值比较容易；\\n③ 分离参数后得到的函数的值域容易算，不会出现必须使用洛必达法则才能解决问题的情形。\\n\\n**3. 操作流程**：把不等式变形为 $a\\ge g(x)$（或 $a\\le g(x)$）后求 $g(x)$ 的最值——若 $a\\ge g(x)$ 恒成立则 $a\\ge g(x)_{\\max}$；若 $a\\le g(x)$ 恒成立则 $a\\le g(x)_{\\min}$（能成立问题取相反的一端）。\\n\\n**4. 技巧**：分离时若参数与变量的系数关系复杂，可先通分或移项把含参数的项集中。例如由 $\\varphi'(x)=\\frac{2m}{(x+1)^2}-\\frac1x\\le0$ 得 $m\\le\\frac12\\left(x+\\frac1x\\right)+1$，再构造函数 $h(x)=\\frac12\\left(x+\\frac1x\\right)+1$（$x\\in[2$，$+\\infty)$）求最小值，得 $m\\le h(2)=\\frac94$。",
+   "boundaryMarkdown": "分离参数时除式的符号必须恒定，若除式正负不定则需分类讨论，不等号方向随除式符号改变；恒成立与能成立（存在性）对应的最值取法相反，容易弄反；分离后若必须用洛必达法则才能解决，说明方法选择不当，应改用直接法分类讨论；参数范围端点的等号要回代检验；分离后的函数定义域必须保留原函数的限制（分母不为零、对数真数为正）。\\n",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-038）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:分离参数法-分离参数后转化为求函数的值域-最值-问题求解",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-043",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "极值点偏移的判断与构造",
+   "summaryMarkdown": "极值点 $x_0$ 与两交点中点的大小关系决定偏移方向，用 $g(x)=f(x)-f(2x_0-x)$ 的单调性判断。",
+   "applicabilityMarkdown": "已知函数 $y=f(x)$ 的极值点为 $x_0$，图象与直线 $y=m$ 交于 $(x_1$，$y_1)$、$(x_2$，$y_2)$ 两点，要求判断 $x_1+x_2$ 与 $2x_0$ 的大小关系时。",
+   "contentMarkdown": "**1. 极值点偏移的两种情形**\\n\\n- 极值点左偏移：$x_1+x_2>2x_0$，此时 $x=\\frac{x_1+x_2}{2}$ 处切线与 $x$ 轴不平行；\\n- 极值点右偏移：$x_1+x_2<2x_0$，同样有 $x=\\frac{x_1+x_2}{2}$ 处切线与 $x$ 轴不平行。\\n\\n（图象上表现为极值点两侧陡缓“程度不同，两交点关于极值点不对称。）\\n\\n**2. 识别（见招）**：已知函数 $y=f(x)$ 的极值点为 $x_0$，且函数 $y=f(x)$ 的图象与直线 $y=m$ 交于 $(x_1$，$y_1)$、$(x_2$，$y_2)$ 两点，要判断 $x_1+x_2$ 与 $2x_0$ 的大小关系。\\n\\n**3. 出招**：构建函数 $g(x)=f(x)-f(2x_0-x)$，再分析函数 $g(x)$ 的单调性即可。\\n\\n**4. 构造的理由**：要判断 $x_1+x_2$ 与 $2x_0$ 的大小关系，需要判断 $x_2$ 与 $2x_0-x_1$ 的大小关系，也就需要判断 $f(x_2)$ 与 $f(2x_0-x_1)$ 的大小关系；而 $f(x_1)=f(x_2)$，因此就需要判断 $f(x_1)-f(2x_0-x_1)$ 与 0 的大小关系，于是构建函数 $g(x)=f(x)-f(2x_0-x)$ 并分析其单调性。\\n\\n**5. 与积有关的偏移**：同理，要判断 $x_1x_2$ 与 $x_0^2$ 的大小关系，需要构建函数 $g(x)=f(x)-f\\left(\\frac{x_0^2}{x}\\right)$，再分析函数 $g(x)$ 的单调性。”",
+   "boundaryMarkdown": "判断前必须确认 $x_1\\ne x_2$（否则无偏移）且 $f(x_1)=f(x_2)$（两点在同一水平线上）；构造出的 $g(x)$ 要在定义域上求导判断单调性，注意 $2x_0-x$ 与 $\\frac{x_0^2}{x}$ 都要落在定义域内（含对数时尤其要注意）；判断积的关系时构造的是 $f(x)-f\\left(\\frac{x_0^2}{x}\\right)$，不要与和的情形混淆；书写时要说明 $x_0$ 是极值点（$f'(x_0)=0$）并交代 $f(x)$ 在 $x_0$ 两侧的单调性；图象与水平线相切时只有一个交点，不构成偏移问题。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-043）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:极值点偏移问题",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-044",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "对称化构造法",
+   "summaryMarkdown": "证明极值点偏移的规范写法：由 $x_1+x_2$ 与 $2x_0$ 的关系得 $\\frac{x_1+x_2}{2}$ 与 $x_0$ 的关系，再用 $f(x)$ 在 $x_0$ 一侧的单调性判断 $f'\\left(\\frac{x_1+x_2}{2}\\right)$ 的符号。",
+   "applicabilityMarkdown": "极值点偏移问题中需要证明 $f'\\left(\\frac{x_1+x_2}{2}\\right)>0$（或 $<0$），或需要证明 $x_1+x_2>2x_0$ 一类结论时的规范书写方式。",
+   "contentMarkdown": "**对称化构造法（解决极值点偏移问题最基本的方法）**：若要证明结论 $f'\\left(\\frac{x_1+x_2}{2}\\right)>0$（或 $f'\\left(\\frac{x_1+x_2}{2}\\right)<0$），则由结论 $x_1+x_2>2x_0$（或 $x_1+x_2<2x_0$）得 $\\frac{x_1+x_2}{2}>x_0$（或 $\\frac{x_1+x_2}{2}<x_0$），再由函数 $f(x)$ 在 $(x_0$，$+\\infty)$（或在 $(-\\infty$，$x_0)$）上的单调性得 $f'\\left(\\frac{x_1+x_2}{2}\\right)$ 的符号。\\n\\n**方法要点**：\\n\\n① 先由 $f'(x_0)=0$ 确定极值点 $x_0$，并明确 $f(x)$ 在 $x_0$ 左右的单调性；\\n② 构造函数 $g(x)=f(x)-f(2x_0-x)$，通过 $g(x)$ 的单调性把 $f(x_1)$ 与 $f(2x_0-x_1)$ 的大小关系转化为 $x_1$ 与 $2x_0-x_1$ 的大小关系，从而得到 $x_1+x_2$ 与 $2x_0$ 的关系；\\n③ 若目标是判断 $f'\\left(\\frac{x_1+x_2}{2}\\right)$ 的符号，则先证得 $\\frac{x_1+x_2}{2}$ 与 $x_0$ 的大小关系，再用 $f'(x)$ 的单调性判断符号（$f'(x)$ 的单调性通常要借助二阶导数说明）。",
+   "boundaryMarkdown": "每一步都必须是等价变形，不能由 $f(x_1)>f(2x_0-x_1)$ 直接得出 $x_1$ 与 $2x_0-x_1$ 的大小关系，必须借助 $g(x)$ 的单调性；$2x_0-x_1$ 必须在定义域内；由 $\\frac{x_1+x_2}{2}$ 与 $x_0$ 的关系推 $f'\\left(\\frac{x_1+x_2}{2}\\right)$ 的符号前，要先说明 $f'(x)$ 的单调性；$f'(x)=0$ 有多解时不能直接套用；结论中的等号情形要单独说明（$x_1=x_2$ 时无偏移）。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-044）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:极值点偏移问题",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-046",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "泰勒构造二次函数解极值点偏移",
+   "summaryMarkdown": "用泰勒公式前三项构造以极值点 $x_0$ 为对称轴的二次函数 $F(x)=f(x_0)+\\frac{f''(x_0)}{2}(x-x_0)^2$，它与原函数极值点相同且不偏移，比较两者即可证 $x_1+x_2>2x_0$。",
+   "applicabilityMarkdown": "已知 $f(x_1)=f(x_2)$（$x_1\\ne x_2$）求证 $x_1+x_2>2x_0$（或 $<2x_0$）的极值点偏移问题，尤其适合对称化构造较繁琐的函数。",
+   "contentMarkdown": "**原理**：以函数图象与某水平线交于 $x_1$、$x_2$（$x_1<x_0<x_2$）为例，要证 $x_1+x_2>2x_0$，可以这样考虑：假如极值点不偏移，必有 $x_1+x_2=2x_0$。那么能否找到一个函数，使这个函数的极值点与原函数 $y=f(x)$ 的极值点相同，并且它的极值点不偏移，而且该函数的图象还在原函数图象的外侧？如果能找到，设它与该水平线的交点横坐标为 $x_3$、$x_4$，则 $x_1>x_3$、$x_2>x_4$，所以 $x_1+x_2>x_3+x_4=2x_0$，命题就证毕了。泰勒公式完美地找到了这个函数。\\n\\n**泰勒公式**：$f(x)=f(x_0)+\\frac{f'(x_0)}{1!}(x-x_0)+\\frac{f''(x_0)}{2!}(x-x_0)^2+\\frac{f'''(x_0)}{3!}(x-x_0)^3+\\cdots+\\frac{f^{(n)}(x_0)}{n!}(x-x_0)^n+R_n(x)$。注意到泰勒公式前三项中 $f(x_0)+f'(x_0)(x-x_0)+\\frac{f''(x_0)}{2}(x-x_0)^2$ 是一个二次函数，而此处 $x_0$ 若取原函数 $f(x)$ 的极值点，那么 $f'(x_0)=0$，上式变为 $f(x_0)+\\frac{f''(x_0)}{2}(x-x_0)^2$，这正是一个对称轴为直线 $x=x_0$ 的二次函数；再加上泰勒公式本身是用多项式函数来逼近原函数的，所以这个二次函数不会偏离 $y=f(x)$ 太远，故它就是我们要找的函数。\\n\\n**一般步骤**：\\n\\n（1）对 $f(x)$ 求导，研究其极值情况，这时一定有 $f'(x_0)=0$，并得到 $f(x)$ 在 $x_0$ 左右的单调性情况；\\n（2）构建函数 $F(x)=f(x_0)+\\frac{f''(x_0)}{2}(x-x_0)^2$（体现在解题步骤中时，直接写结果，千万不要把泰勒公式“这种字眼写到步骤里）。”",
+   "boundaryMarkdown": "必须先由 $f'(x_0)=0$ 确定极值点并确认 $f''(x_0)\\ne0$；构造出的 $F(x)$ 与原函数的比较依赖几何直观，书写时要给出可验证的不等式（通常需再构造 $h(x)=f(x)-F(x)$ 用导数说明其符号），不能只写“由图象可知”；解答题中不能出现“泰勒公式”字样；该方法只适用于 $f''(x_0)\\ne0$ 的极值点偏移；比较时不等式方向由凹凸性决定（$f''(x_0)>0$ 时原函数图象在二次函数上方）。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-046）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:极值点偏移问题",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-047",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "泰勒构造法的第三步与适用范围",
+   "summaryMarkdown": "用泰勒构造法时要再构建 $G(x)=f(x)-F(x)$ 并求导，由单调性与 $G(x_0)=0$ 判断两函数在各区间的大小关系，再据此比较交点位置。",
+   "applicabilityMarkdown": "用泰勒二次构造法处理极值点偏移时的收尾步骤；判断该方法是否适用（只能证 $x_1+x_2$ 与 $2x_0$ 的关系）。",
+   "contentMarkdown": "**第三步（构建 $G(x)=f(x)-F(x)$ 并研究单调性）**：构建函数 $G(x)=f(x)-F(x)$，求导研究其单调性；这里一般都会有 $G(x_0)=0$、$G(x)$ 单调。相关的草图无须体现在解题过程中，只需根据每个单调区间内 $f(x)$ 与 $F(x)$ 的大小关系，分别给出 $x_1$ 与 $x_4$、$x_2$ 与 $x_3$ 的大小关系即可。\\n\\n**完整的比较链条（以极小值点为例）**：设 $F(x)$ 的图象与该水平线交于 $x_3$、$x_4$，由 $F(x)$ 关于直线 $x=x_0$ 对称知 $x_3+x_4=2x_0$。① 当 $x<x_1$ 时，由 $F(x_1)=F(x_4)=f(x_2)$ 且 $F(x)$ 在 $(-\\infty$，$x_0)$ 上单调递增，得 $x_3<x_1$；② 当 $x>x_1$ 时，$G(x)=f(x)-F(x)>0$ 即 $f(x)>F(x)$，由 $F(x)$ 在 $(x_0$，$+\\infty)$ 上单调递减，得 $x_4<x_2$。于是 $x_1+x_2>x_3+x_4=2x_0$，命题得证。\\n\\n**适用范围（重要）**：以上泰勒公式解题法只限于证明 $x_1+x_2>2x_0$（或 $<2x_0$）“ 的问题，而 ”$x_1x_2>x_0^2$（或 $<x_0^2$）“ 这种类型还是用常规方法证明。”",
+   "boundaryMarkdown": "用泰勒构造法时最后必须说清 $G(x)=f(x)-F(x)$ 的符号（通常需说明 $G(x_0)=0$ 且 $G(x)$ 单调），不能只写“由图可知”；比较 $x_1$、$x_2$ 与 $x_3$、$x_4$ 时要分别利用 $F(x)$ 在对称轴两侧的单调性，不能混用；该方法只适用于和的形式 $x_1+x_2$ 与 $2x_0$ 的比较，积的形式 $x_1x_2$ 与 $x_0^2$ 不能用它；解答过程中不得出现“泰勒公式”字样，只能写构造函数的过程；水平线与两图象的交点位置（哪条曲线在内侧）要交代清楚，否则大小关系无法传递。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-047）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:极值点偏移问题",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-051",
+   "subject": "MATH",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "正弦型函数的对称性与周期关系",
+   "summaryMarkdown": "正弦型函数 $y=A\\sin(\\omega x+\\varphi)$ 的对称中心、对称轴、最值点由整体 $\\omega x+\\varphi$ 的取值确定，相邻对称轴间距为 $\\frac T2$。",
+   "applicabilityMarkdown": "求正弦型函数的对称中心、对称轴、最值点；由对称性判断周期；研究 $\\omega$ 的取值范围。",
+   "contentMarkdown": "以正弦型函数 $f(x)=A\\sin(\\omega x+\\varphi)$（$A$、$\\omega$、$\\varphi$ 是常数，$A>0$，$\\omega>0$）为例：\\n\\n① 函数图象的对称中心（函数的零点）：满足 $\\omega x+\\varphi=k\\pi$（$k\\in Z$），因此可得函数 $f(x)$ 的零点为 $x=-\\frac\\varphi\\omega+\\frac{k\\pi}\\omega$，函数图象的对称中心为 $\\left(-\\frac\\varphi\\omega+\\frac{k\\pi}\\omega$，$0\\right)$（$k\\in Z$）。\\n\\n② 函数图象的对称轴（最值点或极值点）：满足 $\\omega x+\\varphi=\\frac\\pi2+k\\pi$（$k\\in Z$），因此可得对称轴方程为 $x=\\frac{\\pi}{2\\omega}-\\frac\\varphi\\omega+\\frac{k\\pi}\\omega$（$k\\in Z$）。\\n\\n③ 函数的最（极）大值点：满足 $\\omega x+\\varphi=\\frac\\pi2+2k\\pi$（$k\\in Z$），因此最（极）大值点为 $x=\\frac{\\pi}{2\\omega}-\\frac\\varphi\\omega+\\frac{2k\\pi}\\omega$（$k\\in Z$）。\\n\\n④ 函数的最（极）小值点：满足 $\\omega x+\\varphi=-\\frac\\pi2+2k\\pi$（$k\\in Z$），因此最（极）小值点为 $x=-\\frac{\\pi}{2\\omega}-\\frac\\varphi\\omega+\\frac{2k\\pi}\\omega$（$k\\in Z$）。\\n\\n⑤ 函数的周期与对称性（最值点、零点）之间的关系：若函数的最小正周期为 $T$，$n\\in N^*$，则函数图象的任意对称轴之间的距离为 $\\frac{nT}{2}$；最大值点与最小值点之间的距离为 $\\frac T2+nT=\\frac{(2n-1)T}{2}$（相邻的最大值点与最小值点间的长度为单调区间的长度，长度不超过 $\\frac T2$）；任意对称轴与对称中心之间的距离为 $\\frac T4+\\frac{nT}{2}=\\frac{(2n-1)T}{4}$。当 $n=1$ 时，$\\omega$ 取得最小值（区间包含的周期数越少，$T$ 越大，$\\omega$ 越小）。\\n\\n⑥ 函数值与对称性之间的关系：在一个周期内，若 $x_1$、$x_2$ 两处对应的函数值相等，则常涉及函数图象的对称轴为直线 $x=\\frac{x_1+x_2}{2}$；半个周期之内，若 $x_1$、$x_2$ 两处对应的函数值相反且不为 0，则常涉及函数图象的一个对称中心为点 $\\left(\\frac{x_1+x_2}{2}$，$0\\right)$。",
+   "boundaryMarkdown": "以上结论默认 $A>0$、$\\omega>0$；$\\omega<0$ 时要先用诱导公式把 $\\omega$ 化为正数再套结论；对称中心是图象上的点（该处函数值为 0），对称轴处取到最值，两者不能混淆；⑤ 中对称轴、对称中心之间的距离公式自带周期项，列式时注意 $n$ 的取值范围（$n\\in N^*$）与“相邻”的含义；⑥ 中“函数值相等”对应轴对称、“函数值互为相反数且不为 0”对应中心对称，前提是两点在同一单调区间附近讨论；零点处不一定是对称中心（要结合函数是否为标准正弦型判断）。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-051）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:三角函数的图象与性质",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-051b",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "求 ω 的通法",
+   "summaryMarkdown": "把 $\\omega x+\\varphi$ 看成整体，由对称轴、对称中心或最值点的条件列方程（组）或不等式（组）求 $\\omega$，必要时用周期数压缩整数 $k$。",
+   "applicabilityMarkdown": "已知正弦（余弦）型函数的零点个数、最值点个数或单调性，求 $\\omega$ 的取值范围。",
+   "contentMarkdown": "**通法（两步）**\\n\\n① 第一步：根据题目的条件，将 $\\omega x+\\varphi$ 看作一个整体，得到函数 $f(x)$ 图象的对称轴、对称中心（零点）或函数的最（极）值点所满足的关系，从而建立方程（组）或不等式（组）。\\n\\n② 第二步：解这些方程（组）或不等式（组），注意不等式是否取等，得到答案。\\n\\n**处理复杂不等式（抗神百话）**：当不等式（组）有些复杂时，我们可以先利用题中条件，借助函数的周期与对称性（最值点、零点）之间的关系，限定给定区间中包含的周期数，从而压缩不等式中整数 $k$ 的取值范围，再对整数 $k$ 的取值进行分类讨论，从而求得 $\\omega$ 的取值范围。\\n\\n**示例思路**：函数 $f(x)=\\cos\\omega x-1$（$\\omega>0$）在 $[0$，$2\\pi]$ 上有且仅有 3 个零点，即 $\\cos\\omega x=1$ 在 $[0$，$2\\pi]$ 上有且仅有 3 个根。由 $\\omega x\\in[0$，$2\\omega\\pi]$ 及余弦函数图象可知，该区间应包含 2 个周期但小于 3 个周期，即 $2\\times\\frac{2\\pi}\\omega\\le2\\pi$ 且 $3\\times\\frac{2\\pi}\\omega>2\\pi$，解得 $2\\le\\omega<3$，即 $\\omega$ 的取值范围是 $2\\le\\omega<3$。",
+   "boundaryMarkdown": "列式时必须把 $\\omega x+\\varphi$ 整体代入标准函数 $y=\\sin x$（或 $y=\\cos x$）的相应位置，不能直接用 $x$ 的范围；不等式的端点是否取等取决于“有且仅有”这类表述（零点个数恰为某值时通常一侧取等、另一侧不取等）；用周期数压缩 $k$ 的范围后要代回检验是否有遗漏或多余解；$\\omega>0$ 要始终保留（题设未说明时应先讨论符号）；把零点问题转化为方程 $\\sin t=c$ 或 $\\cos t=c$ 的根的个数时，注意 $c$ 与 $\\pm1$ 的关系（如 $\\cos\\omega x=1$ 的解是周期性的单点，而 $\\cos\\omega x=0$ 的解每周期有两个）。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-051）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:函数y-asin-ωx-φ-的图象",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-052",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "用整体代换研究正弦型函数",
+   "summaryMarkdown": "研究 $y=A\\sin(\\omega x+\\varphi)$ 的值域、单调性、零点与极值点时，把 $\\omega x+\\varphi$ 看成整体，对照 $y=\\sin x$ 的图象求解。",
+   "applicabilityMarkdown": "求正弦型（余弦型）函数的单调区间、值域、零点与极值点；判断给定区间上的最值。",
+   "contentMarkdown": "**方法**：研究函数 $y=A\\sin(\\omega x+\\varphi)$（或 $y=A\\cos(\\omega x+\\varphi)$）的值域、单调性、零点及极值点等问题时，可将 $\\omega x+\\varphi$ 看成一个整体，然后对照函数 $y=\\sin x$（或 $y=\\cos x$）的图象求解。\\n\\n**三个步骤**：\\n\\n① 由 $x$ 的取值范围（或题目要求的区间）求出整体 $t=\\omega x+\\varphi$ 的取值范围；\\n② 在 $y=\\sin t$ 的图象上找出该区间对应的最值点、零点与单调区间；\\n③ 把 $t$ 换回 $\\omega x+\\varphi$，解不等式（方程）得到原函数的结论。\\n\\n**要点**：$\\omega>0$ 时 $t=\\omega x+\\varphi$ 随 $x$ 单调递增，区间对应关系直接；$\\omega<0$ 时先用诱导公式把 $\\omega$ 化为正数，否则区间方向会颠倒。",
+   "boundaryMarkdown": "代换时必须先算出 $t$ 的完整范围（区间端点要准确），区间算错是这类题最常见的错误；单调区间要反解回 $x$ 的形式；$A<0$ 时最值反向（原最大值点变为最小值点），要单独说明；求单调区间时要注意题目给定的 $x$ 范围，不能只写出所有的单调区间；解 $t$ 的不等式时注意 $k\\in Z$ 的完整性，不要漏写周期项；当 $\\omega$ 的符号未定时要先讨论。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-052）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:函数y-asin-ωx-φ-的图象",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-062",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "倒序相加求和",
+   "summaryMarkdown": "当数列中与首尾两端等距离的两项之和相等时，把 $S_n$ 正序与倒序各写一遍再相加，得到 $2S_n$ 的表达式从而求出 $S_n$。",
+   "applicabilityMarkdown": "数列中与首尾两端等距离的两项之和相等（如函数满足 $f(x)+f\\left(\\frac1x\\right)=$ 常数时的函数值求和）；推导等差数列前 $n$ 项和公式。",
+   "contentMarkdown": "**识别（见招）**：数列 $\\{a_n\\}$ 中，与首尾两端等距离的两项的和相等。\\n\\n**出招**：倒序相加法求前 $n$ 项和。\\n\\n**操作**：以等差数列为例，顺序书写为 $S_n=a_1+a_2+\\cdots+a_n$ ①，倒序书写为 $S_n=a_n+a_{n-1}+\\cdots+a_1$ ②；①+②，得 $2S_n=(a_1+a_n)+(a_2+a_{n-1})+\\cdots+(a_n+a_1)=n\\left[2a_1+(n-1)d\\right]$，所以 $S_n=na_1+\\frac{n(n-1)}{2}d$（本质为转化为常数列求和）。\\n\\n**典型应用**：若函数满足 $f(x)+f\\left(\\frac1x\\right)=c$，且数列各项满足 $a_ia_{2n-i}=1$（等比数列下标性质），则 $f(a_i)+f(a_{2n-i})=c$，于是可用倒序相加法求 $f(a_1)+f(a_2)+\\cdots+f(a_{2n-1})$。",
+   "boundaryMarkdown": "使用前必须验证“与首尾两端等距离的两项之和相等”这一配对性质（或函数满足 $f(x)+f\\left(\\frac1x\\right)=$ 常数）；项数为奇数时中间项只加一次；配对的下标关系要写清（如 $a_ia_{2n-i}=1$ 来自等比数列下标性质，要求各项不为零）；相加后除以 2 不能漏；若配对性质只在部分项上成立，则不能对整体套用倒序相加。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-062）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:逆序相加法求数列的前n项和",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-062b",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "并项求和",
+   "summaryMarkdown": "对形如 $a_n=(-1)^nn$、$a_n=(-1)^nn^2$ 的数列或周期（类周期）数列，把相邻两项或几项合并后再求和。",
+   "applicabilityMarkdown": "通项含 $(-1)^n$ 的数列求和；周期数列与类周期数列（如每隔若干项数值增加固定量）求和。",
+   "contentMarkdown": "**并项求和**：对形如 $a_n=(-1)^nn$、$a_n=(-1)^nn^2$ 的数列 $\\{a_n\\}$ 或一些周期数列与类周期数列，在求和过程中相邻两项或几项合并后再进行求和。\\n\\n**操作要点**：① 先判断相邻若干项合并后的规律（是常数、等差数列还是其他便于求和的数列）；② 按此规律分组，讨论项数 $n$ 是否为组长整数倍（否则分奇偶或余数讨论）；③ 分别求出完整组的和与余项的和，再相加。\\n\\n**典型示例思路**：已知 $a_{n+3}=a_n+1$，即数列 $\\{a_n\\}$ 是类周期“数列（每隔 2 项，数列的值增加 1）。取 $b_n=a_{3n-2}+a_{3n-1}+a_{3n}$（每三项并成一组），则 $b_{n+1}=a_{3n+1}+a_{3n+2}+a_{3n+3}=a_{3n-2}+1+a_{3n-1}+1+a_{3n}+1=b_n+3$，于是 $\\{b_n\\}$ 是公差为 3 的等差数列，由 $b_1=a_1+a_2+a_3=6$ 得 $S_{90}=b_1+b_2+\\cdots+b_{30}=30\\times6+\\frac{30\\times29}{2}\\times3=1485$。”",
+   "boundaryMarkdown": "并项前必须确认合并后的规律对所有分组都成立（余项要单独算）；含 $(-1)^n$ 的相邻两项合并时要注意首项是 $a_1$ 还是 $a_2$，避免分组错位；项数不是组长整数倍时要讨论余项；分组后的新数列若是等差或等比，要写出首项与公差（公比）；分组求和后再相加时不要漏掉余项；类周期数列的递推关系要先改写成组内各对应项的形式。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-062）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:分组-并项-法求数列的前n项和",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-063",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "差比数列的错位相减求和",
+   "summaryMarkdown": "差比数列 $c_n=(an+b)q^{n-1}$（$a\\ne0$、$q\\ne1$）的前 $n$ 项和为 $S_n=(An+B)q^n-B$，其中 $A=\\frac{a}{q-1}$、$B=\\frac{b-A}{q-1}$。",
+   "applicabilityMarkdown": "通项为等差数列乘等比数列“（差比数列）的求和；已知和式反求通项或检验求和结果。”",
+   "contentMarkdown": "**1. 等比数列前 $n$ 项和的错位相减思路**：对于公比 $q$ 不为 1 的等比数列 $\\{a_n\\}$，求其前 $n$ 项和 $S_n$ 时，有 $S_n=a_1+a_1q+\\cdots+a_1q^{n-1}$，两边同时乘 $q$，得 $qS_n=a_1q+a_1q^2+\\cdots+a_1q^{n-1}+a_1q^n$，两式相减，就可以得到 $(1-q)S_n=a_1(1-q^n)$，从而 $S_n=\\frac{a_1(1-q^n)}{1-q}$。在求等比数列前 $n$ 项和的过程中，我们实际上就用了在等式两边同乘 $q$ 后错位相减的思路。\\n\\n**2. 差比数列前 $n$ 项和**：若数列 $\\{c_n\\}$ 满足 $c_n=a_nb_n$，其中 $\\{a_n\\}$ 是等差数列，$\\{b_n\\}$ 是公比不为 1 的等比数列，则 $\\{c_n\\}$ 是差比数列；若差比数列 $\\{c_n\\}$ 满足 $c_n=(an+b)q^{n-1}$（$a\\ne0$，$q\\ne1$），通过错位相减法可以得到其前 $n$ 项和 $S_n=(An+B)q^n-B$，其中 $A=\\frac{a}{q-1}$，$B=\\frac{b-A}{q-1}$。\\n\\n**3. 使用注意（抗神探坑）**\\n\\n（1）差比数列 $\\{c_n\\}$ 的形式必须先化成 $c_n=(an+b)q^{n-1}$（$a\\ne0$，$q\\ne1$）。在解答题中不能直接套结论，可以按错位相减法求和正常写步骤，最后化简时根据结论直接得答案，或检验自己算的结果是否正确。\\n\\n（2）对于 $c_n=(an+b)q^n$ 的形式，需先化成 $c_n=(aqn+bq)q^{n-1}$ 再验证。",
+   "boundaryMarkdown": "使用公式前必须把通项化成 $c_n=(an+b)q^{n-1}$ 的标准形式（含 $q^n$ 的先提一个 $q$ 化简）；公式要求 $q\\ne1$（公比为 1 时数列为等差乘常数，直接用等差数列求和）；解答题必须写出错位相减的过程，只写公式结论可能被扣分；错位相减时各项向后错一位，末项与首项的处理最容易出错；注意 $n$ 从 1 开始计数、首项指数为 0；结果中 $S_n$ 的形式为 $(An+B)q^n-B$，行文时要注明。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-063）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:等差乘等比数列求和-令-可以用错位相减法",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-063b",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "多次错位相减求和",
+   "summaryMarkdown": "形如 $a_n=n^2\\cdot2^n$ 的数列求和需要两次错位相减，每减一次多项式的次数降低 1，直到可以直接用公式求和。",
+   "applicabilityMarkdown": "通项为多项式乘等比数列“且多项式次数大于 1（如 $n^2\\cdot2^n$）的数列求和。”",
+   "contentMarkdown": "**方法（以 $a_n=n^2\\cdot2^n$ 为例）**：因为 $S_n=1^2\\cdot2^1+2^2\\cdot2^2+\\cdots+n^2\\cdot2^n$，所以 $2S_n=1^2\\cdot2^2+\\cdots+(n-1)^2\\cdot2^n+n^2\\cdot2^{n+1}$（错位）。\\n\\n**第一次错位相减**：$S_n=n^2\\cdot2^{n+1}-1^2\\cdot2^1-\\left[(2^2-1^2)\\cdot2^2+(3^2-2^2)\\cdot2^3+\\cdots+\\left(n^2-(n-1)^2\\right)\\cdot2^n\\right]=n^2\\cdot2^{n+1}-2-\\left[(2\\times2-1)\\cdot2^2+(2\\times3-1)\\cdot2^3+\\cdots+(2n-1)\\cdot2^n\\right]$。此时 $n^2$ 变为 $2n-1$，次数降低，但仍无法直接求和。\\n\\n**第二次错位相减**：令 $T_n=(2\\times2-1)\\cdot2^2+(2\\times3-1)\\cdot2^3+\\cdots+(2n-1)\\cdot2^n$，则 $2T_n=(2\\times2-1)\\cdot2^3+\\cdots+[2(n-1)-1]\\cdot2^n+(2n-1)\\cdot2^{n+1}$（错位），相减得 $T_n=(2n-1)\\cdot2^{n+1}-(2\\times2-1)\\cdot2^2-(2^4+2^5+\\cdots+2^{n+1})=(2n-3)\\cdot2^{n+1}+4$。\\n\\n**回代**：$S_n=n^2\\cdot2^{n+1}-2-\\left[(2n-3)\\cdot2^{n+1}+4\\right]=(n^2-2n+3)\\cdot2^{n+1}-6$。",
+   "boundaryMarkdown": "错位相减后剩余部分要逐项核对指数与系数（容易漏掉或多算边界项）；每减一次乘积中多项式的次数应降低 1，若不降低说明错位有误；剩下的等比部分求和时注意项数与首项（如 $2^4+2^5+\\cdots+2^{n+1}$ 的首项是 $2^4$）；最后要回代整理；解答题中两次错位的过程都要完整写出。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-063）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:等差乘等比数列求和-令-可以用错位相减法",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-064",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "由前 n 项和关系求通项",
+   "summaryMarkdown": "题设给出 $S_n$ 与 $a_n$ 的关系式时，先由 $n\\ge2$ 时 $a_n=S_n-S_{n-1}$ 作差得递推关系，再单独检验 $n=1$ 是否成立。",
+   "applicabilityMarkdown": "已知数列前 $n$ 项和 $S_n$ 与 $a_n$ 的关系式求通项公式；判断数列是否为等比（等差）数列。",
+   "contentMarkdown": "**方法**：已知 $4S_n=3a_n+4$ ①，则当 $n\\ge2$ 时也可写 $4S_{n-1}=3a_{n-1}+4$ ②；①$-$②得 $4a_n=3a_n-3a_{n-1}$，即 $a_n=-3a_{n-1}$（$n\\ge2$）。当 $n=1$ 时，由 $4S_1=3a_1+4$ 得 $4a_1=3a_1+4$，所以 $a_1=4\\ne0$，所以数列 $\\{a_n\\}$ 是以 4 为首项、$-3$ 为公比的等比数列，故 $a_n=4\\times(-3)^{n-1}$。\\n\\n**易错警示**：由 $a_n=-3a_{n-1}$（$n\\ge2$）还不能说数列 $\\{a_n\\}$ 是等比数列，必须说明其首项不为 0 才可以。\\n\\n**结论（抗神小课堂）**：若一个数列 $\\{a_n\\}$ 的前 $n$ 项和 $S_n$ 与 $a_n$ 满足 $S_n=pa_n+r$，且 $p\\ne0$、$p\\ne1$、$r\\ne0$，则数列 $\\{a_n\\}$ 是等比数列。",
+   "boundaryMarkdown": "作差得到的递推关系只在 $n\\ge2$ 时成立，必须用 $n=1$ 单独求首项并检验；由 $a_n=qa_{n-1}$ 判定等比数列时要确认 $q\\ne0$ 且首项不为 0，否则只能说“从第二项起成等比”；$n=1$ 时只能用 $S_1=a_1$ 这一个等式；若首项不符合递推关系，通项要写成分段形式；用该结论判定等比数列时，$p\\ne1$、$r\\ne0$ 的条件要一并核对。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-064）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:由sn求an的步骤",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-064b",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "用待定系数裂项替代错位相减",
+   "summaryMarkdown": "把差比型通项拆成 $c_n-c_{n-1}$ 的形式（用待定系数法设出 $c_n$），即可用裂项相消求和，避开繁琐的错位相减。",
+   "applicabilityMarkdown": "能用错位相减求和的问题（等差乘等比的差比数列）；希望减少运算量的数列求和大题。",
+   "contentMarkdown": "**原理**：事实上，能用错位相减求和的问题也可以通过待定系数法转化为用裂项相消法求和。原理为：$a_n=f(n+1)-f(n)$，则 $S_n=a_1+a_2+\\cdots+a_n=f(2)-f(1)+f(3)-f(2)+\\cdots+f(n+1)-f(n)=f(n+1)-f(1)$。\\n\\n**做法（以 $b_n=4n\\cdot3^{n-1}$ 为例）**：令 $c_n=(kn+b)\\cdot3^n$，把 $b_n$ 拆成 $b_n=c_n-c_{n-1}$ 的形式是解题的关键。由 $c_n-c_{n-1}=[k(n+1)+b]\\cdot3^{n+1}-(kn+b)\\cdot3^n$，比较系数得 $2k=4$ 且 $2b+k=0$，解得 $k=2$、$b=-1$，即 $b_n=(2n-1)\\cdot3^n-(2n-3)\\cdot3^{n-1}$，于是 $T_n=b_1+b_2+\\cdots+b_n=(2n-1)\\cdot3^n+1$。\\n\\n**要点**：① 设出的 $c_n$ 与通项的多项式部分同次（一次式配 $kn+b$）；② 比较系数解出待定系数；③ 用裂项相消求和，运算量大为减少。",
+   "boundaryMarkdown": "设出的 $c_n$ 必须与通项的多项式部分同次，否则解不出系数；拆项后要比较系数验证 $b_n=c_n-c_{n-1}$ 恒等；裂项相消后剩下的是首尾项之差（形如 $c_n-c_0$），注意 $c_1$ 与 $c_0$ 的取值；解答题中要写出待定系数的求解过程；该方法与错位相减结果相同，可互为检验。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-064）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:裂项相消法中常见的裂项技巧",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-064c",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "裂项相消求和的基本原理",
+   "summaryMarkdown": "若 $a_n=f(n+1)-f(n)$，则 $S_n=f(n+1)-f(1)$；二阶裂项 $a_n=f(n+2)-f(n)$ 则前后各留两项。",
+   "applicabilityMarkdown": "通项能拆成同一函数在相邻（或相隔 2 个）自变量处取值之差的数列求和。",
+   "contentMarkdown": "**1. 裂项相消求和的基本原理**\\n\\n① 如果数列 $\\{a_n\\}$ 满足 $a_n=f(n+1)-f(n)$（$n\\in N_+$），则其前 $n$ 项和 $S_n$ 将会满足 $S_n=[f(2)-f(1)]+[f(3)-f(2)]+\\cdots+[f(n)-f(n-1)]+[f(n+1)-f(n)]=f(n+1)-f(1)$，这种求和方法称为一阶裂项相消求和。\\n\\n② 如果数列 $\\{a_n\\}$ 满足 $a_n=f(n+2)-f(n)$（$n\\in N_+$），则其前 $n$ 项和 $S_n$ 将会满足 $S_n=[f(3)-f(1)]+[f(4)-f(2)]+\\cdots+[f(n+2)-f(n)]=[f(3)+f(4)+\\cdots+f(n+2)]-[f(1)+f(2)+\\cdots+f(n)]=f(n+2)+f(n+1)-f(2)-f(1)$，这种求和方法称为二阶裂项相消求和。\\n\\n**要点**：同理还可探讨更高阶的裂项相消求和，但一般只考查到二阶。",
+   "boundaryMarkdown": "拆项后剩余项的个数由裂项的“间隔”决定，必须写出前几项与后几项逐一核对，不要凭印象只留首尾；一阶裂项剩余 $f(n+1)-f(1)$、二阶裂项剩余 $f(n+2)+f(n+1)-f(2)-f(1)$，两个公式容易记混；拆项必须恒等，可用 $n=1$、$n=2$ 代入验证；相消后各项符号要核对；通项为分式时先做部分分式分解或有理化。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-064）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:用裂项法求和的裂项原则及规律",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-065",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "分式裂项",
+   "summaryMarkdown": "分母为连续整数（或连续奇数）之积的分式，按“提取系数、把分子凑成两项之差”裂项；三个因式相乘时先配凑再裂项。",
+   "applicabilityMarkdown": "通项为分式、分母是连续若干因式之积的数列求和。",
+   "contentMarkdown": "**分式裂项的常用形式**\\n\\n① $\\frac{1}{n(n+k)}=\\frac1k\\cdot\\frac{(n+k)-n}{n(n+k)}=\\frac1k\\left(\\frac1n-\\frac1{n+k}\\right)$（$k\\ne0$）。说明：分子为 1，分母中 $n+k-n=k$，则裂项时提取 $\\frac1k$ 后分子中的 1 替换成 $(n+k)-n$，进而裂项。\\n\\n② $\\frac{1}{(2n-1)(2n+1)}=\\frac12\\times\\frac{(2n+1)-(2n-1)}{(2n-1)(2n+1)}=\\frac12\\left(\\frac{1}{2n-1}-\\frac{1}{2n+1}\\right)$。说明：分母中 $(2n+1)-(2n-1)=2$，则裂项时提取 $\\frac12$ 后分子中的 1 替换成 $(2n+1)-(2n-1)$，进而裂项。\\n\\n③ $\\frac{1}{n(n+1)(n+2)}=\\frac12\\left[\\frac{1}{n(n+1)}-\\frac{1}{(n+1)(n+2)}\\right]$。\\n\\n**规律**：分母若有偶数个因式相乘，则可以直接裂项（如 ①②）；如果有奇数个因式相乘，那么就需要先配凑（把分子凑成相邻两式之差的形式）后再进行裂项。",
+   "boundaryMarkdown": "裂项前必须确认分母各因式的差是常数（如 $k$、$2$），提取的系数是它的倒数；分子必须凑成两项之差，漏乘系数会导致结果整体成比例错误；三个因式相乘时不能直接套用两项的裂项公式，要先配凑或做部分分式分解；裂项后剩余的项数与符号要核对；分母各因式在定义域内不能为零。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-065）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:裂项相消法中常见的裂项技巧",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-065b",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "根式裂项（分母有理化）",
+   "summaryMarkdown": "分母为根式之和的分式，通过分母有理化把通项拆成两个根式之差，再裂项相消。",
+   "applicabilityMarkdown": "通项含 $\\sqrt n+\\sqrt{n+k}$ 或 $\\sqrt{a_n}+\\sqrt{a_{n+k}}$ 形式的数列求和。",
+   "contentMarkdown": "**根式裂项的常用形式**\\n\\n① $\\frac{1}{\\sqrt n+\\sqrt{n+k}}=\\frac{\\sqrt{n+k}-\\sqrt n}{(\\sqrt{n+k}-\\sqrt n)(\\sqrt{n+k}+\\sqrt n)}=\\frac1k\\left(\\sqrt{n+k}-\\sqrt n\\right)$（$k\\ne0$）。特别地，当 $k=1$ 时，$\\frac{1}{\\sqrt n+\\sqrt{n+1}}=\\sqrt{n+1}-\\sqrt n$。\\n\\n② $\\frac{1}{\\sqrt{a_n}+\\sqrt{a_{n+k}}}=\\frac{1}{kd}\\left(\\sqrt{a_{n+k}}-\\sqrt{a_n}\\right)$（$k\\in N_+$），其中 $\\{a_n\\}$ 是公差 $d\\ne0$ 的正项等差数列。\\n\\n③ $\\frac{1}{n\\sqrt{n+1}+(n+1)\\sqrt n}=\\frac{\\sqrt{n+1}-\\sqrt n}{n\\sqrt{n+1}(\\sqrt{n+1}+\\sqrt n)}=\\frac{1}{\\sqrt n}-\\frac{1}{\\sqrt{n+1}}=\\frac{\\sqrt n}{n}-\\frac{\\sqrt{n+1}}{n+1}$（也可直接进行分母有理化）。",
+   "boundaryMarkdown": "有理化时要分子分母同乘共轭式，漏乘会改变式子的值；裂项后各项是“前一项减后一项”，符号写反会导致相消结果出错；② 中的公差 $d\\ne0$ 且数列各项为正（否则根式无意义）；③ 化简后有两种等价形式，选择便于相消的一种；求和后剩余的根式项要写清（首项与末项）。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-065）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:裂项相消法中常见的裂项技巧",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-065c",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "分指裂项",
+   "summaryMarkdown": "分母含 $n$、$n+1$ 与指数式 $2^n$（或 $2^{n+1}$）的分式，把分子拆成“前一项乘 $2^{n+1}$ 减后一项乘 $2^n$”的形式实现裂项。",
+   "applicabilityMarkdown": "通项是分式乘指数式“（如 $\\frac{n-1}{2^{n+1}}$、$\\frac{n+2}{n(n+1)\\cdot2^{n+1}}$）的数列求和。”",
+   "contentMarkdown": "**分指裂项的常用形式**\\n\\n① $\\frac{(n-1)\\cdot2^n}{n(n+1)}=\\frac{n\\cdot2^{n+1}-(n+1)\\cdot2^n}{n(n+1)}=\\frac{2^{n+1}}{n+1}-\\frac{2^n}{n}$；\\n\\n② $\\frac{n-1}{2^{n+1}}=\\frac{(n-1)\\cdot2^n}{2^n\\cdot2^{n+1}}=\\frac{n\\cdot2^{n+1}-(n+1)\\cdot2^n}{2^n\\cdot2^{n+1}}=\\frac{n\\cdot2^{n+1}}{2^n\\cdot2^{n+1}}-\\frac{(n+1)\\cdot2^n}{2^n\\cdot2^{n+1}}=\\frac{n}{2^n}-\\frac{n+1}{2^{n+1}}$；\\n\\n③ $\\frac{n+2}{n(n+1)\\cdot2^{n+1}}=\\frac{(n+2)\\cdot2^n}{n(n+1)\\cdot2^{n+1}\\cdot2^n}=\\frac{(n+1)\\cdot2^{n+1}-n\\cdot2^n}{(n+1)\\cdot2^{n+1}\\cdot n\\cdot2^n}=\\frac{1}{n\\cdot2^n}-\\frac{1}{(n+1)\\cdot2^{n+1}}$。\\n\\n**做法要领**：把分子中的一次式写成前一项乘 $2^{n+1}$ 减去后一项乘 $2^n$“的形式（例如 $(n-1)\\cdot2^n=n\\cdot2^{n+1}-(n+1)\\cdot2^n$ 恒成立），再按分母拆成两项之差。”",
+   "boundaryMarkdown": "分子改写必须恒等（可展开化简检验，如 $n\\cdot2^{n+1}-(n+1)\\cdot2^n=(2n-n-1)2^n=(n-1)2^n$）；拆项后两项的分母要与原分母对应，不能约错；指数位置（$2^n$ 与 $2^{n+1}$）容易写错，拆完要检查第一项与最后一项；求和后剩余的项要写清；解答题中要写出拆项的过程与依据。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-065）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:裂项相消法中常见的裂项技巧",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-066b",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "一阶线性递推求通项",
+   "summaryMarkdown": "对 $a_{n+1}=pa_n+f(n)$（$p\\ne0$），把 $f(n)$ 拆成 $g(n+1)-pg(n)$，移项得 $a_{n+1}-g(n+1)=p\\left[a_n-g(n)\\right]$，构造等比数列求通项。",
+   "applicabilityMarkdown": "已知递推式 $a_{n+1}=pa_n+f(n)$（$p\\ne0$，$f(n)$ 为常数、一次式或指数式），求数列的通项公式。",
+   "contentMarkdown": "**1. 递推求通项的基本逻辑**：对原数列进行代数变形，构造出一个等比数列或等差数列或常数列，通过求新构造数列的通项公式，得到原数列的通项公式。\\n\\n**2. 一阶线性递推问题（$a_{n+1}=pa_n+f(n)$，$p\\ne0$）的处理思路**\\n\\n① 当 $p=1$ 时，$a_{n+1}=a_n+f(n)$，于是可以使用累加法来求通项；特别地，如果 $f(n)$ 为常数 $d$，那么数列 $\\{a_n\\}$ 就是一个等差数列。\\n\\n② 一般情况下：先把 $f(n)$ 拆成 $g(n+1)-pg(n)$，则 $a_{n+1}=pa_n+g(n+1)-pg(n)$，然后移项得 $a_{n+1}-g(n+1)=p\\left[a_n-g(n)\\right]$，从而数列 $\\{a_n-g(n)\\}$ 是公比为 $p$ 的等比数列，根据数列 $\\{a_n-g(n)\\}$ 的通项公式，求得数列 $\\{a_n\\}$ 的通项公式。特别地，当 $p=1$ 时，数列 $\\{a_n-g(n)\\}$ 是常数列，从而求得数列 $\\{a_n\\}$ 的通项公式。\\n\\n**3. 确定 $g(n)$ 的方法——待定系数法**（$f(n)$ 是什么形式，拆分后的 $g(n)$ 就是什么形式）\\n\\n① 递推式为 $a_{n+1}=pa_n+q$（$p\\ne0$、$p\\ne1$，$q$ 为常数）时，用待定系数法设 $a_{n+1}-\\lambda=p(a_n-\\lambda)$（$\\lambda\\in R$），解得 $\\lambda=\\frac{q}{1-p}$，因此 $a_{n+1}-\\frac{q}{1-p}=p\\left(a_n-\\frac{q}{1-p}\\right)$，从而数列 $\\left\\{a_n-\\frac{q}{1-p}\\right\\}$ 是公比为 $p$ 的等比数列。\\n\\n② 递推式为 $a_{n+1}=pa_n+qn+r$（$p\\ne0$、$p\\ne1$、$q\\ne0$，$r\\in R$）时，用待定系数法设 $a_{n+1}-[A(n+1)+B]=p\\left[a_n-(An+B)\\right]$，解出 $A$、$B$。\\n\\n③ 递推式为 $a_{n+1}=pa_n+q^n$（$p\\ne0$，$p\\ne q$）时，用待定系数法设 $a_{n+1}-\\lambda q^{n+1}=p\\left(a_n-\\lambda q^n\\right)$，解出 $\\lambda$。",
+   "boundaryMarkdown": "$p=0$ 时不是线性递推（不能用此法）；$p=1$ 时用累加法，构造出的是常数列；$p\\ne1$ 且 $f(n)$ 为常数 $q$ 时待定系数为 $\\lambda=\\frac{q}{1-p}$，注意分母不为零；含 $q^n$ 的情形要求 $p\\ne q$；设出待定形式后必须比较系数解出参数；求出新数列通项后要回代求 $\\{a_n\\}$，并检验 $n=1$ 是否符合；构造出的等比数列首项要写清。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-066）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:构造法求数列通项",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-067",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "同除变换求指数型递推通项",
+   "summaryMarkdown": "对 $a_{n+1}=pa_n+q^n$（$p\\ne0$）同除以 $p^{n+1}$ 或 $q^{n+1}$ 化为 $b_{n+1}=b_n+f(n)$ 型或 $b_{n+1}=\\frac pq b_n+\\frac1q$ 型，再用累加或待定系数法求通项。",
+   "applicabilityMarkdown": "递推式中含指数项 $q^n$（特别当 $p=q$ 时待定系数法失效），需要用同除变换处理时。",
+   "contentMarkdown": "**同除变换**：事实上，对于 $a_{n+1}=pa_n+q^n$（$p\\ne0$）的递推式可通过同除变换“求通项。\\n\\n（1）常用同除以 $p^{n+1}$（$p$ 是 $a_n$ 的系数，$n+1$ 是 $a_{n+1}$ 的项数）得到 $\\frac{a_{n+1}}{p^{n+1}}=\\frac{a_n}{p^n}+\\frac1p\\cdot\\left(\\frac qp\\right)^n$，令 $b_n=\\frac{a_n}{p^n}$，则 $b_{n+1}=b_n+f(n)$：当 $p=q$ 时 $\\{b_n\\}$ 是等差数列，当 $p\\ne q$ 时用累加法求通项。\\n\\n（2）也可以同除以 $q^{n+1}$ 得到 $\\frac{a_{n+1}}{q^{n+1}}=\\frac pq\\cdot\\frac{a_n}{q^n}+\\frac1q$，令 $b_n=\\frac{a_n}{q^n}$，则 $b_{n+1}=\\frac pq b_n+\\frac1q$：当 $p=q$ 时 $\\{b_n\\}$ 是等差数列，当 $p\\ne q$ 时用待定系数法求通项。\\n\\n**注意**：该方法可以解决指数形式中 $p=q$ 的问题，但待定系数法不可以。”",
+   "boundaryMarkdown": "同除的指数要与项数对应（除 $p^{n+1}$ 而不是 $p^n$），除错会造成整体错位；两种同除方式适用情形不同，$p=q$ 时用它们可化为等差数列（此时待定系数法失效）；化为 $b_{n+1}=b_n+f(n)$ 后用累加法时注意累加的项数与首项；新数列的首项要由 $a_1$ 换算得到；若递推式中指数写成 $q^{n-1}$，先化为 $q^n$ 的倍数再处理；同除后要检验 $n=1$ 是否也满足所得通项。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-067）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:构造法求数列通项",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-067b",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "取倒数法处理分式递推",
+   "summaryMarkdown": "对形如 $a_n-a_{n+1}=a_na_{n+1}$ 或 $a_{n+1}=\\frac{a_n}{(n+1)a_n+2}$ 的分式递推，取倒数后化为等差（等比）型数列求通项。",
+   "applicabilityMarkdown": "递推式中 $a_n$ 与 $a_{n+1}$ 以分式或乘积对称出现、直接构造失效时。",
+   "contentMarkdown": "**取倒数法的两类常见形式**\\n\\n① 当数列 $\\{a_n\\}$ 满足递推式 $a_n-a_{n+1}=a_na_{n+1}$（$a_n\\ne0$）时，两边同除以 $a_na_{n+1}$，得到 $\\frac{1}{a_{n+1}}-\\frac{1}{a_n}=1$，从而数列 $\\left\\{\\frac1{a_n}\\right\\}$ 是公差为 1 的等差数列。\\n\\n② 当数列 $\\{a_n\\}$ 满足递推式 $a_{n+1}=\\frac{a_n}{(n+1)a_n+2}$（$a_n\\ne0$）时，取倒数得到 $\\frac{1}{a_{n+1}}=2\\cdot\\frac1{a_n}+n+1$，然后使用待定系数法变形为 $\\frac{1}{a_{n+1}}+(n+1)+2=2\\left(\\frac1{a_n}+n+2\\right)$，从而数列 $\\left\\{\\frac1{a_n}+n+2\\right\\}$ 是公比为 2 的等比数列。",
+   "boundaryMarkdown": "取倒数前必须确认对一切 $n$ 都有 $a_n\\ne0$（通常由递推式或首项说明）；取倒数后的式子要与一阶线性递推的标准形式对照，含 $n$ 的部分要一并配凑进新数列；待定系数得到的常数要检验恒等（把 $n$ 与 $n+1$ 的表达式对齐）；求出 $\\{1/a_n\\}$ 的通项后要取倒数还原并检验 $n=1$；若倒数为零的情形出现，需说明其不符合题意。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-067）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:取倒数法求数列通项",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-067c",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "同除与取对数化归",
+   "summaryMarkdown": "对含 $n$ 幂次因式的递推同除可化为常数列；对 $a_{n+1}=pa_n^q$（$p>0$，$a_n>0$）取对数可化归为一阶线性递推。",
+   "applicabilityMarkdown": "递推式中含 $n$ 的幂次因式相乘，或递推式为幂指形式（$a_{n+1}=pa_n^q$）时。",
+   "contentMarkdown": "**两种化归手段**\\n\\n② 当数列 $\\{a_n\\}$ 满足递推式 $(n+2)^2a_n=(n+1)^2a_{n+1}$ 时，两边同除以 $(n+1)^2(n+2)^2$，得到 $\\frac{a_n}{(n+1)^2}=\\frac{a_{n+1}}{(n+2)^2}$，从而数列 $\\left\\{\\frac{a_n}{(n+1)^2}\\right\\}$ 是常数列。\\n\\n④ 当数列 $\\{a_n\\}$ 满足 $a_{n+1}=pa_n^q$（$p>0$，$a_n>0$）时，在原递推式两边取对数得 $\\lg a_{n+1}=q\\lg a_n+\\lg p$，令 $b_n=\\lg a_n$，得 $b_{n+1}=qb_n+\\lg p$，化归为$a_{n+1}=pa_n+q$“型，求出 $b_n$ 之后得 $a_n=10^{b_n}$。**注意**：底数不一定要取 10，可根据题意选择。”",
+   "boundaryMarkdown": "同除时除式的指数要与因式的次数对应，除错会造成项错位；同除后要检查首项是否也满足新关系（常数列要写出常数值）；取对数要求 $p>0$ 且各项 $a_n>0$（否则对数无意义）；化归为 $b_{n+1}=qb_n+\\lg p$ 后要讨论 $q$ 是否为 1（$q=1$ 时为等差数列）；最后按所取底数还原（如取自然对数则还原为 $a_n=e^{b_n}$），并检验 $n=1$。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-067）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:构造法求数列通项",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-068",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "二阶线性递推的特征根法",
+   "summaryMarkdown": "对 $a_{n+2}=pa_{n+1}+qa_n$ 解特征方程 $x^2-px-q=0$ 得两根 $\\lambda$、$\\mu$，配凑 $a_{n+2}-\\mu a_{n+1}=\\lambda(a_{n+1}-\\mu a_n)$ 求得通项。",
+   "applicabilityMarkdown": "数列满足二阶线性递推式 $a_{n+2}=pa_{n+1}+qa_n$，求通项公式时。",
+   "contentMarkdown": "**识别（见招）**：数列 $\\{a_n\\}$ 满足递推式 $a_{n+2}=pa_{n+1}+qa_n$，求数列 $\\{a_n\\}$ 的通项公式（称为二阶线性递推）。\\n\\n**出招**：配凑相邻两项，构造新数列 $\\{a_{n+1}-\\mu a_n\\}$：$a_{n+2}-\\mu a_{n+1}=\\lambda(a_{n+1}-\\mu a_n)$。一般直接观察或采用特征根法配凑。\\n\\n**特征根法的步骤**\\n\\n① 第一步：解方程 $x^2-px-q=0$（把 $a_{n+2}$ 替换成 $x^2$，$a_{n+1}$ 替换成 $x$，$a_n$ 替换成 1），两根分别记为 $\\lambda$、$\\mu$。\\n\\n② 第二步：把 $a_{n+2}=pa_{n+1}+qa_n$ 变形为 $a_{n+2}-\\mu a_{n+1}=\\lambda(a_{n+1}-\\mu a_n)$，即 $\\{a_n-\\mu a_{n-1}\\}$（$n\\ge2$）是公比为 $\\lambda$ 的等比数列，$a_n=\\mu a_{n-1}+\\lambda^{n-2}(a_2-\\mu a_1)$（$n\\ge2$）。\\n\\n③ 第三步：根据一阶线性递推求解，看 $\\lambda$、$\\mu$ 是否相等。当 $\\lambda=\\mu$ 时，数列 $\\{a_n\\}$ 的通项公式满足 $a_n=(An+B)\\lambda^n$ 的形式；当 $\\lambda\\ne\\mu$ 时，数列 $\\{a_n\\}$ 的通项公式满足 $a_n=C\\lambda^n+D\\mu^n$ 的形式。\\n\\n**证明思路**：先用待定系数法设 $a_{n+2}-\\mu a_{n+1}=\\lambda(a_{n+1}-\\mu a_n)$，从而有 $a_{n+2}=(\\lambda+\\mu)a_{n+1}-\\lambda\\mu a_n$，于是得到 $\\lambda+\\mu=p$、$\\lambda\\mu=-q$（根与系数的关系），进而说明 $\\lambda$、$\\mu$ 是关于 $x$ 的一元二次方程 $x^2-px-q=0$ 的两个实数根；再由 $\\{a_n-\\mu a_{n-1}\\}$（$n\\ge2$）是公比为 $\\lambda$ 的等比数列，得到 $a_n-\\mu a_{n-1}=\\lambda^{n-2}(a_2-\\mu a_1)$（$n\\ge2$）。\\n\\n- 当 $\\lambda=\\mu$ 时，$a_n=\\lambda a_{n-1}+\\lambda^{n-2}(a_2-\\lambda a_1)$（$n\\ge2$），于是 $\\frac{a_n}{\\lambda^n}=\\frac{a_{n-1}}{\\lambda^{n-1}}+\\frac{1}{\\lambda^2}(a_2-\\lambda a_1)$，接着使用迭代法就可以得到形如 $a_n=(An+B)\\lambda^n$ 的通项公式；\\n- 当 $\\lambda\\ne\\mu$ 时，使用待定系数法设出 $a_n+m\\lambda^{n-1}(a_2-\\mu a_1)=\\mu\\left[a_{n-1}+m\\lambda^{n-2}(a_2-\\mu a_1)\\right]$，解得 $m=\\frac{1}{\\mu-\\lambda}$，因此数列 $\\left\\{a_n+\\frac{1}{\\mu-\\lambda}\\lambda^{n-1}(a_2-\\mu a_1)\\right\\}$ 是公比为 $\\mu$ 的等比数列，进而得到 $a_n=C\\lambda^n+D\\mu^n$ 的形式。",
+   "boundaryMarkdown": "特征方程的形式为 $x^2-px-q=0$（常数项取递推式中 $a_n$ 系数的相反数），符号写错会导致特征根错误；$\\lambda$ 与 $\\mu$ 可互换（配凑的对称性），但要与最终通项形式保持一致；构造出的等比数列从 $a_2-\\mu a_1$ 出发（$n\\ge2$），因此必须检验 $n=1$ 是否符合通项；$\\lambda=\\mu$ 与 $\\lambda\\ne\\mu$ 对应不同的通项形式，需分别讨论；特征根为虚数（无实根）时中学阶段不宜用此法；$C$、$D$ 由 $a_1$、$a_2$ 确定，别漏求。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-068）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:特征根法与不动点法",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-069",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "特征方程与特征根的使用",
+   "summaryMarkdown": "$x^2-px-q=0$ 是递推式 $a_{n+2}=pa_{n+1}+qa_n$ 的特征方程，$\\lambda+\\mu=p$、$\\lambda\\mu=-q$；选填可直接套通项形式，解答题则用配凑。",
+   "applicabilityMarkdown": "二阶线性递推求通项的问题；选择、填空题中快速写出结论，解答题中确定配凑系数。",
+   "contentMarkdown": "**1. 特征方程**：关于 $x$ 的一元二次方程 $x^2-px-q=0$ 称为数列递推式 $a_{n+2}=pa_{n+1}+qa_n$ 的特征方程，$\\lambda$、$\\mu$ 称为相应的特征根，且 $\\lambda+\\mu=p$，$\\lambda\\mu=-q$。\\n\\n**2. 使用策略**\\n\\n- 在选择题、填空题中，解出特征根之后可以直接套数列 $\\{a_n\\}$ 的通项公式的形式（$\\lambda=\\mu$ 时为 $a_n=(An+B)\\lambda^n$；$\\lambda\\ne\\mu$ 时为 $a_n=C\\lambda^n+D\\mu^n$），通过待定系数法解出 $A$、$B$ 或 $C$、$D$，进而直接得出通项公式；\\n- 在解答题中，特征方程相当于给我们提供了一个构造的思路，可以根据特征方程得到需要配凑的 $\\lambda$、$\\mu$，随后再转化为一阶线性递推推导。",
+   "boundaryMarkdown": "特征方程中常数项是递推式 $a_n$ 系数的相反数（$-q$），符号写错会得到错误的特征根；$\\lambda+\\mu=p$、$\\lambda\\mu=-q$ 只对标准形式 $a_{n+2}=pa_{n+1}+qa_n$（$a_{n+2}$ 的系数为 1）成立，系数不为 1 时要先化标准；解答题中不能只写“由特征方程得”，要写出配凑过程；特征根为虚数时中学阶段不宜使用；用待定系数求 $A$、$B$、$C$、$D$ 时要代入 $a_1$、$a_2$ 两个条件。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-069）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:特征根法与不动点法",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-069b",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "分式结构递推的取倒数解法",
+   "summaryMarkdown": "对 $a_{n+1}=\\frac{Ca_n}{Aa_n+B}$（$C\\ne0$）两边取倒数得 $\\frac{1}{a_{n+1}}=\\frac BC\\cdot\\frac1{a_n}+\\frac AC$，令 $b_n=\\frac1{a_n}$ 化为一阶线性递推。",
+   "applicabilityMarkdown": "递推式为 $a_{n+1}=\\frac{Ca_n}{Aa_n+B}$（分子不含常数项）的分式结构递推，求通项公式。",
+   "contentMarkdown": "**识别（见招）**：数列 $\\{a_n\\}$ 满足分式结构递推式 $a_{n+1}=\\frac{Ca_n}{Aa_n+B}$（$C\\ne0$），求数列 $\\{a_n\\}$ 的通项公式。\\n\\n**出招**：左右两边同时取倒数得到 $\\frac{1}{a_{n+1}}=\\frac BC\\cdot\\frac1{a_n}+\\frac AC$，令 $b_n=\\frac1{a_n}$，得 $b_{n+1}=pb_n+q$，利用一阶线性递推求通项。\\n\\n**示例思路**：已知 $a_{n+1}=\\frac{a_n}{3a_n+4}$ 且 $a_1=1$，易知 $a_n\\ne0$，所以 $\\frac{1}{a_{n+1}}=\\frac4{a_n}+3$，于是 $\\frac{1}{a_{n+1}}+1=4\\left(\\frac1{a_n}+1\\right)$，所以数列 $\\left\\{\\frac1{a_n}+1\\right\\}$ 是公比为 4 的等比数列，由 $\\frac1{a_1}+1=2$ 得 $\\frac1{a_n}+1=2\\times4^{n-1}=2^{2n-1}$，所以 $a_n=\\frac{1}{2^{2n-1}-1}$。",
+   "boundaryMarkdown": "取倒数前要确认 $a_n\\ne0$（由递推式或首项说明）；分子含常数项（形如 $\\frac{Ca_n+D}{Aa_n+B}$）时不能直接用取倒数法，应改用不动点法；取倒数后化为一阶线性递推，新数列首项为 $\\frac1{a_1}$；构造等比数列时待定的常数要验证恒等；求出倒数的通项后要取倒数还原，并检验 $n=1$。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-069）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:取倒数法求数列通项",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-069c",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "分式递推的不动点法",
+   "summaryMarkdown": "解方程 $x=\\frac{Cx+D}{Ax+B}$ 得两根 $x_1$、$x_2$：$x_1=x_2$ 时 $\\left\\{\\frac{1}{a_n-x_1}\\right\\}$ 成等差数列，$x_1\\ne x_2$ 时 $\\left\\{\\frac{a_n-x_1}{a_n-x_2}\\right\\}$ 成等比数列。",
+   "applicabilityMarkdown": "递推式为 $a_{n+1}=\\frac{Ca_n+D}{Aa_n+B}$（分子分母都是一次式且含常数项）的分式结构递推，求通项公式。",
+   "contentMarkdown": "**识别（见招）**：数列 $\\{a_n\\}$ 满足分式结构递推式 $a_{n+1}=\\frac{Ca_n+D}{Aa_n+B}$，求数列 $\\{a_n\\}$ 的通项公式。\\n\\n**出招**：不动点法。\\n\\n① 第一步：解方程 $x=\\frac{Cx+D}{Ax+B}$（把 $a_n$、$a_{n+1}$ 都替换成 $x$），记方程两根分别为 $x_1$、$x_2$。\\n\\n② 第二步：判断两根之间的关系。当 $x_1=x_2$ 时，数列 $\\left\\{\\frac{1}{a_n-x_1}\\right\\}$ 为等差数列；当 $x_1\\ne x_2$ 时，数列 $\\left\\{\\frac{a_n-x_1}{a_n-x_2}\\right\\}$ 为等比数列，进而可得数列 $\\{a_n\\}$ 的通项公式。",
+   "boundaryMarkdown": "使用前要把递推式化为标准形式（分子分母都是一次式）；要求 $a_n\\ne x_1$、$a_n\\ne x_2$（否则分母为零）；$x_1=x_2$ 与 $x_1\\ne x_2$ 对应不同的构造，判断前先解方程确认；由新数列求 $a_n$ 时要解出并检验 $n=1$；不动点法只适用于分子分母均为一次的分式递推，含 $n$ 的递推（如 $a_{n+1}=\\frac{a_n+n}{a_n+1}$）不适用。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-069）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:特征根法与不动点法",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-070",
+   "subject": "MATH",
+   "type": "DERIVATION",
+   "title": "不动点法的证明与关键结论",
+   "summaryMarkdown": "对 $a_{n+1}=\\frac{Ca_n+D}{Aa_n+B}$，两根 $x_1$、$x_2$ 满足 $a_{n+1}-x_i=\\frac{C-Ax_i}{Aa_n+B}(a_n-x_i)$，由此得出等差（等比）的公差与公比。",
+   "applicabilityMarkdown": "需要使用不动点法求分式递推的通项，或需要说明公差、公比的来源时。",
+   "contentMarkdown": "**证明**：由于数列 $\\{a_n\\}$ 满足递推式 $a_{n+1}=\\frac{Ca_n+D}{Aa_n+B}$，$x_1$、$x_2$ 是关于 $x$ 的方程 $x=\\frac{Cx+D}{Ax+B}$ 的两个实数根，于是得到 $x_1=\\frac{Cx_1+D}{Ax_1+B}$，进而有 $Ax_1^2+(B-C)x_1-D=0$，即 $-Bx_1=Ax_1^2-Cx_1-D$。于是 $a_{n+1}-x_1=\\frac{Ca_n+D}{Aa_n+B}-x_1=\\frac{Ca_n+D-Ax_1a_n-Bx_1}{Aa_n+B}=\\frac{Ca_n+D-Ax_1a_n+Ax_1^2-Cx_1-D}{Aa_n+B}=\\frac{C-Ax_1}{Aa_n+B}(a_n-x_1)$；同理就有 $a_{n+1}-x_2=\\frac{C-Ax_2}{Aa_n+B}(a_n-x_2)$。\\n\\n① 当 $x_1=x_2$ 时，得到 $x_1=x_2=\\frac{C-B}{2A}$，于是 $a_{n+1}-x_1=\\frac{B+C}{2(Aa_n+B)}(a_n-x_1)$，接着取倒数并化简得 $\\frac{1}{a_{n+1}-x_1}=\\frac{1}{a_n-x_1}+\\frac{2A}{B+C}$，因此数列 $\\left\\{\\frac{1}{a_n-x_1}\\right\\}$ 是公差为 $\\frac{2A}{B+C}$ 的等差数列。\\n\\n② 当 $x_1\\ne x_2$ 时，$\\frac{a_{n+1}-x_1}{a_{n+1}-x_2}=\\frac{C-Ax_1}{C-Ax_2}\\cdot\\frac{a_n-x_1}{a_n-x_2}$，因此数列 $\\left\\{\\frac{a_n-x_1}{a_n-x_2}\\right\\}$ 是公比为 $\\frac{C-Ax_1}{C-Ax_2}$ 的等比数列。\\n\\n这种分式结构递推求数列 $\\{a_n\\}$ 通项公式的方法称为不动点法。\\n\\n**两条注意（抗神百话）**\\n\\n① 在极少数情况下，如果方程 $x=\\frac{Cx+D}{Ax+B}$ 没有实数根，考虑数列 $\\{a_n\\}$ 为周期数列。\\n\\n② 若递推式中含 $n$（如 $a_{n+1}=\\frac{a_n+n}{a_n+1}$），则不是纯分式递推，需另寻方法（如构造、取对数等）。",
+   "boundaryMarkdown": "公式中的 $x_1$、$x_2$ 必须是方程 $x=\\frac{Cx+D}{Ax+B}$ 的实根，无实根时数列可能为周期数列，不能硬套；要求 $Aa_n+B\\ne0$ 且 $a_n\\ne x_2$，否则分母为零无意义；公差 $\\frac{2A}{B+C}$ 与公比 $\\frac{C-Ax_1}{C-Ax_2}$ 要在化简后给出并核对；递推式中含 $n$ 时该方法不适用；最后由等差（等比）数列通项解出 $a_n$ 并检验 $n=1$。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-070）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:特征根法与不动点法",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-070b",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "分式递推的方法选择",
+   "summaryMarkdown": "分子不含常数项的递推优先取倒数；分子分母都为一次且含常数项时一般只能用不动点法。",
+   "applicabilityMarkdown": "分式结构递推求通项时选择合适的方法；判断题目是否属于纯分式递推。",
+   "contentMarkdown": "**方法选择**\\n\\n- 分式结构递推中，形如 $a_{n+1}=\\frac{Ca_n}{Aa_n+B}$ 的数列也可以用不动点法求通项，但非常复杂，优先用取倒数法；\\n- 形如 $a_{n+1}=\\frac{Ca_n+D}{Aa_n+B}$ 的数列一般只能用不动点法求通项。\\n\\n**补充判断**\\n\\n① 若方程 $x=\\frac{Cx+D}{Ax+B}$ 没有实数根，考虑数列 $\\{a_n\\}$ 为周期数列；\\n② 若递推式中含 $n$，则不是纯分式递推，需另寻方法（如构造、取对数等）。",
+   "boundaryMarkdown": "分子不含常数项时取倒数法运算量明显更小，但若倒数后的一阶线性递推含 $n$，仍需配凑；不动点法要求分子分母均为一次式且不含 $n$；遇到无实根或含 $n$ 的情形要及时更换方法，不要强行套用；无论用哪种方法，最终都要检验 $n=1$（或前几项）是否满足所求通项。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-070）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:特征根法与不动点法",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-076",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "周期数列与并项求和",
+   "summaryMarkdown": "周期数列的定义，以及把每 T 项、每 2 项并项后求和的两类通法。",
+   "applicabilityMarkdown": "通项含周期因子（如 $\\cos\\frac{n\\pi}{2}$）或递推式为 $a_{n+1}=(-1)^na_n+f(n)$ 的数列求前 n 项和。",
+   "contentMarkdown": "### 1. 周期数列的定义\\n如果数列 $\\{c_n\\}$ 满足 $c_{n+T}=c_n$（$T\\in N^*$），则数列 $\\{c_n\\}$ 是周期为 T 的周期数列。\\n\\n### 2. 周期数列在数列求和中的应用\\n如果数列 $\\{a_n\\}$ 满足 $a_n=f(n)c_n+g(n)$，其中 $\\{c_n\\}$ 是周期为 T 的周期数列，则在求 $\\{a_n\\}$ 的前 n 项和 $S_n$ 时，把每 T 项并项后再求和比较快。\\n例如 $a_n=n\\cos\\frac{n\\pi}{2}+1$ 中 $\\cos\\frac{n\\pi}{2}$ 的周期为 4，取每 4 项为一组，组内各项之和为常数，$S_n$ 就等于组数乘该常数再加上余项。\\n\\n### 3. 递推式为 $a_{n+1}=(-1)^na_n+f(n)$ 时的并项求和\\n如果数列 $\\{a_n\\}$ 满足 $a_{n+1}=(-1)^na_n+f(n)$，则相邻两项并项为\\n$a_{2k-1}+a_{2k}=a_{2k-1}+(-1)^{2k-1}a_{2k-1}+f(2k-1)=f(2k-1)$（$k\\in N^*$），\\n即在求 $\\{a_n\\}$ 的前 n 项和 $S_n$ 时，把每 2 项并项后再求和比较快。",
+   "boundaryMarkdown": "并项的组数要与项数对应：n 不是周期倍数时余下的项必须单独列出求和；递推式中的 $f(n)$ 若分段给出，还需对 n 的奇偶分类；含周期因子的通项要先看准周期 T，T 判断错则整组都错。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-076）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:周期数列的常见形式",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-077",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "求数列最大项最小项的两法",
+   "summaryMarkdown": "数列最大、最小项问题本质是求函数最值：用单调性法（注意 n∈N* 限制）或用不等式组法定项。",
+   "applicabilityMarkdown": "求数列的最大项、最小项或某项的取值范围、判断数列增减性的问题。",
+   "contentMarkdown": "数列的最大、最小项或项的取值范围的实质是求函数最值问题，常用以下两种方法。\\n\\n### 方法一：函数单调性法\\n利用单调性求函数最值的方法同样适用于求数列的最大（小）项，但要注意 $n\\in N^*$ 的限制。\\n- 若数列 $\\{a_n\\}$ 是递增数列，则最小项为 $a_1=f(1)$；\\n- 若数列 $\\{a_n\\}$ 是递减数列，则最大项为 $a_1=f(1)$。\\n判断单调性常用作差或作商法。\\n\\n### 方法二：不等式组法\\n把最大项、最小项写成相邻项同时满足的不等式：\\n- 确定最大项 $a_n$：解不等式组 $a_n\\ge a_{n-1}$ 且 $a_n\\ge a_{n+1}$（$n\\ge 2$）；\\n- 确定最小项 $a_n$：解不等式组 $a_n\\le a_{n-1}$ 且 $a_n\\le a_{n+1}$（$n\\ge 2$）。\\n\\n两种方法都要把解出的 n 与正整数条件对照，取满足条件的正整数 n。",
+   "boundaryMarkdown": "数列是定义在正整数集上的函数，其最值可能在端点 $n=1$ 取到，不能直接沿用连续函数在极值点处取最值的结论；用单调性法时必须先证明单调性；不等式组法解出的 n 要检验是否为正整数，若无正整数解则最大（小）项在首项取到。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-077）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:数列的单调性与最值问题",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-077b",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "数列公共项问题的函数视角",
+   "summaryMarkdown": "把数列看成定义域为 $N^*$ 的函数，两数列的公共项即两函数图象横坐标为整数的公共点，等差与等比的公共项有限。",
+   "applicabilityMarkdown": "判断两个数列（尤其一个等差、一个等比）公共项的个数、求公共项构成的新数列。",
+   "contentMarkdown": "### 函数视角\\n数列 $\\{a_n\\}$ 是定义域为 $N^*$ 的函数，于是：\\n- 等差数列的通项是关于 n 的一次式（$A\\ne 0$ 时为斜率不为 0 的直线上的点列）；\\n- 等比数列的通项对应指数型曲线上的点列，公比 $q<0$ 时点在两支上交替出现。\\n\\n两数列的公共项就是两条曲线（直线）的公共点中横坐标为正整数的那些点，因此可以把公共项问题转化为函数图象交点问题处理。\\n\\n### 常用处理\\n1. 令 $a_k=b_k$ 解方程，再检验解是否为正整数。\\n2. 公比含负号（或通项含 $(-1)^n$）时按奇偶分类：例如 $a_n=2^n$ 与 $b_n=(-2)^n$，在偶数项上 $a_{2k}=2^{2k}=4^k$、$b_{2k}=(-2)^{2k}=4^k$，两者相等；奇数项上符号相反，不相交。\\n3. 结论：两个非常数数列的公共项通常只有有限个（等差与等比的公共项尤其如此），可用图象公共点个数给出上界。",
+   "boundaryMarkdown": "数列只取正整数下标，图象上的交点必须横坐标为正整数才算公共项；等比数列公比为负时不能直接比较，要按奇偶分成两支；等差与等比的公共项可用指数的倍数关系判断，切勿把实函数交点个数直接当作公共项个数。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-077）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:数列与函数的关系",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-078",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "棱长为 a 的正四面体五组结论",
+   "summaryMarkdown": "正四面体的高、表面积、体积、相邻面夹角、外接球与内切球半径及对棱公垂线的一组常用结论。",
+   "applicabilityMarkdown": "棱长已知的正四面体求高、体积、二面角、侧棱与底面夹角、外接球与内切球半径的选择题与计算题。",
+   "contentMarkdown": "正四面体是由四个全等正三角形围成的空间封闭图形，所有棱长都相等，它是最简单的正多面体，也是特殊的正三棱锥。设棱长为 a，则有以下常用结论：\\n\\n1. **基本量**：高 $h=\\frac{\\sqrt 6}{3}a$，表面积 $S=\\sqrt 3a^2$，体积 $V=\\frac{\\sqrt 2}{12}a^3$。\\n2. **两类角**：记相邻两个面的夹角为 $\\alpha$，则 $\\cos\\alpha=\\frac{1}{3}$（$\\alpha\\approx 70.5^{\\circ}$）；记侧棱与底面的夹角为 $\\beta$，则 $\\cos\\beta=\\frac{\\sqrt 3}{3}$（$\\beta\\approx 54.7^{\\circ}$）。\\n3. **两球同心**：外接球与内切球的球心重合，球心在高所在的线段上，且是靠近底面的四等分点；球心到顶点的距离为外接球半径 $R=\\frac{\\sqrt 6}{4}a$，球心到底面的距离为内切球半径 $r=\\frac{\\sqrt 6}{12}a$，$R:r=3:1$。\\n4. **射影**：顶点在底面上的射影是底面三角形的中心（四心合一）。\\n5. **对棱**：对棱互相垂直，且对棱中点的连线为对棱的公垂线，距离为 $\\frac{\\sqrt 2}{2}a$；三对对棱的公垂线交于一点，此点即该正四面体外接球（或内切球）的球心。",
+   "boundaryMarkdown": "结论只对棱长全相等的正四面体成立，一般的正三棱锥（侧棱与底面边长不等）不能套用；$R:r=3:1$ 与球心在高的四等分点处都只对正四面体成立；用体积法求内切球半径时，分割的四个小三棱锥体积之和等于整体体积。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-078）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:在棱长为的正四面体中-高-外接球半径-内切球半径",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-079",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "外接球的补形法（长方体模型）",
+   "summaryMarkdown": "把四面体补成正方体或长方体，二者有相同的外接球，外接球直径等于长方体体对角线。",
+   "applicabilityMarkdown": "三条棱两两垂直的四面体（鳖臑、墙角体）、可嵌入正方体或长方体的四面体求外接球半径与体积。",
+   "contentMarkdown": "### 补形法\\n从正方体、长方体中切割出来的四面体，与原来的正方体、长方体有相同的外接球。因此求这类四面体的外接球时，可以把它补成长方体（或正方体）：\\n- 设长方体的三条棱长为 $a$、$b$、$c$，则外接球直径等于其体对角线，故 $R=\\frac{1}{2}\\sqrt{a^2+b^2+c^2}$。\\n\\n### 三直角四面体（鳖臑）的直接结论\\n三条棱两两垂直的四面体，其外接球球心在最长棱的中点处，外接球半径等于最长棱的一半。例如鳖臑 $A-BCD$ 中 $AB\\perp$ 平面 $BCD$，$BC\\perp CD$，则外接球半径\\n$R=\\frac{1}{2}AD=\\frac{1}{2}\\sqrt{AB^2+BC^2+CD^2}$。\\n\\n### 理由\\n球心是到四面体各个顶点距离都相等的点，而长方体的中心到 8 个顶点的距离相等，故补形前后外接球完全相同。",
+   "boundaryMarkdown": "只有当四面体能作为长方体的四个顶点（棱两两垂直）时才能补形；补形时要注意对应关系，三个互相垂直的棱长对应长方体的长、宽、高；求得的 $R$ 是外接球半径，题目问表面积或体积时还要再算 $4\\pi R^2$ 或 $\\frac{4}{3}\\pi R^3$。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-079）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:求解几何体外接球的半径的思路",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-079b",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "体积法求内切球半径",
+   "summaryMarkdown": "以内切球球心为顶点把多面体分割成若干小锥体，由 V=(1/3)S表·r 求内切球半径。",
+   "applicabilityMarkdown": "已知多面体各面面积与体积、求内切球半径或球体积的题目。",
+   "contentMarkdown": "### 体积法\\n设多面体的内切球球心为 O、半径为 r。以内切球球心为公共顶点，把多面体分割成以多面体各面为底面、高为 r 的若干个小锥体。因为各小锥体的高都是 r，所以\\n$V=V_1+V_2+\\cdots+V_k=\\frac{1}{3}(S_1+S_2+\\cdots+S_k)r=\\frac{1}{3}S_{表}r$，\\n从而 $r=\\frac{3V}{S_{表}}$。\\n\\n### 操作步骤\\n1. 判断球心位置（一般由对称性或到各面距离相等确定）；\\n2. 把多面体按球心分割成若干个小锥体；\\n3. 由体积相等列出方程，解出 r。\\n\\n例如鳖臑 $A-BCD$ 中 $AB\\perp$ 平面 $BCD$、$BC\\perp CD$，设内切球球心为 O，则 $V_{A-BCD}=V_{O-ABC}+V_{O-BCD}+V_{O-ABD}+V_{O-ACD}$，代入各面面积与 r 即可解出 r。",
+   "boundaryMarkdown": "要求确实存在内切球（通常几何体有对称性或各面到同一点等距）；分割时小锥体的底面必须是原多面体的各个面，漏掉某个面会导致 r 偏大；结论 $r=\\frac{3V}{S_{表}}$ 只适用于内切球与所有面都相切的情形。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-079）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:求体积的常用方法",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-080",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "外接球补形法三种模型",
+   "summaryMarkdown": "把三棱锥补成直棱柱或长方体求外接球：墙角模型、侧棱垂直底面模型、对棱相等模型。",
+   "applicabilityMarkdown": "三棱锥的顶点是某个直棱柱（长方体）的顶点、需要对棱相等或三棱两两垂直时求外接球半径。",
+   "contentMarkdown": "解决空间几何体外接球问题的重点在于找外接球球心，即找到一点使其到所有顶点距离相等。若一个三棱锥的各个顶点都是直棱柱的顶点，就可把这个三棱锥补形成直棱柱，且直棱柱的外接球就是原三棱锥的外接球（直棱柱的外接球球心是上、下底面外接圆圆心连线段的中点，正棱柱的球心是上、下底面中心连线段的中点；空间中不共面的四个点确定一个球）。\\n\\n### 见招1：一顶点引出的三条棱两两垂直（墙角模型）\\n补形成长方体。若三棱两两垂直且长度为 $SA=a$、$SB=b$、$SC=c$，则外接球半径 $R=\\frac{\\sqrt{a^2+b^2+c^2}}{2}$。\\n\\n### 见招2：侧棱垂直于底面（底面为直角三角形，垂足为非直角顶点）\\n补形成长方体。若 $SC=a$、$AB=b$、$AC=c$，则外接球半径 $R=\\frac{\\sqrt{a^2+b^2+c^2}}{2}$。见招2 是见招1 的变式，区别只在于垂足是直角顶点还是非直角顶点。\\n\\n### 见招3：对棱相等（三组对棱分别相等）\\n把三组对棱作为长方体相对两个面的面对角线，补形成长方体。若 $AB=CD=a$、$BC=AD=b$、$AC=BD=c$，则外接球半径 $R=\\frac{\\sqrt{a^2+b^2+c^2}}{2\\sqrt 2}$。",
+   "boundaryMarkdown": "补形的前提是四面体的顶点确为长方体（直棱柱）的顶点，对棱相等模型必须三组对棱都相等；补形时要把三条棱长与长方体的长、宽、高对应正确，对应错则 $R$ 全错；结果只是半径，问表面积、体积时要再乘系数。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-080）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:求解几何体外接球的半径的思路",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-081",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "补形法见招四与柱体公式应用",
+   "summaryMarkdown": "顶点在底面的投影与底面三顶点构成长方形时可补成长方体；由 $R^2=r^2+\\frac{h^2}{4}$ 反求高或棱长。",
+   "applicabilityMarkdown": "顶点投影构成特殊四边形、或已知外接球半径与底面外接圆半径反求棱锥高的题目。",
+   "contentMarkdown": "### 见招4：顶点在底面的投影与底面三个顶点构成长方形\\n这样的三棱锥也可以补形成长方体，求出长方体的外接球半径即得该三棱锥的外接球半径。\\n\\n### 补形法的灵活性\\n补形法使用起来非常灵活，通过尝试，只要能把棱锥补形成特殊的直棱柱就都可以考虑使用。例如处理一些四棱锥的外接球相关问题时，也可以往补形法上考虑。\\n\\n### 柱体外接球公式的逆向应用\\n由 $R^2=r^2+\\frac{h^2}{4}$（$r$ 为底面外接圆半径，$h$ 为柱体高），在已知外接球半径 $R$ 与底面外接圆半径 $r$ 时可以反求高 $h$。例如已知 $S$、$A$、$B$、$C$ 均在半径为 2 的球面上，$\\triangle ABC$ 是边长为 3 的等边三角形，$SA\\perp$ 平面 $ABC$：先求底面外接圆半径 $r=\\frac{2}{3}\\times\\frac{\\sqrt 3}{2}\\times 3=\\sqrt 3$，补形成正三棱柱后 $OO_1=\\frac{1}{2}SA$，由 $R^2=OO_1^2+O_1A^2$ 得 $4=\\frac{1}{4}SA^2+3$，解得 $SA=2$。",
+   "boundaryMarkdown": "补形前要确认顶点确实构成特殊几何体（长方形、直棱柱）的顶点；反求高时注意 $h$ 是柱体高，对应到棱锥上是侧棱长 $SA$（即 $h=SA$，$OO_1=\\frac{h}{2}$）；外接球半径、底面外接圆半径、高三者要一一对应，不能张冠李戴。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-081）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:求解几何体外接球的半径的思路",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-087",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "翻折问题之平面化",
+   "summaryMarkdown": "把不在同一平面内的折线通过翻折或展开化到一个平面内，用两点之间线段最短求周长或线段和的最小值。",
+   "applicabilityMarkdown": "求异面直线段之和、截面周长、几何体表面上两点间最短路径的最小值问题。",
+   "contentMarkdown": "### 核心思想\\n处理不同平面内的共点线段长度和的最小值或周长最小值问题的关键，在于把原本不在一个平面内的情形，通过翻折变换转化为在一个平面内的情形，这个过程称为平面化（空间化平面，化归思想）。操作时既可以翻折整个平面，也可以只翻折需要的线段；解题的根本原理是两点之间线段最短。\\n\\n### 平面化就是对展开图的考查\\n常见展开方式有两种：\\n1. **平面展开**：题目一般折线两端点都是固定点，折点在该多面体的一条棱上运动；求解方法是沿合适的棱剪开几何体，把两定点展到同一平面，连接两定点求最短距离。注意：折线所跨的棱不能被剪开；若折线跨过的棱不确定，则需分类讨论，画出不同的展开图。\\n2. **曲面展开**：常见题目是对圆柱和圆锥的侧面展开图进行考查。\\n\\n### 算例\\n正三棱锥 $S-ABC$ 中 $SA=1$，$\\angle ASB=40^{\\circ}$，求截面三角形 AMN 周长的最小值：把 $\\triangle SAB$ 沿 SB 翻折到平面 SCB 内，把 $\\triangle SAC$ 沿 SC 翻折到平面 SCB 内，得到展开图，$\\triangle AMN$ 周长的最小值就是展开图中 $AA_1$ 的长。由正三棱锥得 $\\angle BSC=\\angle CSA=40^{\\circ}$，故 $\\angle ASA_1=120^{\\circ}$；又 $SA=1$，在顶角为 $120^{\\circ}$ 的等腰三角形中算得 $AA_1=\\sqrt 3$，即周长最小值为 $\\sqrt 3$。",
+   "boundaryMarkdown": "只能沿折线不跨越的棱剪开，剪错棱则展开图不对应原路径；折线跨棱不确定时要分类讨论所有可能的展开方式并比较大小；展开后两点连线可能穿过展开图的边界之外，此时该展开方式无效，需换其他展开图；曲面展开要注意展开后扇形（矩形）的弧长（边长）对应关系。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-087）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:几何体展开图最短距离问题",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-088",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "补全截面的三种方法",
+   "summaryMarkdown": "用直接法、平行线法、延长线法找到截面与各棱的交点，顺次连接补全截面再求解。",
+   "applicabilityMarkdown": "作几何体的截面、求截面形状与面积、判断截面多边形的边数问题。",
+   "contentMarkdown": "### 依据\\n处理截面问题的依据是平面的基本事实和推论、三线共点、线面（面面）平行的性质以及判定定理（其中线面平行的性质与判定定理用得最多）。\\n处理截面问题的关键在于将截面剩下部分的图形补充完整，然后根据完整截面图形求解问题。\\n\\n### 补全截面的三种常用方法\\n1. **直接法**：直接找截面与几何体棱的交点。\\n2. **平行线法**：已知截面上的一条线段与其外一点，若线段所在几何体的面与点所在几何体的一个面平行，过点作（找）该线段的平行线即得截线；再找截线与几何体棱的交点，顺次连接各点即可补全截面。\\n3. **延长线法**：若截面与几何体的一个面有两个交点，就把这两点连线并延长，直至与其他面相交，以此找到截面与几何体其他面的交点（利用三线共点与相交确定平面）。\\n\\n### 算例思路\\n正方体中 E、F 为棱的中点，作平面 $C_1EF$ 截正方体所得的截面：\\n- 平行线法：过 $C_1$ 作 EF 的平行线分别交 DC、$DD_1$ 的延长线于 K、L，连接 KF 交棱 BC 于 J，连接 LE 交棱 $A_1D_1$ 于 H，连接 $C_1H$、$C_1J$，得五边形；\\n- 延长线法：直线 EF 分别交 $B_1A_1$、$B_1B$ 的延长线于 G、I，连接 $C_1G$ 交 $A_1D_1$ 于 H，连接 $C_1I$ 交 BC 于 J，再连接 EH、FJ，得同一个五边形。",
+   "boundaryMarkdown": "作截面要保证所作直线确实与几何体相交（延长的方向要朝有实体的方向）；同一个截面的顶点顺序不能错，连接顺序错则作出的不是平面截得的图形；平行线法要求两平行面确实存在，若没有平行面则应改用延长线法；截面可能是三角形、四边形或多边形，作图前先估计交点个数。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-088）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:空间几何体中的截面问题",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-088b",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "对棱相等四面体的补形与截面最值",
+   "summaryMarkdown": "对棱相等的四面体补成长方体，先解出三条棱长，再把平行截面四边形的对角线最小值转化为对棱间距离。",
+   "applicabilityMarkdown": "对棱相等的四面体被平行于一组对棱的平面所截，求截面周长、对角线最小值的问题。",
+   "contentMarkdown": "### 识别与补形\\n若四面体的三组对棱分别相等（如 $AB=CD$、$AC=BD$、$AD=BC$），则该四面体是对棱相等的四面体，可以补形成长方体，三组对棱分别作为长方体三组相对面的面对角线。\\n\\n### 求棱长的方程组\\n设补成的长方体从同一顶点出发的三条棱长为 $x$、$y$、$z$，由勾股定理列方程组，例如由 $AB=a$、$AC=b$、$BC=c$ 得\\n$x^2+y^2=a^2$，$x^2+z^2=b^2$，$y^2+z^2=c^2$，\\n三式相加除以 2 得 $x^2+y^2+z^2=\\frac{a^2+b^2+c^2}{2}$，再逐式相减即可解出 $x$、$y$、$z$（也用于求外接球半径 $R=\\frac{\\sqrt{x^2+y^2+z^2}}{2}$）。\\n\\n### 截面最值\\n用平行于一组对棱的平面去截这个四面体，所得截面四边形里，与这组对棱平行的两条线段长度之和为定值，另一组对边的长度随截面位置变化；当截面过中点时取到最值，最值等于对应的长方体棱长（或两对棱之间的距离）。",
+   "boundaryMarkdown": "补形前必须先验证三组对棱分别相等，只有一组或两组相等时不能补成长方体；解方程组时注意开方取正；截面最值取等的位置一般在中点处，要说明理由（如由平行线分线段成比例得长度随位置线性变化）；FH 这类线段的最小值取决于截面位置，不能直接取端点。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-088）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:空间几何体中的截面问题",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-091b",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "圆上到直线定距的点个数",
+   "summaryMarkdown": "已知圆心与半径，求圆上到定直线距离为定值的点的个数：作平行线看交点，或用数轴法判区间。",
+   "applicabilityMarkdown": "圆上到某直线距离等于定值的点的个数、由个数反求参数范围的题目。",
+   "contentMarkdown": "### 见招\\n已知圆心和半径 r，求圆上有几个点到直线 l 的距离为 $d'$。\\n\\n### 出招1：几何法\\n作与直线 l 距离为 $d'$ 的两条平行线 $l'$（直线两侧各一条），求 $l'$ 与圆的交点个数。记 d 为圆心到直线 l 的距离：\\n- 若 $d=r+d'$，交点只有 1 个；\\n- 若 $r-d'<d<r+d'$，交点有 2 个；\\n- 若 $d=r-d'$，交点有 3 个；\\n- 若 $d<r-d'$，交点有 4 个。\\n记忆方法：只记临界情况（1 个点与 3 个点）的图，其余两种情况以此为准。\\n\\n### 出招2：数轴法\\n把圆心到直线的距离 d 在数轴上从小到大排列，依次标出 $0$、$r-d'$、$r+d'$ 三个位置，再判断 d 落在哪一段：\\n- $d>r+d'$：0 个点；\\n- $d=r+d'$：1 个点；\\n- $r-d'<d<r+d'$：2 个点；\\n- $d=r-d'$：3 个点；\\n- $0\\le d<r-d'$：4 个点。\\n\\n### 由个数反求参数\\n若圆上至少有三个不同的点到直线 l 的距离为 $d'$，则 $d\\le r-d'$，据此列出关于直线参数的不等式，再整理成倾斜角（或斜率）的不等式求解。例如圆 $(x-3)^2+(y-\\sqrt 3)^2=24$ 上至少有三个点到直线 $ax+by=0$（$b\\ne 0$）的距离为 $\\sqrt 6$，则需 $\\frac{|3a+\\sqrt 3b|}{\\sqrt{a^2+b^2}}\\le 2\\sqrt 6-\\sqrt 6=\\sqrt 6$。",
+   "boundaryMarkdown": "要分清至少三个点与恰有三个点：至少三个点是 $d\\le r-d'$，恰有三个点是 $d=r-d'$；$d'$ 必须是正数；数轴法中 d 越小交点越多，不要记反顺序；由个数求参数时注意直线的倾斜角范围是 $[0，\\pi)$，开方与去绝对值要分类讨论。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-091）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:直线与圆的位置关系",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-092b",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "由圆上点的个数求倾斜角范围",
+   "summaryMarkdown": "把圆上到定直线定距的点个数转化为距离不等式，整理成齐次二次不等式求斜率范围，再定倾斜角。",
+   "applicabilityMarkdown": "已知圆上满足某距离条件的点的个数（至少几个、恰有几个），求直线斜率或倾斜角取值范围的题目。",
+   "contentMarkdown": "### 步骤\\n1. **转化条件**：由图形条件把问题转化为圆心到直线的距离 d 与 r、$d'$ 的关系（如圆上至少有三个点到直线 l 的距离为 $d'$，则 $d\\le r-d'$）。\\n2. **列不等式**：用点到直线的距离公式列出关于直线系数的不等式，例如 $\\frac{|3a+\\sqrt 3b|}{\\sqrt{a^2+b^2}}\\le\\sqrt 6$。\\n3. **整理为齐次式**：两边平方并整理成关于 a、b 的齐次二次不等式，如 $a^2+2\\sqrt 3ab-b^2\\le 0$。\\n4. **求斜率范围**：因 $b\\ne 0$，两边同除以 $b^2$ 得 $\\frac{a^2}{b^2}+2\\sqrt 3\\frac{a}{b}-1\\le 0$，解得 $-2-\\sqrt 3\\le\\frac{a}{b}\\le 2-\\sqrt 3$，即直线斜率 $-\\frac{a}{b}$ 满足 $\\sqrt 3-2\\le-\\frac{a}{b}\\le 2+\\sqrt 3$。\\n5. **定倾斜角**：用特殊角的正切值（$\\tan\\frac{5\\pi}{12}=2+\\sqrt 3$、$\\tan\\frac{11\\pi}{12}=\\sqrt 3-2$）并结合正切函数图象（在 $[0，\\frac{\\pi}{2})$ 与 $(\\frac{\\pi}{2}，\\pi)$ 上分别递增）得倾斜角范围，如 $\\alpha\\in[0，\\frac{5\\pi}{12}]\\cup[\\frac{11\\pi}{12}，\\pi)$。\\n\\n### 要点\\n- 齐次不等式除以 $b^2$（或 $a^2$）即可化为关于斜率的一元二次不等式；\\n- 特殊角的三角函数值（$\\tan\\frac{\\pi}{12}=2-\\sqrt 3$、$\\tan\\frac{5\\pi}{12}=2+\\sqrt 3$）需记熟，否则无法由斜率精确定出倾斜角。",
+   "boundaryMarkdown": "除以 $b^2$ 前必须确认 $b\\ne 0$（否则需分类讨论）；由斜率求倾斜角时注意倾斜角范围是 $[0，\\pi)$，正切函数在 $\\frac{\\pi}{2}$ 处断开，斜率为负对应钝角段；去绝对值时要按正负分类，平方时注意 $a^2+b^2>0$ 恒成立。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-092）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:直线与圆的位置关系",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-093b",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "圆系方程三种形式",
+   "summaryMarkdown": "圆与直线交点系、两圆交点系的通式方程，以及 λ=-1 时得到公共弦（根轴）与公切线。",
+   "applicabilityMarkdown": "求过圆与直线交点、过两圆交点的圆的方程，或求两圆公共弦所在直线方程。",
+   "contentMarkdown": "### 三种常见的圆系方程\\n① 以 $(a，b)$ 为圆心、r 为半径（$r\\ne 0$）的圆的通式方程：$(x-a)^2+(y-b)^2=r^2$。\\n② 若圆 $M:x^2+y^2+Cx+Dy+E=0$ 与直线 $l:ax+by+c=0$ 有两个交点，则\\n$x^2+y^2+Cx+Dy+E+\\lambda(ax+by+c)=0$（$\\lambda\\in R$）\\n是过圆 M 与直线 l 的两个交点的圆的通式方程。\\n③ 若圆 $M:x^2+y^2+C_1x+D_1y+E_1=0$ 与圆 $N:x^2+y^2+C_2x+D_2y+E_2=0$ 有两个交点，则当 $\\lambda\\ne -1$ 时，\\n$x^2+y^2+C_1x+D_1y+E_1+\\lambda(x^2+y^2+C_2x+D_2y+E_2)=0$\\n为过圆 M 与圆 N 的两个交点的圆的通式方程（不含圆 N 本身）。\\n\\n### λ=-1 与相切的情形\\n当 $\\lambda=-1$ 时，$(C_1-C_2)x+(D_1-D_2)y+(E_1-E_2)=0$ 是过圆 M 与圆 N 的两个交点的直线方程。在二次项系数一致的情况下，把两圆方程相减即可得两圆交点的直线（公共弦）方程（即根轴）；若两圆相切，则该方程表示两圆的公切线。",
+   "boundaryMarkdown": "② 要求圆与直线确实有两个交点（相交），相离或相切时不能用；③ 中只有 $\\lambda\\ne -1$ 时才表示圆，且该方程不含圆 N，若所求圆恰为圆 N 要单独补充；两圆相减得公共弦方程的前提是两圆二次项系数相同，否则要先化为同系数；$\\lambda=-1$ 得到的是直线而非圆。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-093）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:圆的方程",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-094",
+   "subject": "MATH",
+   "type": "MISCONCEPTION_GUIDE",
+   "title": "过圆外一点求切线的漏解防范",
+   "summaryMarkdown": "过圆外一点求切线时容易漏掉斜率不存在的那条切线，用参数式或分类讨论可避免。",
+   "applicabilityMarkdown": "过圆外一点（或在坐标轴上的点）作圆的切线，求切线方程。",
+   "contentMarkdown": "### 易错点\\n过圆外一点向圆作切线，若只设斜率 k 得到 $y-y_0=k(x-x_0)$，就会漏掉斜率不存在的那条切线（形如 $x=x_0$）。做法是先把斜率不存在的情形单独检验，再设斜率求另一条。\\n\\n### 方法一：分类设斜率\\n1. 先验证 $x=x_0$：计算圆心到该直线的距离是否等于半径，等于则该直线也是切线；\\n2. 对斜率存在的情形设 $y-y_0=k(x-x_0)$，由圆心到直线的距离等于半径列出关于 k 的方程（也可用判别式为 0），解出 k；\\n3. 写出两条切线方程。\\n\\n### 方法二：切线系参数式（不漏解）\\n把切线统一设为 $(x-a)\\cos\\theta+(y-b)\\sin\\theta-r=0$（即直线系方程中的定距直线系，a、b 为圆心坐标，r 为半径），再由切线过已知点得到关于 $\\sin\\theta$、$\\cos\\theta$ 的方程，联立 $\\sin^2\\theta+\\cos^2\\theta=1$ 解出 $\\sin\\theta$ 与 $\\cos\\theta$ 的两组值，即得两条切线，天然不会漏解。",
+   "boundaryMarkdown": "只要切线过圆外一点必有两条，解出的切线数目少于 2 就要检查是否漏了竖直切线；用距离公式时要注意分母 $\\sqrt{k^2+1}$ 不能为 0；参数式方法解方程组时 $\\sin\\theta$、$\\cos\\theta$ 的两组解都要代回，不要只取一个；切线斜率不存在时距离公式仍然适用。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-094）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:直线与圆的位置关系",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-094b",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "含参圆系的公切线",
+   "summaryMarkdown": "圆心随参数在同一直线上移动、半径与参数成比例的圆系，用圆心到直线的距离等于半径求公切线。",
+   "applicabilityMarkdown": "含参数的圆的方程（如 $(x-m)^2+(y-2m)^2=\\frac{m^2}{2}$）求圆的公切线、判断圆心轨迹的问题。",
+   "contentMarkdown": "### 识别圆心轨迹与半径\\n把含参方程配方成标准形式即可读出圆心与半径。例如曲线 $C:(x-m)^2+(y-2m)^2=\\frac{n^2}{2}$：\\n- 当 $n=m\\ne 0$ 时，圆心为 $(m，2m)$，半径为 $\\frac{\\sqrt 2}{2}|m|$；\\n- 圆心 $(m，2m)$ 满足 $y=2x$，即圆心在定直线上移动，且半径与参数成同一比例，这是一个圆系。\\n（注意：$n=0$ 时方程退化为一个点，不再是圆。）\\n\\n### 求公切线的步骤\\n1. 设公切线为过原点的直线 $y=kx$（或设一般式）；\\n2. 用圆心到直线的距离等于半径列方程：$\\frac{|m-2m|}{\\sqrt{1+k^2}}=\\frac{\\sqrt 2}{2}|m|$；\\n3. 解出 k（去掉绝对值的正负），必要时检验 $|m|$ 可约分；\\n4. 得到全部公切线，如 $y=x$ 与 $y=7x$。\\n\\n### 判断要点\\n圆心共线、半径与参数成比例的圆系，其公切线一般过定点（此例过原点），因此设过定点的直线系求解最方便。",
+   "boundaryMarkdown": "配方后必须讨论参数为 0 的退化情形（$n=0$ 时不是圆）；求距离时含绝对值，两边平方会引入增根，需代回检验；半径要用 $|m|$ 表示（保证非负）；若圆系中参数范围受限，公切线可能只有一条。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-094）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:圆的方程",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-113",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "渐近线与抛物线相切求离心率",
+   "summaryMarkdown": "由双曲线的渐近线与抛物线相切的条件求出 $\\frac{b}{a}$，再求离心率；可用判别式法或导数（切线）法。",
+   "applicabilityMarkdown": "双曲线的渐近线与抛物线（或其他曲线）相切，求离心率的问题。",
+   "contentMarkdown": "### 题目特征\\n双曲线 $\\frac{x^2}{a^2}-\\frac{y^2}{b^2}=1$（$a>0$，$b>0$）的渐近线为 $y=\\pm\\frac{b}{a}x$；若它与抛物线（如 $y=x^2+1$）相切，由对称性只需考察 $y=\\frac{b}{a}x$ 与抛物线相切的情形。\\n\\n### 方法一：判别式法\\n把 $y=\\frac{b}{a}x$ 代入抛物线方程，得到一个关于 x 的一元二次方程；因为相切，所以判别式 Δ=0。例如代入 $y=x^2+1$ 得 $x^2-\\frac{b}{a}x+1=0$，由 $\\Delta=(\\frac{b}{a})^2-4=0$ 得 $\\frac{b^2}{a^2}=4$，再由 $c^2=a^2+b^2$、$e=\\frac{c}{a}>1$ 得离心率。\\n\\n### 方法二：导数（切线）法\\n设切点 $P(x_0，y_0)$（$x_0>0$），写出抛物线在该点的切线方程（如 $y=x^2+1$ 在 P 处的切线为 $y-y_0=2x_0(x-x_0)$，即 $y=2x_0x+y_0-2x_0^2$）。由于这条切线就是渐近线 $y=\\frac{b}{a}x$，两条直线相同，故斜率相等、截距为零：\\n$2x_0=\\frac{b}{a}$，$y_0-2x_0^2=0$；\\n再结合 $y_0=x_0^2+1$ 解出 $x_0=1$，从而得 $\\frac{b}{a}=2$，最后用 $e=\\sqrt{1+(\\frac{b}{a})^2}$ 求离心率。",
+   "boundaryMarkdown": "只能取渐近线的一条来算（由对称性），但要注意渐近线经过原点，故比较系数时截距必须为 0；切线方程中的切点必须在抛物线上（$y_0=x_0^2+1$）；双曲线离心率满足 $e>1$，结果要落在该范围内；求 $\\frac{b}{a}$ 后再算 e，不要直接把 $\\frac{b}{a}$ 当作离心率。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-113）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:双曲线的渐近线",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-125",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "特殊先安排法",
+   "summaryMarkdown": "先处理有特殊条件限制的元素或位置，再处理没有限制（或限制较少）的元素或位置。",
+   "applicabilityMarkdown": "排列问题中某些元素或位置有特殊要求（某人不在某位置、某位不能放某类元素）的计数。",
+   "contentMarkdown": "### 核心思想\\n先处理有特殊条件限制的元素（或位置），然后再处理没有限制的（或限制较少的）元素（或位置）。\\n\\n### 两类常见特殊类型\\n1. **特殊元素**：某些元素有特殊要求。例如 7 人排队，甲不能站排头、乙不能站排尾，此时应先按特殊元素（甲、丁之类）分类讨论。\\n2. **特殊位置**：某些位置有特殊要求。例如用 0、1、2、3、4 组成没有重复数字的三位数，特殊位置是百位（不能为 0），故先考虑百位。\\n\\n### 算例（甲、乙、丙、丁排成一列，甲不站第一排，丁不站最后一排）\\n把甲、丁作为特殊元素，先分情况讨论甲的位置：\\n- 甲站在最后一排：乙、丙、丁在前三排自由排列，有 $A_3^3=6$ 种；\\n- 甲不在最后一排：甲只能在第二排或第三排（2 种选择）；此时丁除甲的位置与最后一排外只剩 2 个位置可选（2 种选择）；剩下两个位置由乙、丙随意排（$A_2^2=2$ 种），故有 $2\\times 2\\times A_2^2=8$ 种。\\n两种情况相加得 $6+8=14$ 种。\\n\\n### 方法要点\\n分类时要按同一个特殊元素（或特殊位置）的取值来划分，保证不重不漏；每类内部再用分步乘法计数。",
+   "boundaryMarkdown": "分类必须不重不漏，若按两个特殊元素同时分类容易交叉；当特殊元素之间有相互影响（如甲占了某个位置后丁的可选位置随之减少）时，必须在同一类中继续分步讨论；特殊位置优先时要注意该位置的元素是否有额外限制（如 0 不能在首位、偶数末位要分奇偶）；算完各类后要相加。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-125）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:排列",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-125b",
+   "subject": "MATH",
+   "type": "MISCONCEPTION_GUIDE",
+   "title": "排列计数中的重复与遗漏",
+   "summaryMarkdown": "用总数减去不合要求时，若两个限制条件有交集会重复减，需用容斥或改用特殊先安排。",
+   "applicabilityMarkdown": "排列问题中用排除法（总数减不符合的）处理多个限制条件的计数。",
+   "contentMarkdown": "### 典型错误\\n7 人排队，甲不能站排头，乙不能站排尾，若直接用 $7!$ 减去甲在排头、乙在排尾的情况（写成 $7!-6!-6!$），就会重复减去甲在排头且乙在排尾的那部分（这部分被减了两次），导致结果偏小。正确处理是加上被多减的部分（容斥原理）：\\n$7!-6!-6!+5!=3720$（种）。\\n\\n### 更稳的做法\\n改用特殊先安排：先让甲选位置（分类讨论甲是否站在排尾），再安排其余的人，避免容斥的符号错误。\\n\\n### 判别方法\\n当题目中有两个或以上的限制条件、且这些条件可能同时被满足时，用排除法就必须考虑交集，否则必错。",
+   "boundaryMarkdown": "使用排除法时要检查各限制条件的交集是否被重复减（或重复加）；容斥的符号是减单、加双，容易写错，条件复杂时优先用直接法（特殊先安排）；分类讨论时每类内部的元素安排要用排列数而不是组合数；结果可正可负的中间量不能直接当作答案。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-125）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:排列",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-126",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "固序问题的三种方法",
+   "summaryMarkdown": "部分元素顺序固定时，用除序法 $\\frac{A_n^n}{A_m^m}$、空位法 $A_n^{n-m}$ 或插入法 $C_n^mA_{n-m}^{n-m}$ 计数。",
+   "applicabilityMarkdown": "排列问题中某些元素的相对顺序固定（如甲在乙前、甲乙丙顺序确定）的计数。",
+   "contentMarkdown": "对于整体排序时一部分元素有固定顺序的问题，常用以下三种方法处理。\\n\\n### 见招\\nn 个人排序中 m（$m\\le n$）个人的顺序固定为 1 个。\\n\\n### 出招1：除序法\\n先将 n 个人进行排序得到 $A_n^n$，再把其中 m 个人的 $A_m^m$ 个顺序都调整为固定的 1 个顺序，于是不同排法的种数为\\n$\\frac{A_n^n}{A_m^m}$。\\n直观理解：这 m 个元素在所有排列中内部的相对顺序共有 $A_m^m$ 种可能，而题目只允许其中 1 种，故有效排列数是总排列数的 $\\frac{1}{A_m^m}$。\\n\\n### 出招2：空位法\\n先将 n-m 个人在 n 个位置中排序，得到 $A_n^{n-m}$；剩下的位置由 m 个人按固定顺序排列，只有 1 种方式，故排法种数为 $A_n^{n-m}$。\\n\\n### 出招3：插入法\\n先从 n 个位置里挑出 m 个位置并把 m 个人放进去（顺序固定，故为 $C_n^m$），再将剩下 n-m 个人全排列，故排法种数为 $C_n^mA_{n-m}^{n-m}$。\\n\\n### 顺序固定为 k 个的情形\\n若 m 个人的顺序固定为 k 个（即只要求其中部分相对顺序），则用上述三种方法算出后，排法种数再乘 k 即可。\\n\\n### 算例\\n7 人排队，甲、乙、丙三人顺序确定：除序法 $\\frac{A_7^7}{A_3^3}=840$；空位法 $A_7^4=840$；插入法 $C_7^3A_4^4=840$，三种方法结果一致。",
+   "boundaryMarkdown": "除序法要求固定顺序的元素数量与所除的排列数对应（m 个人除 $A_m^m$），不要除错；空位法是把位置先分给未固定的元素，剩下的位置再放固定顺序的人（只有一种放法）；插入法的组合数下标是位置数、上标是固定顺序的人数；顺序固定是指相对顺序固定，不是位置固定，不要与定位问题混淆。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-126）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:排列",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-126b",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "相同元素的排列处理",
+   "summaryMarkdown": "把相同元素先当作互不相同来排列，再除以各组相同元素内部的全排列。",
+   "applicabilityMarkdown": "有相同元素（同色球、相同车、字母重复）或需按行列限制放位置的计数问题。",
+   "contentMarkdown": "### 方法\\n当元素中有相同的若干个时，先把它们当成互不相同的元素进行排列，再除以各组相同元素内部的全排列。例如 3 辆完全相同的红车与 3 辆完全相同的黑车放入 6 个位置：\\n$\\frac{A_6^6}{A_3^3A_3^3}=20$（种）。\\n\\n### 与位置限制结合\\n若还要求每行每列只有 1 辆车（不同行不同列），则等同于把 6 辆车安排到 6 行（列）上，再考虑列的一个排列：\\n$A_6^6=720$（种）。\\n由乘法计数原理，总数为 $20\\times 720=14400$（种）。\\n\\n### 思路小结\\n先假设元素互不相同算出总排列数，再除以相同元素带来的重复；若同时有位置限制，则把位置限制单独用分步乘法处理，两部分相乘。",
+   "boundaryMarkdown": "除的是相同元素各自内部的全排列之积（如红车 3 辆除 $A_3^3$、黑车 3 辆再除 $A_3^3$），不能只除一次；相同元素与不同元素混杂时只能对相同的那部分除序；位置限制（每行每列只有一个）要用排列数表示行、列的对应关系，不能重复计数；分步乘法中各步必须相互独立。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-126）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:排列",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-127",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "分组分配问题与去序",
+   "summaryMarkdown": "解决分组分配问题的核心思路是先分组后分配；分组时若出现 p 组数量相同要除以 $A_p^p$ 去序。",
+   "applicabilityMarkdown": "元素分组（分堆）与把组分配给人（主体）的计数问题。",
+   "contentMarkdown": "### 核心思路\\n解决分组分配问题的核心思路：先分组，后分配。\\n\\n### 1. 三种基本模型\\n① **无主体分组**：如将 4 本不同的书分成两堆，每堆 2 本；或分成两堆，一堆 3 本、一堆 1 本（只是分组，不分配）；\\n② **有主体等分配**：如将 4 本不同的书分给甲、乙两人，每人 2 本（分组后分配，存在元素数量相同的组）；\\n③ **有主体不等分配**：如分给甲、乙两人，一人 3 本、一人 1 本（分组后分配，每组元素数量不同）。\\n\\n### 2. 无主体分组的一般方法\\n对于将 n 个不同的元素无主体分成 m 组的问题：\\n- 第一步：将 n 个不同的元素分成有顺序的 m 组；\\n- 第二步：将有顺序的 m 组转换为无顺序的 m 组。\\n\\n### 3. 有顺序与无顺序的转换（去序）\\n- 把原本没有顺序的 n 个元素变成有顺序的 n 个元素，需要乘 $A_n^n$；\\n- 反之把有顺序的 n 个元素变成没有顺序的 n 个元素，需要除以 $A_n^n$，称为去序。\\n一般地，分组时出现 p 组数量相同，就要除以 $A_p^p$ 去序。\\n\\n### 4. 有主体分配的一般方法\\n对于将 n 个不同的元素分给 m 个主体的问题：\\n- 第一步（分组）：将 n 个不同的元素分成无顺序的 m 组，有 x 种方法；\\n- 第二步（分配）：将 m 组元素分给 m 个主体，有 $A_m^m$ 种方法；\\n- 第三步：由乘法计数原理得不同分法有 $x\\cdot A_m^m$ 种。",
+   "boundaryMarkdown": "只有组的数量相同时才需要去序（除以 $A_p^p$），数量不同的组之间本身可区分，不能盲目除；有主体分配时要区分主体是否可区分（甲乙两人可区分，无人认领的堆不可区分）；平均分组时容易漏除去序，导致结果偏大 $A_p^p$ 倍；混合模型（部分组数量相同）只对相同数量的那几组去序。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-127）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:组合",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-128",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "分组分配问题的算例与流程",
+   "summaryMarkdown": "先按有序堆分组、对数量相同的组去序，再按乘法计数原理把组分配给主体。",
+   "applicabilityMarkdown": "把 n 个不同元素分成若干堆（或分给若干人）、组数与人数的计数问题。",
+   "contentMarkdown": "### 算例一：4 本不同的书\\n(1) 分成两堆、每堆 2 本：先分成有顺序的 2 堆有 $C_4^2C_2^2$ 种情况，由于两堆数量相同、无实际顺序，需除以 $A_2^2$ 去序，故分法为 $\\frac{C_4^2C_2^2}{A_2^2}=\\frac{6\\times 1}{2}=3$（种）；\\n(2) 分成两堆、一堆 3 本一堆 1 本：两堆数量不同，本身可区分，故分法为 $C_4^3C_1^1=4$（种）；\\n(3) 分给甲、乙两人、每人 2 本：先分组（由(1)知 3 种），再分配（两堆书给两个人有 $A_2^2=2$ 种），由乘法计数原理得 $3\\times 2=6$（种）；\\n(4) 分给甲、乙两人、一人 3 本一人 1 本：先分组有 $C_4^3C_1^1$ 种，再分配有 $A_2^2$ 种，故分法为 $C_4^3C_1^1A_2^2=4\\times 1\\times 2=8$（种）。\\n\\n### 算例二：10 本不同的书分给甲、乙、丙等六人，一人 3 本、两人 2 本、三人 1 本\\n- 第一步（分组）：把 10 本书分成无顺序的 6 堆，其中 3 本的 1 堆、2 本的 2 堆（需去序）、1 本的 3 堆（需去序），故分组方法有\\n$\\frac{C_{10}^3C_7^2C_5^2C_3^1C_2^1C_1^1}{A_2^2A_3^3}$ 种；\\n- 第二步（分配）：6 堆书给六个人，有 $A_6^6$ 种；\\n- 第三步：由乘法计数原理得总数为 $\\frac{C_{10}^3C_7^2C_5^2C_3^1C_2^1C_1^1}{A_2^2A_3^3}\\cdot A_6^6$。\\n\\n### 流程小结\\n先按堆的大小依次取元素（组合数连乘），再对大小相同的堆去序（除以相应的 $A_p^p$），最后把堆分给可区分的主体（乘 $A_m^m$）。",
+   "boundaryMarkdown": "去序只对数量相同的堆进行，且相同的堆有几个就除 $A_k^k$（如 2 本的两堆除 $A_2^2$、1 本的三堆除 $A_3^3$，两者同时存在时要都除）；主体是否可区分决定要不要乘 $A_m^m$（若只是分成几堆则不能乘）；连乘的组合数下标要递减（$C_{10}^3C_7^2C_5^2\\cdots$），写错下标会重复计数。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-128）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:组合",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-128b",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "隔板法解相同元素的分配",
+   "summaryMarkdown": "相同元素分给 n 人：每人至少 1 个有 $C_{m-1}^{n-1}$ 种；允许有人分不到有 $C_{m+n-1}^{n-1}$ 种。",
+   "applicabilityMarkdown": "相同元素（相同的球、名额、相同奖品）分配到若干个人的计数问题。",
+   "contentMarkdown": "对于相同元素的分组分配问题，采用隔板法处理。\\n\\n### 情形一：每人至少 1 个\\n见招：将 m 个相同元素分配给 n 个人（$n\\le m$，$n\\ge 2$，m、$n\\in N^*$），每人至少 1 个，求不同分配方法的种数。\\n出招：先把 m 个元素排成一列，中间有 $m-1$ 个空，然后把 $n-1$ 个隔板放入这 $m-1$ 个空中的 $n-1$ 个里，即把所有元素分为 n 组，再依次把 n 组元素分给 n 个人，于是总的分法有\\n$C_{m-1}^{n-1}$ 种。\\n\\n### 情形二：可以有人分不到\\n见招：将 m 个相同元素分配给 n 个人（$n\\le m$，$n\\ge 2$，m、$n\\in N^*$），可以有人分不到，求不同分配方法的种数。\\n出招：用化归的思路处理——先借来 n 个元素，给每个人先分一个，于是问题转化为将 $m+n$ 个相同元素分配给 n 个人、每人至少 1 个；分完之后每个人再扣除一个即可，于是总的分法有\\n$C_{m+n-1}^{n-1}$ 种。",
+   "boundaryMarkdown": "隔板法只适用于元素相同的情形（元素不同时必须用分组分配的一般方法）；情形一要求每个人至少分到 1 个，元素数少于人数时无解；情形二用借元素的方法化归，注意借的是 n 个而不是其他数目；隔板插在 m-1 个空里，隔板数为 n-1（分成 n 组），两者不要写反。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-128）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:组合",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-129",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "不定方程解的个数与隔板法",
+   "summaryMarkdown": "正整数解的个数为 $C_{m-1}^{n-1}$，非负整数解先借 n 个 1 化为正整数解得 $C_{m+n-1}^{n-1}$。",
+   "applicabilityMarkdown": "已知若干正（非负）整数之和为定值，求有序数组个数的问题。",
+   "contentMarkdown": "### 识别\\n题目中要求正整数（或非负整数）且给出它们的和，相当于把和个相同元素分配给这些人（每人至少 1 个或可以有人分到 0 个），可用隔板法。\\n\\n### 正整数解\\n已知正整数 $x_1，x_2，x_3，x_4，x_5$ 满足 $x_1+x_2+x_3+x_4+x_5=10$，求不同有序数组的个数：把 10 拆成 10 个 1 并排成一列，$x_i$ 表示第 i 段中 1 的个数；用 4 个隔板把这一列 1 分成 5 组，这一列数中间有 9 个空，故隔板的放置方法数为\\n$C_9^4=126$（种）。\\n\\n### 非负整数解\\n已知非负整数 $x_1，\\cdots，x_5$ 满足 $x_1+\\cdots+x_5=10$，求不同有序数组的个数：由 $(x_1+1)+(x_2+1)+\\cdots+(x_5+1)=15$，问题转化为求正整数 $x_1+1，\\cdots，x_5+1$ 之和为 15 的解的个数；把 15 个 1 排成一列，中间有 14 个空，放入 4 个隔板，共有\\n$C_{14}^4=1001$（种）。",
+   "boundaryMarkdown": "隔板法的前提是元素相同且每个变量取值非负；正整数解用 $C_{m-1}^{n-1}$，非负整数解借 n 个元素后用 $C_{m+n-1}^{n-1}$，两者差一个 n；变量个数 n 与隔板数 n-1 要对应；题目若要求各变量还有上界（如 $x_i\\le 3$），隔板法不能直接用，需用容斥处理。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-129）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:组合",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-129b",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "捆绑法处理相邻问题",
+   "summaryMarkdown": "把必须相邻的 m 个元素捆成一个整体先外排，再解开捆绑做内排，总数为外排数乘内排数。",
+   "applicabilityMarkdown": "排列问题中要求若干元素必须相邻（站在一起）的计数。",
+   "contentMarkdown": "### 见招\\n元素相邻问题。\\n\\n### 出招：捆绑法\\n- **第一步 捆绑**：把 n 个元素中必须相邻的 m（$m\\le n$，$m、n\\in N^*$）个元素捆绑成一个整体（超级元素）；\\n- **第二步 外排**：把这个超级元素和剩下的 (n-m) 个元素一起进行全排列，此时元素个数为 $n-m+1$，排列数为 $(n-m+1)!$；\\n- **第三步 内排**：解开捆绑，考虑超级元素内部 m 个元素的全排列，有 $m!$ 种方式；\\n- **第四步 相乘**：用乘法计数原理，总排列数 = 外排数 × 内排数。\\n\\n### 要点\\n内外相乘的实质是把相邻要求先满足（内部），再把整体当作一个元素参与整体排序；若有多组必须相邻的元素，则分别捆绑，外排时把每组当作一个元素，最后把各组内部排列数一并相乘。",
+   "boundaryMarkdown": "捆绑后整体只能算作一个元素参与外排，不要漏掉这一点；内部排列数不能忘，这是最常见的漏算；若要求的是若干元素相邻但内部还有顺序要求，内排时要按实际顺序数计算；若既有相邻又有不相邻的要求，要先用捆绑再用插空分步处理。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-129）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:排列",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-129c",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "插空法处理不相邻问题",
+   "summaryMarkdown": "先排无限制元素形成空位，再把不能相邻的元素插入空位，总数乘起来。",
+   "applicabilityMarkdown": "排列问题中要求若干元素彼此不相邻（不站在一起）的计数。",
+   "contentMarkdown": "### 见招\\n元素不相邻问题。\\n\\n### 出招：插空法\\n- **第一步 排无限制元素**：先将那些没有不相邻限制的元素排好，设这类元素有 m（$m\\in N^*$）个，则排列数为 $m!$；\\n- **第二步 创造空位**：m 个元素排好后会形成 $(m+1)$ 个空位（包括首尾两端）；\\n- **第三步 插空**：将 k（$k\\le m+1$，$k\\in N^*$）个不能相邻的元素插入到这 $(m+1)$ 个空位中，因空位彼此分开，插入后自然满足不相邻。若这 k 个元素不同，则是选空位并排列，排列数为 $A_{m+1}^k$；若这 k 个元素相同，则是选空位，排列数为 $C_{m+1}^k$；\\n- **第四步 相乘**：总排列数 = 第一步结果 × 第三步结果。\\n\\n### 要点\\n插空法解决了相邻问题，与捆绑法配合使用可处理既有相邻又有不相邻要求的综合题（先捆绑满足相邻，再插空满足不相邻）。",
+   "boundaryMarkdown": "空位数为元素数加 1（含首尾），不要漏掉两端；插入的元素是否相同决定用排列数还是组合数；若插空后两个空位可能被同一个元素占用（如要求某些元素之间至少隔 k 个），则要先占位再插空或缩减空位数；综合题中捆绑与插空的先后顺序不能颠倒（先捆绑成整体再创造空位）。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-129）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:排列",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-130",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "相邻与不相邻的综合处理",
+   "summaryMarkdown": "先用捆绑法满足相邻，再排其余元素创造成空位，最后把有位置限制的元素插空或按限制安排。",
+   "applicabilityMarkdown": "同时含相邻、不相邻与位置限制（不能站两端）的排列综合题。",
+   "contentMarkdown": "### 例一：甲不站两端，丙丁相邻（5 人站成一排）\\n1. 先将丙和丁捆在一起，有 $A_2^2$ 种排列方式；\\n2. 把捆绑后的整体与乙、戊一起排列，有 $A_3^3$ 种排列方式；\\n3. 最后安排甲：甲不能站两端，只能插入中间的空位，这些元素排列后共有 4 个空位，其中中间的两个空位可用，故有 $C_2^1$ 种插入方式；\\n4. 由分步乘法计数原理得 $A_2^2A_3^3C_2^1=24$（种）。\\n\\n### 例二：2 个独唱节目不能连续出场（3 个舞蹈、1 个相声、2 个独唱）\\n1. 先排没有限制的 3 个舞蹈与 1 个相声，有 $A_4^4$ 种排列方式；\\n2. 它们排好后形成 5 个空位，把 2 个独唱节目放入其中（不同节目，需排列），有 $A_5^2$ 种方式；\\n3. 由分步乘法计数原理得 $A_4^4A_5^2=480$（种）。\\n\\n### 要点\\n先处理相邻（捆绑），再用剩余元素制造空位安排不相邻的元素；遇到位置限制（如不站两端）时，把受限元素放在最后插入，并数清可用空位。",
+   "boundaryMarkdown": "插空时要注意限制条件对可用空位的影响（不站两端时中间空位才可用），空位数目要按排列后的实际位置计算；捆绑后的整体与其余元素一起排列，不要漏掉这个整体占一个位置；插入的元素若彼此不同要用排列数；分步之间必须相互独立，最后相乘。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-130）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:排列",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-130b",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "正难则反（补集法）",
+   "summaryMarkdown": "正面情况过于烦琐时，先算满足部分条件的总数，再减去反面（同时满足另一条件）的情况。",
+   "applicabilityMarkdown": "含有两个条件、其中不相邻条件的正面情况很多（难以直接计数）的排列问题。",
+   "contentMarkdown": "### 思想\\n正难则反是非常重要的数学思想：对于某些问题，如果直接从正面分析过于烦琐，可以尝试从问题的反面进行分析，从而简化分析过程。\\n\\n### 算例（6 件不同产品排成一排，A 与 B 相邻且 A 与 C 不相邻）\\n1. 先算 A 与 B 相邻的总数：把 A 与 B 捆绑，有 $A_2^2A_5^5=240$（种）；\\n2. 正面数 A 与 C 不相邻的情况很多，改从反面考虑：在 A 与 B 相邻的前提下，A 与 C 也相邻的情况——把 A、B、C 三者捆绑在一起且 A 在中间（否则 A 不能同时与 B、C 相邻），于是有 $A_1^1A_2^2A_4^4=48$（种）；\\n3. 两者相减得 $240-48=192$（种）。\\n\\n### 要点\\n使用补集法时要先确定在哪个前提下取反面（本题是在 A 与 B 相邻的前提下），反面情况反而更少、更容易计数；捆绑时内部的顺序要按实际相邻关系确定（A 在中间时内部顺序只有 2 种）。",
+   "boundaryMarkdown": "取反面时必须与前一个条件保持一致（不能把不带前提的全部情况减去）；捆绑 A、B、C 时要先确定谁在中间，否则内部排列数会算错；补集法的结果是差，要保证反面情况确实属于前面统计的范围；若反面情况仍很复杂，应改用其他方法。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-130）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:排列",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-130c",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "赋值法求展开式系数和",
+   "summaryMarkdown": "对 $(px+q)^n=a_0+a_1x+\\cdots+a_nx^n$ 令 $x=1$ 即得各项系数之和 $(p+q)^n$。",
+   "applicabilityMarkdown": "求二项展开式的各项系数和、常数项或与系数和有关的问题。",
+   "contentMarkdown": "### 结论\\n对于 $(px+q)^n=a_0+a_1x+a_2x^2+\\cdots+a_nx^n$：\\n- 求二项展开式各项系数和：令 $x=1$，有\\n$a_0+a_1+a_2+\\cdots+a_n=(p+q)^n$；\\n- 求常数项（即 $a_0$）：令 $x=0$，得 $a_0=q^n$。\\n\\n### 方法要点\\n赋值法是把恒等式中的变量赋予特殊值，从而得到关于系数的等式；求展开式的系数和时通常取 $x=1$，求常数项时取 $x=0$，需要奇偶项系数之差时可再取 $x=-1$。",
+   "boundaryMarkdown": "赋值法是恒等变形，赋值后等式两端都要计算，不能只算一边；要注意所求的是二项式系数（$C_n^k$）还是项的系数（含常数因子），两者含义不同；若展开式中含有 $x$ 的负次幂或根式，赋值前要先化成标准形式；题目要求系数和时应看清是全部项还是部分项（某几项之和）。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-130）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:二项式定理",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-131",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "赋值法求部分项系数和",
+   "summaryMarkdown": "用 $x=1$、$x=-1$、$x=0$ 三种赋值联立，求缺常数项的和与奇偶项系数和。",
+   "applicabilityMarkdown": "求展开式中奇次项、偶次项系数和，或求不含常数项的各项系数和。",
+   "contentMarkdown": "### 见招一：求缺常数项的其他项系数和\\n令 $x=1$，有 $a_0+a_1+a_2+\\cdots+a_n=(p+q)^n$ ①；\\n令 $x=0$，有 $a_0=q^n$ ②；\\n①-② 得 $a_1+a_2+\\cdots+a_n=(p+q)^n-q^n$。\\n\\n### 见招二：求奇次项或偶次项系数和\\n令 $x=1$，有 $a_0+a_1+a_2+\\cdots+a_n=(p+q)^n$ ①；\\n令 $x=-1$，有 $a_0-a_1+a_2-\\cdots+(-1)^na_n=(-p+q)^n$ ②；\\n- $\\frac{①+②}{2}$ 得偶次项系数和；\\n- $\\frac{①-②}{2}$ 得奇次项系数和。\\n\\n注意：常赋的值有 $1$、$-1$、$0$、$\\frac{1}{2}$。\\n\\n### 综合算例\\n若 $(2x+\\sqrt 3)^4=a_0+a_1x+a_2x^2+a_3x^3+a_4x^4$，求 $(a_0+a_2+a_4)^2-(a_1+a_3)^2$：\\n先用平方差公式把它化为 $(a_0-a_1+a_2-a_3+a_4)(a_0+a_1+a_2+a_3+a_4)$，再分别令 $x=-1$、$x=1$ 得两个值 $(-2+\\sqrt 3)^4$ 与 $(2+\\sqrt 3)^4$，相乘得 $(-4+3)^4=1$。",
+   "boundaryMarkdown": "赋值法得到的是关于系数的等式，两边都要算；注意区分二项式系数与项的系数（后者含常数因子）；求奇次项系数和用相减、偶次项用相加，不要记反；当展开式含负指数或根式时要先化为标准多项式；算例中要先看出目标式可以分解为两个赋值结果之积。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-131）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:二项式定理",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-131b",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "二项式定理处理整除与余数",
+   "summaryMarkdown": "把底数写成 $pa\\pm 1$ 的形式，用二项式定理展开，只有末项影响余数。",
+   "applicabilityMarkdown": "证明某数能被某数整除、求某数被某数除的余数、由整除条件反求参数。",
+   "contentMarkdown": "### 步骤\\n对于 S 被 a（$S，a\\in N^*$）除的相关问题：\\n- **第一步** 先将 S 恒等变形为 $S=k(pa\\pm 1)^n$（$k\\in N^*$，$n\\in N^*$，$p\\in N^*$）；\\n- **第二步** 用二项式定理展开：\\n$S=k[C_n^0(pa)^0(\\pm 1)^n+C_n^1(pa)^1(\\pm 1)^{n-1}+\\cdots+C_n^n(pa)^n(\\pm 1)^0]$，\\n其中含 $(pa)^i$（$i\\ge 1$）的项都能被 a 整除；\\n- **第三步** 由于除末项外的部分都能被 a 整除，因此余数只与 $k(\\pm 1)^n$ 有关。\\n\\n### 算例\\n设 $a\\in Z$ 且 $0\\le a\\le 13$，若 $51^{2023}+a$ 能被 13 整除，求 a：\\n由 $51=4\\times 13-1$，把 $51^{2023}+a$ 写成 $(4\\times 13-1)^{2023}+a$，用二项式定理展开，只有 $i=0$ 的项不被 13 整除，其余项均为 13 的倍数，于是由整除条件得 $a-1$ 也能被 13 整除，又 $0\\le a\\le 13$，故 $a=1$。",
+   "boundaryMarkdown": "化底数时要把底数写成 $pa\\pm 1$ 的形式（关键是凑出 1），符号要对应；展开后只需关注不被 a 整除的那一项，但必须说明其余各项都能被 a 整除；求余数时注意符号（$(-1)^n$ 的正负）；当两个数都含参数时，要用整除的传递性；a 的取值范围用于确定唯一值。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-131）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:二项式定理",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-132",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "条件概率的三种求法",
+   "summaryMarkdown": "按题目给的条件选择定义法、缩小样本空间法或贝叶斯公式法求条件概率。",
+   "applicabilityMarkdown": "已知部分概率或事件描述，求 P(B|A) 或 P(A|B) 的条件概率问题。",
+   "contentMarkdown": "### 见招一：两事件概率已给出，且可直接或间接求二者同时发生的概率\\n（如利用互斥事件或事件相交的关系）\\n出招：**定义法**，直接从条件概率的定义 $P(B|A)=\\frac{P(AB)}{P(A)}$ 入手。\\n\\n### 见招二：事件定义清晰，可以直接根据字面意思求解\\n（如掷骰子掷出奇数点等）\\n出招：**缩小样本空间法**，在事件 A 发生的前提下缩小事件 B 的样本空间，再在新的样本空间中计算 B 发生的概率，进而得到 $P(B|A)$。\\n\\n### 见招三：题中给出 $P(B|A_i)$，但要求 $P(A_i|B)$\\n出招：**贝叶斯公式法**，使用贝叶斯公式间接计算条件概率。\\n\\n### 选择方法的口诀\\n给出的概率能否直接算出交事件的概率——能则用定义法；样本空间是否因条件而变小且便于计数——能用则用缩小样本空间法；要求的是由果索因——用贝叶斯公式。",
+   "boundaryMarkdown": "定义法要求 $P(A)>0$；缩小样本空间时样本点的数目要重新计数（原样本空间下的概率不能直接搬用）；条件概率 $P(B|A)$ 与 $P(A|B)$ 一般不等，不要互换；用缩小样本空间法时要明确条件是哪一个事件（谁是 A）。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-132）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:条件概率",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-132b",
+   "subject": "MATH",
+   "type": "DERIVATION",
+   "title": "全概率公式及其证明",
+   "summaryMarkdown": "把样本空间按一组两两互斥的事件分解，事件 B 的概率等于各情形下条件概率的加权和。",
+   "applicabilityMarkdown": "复杂事件需要按多种原因或场景分类计算概率时。",
+   "contentMarkdown": "### 定义\\n一般地，设 $A_1，A_2，\\cdots，A_n$ 是一组两两互斥的事件，$A_1\\cup A_2\\cup\\cdots\\cup A_n=\\Omega$，且 $P(A_i)>0$（$i=1，2，\\cdots，n$），则对任意的事件 $B\\subseteq\\Omega$，有\\n$P(B)=\\sum_{i=1}^{n}P(A_i)P(B|A_i)$。\\n\\n### 证明\\n因为 $P(B|A_i)=\\frac{P(A_iB)}{P(A_i)}$，所以 $P(A_iB)=P(A_i)P(B|A_i)$；\\n所以 $P(B)=\\sum_{i=1}^{n}P(A_iB)=\\sum_{i=1}^{n}P(A_i)P(B|A_i)$。\\n\\n### 使用要点\\n- 关键在于对样本空间作一个完备的分割（各 $A_i$ 两两互斥且并集为全集）；\\n- 每一类的概率乘以该类中 B 发生的条件概率，再全部相加；\\n- 分类要做到不重不漏，这是全概率公式成立的前提。",
+   "boundaryMarkdown": "分割必须两两互斥且并集为全集，漏掉一类或有重叠都会算错；每项的 $P(A_i)$ 与 $P(B|A_i)$ 要对应同一类；公式求和的上限是分类的个数 n；实际解题时可借助树形图（概率树）列出各类的乘积再相加，避免漏项。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-132）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:全概率",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-133",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "全概率公式在抽取问题中的应用",
+   "summaryMarkdown": "先按比例确定各来源的权重，再乘上各来源中目标事件的条件概率求和，即得总概率。",
+   "applicabilityMarkdown": "涉及多个来源（多个盒子、多个批次、多个人）的抽取问题求概率。",
+   "contentMarkdown": "### 方法一：全概率公式\\n设事件 $A、B、C$ 分别为从甲、乙、丙三个盒子中取到黑球，已知 $P(A)=\\frac{2}{5}$、$P(B)=\\frac{1}{4}$、$P(C)=\\frac{1}{2}$，则三个球都是黑球的概率\\n$P(ABC)=P(A)P(B)P(C)=\\frac{2}{5}\\times\\frac{1}{4}\\times\\frac{1}{2}=\\frac{1}{20}$。\\n再把取到白球的事件 E 按来源分解：设 $D_1、D_2、D_3$ 分别是取到的球来自甲、乙、丙盒子，由总数之比 5:4:6 得 $P(D_1)=\\frac{5}{15}=\\frac{1}{3}$、$P(D_2)=\\frac{4}{15}$、$P(D_3)=\\frac{6}{15}=\\frac{2}{5}$，且 $P(E|D_1)=1-\\frac{2}{5}=\\frac{3}{5}$、$P(E|D_2)=1-\\frac{1}{4}=\\frac{3}{4}$、$P(E|D_3)=1-\\frac{1}{2}=\\frac{1}{2}$，于是由全概率公式\\n$P(E)=P(D_1)P(E|D_1)+P(D_2)P(E|D_2)+P(D_3)P(E|D_3)=\\frac{1}{3}\\times\\frac{3}{5}+\\frac{4}{15}\\times\\frac{3}{4}+\\frac{2}{5}\\times\\frac{1}{2}=\\frac{3}{5}$。\\n\\n### 方法二：赋具体数（古典概型）\\n设甲、乙、丙三个盒子中的球数分别为 5、4、6（按比例取最小数值），则黑球数分别为 2、1、3，白球数分别为 3、3、3。各取一个球共 $5\\times 4\\times 6$ 种结果，三个都是黑球有 $2\\times 1\\times 3$ 种，概率为 $\\frac{2\\times 1\\times 3}{5\\times 4\\times 6}=\\frac{1}{20}$；混合后共 15 个球、其中白球 9 个，任取一个是白球的概率为 $\\frac{9}{15}=\\frac{3}{5}$。",
+   "boundaryMarkdown": "用全概率公式时各类的权重必须等于该来源在总体中的占比（此处由总数之比得到），不要与黑球比例混淆；求白球概率用 $1-P(\\text{黑})$ 得到条件概率，注意互补；方法二只适用于各类内部元素可数且抽取等可能的情形（把比例设为具体整数时必须保持各比例一致）；两种方法的答案应互相验证。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-133）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:全概率",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-133b",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "二项分布的识别与公式",
+   "summaryMarkdown": "多次重复试验且单次概率已知时用 $X\\sim B(n，p)$，其分布列、期望与方差都有现成公式。",
+   "applicabilityMarkdown": "n 次独立重复试验中成功次数的概率、期望与方差计算。",
+   "contentMarkdown": "### 识别标志\\n进行多次重复试验，且单次试验中事件发生的概率已知。\\n\\n### 表达方式与公式\\n- 表达方式：$X\\sim B(n，p)$；\\n- 分布列：$P(X=k)=C_n^kp^k(1-p)^{n-k}$（$k=0，1，2，\\cdots，n$）；\\n- 期望：$E(X)=np$；\\n- 方差：$D(X)=np(1-p)$。\\n\\n### 使用要点\\n判断是否服从二项分布的关键有两条：各次试验相互独立；每次试验只有两种结果且成功概率相同。例如有放回抽取、投掷硬币、独立重复射击等都可用二项分布。",
+   "boundaryMarkdown": "必须确认试验是独立重复的（不放回抽取一般不是二项分布，应改用超几何分布）；公式中的 $1-p$ 是失败概率，不要漏写指数 $n-k$；期望与方差公式要求符号对应（$D(X)=np(1-p)$，不是 $np$）；试验次数 n 与成功次数 k 的范围是 $0\\le k\\le n$。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-133）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:二项分布",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-133c",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "超几何分布的识别与公式",
+   "summaryMarkdown": "从含两类元素的总体中不放回地抽取 n 个，抽到某类元素的个数服从超几何分布。",
+   "applicabilityMarkdown": "产品抽检、男女同学抽取等不放回抽样中计算某类元素个数的概率与期望。",
+   "contentMarkdown": "### 识别标志\\n从含有两类元素（分别记为 M 和 N-M）的总体 N 中一次性抽取 n 个元素，探讨两类元素中的一种被不放回抽取到的个数。例如已知男同学 10 名、女同学 10 名，现抽取 6 名同学，探讨这 6 名同学中男同学人数的情况。\\n\\n### 表达方式与公式\\n- 表达方式：$P(X=k)=\\frac{C_M^kC_{N-M}^{n-k}}{C_N^n}$，$k=m，m+1，m+2，\\cdots，r$，其中 $n，N，M\\in N^*$，$M\\le N$，$n\\le N$，$m=\\max\\{0，n-N+M\\}$，$r=\\min\\{n，M\\}$；\\n- 期望：$E(X)=\\frac{nM}{N}$。\\n\\n### 与二项分布的区别\\n超几何分布是**不放回**抽取（各次抽取不独立），二项分布是**有放回**或独立重复试验；总体很大而抽取数目相对很小时，超几何分布可用二项分布近似。",
+   "boundaryMarkdown": "公式中分母是 $C_N^n$（从总体中抽取的方式数），分子是两类各自取值的组合数之积；k 的取值范围由 $m=\\max\\{0，n-N+M\\}$ 与 $r=\\min\\{n，M\\}$ 确定，不能随意从 0 取到 n；不放回抽样之间不独立，不能用二项分布公式；期望公式 $E(X)=\\frac{nM}{N}$ 与二项分布的期望形式不同。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-133）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:超几何分布",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-133d",
+   "subject": "MATH",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "正态分布的识别与表达",
+   "summaryMarkdown": "当样本特别多或趋于无穷时，用正态分布描述随机变量，记作 $X\\sim N(\\mu，\\sigma^2)$。",
+   "applicabilityMarkdown": "样本容量极大或总体近似连续分布的统计问题。",
+   "contentMarkdown": "### 识别标志\\n样本特别多或趋于无穷时，用正态分布刻画随机变量。\\n\\n### 表达方式\\n正态分布常出现在题目中，表达方式为 $X\\sim N(\\mu，\\sigma^2)$，其中 μ 为均值（对称轴的位置），$\\sigma^2$ 为方差（图象的胖瘦，σ 越大图象越平缓）。\\n\\n### 使用要点\\n- 正态曲线关于直线 $x=\\mu$ 对称；\\n- 判断一个随机变量是否近似服从正态分布，主要看样本量是否足够大、分布是否呈现中间多两头少的对称形态。",
+   "boundaryMarkdown": "正态分布要求 X 是连续型随机变量，离散型的计数问题（如抽取几个次品）应使用二项分布或超几何分布；$\\sigma^2$ 是方差而非标准差；用正态分布近似时要注意参数 μ、σ 与实际数据的对应；利用对称性求区间概率时要注意区间端点是否包含。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-133）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:正态分布",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-134",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "二项分布概率最大问题",
+   "summaryMarkdown": "求 $P(X=k)$ 最大时的 k：用不等式组作通法，或用 (n+1)p 快速判断。",
+   "applicabilityMarkdown": "n 次独立重复试验中求成功次数概率最大时的取值问题。",
+   "contentMarkdown": "### 通法：不等式组\\n对于二项分布 $X\\sim B(n，p)$，求概率的最大值时，一般考虑用不等式组\\n$\\begin{cases}P(X=k)\\ge P(X=k+1)\\ P(X=k)\\ge P(X=k-1)\\end{cases}$\\n来讨论。\\n\\n### 技巧：计算 $(n+1)p$\\n只需计算 $(n+1)p$：\\n- 当 $(n+1)p\\le n$ 时，若 $(n+1)p$ 是整数，则 $k=(n+1)p$ 时 $P(X=k)=P(X=k-1)$ 都是最大值；\\n- 若 $(n+1)p$ 不是整数，则 $k=[(n+1)p]$（不超过 $(n+1)p$ 的最大整数）时 $P(X=k)$ 是最大值；\\n- 若 $(n+1)p>n$，则当 $k=n$ 时 $P(X=k)$ 取得最大值。\\n\\n### 证明（作商法）\\n$\\frac{P(X=k)}{P(X=k-1)}=\\frac{(n-k+1)p}{k(1-p)}=1+\\frac{(n+1)p-k}{k(1-p)}$（$1\\le k\\le n$）。\\n所以 $k\\le(n+1)p$ 时 $P(X=k)\\ge P(X=k-1)$；$k>(n+1)p$ 时 $P(X=k)<P(X=k-1)$，即 $P(X=k)$ 在 $k=(n+1)p$ 左侧递增、右侧递减。\\n\\n### 算例\\n某同学答对每道题的概率为 $\\frac{2}{3}$，独立作答 20 道题，答对 m 道的概率记为 f(m)，求 f(m) 最大时的 m：由 n=20、$p=\\frac{2}{3}$ 得 $(n+1)p=14$ 为整数，故 k=13 或 k=14 时概率取最大值；用不等式组法同样解得 $13\\le m\\le 14$。",
+   "boundaryMarkdown": "作商法要求 $k\\ge 1$ 且 $1-p\\ne 0$；$(n+1)p$ 为整数时最大值同时落在两个相邻的 k 上，答案要写两个值；$(n+1)p$ 不是整数时取整数部分（不超过它的最大整数）；$(n+1)p>n$ 时最大值在端点 k=n 处，要单独说明。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-134）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:二项分布",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-134b",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "二项分布的正态近似",
+   "summaryMarkdown": "当 $np>5$ 且 $np(1-p)>5$ 时，二项分布可用正态分布 $N(np，np(1-p))$ 近似。",
+   "applicabilityMarkdown": "试验次数很大（如 600 次）的二项分布问题中估算区间概率。",
+   "contentMarkdown": "### 结论\\n如果一个随机变量 X 服从二项分布 $B(n，p)$，当 $np>5$ 且 $np(1-p)>5$ 时，二项分布就可以用正态分布近似替代，即\\n$P(X\\le x)\\approx P(Y\\le x)$，其中随机变量 $Y\\sim N(np，np(1-p))$。\\n\\n### 使用步骤\\n1. 先判断是否满足 $np>5$ 且 $np(1-p)>5$；\\n2. 写出近似的正态分布 $N(np，np(1-p))$，得到 $\\mu=np$、$\\sigma=\\sqrt{np(1-p)}$；\\n3. 把所求区间化为 $\\mu\\pm\\sigma$、$\\mu\\pm 2\\sigma$、$\\mu\\pm 3\\sigma$ 的形式，套用参考数据（如 $P(\\mu-2\\sigma\\le\\eta\\le\\mu+2\\sigma)\\approx 0.9545$）。\\n例：600 次抓取中中奖概率 0.6，则 $np=360>5$、$np(1-p)=144>5$，故 $\\eta\\sim N(360，144)$，$\\mu=360$、$\\sigma=12$，$P(336\\le\\eta\\le 384)=P(\\mu-2\\sigma\\le\\eta\\le\\mu+2\\sigma)\\approx 0.9545$。",
+   "boundaryMarkdown": "两个条件 $np>5$ 与 $np(1-p)>5$ 都要满足才能近似；$\\sigma$ 要开方得到（$\\sigma=\\sqrt{np(1-p)}$），不要直接用方差；把区间端点与 $\\mu\\pm k\\sigma$ 对应时要先算 $\\mu$、$\\sigma$ 的实际值；近似只用于估算，精确概率仍需用二项分布公式。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-134）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:正态分布",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-136",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "用指示变量求期望",
+   "summaryMarkdown": "把计数型随机变量拆成若干个两点分布之和，用期望的可加性把求和化为概率求和。",
+   "applicabilityMarkdown": "求 n 次操作中某事件发生总次数的期望，且每次发生的概率由递推式给出。",
+   "contentMarkdown": "### 思路\\n1. 设第 i 次操作时目标事件发生的次数为指示变量 $X_i$，$X_i$ 只取 0 或 1（两点分布）：当 $X_i=0$ 时表示第 i 次不由甲投篮，当 $X_i=1$ 时表示第 i 次由甲投篮，则 $P(X_i=1)=p_i$，$P(X_i=0)=1-p_i$，故 $E(X_i)=p_i$；\\n2. 总次数 $Y=X_1+X_2+\\cdots+X_n$；\\n3. 由期望的可加性 $E(Y)=E(X_1)+E(X_2)+\\cdots+E(X_n)=p_1+p_2+\\cdots+p_n$，把求期望转化为求概率之和；\\n4. 把各 $p_i$ 的通项代入，按分组求和法拆成常数项与等比数列，用等比数列前 n 项和公式求和。\\n\\n### 算例\\n$p_i=\\frac{1}{3}+\\frac{1}{6}(\\frac{2}{5})^{i-1}$ 时，\\n$E(Y)=\\frac{n}{3}+\\frac{1}{6}[1+\\frac{2}{5}+(\\frac{2}{5})^2+\\cdots+(\\frac{2}{5})^{n-1}]=\\frac{n}{3}+\\frac{5}{18}[1-(\\frac{2}{5})^n]$。\\n\\n### 配套步骤\\n求各次概率 $p_i$ 时用马尔可夫链的递推式（由全概率公式列 $p_{i+1}=pp_i+q$，构造等比数列求通项）；求第一次转移的概率可用 $A=BA+\\bar BA$ 的全概率分解。",
+   "boundaryMarkdown": "指示变量必须取 0 或 1（与事件一一对应），取值定义反了会使期望符号相反；期望的可加性不要求各 X_i 相互独立，这是本法的关键（不必验证独立性）；求和时要把常数项与等比部分分开（分组求和法），等比部分要判断公比是否为 1；首项 $p_1$ 要单独给出或验证。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-136）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:离散型随机变量的期望",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-136b",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "复数乘除与乘方的模",
+   "summaryMarkdown": "$|z_1z_2|=|z_1||z_2|$、$|\\frac{z_1}{z_2}|=\\frac{|z_1|}{|z_2|}$、$|z_1^n|=|z_1|^n$，且 $z\\cdot\\bar z=|z|^2$。",
+   "applicabilityMarkdown": "复数的乘积、商、乘方的模的计算，以及含共轭复数的模的化简求值。",
+   "contentMarkdown": "### 1. 复数与共轭复数的乘积\\n$z\\cdot\\bar z=|z|^2=|\\bar z|^2$。\\n证明：设 $z=a+bi$，则 $z\\cdot\\bar z=(a+bi)(a-bi)=a^2+b^2=|z|^2=|\\bar z|^2$。\\n\\n### 2. 复数乘除及乘方的模\\n① $|z_1z_2|=|z_1||z_2|$；\\n② 若 $z_2\\ne 0$，则 $|\\frac{z_1}{z_2}|=\\frac{|z_1|}{|z_2|}$（两复数商的模等于模的商）；\\n③ $|z_1^n|=|z_1|^n$。\\n\\n### 证明思路：引入三角形式\\n对复数 $z=a+bi$（$a、b\\in R$）作三角换元，令 $a=r\\cos\\theta$、$b=r\\sin\\theta$，其中 $r=\\sqrt{a^2+b^2}\\ge 0$、$\\theta\\in R$，则 $z=r(\\cos\\theta+i\\sin\\theta)$（r 是模长，θ 是复数对应的向量所在射线为终边的角）。\\n设 $z_1=r_1(\\cos\\theta_1+i\\sin\\theta_1)$、$z_2=r_2(\\cos\\theta_2+i\\sin\\theta_2)$，由两角和的正弦、余弦公式得\\n$z_1z_2=r_1r_2[\\cos(\\theta_1+\\theta_2)+i\\sin(\\theta_1+\\theta_2)]$，进而 $z_1^n=r_1^n(\\cos n\\theta_1+i\\sin n\\theta_1)$；\\n$r_2>0$ 时用分母实数化（分子分母同乘 $\\cos\\theta_2-i\\sin\\theta_2$）得\\n$\\frac{z_1}{z_2}=\\frac{r_1}{r_2}[\\cos(\\theta_1-\\theta_2)+i\\sin(\\theta_1-\\theta_2)]$。\\n于是三个结论都成立。",
+   "boundaryMarkdown": "$z\\cdot\\bar z=|z|^2$ 是实数，不要与 $z^2$ 混淆；商的模公式要求分母不为 0；三角形式中 $r\\ge 0$，负号应通过 θ 调节；用代数形式直接证明乘除乘方的模很烦琐，考试中可以直接使用结论；$|z_1z_2|=|z_1||z_2|$ 可反复使用推广到多个复数之积。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-136）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:复数的模",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-137",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "用模的运算性质求复数的模",
+   "summaryMarkdown": "由 $z_1=(2+i)z_2$ 与 $|z_1|=5$ 求出 $|z_2|$，再用模的乘积性质求差式的模。",
+   "applicabilityMarkdown": "已知两复数的比或关系的模，求某个复数式的模。",
+   "contentMarkdown": "### 用到的性质\\n$|z_1z_2|=|z_1||z_2|$（模的乘积等于乘积的模），由此可推出 $|cz_2|=|c||z_2|$。\\n\\n### 算例\\n设 $z_1，z_2$ 为复数，$|z_1|=5$，$\\frac{z_1}{z_2}=2+i$，求 $|z_1-z_2|$：\\n1. 由 $\\frac{z_1}{z_2}=2+i$ 得 $z_1=(2+i)z_2$；\\n2. 取模：$|z_1|=|2+i|\\cdot|z_2|=\\sqrt 5|z_2|=5$，故 $|z_2|=\\sqrt 5$；\\n3. 把所求式提取公因式：$|z_1-z_2|=|(2+i)z_2-z_2|=|(1+i)z_2|=\\sqrt 2|z_2|=\\sqrt 2\\times\\sqrt 5=\\sqrt{10}$。\\n\\n### 方法要点\\n遇到形如 $|az_1+bz_2|$ 的式子，先看能否用已知关系消去其中一个复数（提取公因式），再用模的运算性质把复数的模转化为模的乘积，避免直接设 $a+bi$ 计算。",
+   "boundaryMarkdown": "提取公因式前要把关系式化成 $z_1=kz_2$ 的形式并确认 $z_2\\ne 0$；$|2+i|=\\sqrt{2^2+1^2}=\\sqrt 5$ 不要漏掉开方；模是实数，可以像实数一样相乘；若关系式中出现 $z_1+z_2$ 型，需借助其他条件（如共轭或坐标）处理。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-137）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:复数的模",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-137b",
+   "subject": "MATH",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "复数的几何意义与相关图形",
+   "summaryMarkdown": "复数对应复平面内的点与平面向量，由此把 |z₁-z₂| 看作距离、把 |z-z₀|=r 看作圆、|z-z₀|=|z-z₁| 看作垂直平分线。",
+   "applicabilityMarkdown": "求复数对应点所在象限、由模的等式或不等式判断点集图形的题目。",
+   "contentMarkdown": "### 1. 复数的几何意义\\n复数 $z=a+bi$（$a，b\\in R$）、复平面内的点 $Z(a，b)$、平面向量 $\\overrightarrow{OZ}=(a，b)$ 三者一一对应。因此可以根据几何意义把复数与几何图形联系起来，从而将复数问题转化为几何问题求解。\\n\\n### 2. 与复数几何意义相关的图形\\n① **距离**：复数差的模等于两点间距离，即 $|z_1-z_2|$ 表示 $z_1$、$z_2$ 在复平面上对应的点 $Z_1$ 与 $Z_2$ 之间的距离；\\n② **圆与圆内、圆外**：满足 $|z|=r$（$r>0$）的点 Z 在以原点为圆心、r 为半径的圆周上；满足 $|z|<r$ 的点 Z 在该圆的内部（不含边界）；满足 $|z|>r$ 的点 Z 在该圆的外部（不含边界）；\\n③ **圆与垂直平分线**：满足 $|z-z_0|=r$ 的点 Z 在以点 $Z_0$ 为圆心、r 为半径的圆周上；满足 $|z-z_0|=|z-z_1|$ 的点 Z 在以 $Z_0$、$Z_1$ 为端点的线段的垂直平分线上。",
+   "boundaryMarkdown": "复平面中 x 轴为实轴、y 轴为虚轴，点的横坐标是实部、纵坐标是虚部，不能写反；$|z-z_0|$ 表示到 $Z_0$ 的距离（不是到原点），$|z|$ 才表示到原点的距离；不等式的开闭对应图形的边界是否包含；把复数问题几何化后要回到题目所问的量（如问取值范围时需再求距离的最值）。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-137）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:复数的几何意义",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-91e0c2ace8-137c",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "复数模条件转化为圆的轨迹",
+   "summaryMarkdown": "把 $|z_1+z_2-z_3|=2$ 化为圆 $(x-\\sqrt 2)^2+(y-\\sqrt 2)^2=4$，再用点到圆上点的距离求取值范围。",
+   "applicabilityMarkdown": "条件给出复数的模的等式（或线性组合的模），求某个复数的模的取值范围。",
+   "contentMarkdown": "### 思路\\n1. 设出各复数的代数形式（如由 $|z_1|=|z_2|=\\sqrt 2$ 且 $\\overrightarrow{OZ_1}\\cdot\\overrightarrow{OZ_2}=0$，不妨取 $z_1=\\sqrt 2$、$z_2=\\sqrt 2 i$，即把两个垂直的向量取到坐标轴上），并设 $z_3=x+yi$（$x，y\\in R$）；\\n2. 把模的等式写开：$|z_1+z_2-z_3|=|(\\sqrt 2-x)+(\\sqrt 2-y)i|=2$，即 $(x-\\sqrt 2)^2+(y-\\sqrt 2)^2=4$，说明点 $Z_3$ 在以 $(\\sqrt 2，\\sqrt 2)$ 为圆心、2 为半径的圆上；\\n3. 所求 $|z_3|$ 就是点 $Z_3$ 到原点的距离，由圆上点到定点的距离范围（圆心距加减半径）得取值范围。\\n\\n### 例\\n圆心 $(\\sqrt 2，\\sqrt 2)$ 到原点的距离为 2、半径为 2，故 $|z_3|$ 的取值范围是 $[0，4]$（最小值 0 在圆过原点时取得）。\\n\\n### 方法要点\\n把复数的线性组合的模写成坐标形式（平方）即得圆的方程；求 $|z|$ 的取值范围就转化为圆上的点到原点的距离范围。",
+   "boundaryMarkdown": "把向量取到坐标轴上时要注意方向（只需任取一组垂直的等长向量即可，如 $\\sqrt 2$ 与 $\\sqrt 2 i$）；模的等式中各项的符号必须准确（$|z_1+z_2-z_3|$ 展开后是 $(x-\\sqrt 2)^2+(y-\\sqrt 2)^2$）；取值范围要考虑圆是否过原点（最小值可能为 0）；若条件是 $|z-z_0|=r$ 的不等式（$<r$ 或 $>r$），对应圆内或圆外，端点开闭要改。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3692ca65ed:math",
+   "sourceLocator": "桌面资料 02-【数学】2027版高中《解题觉醒》 / 02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf（块 91e0c2ace8-137）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:复数的几何意义",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-34aeb73fd5-001",
+   "subject": "MATH",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "余弦定理及其推论与变形",
+   "summaryMarkdown": "余弦定理给出三边与一角余弦的关系，推论用于由三边求角，变形用于把平方差与角的余弦互化。",
+   "applicabilityMarkdown": "已知两边及夹角求第三边、已知三边求角、判断三角形形状以及边角互化的题目。",
+   "contentMarkdown": "**余弦定理**\\n$a^2 = b^2 + c^2 - 2bc\\cos A$，$b^2 = c^2 + a^2 - 2ca\\cos B$，$c^2 = a^2 + b^2 - 2ab\\cos C$。\\n\\n**推论（求角）**\\n$\\cos A = \\frac{b^2+c^2-a^2}{2bc}$，$\\cos B = \\frac{c^2+a^2-b^2}{2ca}$，$\\cos C = \\frac{a^2+b^2-c^2}{2ab}$。\\n\\n**变形（求平方差与数量积的关系）**\\n$b^2 + c^2 - a^2 = 2bc\\cos A$，$c^2 + a^2 - b^2 = 2ca\\cos B$，$a^2 + b^2 - c^2 = 2ab\\cos C$。",
+   "boundaryMarkdown": "每个式子中的角与该角所对的边必须对应（$a$ 对应 $A$），不要对角错位；已知两边及一边对角时用余弦定理可能出现两解，需检验；由三边求角时注意余弦值的正负判断三角形形状。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-e35c96096a:math",
+   "sourceLocator": "桌面资料 2026年新高考资料 / 2026年新高考资料/一轮复习/2026年高考数学一轮复习讲义+练习+课件（新教材新高考）/2026版/第四章 三角函数与解三角形/解三角形及其应用.pdf（块 34aeb73fd5-001）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:余弦定理",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-34aeb73fd5-001b",
+   "subject": "MATH",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "正弦定理及其常见变形",
+   "summaryMarkdown": "正弦定理给出边与其对角正弦的比相等且等于外接圆直径，并有一系列常用变形。",
+   "applicabilityMarkdown": "边角互化（把边化为角的正弦、把角的正弦化为边）、判断三角形解的个数、求外接圆半径以及比例式的题目。",
+   "contentMarkdown": "**正弦定理**\\n$\\frac{a}{\\sin A} = \\frac{b}{\\sin B} = \\frac{c}{\\sin C}$。\\n\\n**常见变形**\\n1) $a:b:c = \\sin A:\\sin B:\\sin C$；\\n2) $a = 2R\\sin A$，$b = 2R\\sin B$，$c = 2R\\sin C$（$R$ 为 $\\triangle ABC$ 的外接圆半径）；\\n3) $\\sin A = \\frac{a}{2R}$，$\\sin B = \\frac{b}{2R}$，$\\sin C = \\frac{c}{2R}$；\\n4) $a\\sin B = b\\sin A$，$c\\sin B = b\\sin C$，$c\\sin A = a\\sin C$；\\n5) $\\frac{a}{\\sin A} = \\frac{b}{\\sin B} = \\frac{c}{\\sin C} = \\frac{a+b}{\\sin A+\\sin B} = \\frac{a+c}{\\sin A+\\sin C} = \\frac{b+c}{\\sin B+\\sin C} = \\frac{a+b+c}{\\sin A+\\sin B+\\sin C}$。",
+   "boundaryMarkdown": "已知两边及其中一边的对角时解可能不唯一，需用大边对大角检验解的个数；变形 2)、3) 中的 $R$ 是外接圆半径而不是内切圆半径；变形 5) 的等比连等式要求各分母之和不为零。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-e35c96096a:math",
+   "sourceLocator": "桌面资料 2026年新高考资料 / 2026年新高考资料/一轮复习/2026年高考数学一轮复习讲义+练习+课件（新教材新高考）/2026版/第四章 三角函数与解三角形/解三角形及其应用.pdf（块 34aeb73fd5-001）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:正弦定理",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-34aeb73fd5-001c",
+   "subject": "MATH",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "三角形的面积公式及其各种形式",
+   "summaryMarkdown": "三角形面积除底乘高与两边夹角两种基本形式外，还有海伦公式、外接圆与内切圆形式、数量积形式与坐标形式。",
+   "applicabilityMarkdown": "已知两边及夹角求面积、已知三边求面积、由面积反求边角，以及用向量或坐标条件求三角形面积的题目。",
+   "contentMarkdown": "**(1) 底乘高**：$S_{\\triangle ABC} = \\frac{1}{2}ah_a = \\frac{1}{2}bh_b = \\frac{1}{2}ch_c$。\\n**(2) 两边及夹角**：$S_{\\triangle ABC} = \\frac{1}{2}ab\\sin C = \\frac{1}{2}bc\\sin A = \\frac{1}{2}ac\\sin B$。\\n\\n**其他形式**\\n1. 在 $\\triangle ABC$ 中，$A$、$B$、$C$ 的对边分别为 $a$、$b$、$c$，$r$ 为 $\\triangle ABC$ 的内切圆半径，$R$ 为 $\\triangle ABC$ 的外接圆半径，$p = \\frac{a+b+c}{2}$（周长的一半），则：\\n   1) $S_{\\triangle ABC} = \\sqrt{p(p-a)(p-b)(p-c)}$（海伦公式）；\\n   2) $S_{\\triangle ABC} = \\frac{abc}{4R}$，$S_{\\triangle ABC} = r\\cdot p$；\\n   3) $S_{\\triangle ABC} = 2R^2\\sin A\\sin B\\sin C$。\\n2. 数量积形式：在 $\\triangle ABC$ 中，设 $\\overrightarrow{CA} = b$，$\\overrightarrow{CB} = a$，且 $\\langle a，b\\rangle = \\theta$，则 $S_{\\triangle ABC} = \\frac{1}{2}|a||b|\\sin\\theta = \\frac{1}{2}\\sqrt{|a|^2|b|^2 - (a\\cdot b)^2}$。\\n3. 坐标形式：在 $\\triangle ABC$ 中，设 $\\overrightarrow{CB} = a = (a_1，a_2)$，$\\overrightarrow{CA} = b = (b_1，b_2)$，则 $S_{\\triangle ABC} = \\frac{1}{2}|a_1b_2 - a_2b_1|$。",
+   "boundaryMarkdown": "用 $\\frac{1}{2}ab\\sin C$ 时两边与夹角必须对应，不能把夹角取错；$R$ 与 $r$ 分别是外接圆与内切圆半径，两个公式不要互换；数量积形式与坐标形式都要求两向量以同一点为起点，坐标形式不要漏掉 $\\frac{1}{2}$ 与绝对值。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-e35c96096a:math",
+   "sourceLocator": "桌面资料 2026年新高考资料 / 2026年新高考资料/一轮复习/2026年高考数学一轮复习讲义+练习+课件（新教材新高考）/2026版/第四章 三角函数与解三角形/解三角形及其应用.pdf（块 34aeb73fd5-001）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:三角形面积公式",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-34aeb73fd5-001d",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "测量距离与高度的基本模型",
+   "summaryMarkdown": "测量距离与高度可归为三种模型：同一三角形内用余弦定理或正弦定理、跨两个三角形求解、在直角三角形中用锐角三角函数求高。",
+   "applicabilityMarkdown": "测量距离、测量高度（塔高、山高、河宽）等解三角形实际应用题与建模题。",
+   "contentMarkdown": "**测量距离与高度的基本模型**\\n1. 同一三角形内用余弦定理：$AB = \\sqrt{a^2 + b^2 - 2ab\\cos\\alpha}$。\\n2. 同一三角形内用正弦定理：$AB = \\frac{b\\sin\\beta}{\\sin(\\alpha+\\beta)}$。\\n3. 需跨三角形的情形：(1) 在 $\\triangle ACD$ 中，用正弦定理求 $AC$；(2) 在 $\\triangle BCD$ 中，用正弦定理求 $BC$；(3) 在 $\\triangle ABC$ 中，用余弦定理求 $AB$。\\n4. 高度测量：在直角三角形中由锐角三角函数直接求得，如 $AB = a\\tan\\alpha$；不能直接求解时，先在某个三角形中用正弦定理求出过渡边（如 $AD$、$BC$），再在直角三角形中求出高度，如 $AB = AD\\sin\\beta$。\\n\\n**仰角与俯角**\\n- 铅垂线、水平线：以观测点所在的水平线为基准；\\n- 视线：观测者眼睛到目标的连线；\\n- 仰角：视线在水平线上方时，视线与水平线的夹角；\\n- 俯角：视线在水平线下方时，视线与水平线的夹角。",
+   "boundaryMarkdown": "仰角与俯角都是视线与水平线的夹角，不是与铅垂线的夹角；解题必须先画示意图，明确已知的边角落在哪个三角形中，再选择正弦定理或余弦定理；跨三角形时不能把不属于同一三角形的边角关系直接套公式。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-e35c96096a:math",
+   "sourceLocator": "桌面资料 2026年新高考资料 / 2026年新高考资料/一轮复习/2026年高考数学一轮复习讲义+练习+课件（新教材新高考）/2026版/第四章 三角函数与解三角形/解三角形及其应用.pdf（块 34aeb73fd5-001）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:解三角形的实际应用",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-6a5be116da-001",
+   "subject": "MATH",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "余弦定理及其推论与变形",
+   "summaryMarkdown": "余弦定理给出三边与一角余弦的关系，推论用于由三边求角，变形用于把平方差与角的余弦互化。",
+   "applicabilityMarkdown": "已知两边及夹角求第三边、已知三边求角、判断三角形形状以及边角互化的题目。",
+   "contentMarkdown": "**余弦定理**\\n$a^2 = b^2 + c^2 - 2bc\\cos A$，$b^2 = c^2 + a^2 - 2ca\\cos B$，$c^2 = a^2 + b^2 - 2ab\\cos C$。\\n\\n**推论（求角）**\\n$\\cos A = \\frac{b^2+c^2-a^2}{2bc}$，$\\cos B = \\frac{c^2+a^2-b^2}{2ca}$，$\\cos C = \\frac{a^2+b^2-c^2}{2ab}$。\\n\\n**变形（求平方差与数量积的关系）**\\n$b^2 + c^2 - a^2 = 2bc\\cos A$，$c^2 + a^2 - b^2 = 2ca\\cos B$，$a^2 + b^2 - c^2 = 2ab\\cos C$。",
+   "boundaryMarkdown": "每个式子中的角与该角所对的边必须对应（$a$ 对应 $A$），不要对角错位；已知两边及一边对角时用余弦定理可能出现两解，需检验；由三边求角时注意余弦值的正负判断三角形形状。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-e35c96096a:math",
+   "sourceLocator": "桌面资料 2026年新高考资料 / 2026年新高考资料/一轮复习/2026年高考数学一轮复习知识清单（全国通用）/2026版/解三角形及其应用.pdf（块 6a5be116da-001）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:余弦定理",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-6a5be116da-001b",
+   "subject": "MATH",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "正弦定理及其常见变形",
+   "summaryMarkdown": "正弦定理给出边与其对角正弦的比相等且等于外接圆直径，并有一系列常用变形。",
+   "applicabilityMarkdown": "边角互化（把边化为角的正弦、把角的正弦化为边）、判断三角形解的个数、求外接圆半径以及比例式的题目。",
+   "contentMarkdown": "**正弦定理**\\n$\\frac{a}{\\sin A} = \\frac{b}{\\sin B} = \\frac{c}{\\sin C}$。\\n\\n**常见变形**\\n1) $a:b:c = \\sin A:\\sin B:\\sin C$；\\n2) $a = 2R\\sin A$，$b = 2R\\sin B$，$c = 2R\\sin C$（$R$ 为 $\\triangle ABC$ 的外接圆半径）；\\n3) $\\sin A = \\frac{a}{2R}$，$\\sin B = \\frac{b}{2R}$，$\\sin C = \\frac{c}{2R}$；\\n4) $a\\sin B = b\\sin A$，$c\\sin B = b\\sin C$，$c\\sin A = a\\sin C$；\\n5) $\\frac{a}{\\sin A} = \\frac{b}{\\sin B} = \\frac{c}{\\sin C} = \\frac{a+b}{\\sin A+\\sin B} = \\frac{a+c}{\\sin A+\\sin C} = \\frac{b+c}{\\sin B+\\sin C} = \\frac{a+b+c}{\\sin A+\\sin B+\\sin C}$。",
+   "boundaryMarkdown": "已知两边及其中一边的对角时解可能不唯一，需用大边对大角检验解的个数；变形 2)、3) 中的 $R$ 是外接圆半径而不是内切圆半径；变形 5) 的等比连等式要求各分母之和不为零。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-e35c96096a:math",
+   "sourceLocator": "桌面资料 2026年新高考资料 / 2026年新高考资料/一轮复习/2026年高考数学一轮复习知识清单（全国通用）/2026版/解三角形及其应用.pdf（块 6a5be116da-001）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:正弦定理",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-6a5be116da-001c",
+   "subject": "MATH",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "三角形的面积公式及其各种形式",
+   "summaryMarkdown": "三角形面积除底乘高与两边夹角两种基本形式外，还有海伦公式、外接圆与内切圆形式、数量积形式与坐标形式。",
+   "applicabilityMarkdown": "已知两边及夹角求面积、已知三边求面积、由面积反求边角，以及用向量或坐标条件求三角形面积的题目。",
+   "contentMarkdown": "**(1) 底乘高**：$S_{\\triangle ABC} = \\frac{1}{2}ah_a = \\frac{1}{2}bh_b = \\frac{1}{2}ch_c$。\\n**(2) 两边及夹角**：$S_{\\triangle ABC} = \\frac{1}{2}ab\\sin C = \\frac{1}{2}bc\\sin A = \\frac{1}{2}ac\\sin B$。\\n\\n**其他形式**\\n1. 在 $\\triangle ABC$ 中，$A$、$B$、$C$ 的对边分别为 $a$、$b$、$c$，$r$ 为 $\\triangle ABC$ 的内切圆半径，$R$ 为 $\\triangle ABC$ 的外接圆半径，$p = \\frac{a+b+c}{2}$（周长的一半），则：\\n   1) $S_{\\triangle ABC} = \\sqrt{p(p-a)(p-b)(p-c)}$（海伦公式）；\\n   2) $S_{\\triangle ABC} = \\frac{abc}{4R}$，$S_{\\triangle ABC} = r\\cdot p$；\\n   3) $S_{\\triangle ABC} = 2R^2\\sin A\\sin B\\sin C$。\\n2. 数量积形式：在 $\\triangle ABC$ 中，设 $\\overrightarrow{CA} = b$，$\\overrightarrow{CB} = a$，且 $\\langle a，b\\rangle = \\theta$，则 $S_{\\triangle ABC} = \\frac{1}{2}|a||b|\\sin\\theta = \\frac{1}{2}\\sqrt{|a|^2|b|^2 - (a\\cdot b)^2}$。\\n3. 坐标形式：在 $\\triangle ABC$ 中，设 $\\overrightarrow{CB} = a = (a_1，a_2)$，$\\overrightarrow{CA} = b = (b_1，b_2)$，则 $S_{\\triangle ABC} = \\frac{1}{2}|a_1b_2 - a_2b_1|$。",
+   "boundaryMarkdown": "用 $\\frac{1}{2}ab\\sin C$ 时两边与夹角必须对应，不能把夹角取错；$R$ 与 $r$ 分别是外接圆与内切圆半径，两个公式不要互换；数量积形式与坐标形式都要求两向量以同一点为起点，坐标形式不要漏掉 $\\frac{1}{2}$ 与绝对值。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-e35c96096a:math",
+   "sourceLocator": "桌面资料 2026年新高考资料 / 2026年新高考资料/一轮复习/2026年高考数学一轮复习知识清单（全国通用）/2026版/解三角形及其应用.pdf（块 6a5be116da-001）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:三角形面积公式",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-mat-6a5be116da-001d",
+   "subject": "MATH",
+   "type": "METHOD_MODEL",
+   "title": "测量距离与高度的基本模型",
+   "summaryMarkdown": "测量距离与高度可归为三种模型：同一三角形内用余弦定理或正弦定理、跨两个三角形求解、在直角三角形中用锐角三角函数求高。",
+   "applicabilityMarkdown": "测量距离、测量高度（塔高、山高、河宽）等解三角形实际应用题与建模题。",
+   "contentMarkdown": "**测量距离与高度的基本模型**\\n1. 同一三角形内用余弦定理：$AB = \\sqrt{a^2 + b^2 - 2ab\\cos\\alpha}$。\\n2. 同一三角形内用正弦定理：$AB = \\frac{b\\sin\\beta}{\\sin(\\alpha+\\beta)}$。\\n3. 需跨三角形的情形：(1) 在 $\\triangle ACD$ 中，用正弦定理求 $AC$；(2) 在 $\\triangle BCD$ 中，用正弦定理求 $BC$；(3) 在 $\\triangle ABC$ 中，用余弦定理求 $AB$。\\n4. 高度测量：在直角三角形中由锐角三角函数直接求得，如 $AB = a\\tan\\alpha$；不能直接求解时，先在某个三角形中用正弦定理求出过渡边（如 $AD$、$BC$），再在直角三角形中求出高度，如 $AB = AD\\sin\\beta$。\\n\\n**仰角与俯角**\\n- 铅垂线、水平线：以观测点所在的水平线为基准；\\n- 视线：观测者眼睛到目标的连线；\\n- 仰角：视线在水平线上方时，视线与水平线的夹角；\\n- 俯角：视线在水平线下方时，视线与水平线的夹角。",
+   "boundaryMarkdown": "仰角与俯角都是视线与水平线的夹角，不是与铅垂线的夹角；解题必须先画示意图，明确已知的边角落在哪个三角形中，再选择正弦定理或余弦定理；跨三角形时不能把不属于同一三角形的边角关系直接套公式。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-e35c96096a:math",
+   "sourceLocator": "桌面资料 2026年新高考资料 / 2026年新高考资料/一轮复习/2026年高考数学一轮复习知识清单（全国通用）/2026版/解三角形及其应用.pdf（块 6a5be116da-001）",
+   "reviewedAtEpochMillis": 1789757124890,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:解三角形的实际应用",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-bio-26746c92ba-004",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "基础类选择题的5种选项陷阱",
+   "summaryMarkdown": "归纳夸大其词、移花接木、无中生有、文字陷阱、偷天换日五种选项设置方式及其判断要点",
+   "applicabilityMarkdown": "以教材知识为主、考查选项正误判断的基础类选择题",
+   "contentMarkdown": "①夸大其词：选项用“全部”“一定”“只能”“都”等绝对化词语描述研究对象，只要找到一个反例即可排除；但个别绝对化描述本身是正确的，如“纤维素、淀粉酶和核酸的组成元素中都含C、H和O”，不能见绝对词就判错。\\n②移花接木：把多个相关知识点混搭在同一个选项中，如细胞结构与功能错配、相似名称混淆（通道蛋白与载体蛋白、水解与氧化分解、自生与生自），判断的核心是对概念的深入理解。\\n③无中生有：选项以“因为……所以……”的推导形式给出，错误常出在原因错、结果错或因果链不成立。如“红光促进莴苣种子萌发，所以红光可逆转红外光的效应”错在因果颠倒；判断时不能只看因和果各自是否正确，必须单独检验逻辑关系是否符合生物学原理。\\n④文字陷阱：语句大体正确，个别修饰词设置逻辑错误，涉及程度（多数与全部）、范围（细胞外与细胞内）、时间（先升后降与立即下降）、场所（细胞膜上与细胞内）、条件等，判断时要逐字辨别每个修饰语。\\n⑤偷天换日：整句几乎搬自教材，但个别字词被替换使意思改变，如把“叶绿素”换成“类胡萝卜素”、把“自生”换成“生自”、把“消耗水”写成“生成水”。\\n通用策略：先明确命题人把正确知识改为错误描述这一基本思路，再把选项还原为教材原句逐项核对；见绝对化描述先找反例，见因果关系先验证逻辑链，见眼熟的句子先逐字比对。",
+   "boundaryMarkdown": "方法用于快速定位选项错误，不能替代对教材知识的准确记忆；绝对化词语只提示可能存在错误，最终仍要落到具体生物学事实上；还需看清题干要求选正确项还是错误项。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3dd32e4bb8:biology",
+   "sourceLocator": "桌面资料 06-【生物】2027版高中《解题觉醒》 / 06-【生物】2027版高中《解题觉醒》/生物解题觉醒-第2册 名师大招册.pdf（块 26746c92ba-004）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:基础类选择题的选项设置陷阱",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-bio-26746c92ba-008",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "“对象+逻辑→模型”构图法",
+   "summaryMarkdown": "把长文字题干中的研究对象与相互关系抽取出来构成逻辑模型再解题",
+   "applicabilityMarkdown": "题干文字长、信息量大、需用教材之外信息作答的能力考查类题目",
+   "contentMarkdown": "①核心公式：对象＋逻辑→模型。复杂文字类信息题的信息量大且多来自教材之外，容易被文字吓住而导致思路不清，解题关键是提取描述对象的主要特征等信息并构建逻辑关系。\\n②第一步标识研究对象：通读文字信息，圈出题目涉及的研究对象，确定题目主体，如某蛋白质、某基因、某细胞类型等。\\n③第二步构建逻辑关系：确定不同研究对象间的相互关系，如促进、抑制、结合、传递信息等，用箭头与文字把它们连接成逻辑模型。\\n④第三步利用模型解题：依据构建好的逻辑关系模型，逐一分析选项或回答问题。\\n⑤逻辑关系不只有常见的因果关系，还包括总分关系、层级关系、对比关系等，画模型时要把这些关系一并标出。",
+   "boundaryMarkdown": "构图法只解决信息梳理问题，模型中的每个关系都必须回到题干文字中找到依据，不能凭印象补连箭头；模型画完后仍要逐项与选项比对。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3dd32e4bb8:biology",
+   "sourceLocator": "桌面资料 06-【生物】2027版高中《解题觉醒》 / 06-【生物】2027版高中《解题觉醒》/生物解题觉醒-第2册 名师大招册.pdf（块 26746c92ba-008）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:构图法分析复杂文字信息题",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-bio-26746c92ba-010",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "抓起点终点玩转复杂模式图",
+   "summaryMarkdown": "沿箭头方向找起点与终点、梳理中间节点逻辑、再构建整体逻辑模型",
+   "applicabilityMarkdown": "信息以模式图、流程图呈现且箭头较多的题目",
+   "contentMarkdown": "①解题关键：模式图类信息题是文字信息题的延伸，信息更直观但更琐碎，容易遗漏信息点，分析重点在于梳理逻辑链条，从起点到终点的完整逻辑链条是正确解题的保证。\\n②解题思想：起点和终点＋中间逻辑→构建模型。\\n③第一步找到起点和终点：分析模式图，沿着箭头方向找到图中箭头的起点和终点，并逐一列出。多终点时要把每条路径分别追到底，如某基因表达的题中终点有两个，一个促进、一个抑制胃癌细胞上皮间质转化与转移。\\n④第二步分析逻辑关系：按照从起点到终点的顺序找出中间节点，并分析节点间的逻辑关系是促进还是抑制。\\n⑤第三步构建模型：综合所有逻辑结构，分析起点和终点间的关系，构建整体逻辑模型，再据此判断选项。\\n⑥生物的基本逻辑模型有六种：基本促进模型（A促进B）、基本抑制模型（A抑制B）、双向调节模型（A、C分别促进与抑制B）、分级促进模型（A促进B、B促进C）、分级抑制模型（D抑制E、E抑制F，整体表现为促进）、分级反馈模型（A促进B、B促进C，C又分别促进与抑制A）。\\n⑦思想延伸：环状模式图没有起点和终点，可任取一点开始分析，能构建完整逻辑模型即可；逻辑较复杂的模式图（如负反馈、多级调节）的核心是分析起点和终点之间实际是“促进”还是“抑制”。",
+   "boundaryMarkdown": "整图逻辑必须完整覆盖所有箭头，漏掉一条路径就可能得出相反结论；分级抑制模型中相邻两级作用相反、整体效果由级数决定，不能只看相邻两个节点的关系。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3dd32e4bb8:biology",
+   "sourceLocator": "桌面资料 06-【生物】2027版高中《解题觉醒》 / 06-【生物】2027版高中《解题觉醒》/生物解题觉醒-第2册 名师大招册.pdf（块 26746c92ba-010）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:模式图逻辑链的分析方法",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-bio-26746c92ba-012",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "坐标图信息分析先定变量",
+   "summaryMarkdown": "横轴为自变量、纵轴为因变量，由曲线趋势或柱形高低判断自变量对因变量的影响",
+   "applicabilityMarkdown": "曲线图、柱形图、表格类信息题的分析与选项判断",
+   "contentMarkdown": "①常见类型：坐标图有曲线图和柱形图两种，表格是坐标图的一种变形。此类题通过坐标图提供信息，要求判断选项正误或回答问题。\\n②解题思想：找变量、定关系、看特殊点。\\n③第一步分析坐标找变量：一般横轴所示因子为自变量，纵轴所示因子为因变量，先确认自变量与因变量，从而确定研究对象。\\n④第二步分析曲线定关系：根据曲线的变化趋势或柱形图的高低，确定横轴与纵轴所示因素间的关系是正相关、负相关，还是在不同范围内关系不同。\\n⑤第三步分析曲线看特殊点：找到坐标图中的关键点，如起点、终点、转折点、交点等，再结合题目信息和教材知识理解其特殊含义。\\n⑥柱形图的分析逻辑与曲线图一样，区别仅在于柱形图体现的是柱状数据而非连续曲线，依据柱形图数据联系横轴、纵轴所示因素间关系的基本原理不变。\\n⑦表格的本质也与坐标图一样，行和列一般分别相当于横轴和纵轴；但表格数据不直观，需要先分析数据的变化趋势，并关注因变量中的最大数据和最小数据，据此找到自变量与因变量的关系和特殊点。",
+   "boundaryMarkdown": "必须先分清自变量与因变量再读曲线，变量认反会导致结论完全颠倒；曲线在不同区间的升降趋势可能不同，不能把某一区间的规律推广到全程；柱形图与表格要关注极值点而非只看整体高低。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3dd32e4bb8:biology",
+   "sourceLocator": "桌面资料 06-【生物】2027版高中《解题觉醒》 / 06-【生物】2027版高中《解题觉醒》/生物解题觉醒-第2册 名师大招册.pdf（块 26746c92ba-012）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:坐标图类信息题的变量分析",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-bio-26746c92ba-015",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "长句应答：逻辑构建加关键词",
+   "summaryMarkdown": "按构建逻辑、设计关键词、组织语言三步作答，并掌握五种常见逻辑结构",
+   "applicabilityMarkdown": "原因解释、过程描述、结果分析类长句填空题（小作文类题目）",
+   "contentMarkdown": "①题型特点：长难句表述类题目要求解释原因、描述过程或设计实验，答案很难与标准答案完全相同，但思路上有标准化的解法，即“逻辑构建是核心，用好关键词得高分”。\\n②解题思想：第一步构建逻辑关系，根据题目提供的信息和要求联系知识，选择合理的逻辑结构构建答题逻辑；第二步设计关键词，在逻辑关系中添加专有名词，准确表达逻辑关系；第三步组织语言描述逻辑，用语言文字把逻辑结构和关键词串联成完整句子，并检查句子的因果关系是否合理。\\n③关键词的来源有两个：一是教材知识，如论述光合作用与呼吸作用时的“总光合作用强度”“净光合作用强度”“呼吸作用强度”，论述免疫时的“B细胞”“浆细胞”“细胞毒性T细胞”“呈递抗原”，论述生态学时的“捕食”“能量的多级利用”“物质的循环利用”；二是题目信息，信息题提供了新的专有名词和逻辑关系，借用题干中的文字或名词表述更易得分。\\n④常见逻辑结构有五种。链式逻辑：用因果关系链条构建，适用于单一逻辑起点和单一终点的情况，如夏季中午气温较高导致蒸腾作用过强、气孔关闭、CO₂供应不足、暗反应受阻、光合作用减弱而出现“光合午休”。三段论逻辑：包括大前提、小前提和结论，当链式逻辑的原因不完善、不足以得出结论时补充一个前提，如“胰岛素降低血糖含量”是大前提，“胰岛B细胞受损导致胰岛素分泌不足”是小前提，结论是血糖含量偏高。比较逻辑：题目涉及两个研究对象时分别分析再比较，尤其涉及某物质含量变化时要同时分析来源和去路，如分析停止光照后C₃含量降低，就要比较C₃的来源（还原生成C₅减慢）与去路（仍正常与CO₂结合生成C₃）。反证法逻辑：主要用于遗传推导，若直接推导较繁琐，就先假设基因位于常染色体上等并逐一排除，从而快速得出结论。综合逻辑：题目结构复杂时综合运用上述结构，如既需要三段论构建大小前提，又需要在小前提中比较分析。\\n⑤作答模板（四步）：汇总信息→构建逻辑结构→写出关键词→语言表述，最后串成一句话即可。",
+   "boundaryMarkdown": "长句应答只要能写出合理的逻辑推导并出现相应关键词即可得分，不追求与标准答案完全一致；实验设计类题目不适用本方法，应按对照实验设计的模板单独分析；反证法逻辑多用于遗传推导，其他模块用得较少。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3dd32e4bb8:biology",
+   "sourceLocator": "桌面资料 06-【生物】2027版高中《解题觉醒》 / 06-【生物】2027版高中《解题觉醒》/生物解题觉醒-第2册 名师大招册.pdf（块 26746c92ba-015）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:长句应答题的作答方法",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-bio-26746c92ba-020",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "长句表述之教材文字迁移",
+   "summaryMarkdown": "教材知识的直接应用与灵活迁移两类长句题的作答依据都回归教材",
+   "applicabilityMarkdown": "长句表述中考查教材知识迁移的题目",
+   "contentMarkdown": "①答题核心点：长句表述中除原因解释类外，教材知识迁移类也常出现，其本质是考查教材知识，但考查点较细致，需要准确、全面地掌握教材知识，有些题目的文字表述还要根据题目信息适当修改。\\n②解题思想：回归教材知识，全面掌握细节。\\n③第一种情况是教材表述的直接应用：题目要求用教材原文回答，这类题目25年考查次数有所增加，要求关键词与教材完全相同，复习时需要对重点词语进行记忆，教材正文和边角都有涉及，对作用、原因等相关描述更要重点关注。例如抗利尿激素的作用答“促进肾小管和集合管对水的重吸收”，细胞失水发生质壁分离的原因答“原生质层比细胞壁的伸缩性大”。\\n④第二种情况是教材表述的迁移：答案需要用到教材的逻辑，但题目中补充了信息，需结合题目信息分析对应原理，再对教材文字适当调整后作答。如树鼩对含辣椒素类植物适应形成的必要条件，需在教材“群体中出现可遗传的有利变异和环境的定向选择是适应形成的必要条件”基础上，结合题干补出“树鼩群体出现可遗传的变异（受体蛋白TR1对辣椒素敏感性低）”与“环境对树鼩进行定向选择”。\\n⑤这类题目中不少是原因解释类，但因为更侧重对教材知识的理解和应用，与纯新信息提取分析的原因解释题相比难度要低。",
+   "boundaryMarkdown": "教材原文作答要求关键词完全一致，不能用近义词替换；迁移类题目不能整段照抄教材，必须把题干新信息并入教材逻辑中；复习时不能只背正文，教材的边角、图示、探究·实践栏目同样是考点。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3dd32e4bb8:biology",
+   "sourceLocator": "桌面资料 06-【生物】2027版高中《解题觉醒》 / 06-【生物】2027版高中《解题觉醒》/生物解题觉醒-第2册 名师大招册.pdf（块 26746c92ba-020）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:教材文字迁移类长句题",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-bio-26746c92ba-023",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "三步分析对照实验",
+   "summaryMarkdown": "按分析变量定课题、分析对照、分析结果和结论三步拆解实验分析题",
+   "applicabilityMarkdown": "实验分析类题目（给出实验过程要求判断或推导结论）",
+   "contentMarkdown": "①实验题一般分为三类：基础实验（考查实验的原理、选材、步骤、现象、结论和注意事项）、实验分析、实验设计。实验分析是实验设计的基础，其核心在于三个方面：变量的分析、对照的分析、结果和结论的分析。\\n②解题思想：变量体现实验课题，对照是实验主体，通过结果分析结论。变量、对照、结果和结论三者是依次展开的逻辑，只有遵循这套分析顺序才能全面理解实验内容；很多实验的自变量不止一个，分析时要遵循单一变量原则，对照分析清楚后再由结果推导结论。\\n③第一步分析变量定课题：通过题目信息确定变量，确定变量即可确定题目研究的课题。如某实验的自变量有小鼠类型、注射试剂种类、受伤后时间三个，因变量是创面相对大小，则课题为探究吗啡和阿片受体对受伤后一定时间内小鼠伤口愈合的影响。\\n④第二步分析对照：分析实验中的对照类型，区分对照组和实验组，确认每组实验中的变量，找到合适的对照组；多个自变量时按单一变量原则拆成若干组两两对比。\\n⑤第三步分析结果和结论：在遵循单一变量原则的情况下，分析各组自变量和因变量的关系，得出相应结论。\\n⑥常见对照类型：空白对照，对照组不施加或减除自变量，如探究添加血清对细胞分裂的影响时，实验组添加血清、空白对照组添加等量生理盐水，作用是排除其他因素对实验的干扰；相互对照，不单独设置对照组，几个实验组相互对比，每一组既是实验组也是其他组的对照组，如探究诱导愈伤组织分化的最适光照强度时设置低、中、高光强三组相互比较；自身对照，对照组和实验组在同一研究对象上进行，不单独另设对照，通过改变自变量观察实验前后研究对象因变量的变化，如探究光照对光敏蛋白转基因小鼠活动的影响时，先测黑暗下的运动水平，再测光照下的运动水平。教材还把条件对照、标准对照等一并列为对照的类型。",
+   "boundaryMarkdown": "单一变量原则是分析多自变量实验的关键，不能把多个自变量的变化同时归因于一个结论；自身对照必须有处理前的数据作比较，没有前测数据就得不到结论；空白对照用的是等量的溶剂或生理盐水，不是不做任何处理。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3dd32e4bb8:biology",
+   "sourceLocator": "桌面资料 06-【生物】2027版高中《解题觉醒》 / 06-【生物】2027版高中《解题觉醒》/生物解题觉醒-第2册 名师大招册.pdf（块 26746c92ba-023）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:对照实验的分析方法",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-bio-26746c92ba-025",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "“一个模板”应对对照实验设计",
+   "summaryMarkdown": "按审实验目的找四素、思对照类型、创实验条件、写实验思路四步完成实验设计",
+   "applicabilityMarkdown": "给出课题与部分材料、要求完整写出实验设计内容的题目",
+   "contentMarkdown": "①考查方式：实验设计类题目仅给出实验课题及部分材料，要求考生完整写出实验设计内容，并预测实验结果及得出结论。解题分两部分，第一部分按实验分析的思路分析变量并据题设条件设计合理的对照，第二部分按固定答题模板写出完善的实验思路。\\n②解题思想：套用四步走逻辑解决所有对照实验设计。除遗传的实验设计外，所有对照实验设计类题目的思路都是一致的，因为实验的本质就是排除无关变量的影响、分析自变量和因变量的因果关系。\\n③第一步审“实验目的”——找“四素”：实验性质（验证性或探究性），它决定预期结果及结论是否唯一；实验变量（自变量），它决定分组，单变量时至少两组；实验对象（实验材料），有时“材料及用具”中会给出；反应变量（因变量），据此选择合适的“观测指标”。\\n④第二步思“对照类型”——判断“组数”。\\n⑤第三步创“实验条件”——排除无关变量干扰，材料分组时除自变量外其他条件要相同且适宜。\\n⑥第四步写“实验思路”——答题要点为自变量的操纵、注意实验条件、观测指标的检测，落笔时按四句展开：取材与分组（生理状态、长势相同的材料随机均分）、处理过程（对自变量的操纵，必要时做假手术等）、培养一段时间（条件相同且适宜）、因变量的检测（明确观测指标与记录方式）。\\n⑦探究性实验与验证性实验要区别对待：探究性实验的目的是探索研究对象的未知属性、特征以及与相应因素的关系，一般要作出“如果A则B”形式的假设，实验现象未知可以不描述，结果预测要对应假设分类讨论，结论对应实验结果；验证性实验的目的是验证已知属性、特征及相应因素的关系，因为结论是已知的所以不存在假设问题，实验现象已知应准确描述，无实验结果预测，结论对应实验目的得出肯定结论。\\n⑧思想延伸：生理变化类题目（血糖浓度、血液指标、体重等）通常需要前测，即在自变量处理前先测量相关指标，以便与实验后数据比较；描述操作时要用“相同时间”“相同温度”“等量的”等定量描述保证单一变量，对无关变量表述没有把握时可用“相同且适宜的条件”描述。",
+   "boundaryMarkdown": "模板只解决表述规范问题，四素判断错误仍会全题失分；实验材料分组必须强调随机均分，自变量操纵要具体到剂量、时间、方式；无关变量必须写出处理办法，不能只写“其他条件相同”。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3dd32e4bb8:biology",
+   "sourceLocator": "桌面资料 06-【生物】2027版高中《解题觉醒》 / 06-【生物】2027版高中《解题觉醒》/生物解题觉醒-第2册 名师大招册.pdf（块 26746c92ba-025）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:对照实验设计的四步模板",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-bio-26746c92ba-029",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "实验结果与实验结论的辨析",
+   "summaryMarkdown": "实验结果描述客观事实、实验结论描述自变量与因变量的因果关系，二者描述要求不同",
+   "applicabilityMarkdown": "实验设计题中要求预测实验结果并得出结论的题目",
+   "contentMarkdown": "①概念区别：实验结果是对实验过程中直接观察到的实验现象或测得的实验数据等的描述，包括颜色、体积、数量等，描述要求客观、真实、记录全面；实验结论是对实验结果进行分析得出的规律性总结，是对实验目的的总结，用于描述自变量和因变量的关系，描述时需要考虑严谨性和准确性。本质上实验结果是对客观事实的描述，实验结论是对因果关系的逻辑论断。\\n②实验结果的描述角度有四种：色变，物质检测或结构判断类实验的结果一般为颜色变化，需准确描述颜色和变化过程；形变，个体生长发育的生理学实验，实验现象一般为弯曲、生长、发育等情况；量变，研究代谢和发育的实验常用气体体积、长度、宽度、质量、物质含量等作检测指标；其他变化，不同实验的自变量和材料不同，会有不同的检测指标，需据题分析。\\n③实验结果的描述方式有三种：文字描述，直接用文字表述不同实验处理的结果，简单直接；表格描述，用表格呈现现象或数据，第一行和第一列一个是自变量、一个是因变量；坐标图描述，用坐标图展示自变量和因变量的相关性，通常横轴表示自变量、纵轴表示因变量。\\n④实验结论的描述要点：要回归实验目的，描述自变量与因变量的关系，多数情况下可以照抄实验目的或实验课题，把其由疑问句变换成陈述句即可。\\n⑤实验结论的文字套路（分段式描述，三段论）：第一句强调无关变量一致，写法如“在相同时间内”“在相同温度下”“在相同pH下”“在一定范围内”“与对照组相比”；第二句（最重要）作相关性描述，写清自变量和因变量的关系，可照抄课题改成陈述性语句；第三句在定量实验中补充相关性类型，说明自变量如何影响因变量，包括正相关、负相关、不相关等。\\n⑥实验结果和实验结论的综合描述：同时要求两者时借用固定句式“若……则……”，其中“若”后面接实验结果的描述、“则”后面接实验结论的描述，并注意两者的对应关系。",
+   "boundaryMarkdown": "实验结果只写现象与数据，不能写因果论断；实验结论必须落到自变量与因变量的关系上，不能只重复现象；用“若……则……”句式时，条件和结论必须一一对应，否则整句不得分。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3dd32e4bb8:biology",
+   "sourceLocator": "桌面资料 06-【生物】2027版高中《解题觉醒》 / 06-【生物】2027版高中《解题觉醒》/生物解题觉醒-第2册 名师大招册.pdf（块 26746c92ba-029）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:实验结果与实验结论的辨析",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-bio-26746c92ba-032",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "生物学中的模型化思维",
+   "summaryMarkdown": "物理模型以实物或图画直观表达认识对象，按分析文字、构建模型、修正简化三步构建",
+   "applicabilityMarkdown": "知识梳理类复习与模型图判断题的分析",
+   "contentMarkdown": "①模型和模型思维：模型是人们为了达到某种特定目的而对认识对象所作的一种简化的概括性的描述，这种描述可以是定性的也可以是定量的，形式有物理模型、数学模型等。与繁杂的知识描述相比，简化的模型逻辑清晰、比较直观，能增加对知识的理解深度，有利于理解和记忆。常见模型包括物理模型、概念模型和数学模型。\\n②解题思想：构建模型，简化知识逻辑，促进理解题目。\\n③物理模型的概念：以实物或图画形式直观地表达认识对象的特征，这种模型就是物理模型。物理模型是最常见的模型，可以把抽象的知识变得更加直观。\\n④物理模型的构建方法分三步：第一步分析文字信息，分析文字描述找到研究对象，然后分析研究对象间的逻辑关系，形成模型基础；第二步构建物理模型，利用点、线、面、文字表示研究对象，利用箭头和“+”“-”等符号表述逻辑关系，将文字描述转化为图片；第三步模型修正（补充）和简化，对比文字描述和图片内容，看两者是否完全一致，对不一致的地方进行修正，对不好呈现的内容进行补充，修正后进一步简化模型内容，找到最重要的逻辑部分、去除不重要的部分，使模型更简洁易用。\\n⑤构建案例一（有丝分裂模型）：以教材原文对分裂间期与分裂期各时期染色体行为的描述为蓝本，画出染色体复制、散乱分布、着丝粒排列在赤道板位置上、着丝粒分裂、染色体变为染色质丝的物理模型；补充的内容包括动物细胞和植物细胞的分裂过程略有差异但染色体行为完全一样、染色质和染色体的变化逻辑是结构与功能相适应、纺锤体用于辅助染色体进行运动。\\n⑥构建案例二（DNA双螺旋结构模型）：把DNA结构拆成从小到大的六个层次，即脱氧核苷酸是结构单位、同一条链中脱氧核苷酸通过磷酸二酯键相连、两条链反向平行、双链间通过碱基互补配对形成氢键连接、碱基排列顺序储存遗传信息、双螺旋空间结构保护碱基不受破坏。\\n⑦构建案例三（体温平衡调节概念模型）：以寒冷条件下的调节为例，从冷觉感受器经传入神经到下丘脑体温调节中枢，再经传出神经作用于皮肤血管收缩、汗腺分泌减少、骨骼肌战栗和肾上腺髓质分泌肾上腺素，减少散热并增加产热；同时下丘脑—垂体—甲状腺的分级调节使甲状腺激素增加、细胞代谢增强、产热增加；炎热条件下调节过程大体相反。",
+   "boundaryMarkdown": "模型是简化描述，构建后必须与教材文字逐条比对、补齐省略的细节，不能只记模型而忽略教材原文；不同模型适用范围不同，数学模型的建模与求解另见数学思维部分。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3dd32e4bb8:biology",
+   "sourceLocator": "桌面资料 06-【生物】2027版高中《解题觉醒》 / 06-【生物】2027版高中《解题觉醒》/生物解题觉醒-第2册 名师大招册.pdf（块 26746c92ba-032）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:物理模型的构建方法",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-bio-26746c92ba-036",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "生物学中的概率与统计思维",
+   "summaryMarkdown": "用概率论算遗传概率、用统计学设计调查方案并分析数据",
+   "applicabilityMarkdown": "遗传概率计算与种群、群落调查类题目",
+   "contentMarkdown": "①数学与生物学的关系：数学是重要的基础学科，也是其他学科解决问题的研究工具；构建数学模型可以将生物学问题转化为数学问题，从而利用函数、概率论、统计学等工具更高效、透彻地理解生物学问题。\\n②算事件概率找准分母是关键：总份数改变即分母改变，某一事件所占概率也会随之改变。常见两种模型，一是群体发生淘汰时剩余集合的概率总和为1，如Aa自交后代AA、Aa、aa的概率分别为1/4、1/2、1/4，淘汰aa后AA和Aa的概率分别变为1/3和2/3；二是限定研究范围时在特定范围内分析概率，如X^B X^b与X^B Y婚配，后代出现患病男孩的概率以所有后代为分母（1/4），男孩中患病的概率以后代男孩为分母（1/2）。\\n③互斥事件用加法原理，独立事件用乘法原理：$P(A\\cup B)=P(A)+P(B)$，$P(A\\cap B)=P(A)\\cdot P(B)$。生物学中的对应关系是：同一个体同一性状的不同基因型属于互斥事件，如Aa自交后代出现AA或Aa的概率为1/4+1/2=3/4；雌雄配子随机结合属于独立事件，如雄配子为A的概率1/2乘雌配子为A的概率1/2得后代AA的概率1/4；多对等位基因自由组合也属于独立事件，如AaBb自交后代出现Aa且Bb的概率为1/2×1/2=1/4。\\n④统计的步骤：设计统计方案（根据研究对象设计合理方案，如种群密度调查按种群特点分别采用样方法、标记重捕法、显微计数法）→设计实验方案（遵循随机取样原则以减小误差，如样方法按地形地貌采用五点取样法或等距取样法）→统计和分析（按既定方案实验、获取和记录数据，用统计学方法分析并评价数据误差）→得出结论或假说。\\n⑤统计学在高中生物学中的应用：遗传学中统计子代性状比需符合大数定律，子代数量足够多才能获得与理论概率相符的数据；统计人群中遗传病发病率需要随机取样，统计家族遗传情况需要统计不同个体间的关系并画出遗传系谱图；种群密度调查中植物和活动范围小的动物用样方法、活动能力强且范围大的动物用标记重捕法、趋光性昆虫用黑光灯诱捕法、微生物用显微计数法；群落丰富度调查中植物和比较明显的动物用样方法、身体微小且活动能力强的小动物用取样器取样法；种群的出生率、死亡率、年龄结构、性别比例以及生态系统的能量流动等也会用到统计学方法。",
+   "boundaryMarkdown": "互斥事件与独立事件不能混用，同一个体不同基因型之间是互斥的、配子结合与不同对基因之间是独立的；统计子代比例必须有足够大的样本量，小样本的偏离不能说明比例异常；样方法与标记重捕法的适用对象不能互换。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3dd32e4bb8:biology",
+   "sourceLocator": "桌面资料 06-【生物】2027版高中《解题觉醒》 / 06-【生物】2027版高中《解题觉醒》/生物解题觉醒-第2册 名师大招册.pdf（块 26746c92ba-036）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:概率与统计在生物学中的应用",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-bio-26746c92ba-040",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "数列与排列组合破解遗传计算",
+   "summaryMarkdown": "连续自交与自由交配的基因型比例可用数列公式，多倍体配子比例用组合数计算",
+   "applicabilityMarkdown": "连续自交、自由交配与多倍体配子比例的计算",
+   "contentMarkdown": "①数列在连续自交和自由交配中的应用（n代表代数）：Aa连续自交后代的基因型比例为 AA∶Aa∶aa=(2^n－1)∶2∶(2^n－1)；Aa连续自交并逐代淘汰aa后为 AA∶Aa=(2^n－1)∶2；Aa连续自由交配后代始终为 AA∶Aa∶aa=1∶2∶1，基因频率与基因型频率均不变；Aa连续自由交配并逐代淘汰aa后为 AA∶Aa=n∶2。\\n②排列组合计算多倍体配子的种类及比例：配子种类与比例由组合数决定，如Aaaa的配子 Aa∶aa=1∶1，AAAAaa的配子 AAA∶AAa∶Aaa=1∶3∶1，AAAaaa的配子 AAA∶AAa∶Aaa∶aaa=1∶9∶9∶1。\\n③思维拓展：数学在生物学中的应用并不成体系，不同知识、不同考点应用的数学原理不同，甚至会出现交叉应用；利用数学知识时应先理解其数学逻辑，再把生物学问题转化为数学模型进行分析，最终从数学的角度展开分析，更好地理解生物学问题。",
+   "boundaryMarkdown": "连续自交与自由交配的公式适用前提不同，自由交配需群体足够大且无选择、无突变，逐代淘汰aa后自由交配的代际差异与自交的差异性质不同；组合数只解决配子比例，个体的存活情况还要另作判断。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3dd32e4bb8:biology",
+   "sourceLocator": "桌面资料 06-【生物】2027版高中《解题觉醒》 / 06-【生物】2027版高中《解题觉醒》/生物解题觉醒-第2册 名师大招册.pdf（块 26746c92ba-040）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:数列与排列组合在遗传计算中的应用",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-bio-26746c92ba-042",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "同位素标记法及其实验应用",
+   "summaryMarkdown": "用物理性质特殊的同位素标记化学反应中原子的去向以追踪物质变化",
+   "applicabilityMarkdown": "示踪物质运行与变化规律的实验分析题",
+   "contentMarkdown": "①同位素：在同一元素中，质子数相同、中子数不同的原子互为同位素，同位素在元素周期表中占据相同的位置。同位素具有相同的化学性质，但具有某些不同的物理性质，这主要体现在质量不同和是否具有放射性两方面：具有放射性的如 ¹⁴C、³²P、³H、³⁵S 等，是放射性同位素；不具有放射性的如 ¹⁵N、¹⁸O 等，是稳定同位素。\\n②同位素标记法：用物理性质特殊的同位素来标记化学反应中原子的去向，也就是同位素示踪法，可用于示踪物质的运行和变化规律；通过追踪同位素标记的化合物，可以弄清楚化学反应的详细过程。\\n③经典应用：用 ³H 标记亮氨酸，探明分泌蛋白的合成与分泌过程；用 ¹⁵N 标记 DNA 分子，证明 DNA 分子的复制方式是半保留复制；卡尔文用 ¹⁴C 标记 CO₂，研究出碳原子在光合作用中的转移途径，即 CO₂→C₃→有机物；鲁宾和卡门用 ¹⁸O 标记水分子，证明光合作用所释放的氧气中的氧元素全部来自水。\\n④解题提示：记住构成物质的特征元素，以及使用的标记元素是否具有放射性，即可解答此类试题。如磷酸中不含碳元素，不能用 ¹⁴C 标记磷酸追踪 DNA 的合成；尿嘧啶核糖核苷酸中不含硫，不能用 ³⁵S 标记；¹⁸O 不具有放射性，用它标记亮氨酸不能通过检测放射性来追踪分泌蛋白的合成和分泌。",
+   "boundaryMarkdown": "标记元素必须是待测物质特有的元素，否则无法区分该物质与其他成分；稳定同位素没有放射性，只能通过质量差异（如密度梯度离心）检测，不能用放射性检测；同位素标记只能示踪原子去向，不能说明反应速率或能量变化。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3dd32e4bb8:biology",
+   "sourceLocator": "桌面资料 06-【生物】2027版高中《解题觉醒》 / 06-【生物】2027版高中《解题觉醒》/生物解题觉醒-第2册 名师大招册.pdf（块 26746c92ba-042）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:同位素标记法",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-bio-26746c92ba-043",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "化学键与分子间作用力辨析",
+   "summaryMarkdown": "共价键构成生物大分子骨架，氢键等分子间作用力决定水的流动性与空间结构的稳定性",
+   "applicabilityMarkdown": "从化学键角度解释生物大分子的结构与性质",
+   "contentMarkdown": "①化学键：化学键是粒子间的一种作用力，其中粒子可以是原子或离子；化学键包括共价键、离子键和金属键三种。\\n②共价键：原子间通过共用电子形成的化学键叫共价键，共价键非常稳定。通过共价键形成的共价化合物是构成生物体的基础，如连接氨基酸的肽键、连接单糖的糖苷键、连接核苷酸的磷酸二酯键等；在细胞内有专一性的酶催化共价键的合成和断裂，从而催化物质的合成和分解。\\n③分子间作用力：指存在于分子与分子之间的作用力，如氢键等。氢键在生物学中非常常见，例如水分子间的氢键、碱基配对形成的氢键、维持蛋白质空间结构的氢键等。由于氢键较弱、容易断裂，因此水分子具有流动性，蛋白质和核酸的空间结构容易受到破坏而发生变性。\\n④亲水与疏水：物质具有相似相溶的特点，极性分子和带电分子易溶于水，非极性有机物易溶于有机溶剂。利用溶解性可以解释生物的结构和功能，生物膜由磷脂分子构成骨架结构，磷脂分子具有亲水头部和疏水尾部，通过头部朝外的稳定双层结构使局部形成独立的空间，同时疏水尾部可限制物质进出细胞，发挥细胞膜控制物质进出的功能。",
+   "boundaryMarkdown": "共价键与氢键的稳定性差异是理解变性、复性与水分子流动性的关键，不能把氢键当作化学键来比较强弱；相似相溶只适用于分子结构相似的判断，不能推广到所有物质的跨膜方式。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3dd32e4bb8:biology",
+   "sourceLocator": "桌面资料 06-【生物】2027版高中《解题觉醒》 / 06-【生物】2027版高中《解题觉醒》/生物解题觉醒-第2册 名师大招册.pdf（块 26746c92ba-043）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:化学键与分子间作用力",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-bio-26746c92ba-044",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "氧化还原反应与细胞代谢",
+   "summaryMarkdown": "细胞呼吸是氧化、光合作用先氧化水再还原CO₂，据此理解能量与物质变化",
+   "applicabilityMarkdown": "用氧化还原视角分析细胞呼吸与光合作用的题目",
+   "contentMarkdown": "①定义：氧化还原反应是参与反应的元素的化合价有相应的升降变化的化学反应。氧化反应指还原剂失去电子、化合价上升；还原反应指氧化剂得到电子、化合价下降，氧化还原反应遵守电荷守恒。\\n②细胞呼吸是对有机物(CH₂O)的氧化：以葡萄糖(C₆H₁₂O₆)为例，有氧呼吸用 O₂ 作为氧化剂进行彻底的氧化分解，产生 CO₂ 和 H₂O；无氧呼吸进行不彻底的氧化分解，产物含有机物（酒精或乳酸）。\\n③光合作用的光反应是对水的氧化：在希尔反应中，离体叶绿体的悬浮液中加入铁盐或其他氧化剂（悬浮液中有 H₂O、没有 CO₂），在光照条件下可以释放氧气。光合作用的暗反应主要对 CO₂ 进行还原，还原剂是光反应产生的还原型辅酶Ⅱ(NADPH)，CO₂ 还原的终产物是有机物(CH₂O)，在物质变化上相当于细胞呼吸的逆过程。\\n④过氧化氢和超氧化物：细胞代谢过程中会产生一些强氧化性物质，如 H₂O₂、自由基（如超氧阴离子 O₂⁻），这些物质会氧化破坏细胞结构、导致细胞衰老，细胞通过酶（如过氧化氢酶、超氧化物歧化酶）催化相应物质的分解，减少其对细胞的破坏。",
+   "boundaryMarkdown": "氧化还原的实质是元素化合价的升降，不能只看是否有氧参加；希尔反应只说明离体叶绿体在适当条件（铁盐等氧化剂、光照）下可发生水的光解、产生氧气，没有排除叶绿体中其他物质的干扰，不能直接证明光合作用产生的 O₂ 中氧元素全部来自水。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3dd32e4bb8:biology",
+   "sourceLocator": "桌面资料 06-【生物】2027版高中《解题觉醒》 / 06-【生物】2027版高中《解题觉醒》/生物解题觉醒-第2册 名师大招册.pdf（块 26746c92ba-044）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:氧化还原反应与细胞代谢",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-bio-26746c92ba-045b",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "酯与芳香族化合物",
+   "summaryMarkdown": "细胞中脂肪、磷脂属酯类，核苷酸靠磷酸二酯键相连；嘌呤、嘧啶、吲哚各具功能",
+   "applicabilityMarkdown": "有机物结构与功能的拓展分析题",
+   "contentMarkdown": "①酯：有机化学中醇与羧酸或无机含氧酸发生酯化反应生成的产物。在细胞中含有大量的酯类物质，如脂肪（甘油三酯）、磷脂；核酸的单体核苷酸也通过磷酸二酯键相互连接构成大分子。\\n②芳香族化合物：碳氢化合物分子中至少含有一个带离域键苯环的化合物，在细胞中多种芳香族化合物发挥不同的功能。\\n③嘌呤与嘧啶：两者均为含氮碱基，有多种类型，如腺嘌呤、鸟嘌呤、次黄嘌呤、胞嘧啶、尿嘧啶等，用于构成核酸，其排列顺序可以储存大量遗传信息；此外还能形成其他物质，如嘌呤可转化为细胞分裂素。\\n④吲哚：是生长素的结构基础，通过形成吲哚乙酸、吲哚丁酸等物质发挥促进生长的效果。",
+   "boundaryMarkdown": "酯类不等于脂肪，磷脂和核苷酸中的磷酸二酯键同样属于酯的范畴；含氮碱基并不都参与构成核酸，如嘌呤还可转化为细胞分裂素；吲哚类物质与生长素结构相关但不能等同于生长素。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3dd32e4bb8:biology",
+   "sourceLocator": "桌面资料 06-【生物】2027版高中《解题觉醒》 / 06-【生物】2027版高中《解题觉醒》/生物解题觉醒-第2册 名师大招册.pdf（块 26746c92ba-045）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:生物分子中的酯与芳香族化合物",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-bio-26746c92ba-049b",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "信息分子与其他功能物质",
+   "summaryMarkdown": "神经递质、激素、细胞因子、CO₂和H⁺等传递信息，酶、抗体、转运蛋白各有特定功能",
+   "applicabilityMarkdown": "物质分类、信息传递与功能判断类题目",
+   "contentMarkdown": "①神经递质：主要在神经细胞之间传递信息，未兴奋时储存在突触前神经元内的突触小泡中，兴奋时通过胞吐释放至突触间隙，作用于突触后膜的特异性受体，传递信息。\\n②激素：在内分泌器官或细胞和靶细胞之间传递信息，调节生命活动；内分泌器官或细胞分泌激素，通过体液运输到全身各处，通过与受体结合作用于靶器官和靶细胞。\\n③细胞因子：主要在免疫细胞等之间传递信息，化学本质是蛋白质或多肽，大部分由免疫细胞在受到相应刺激时产生，调节免疫系统的功能等。\\n④CO₂、H⁺等：在细胞外传递特定信息，在特定调节过程中传递信息，如CO₂通过刺激脑干调节呼吸运动。\\n⑤其他功能物质：酶催化化学反应，大部分酶的化学本质是蛋白质，少数酶的化学本质是RNA，具有高效性、专一性及作用条件较温和等特性，可使化学反应高效地进行；抗体由浆细胞分泌，可以和抗原特异性结合并形成沉淀等，是特异性免疫中重要的免疫活性物质；转运蛋白在生物膜上进行物质的运输，包括载体蛋白和通道蛋白，通过特定的空间结构进行物质的特异性运输。\\n⑥思想延伸：信息分子包含各类小分子及一些多肽类、蛋白质类等物质，在不同的调节系统中发挥作用，但都具有特异性。",
+   "boundaryMarkdown": "信息分子不一定是有机大分子，CO₂、H⁺等小分子也可传递信息；激素与神经递质都是信息分子但不直接参与代谢，只起调节作用；酶是催化剂而非信息分子，抗体的作用是与抗原结合而不是传递信息。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3dd32e4bb8:biology",
+   "sourceLocator": "桌面资料 06-【生物】2027版高中《解题觉醒》 / 06-【生物】2027版高中《解题觉醒》/生物解题觉醒-第2册 名师大招册.pdf（块 26746c92ba-049）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:信息分子与功能物质",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-bio-26746c92ba-055b",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "三步定位法辨析电子传递过程",
+   "summaryMarkdown": "用定场所、定电子、定能量三步辨析有氧呼吸与光合作用的电子传递",
+   "applicabilityMarkdown": "电子传递链信息题与两大电子传递系统的比较",
+   "contentMarkdown": "①两大电子传递系统的比较：有氧呼吸第三阶段在场所上位于线粒体内膜，电子供体是NADH和FADH₂，电子最终受体是O₂并生成H₂O，H⁺梯度方向是线粒体内外膜间隙（高）到线粒体基质（低），能量的初始来源是NADH、FADH₂中的化学能，最终产物是ATP；光合作用光反应阶段在场所上位于叶绿体类囊体膜，电子供体是水（由PSⅡ夺取电子），电子最终受体是NADP⁺并生成NADPH，H⁺梯度方向是类囊体腔（高）到叶绿体基质（低），能量的初始来源是光能（依赖光系统吸收），最终产物是ATP和NADPH。\\n②“三步定位法”辨析电子传递过程：第一步定场所，根据过程所处阶段确定场所；第二步定电子，明确电子供体与最终受体，电化学梯度很重要；第三步定能量，确定初始能量来源与最终能量产物。",
+   "boundaryMarkdown": "两步之间的对应关系不能张冠李戴，如把线粒体的H⁺梯度方向与类囊体的混淆；电子供体与最终受体要成对判断，O₂对应生成H₂O、NADP⁺对应生成NADPH；场所由过程所处阶段决定，不能由图示外形猜测。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3dd32e4bb8:biology",
+   "sourceLocator": "桌面资料 06-【生物】2027版高中《解题觉醒》 / 06-【生物】2027版高中《解题觉醒》/生物解题觉醒-第2册 名师大招册.pdf（块 26746c92ba-055）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:电子传递过程的三步定位法",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-bio-26746c92ba-063",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "细胞分裂图像与显微照片的快速判断",
+   "summaryMarkdown": "用三秒法、两步法结合染色体行为与材料信息判断细胞分裂时期",
+   "applicabilityMarkdown": "细胞分裂模式图、显微照片、统计图的时期判断",
+   "contentMarkdown": "①题型归纳：细胞分裂相关的图像题通过细胞分裂的模式图、显微图像或统计图等判断细胞所处时期及特点，考查对有丝分裂和减数分裂过程、特点的掌握。传统题型常用模式图，较新的题目则改用细胞分裂的显微照片，考查信息分析能力；统计图往往通过柱形图或折线图考查染色体、DNA在细胞分裂不同时期的数量或行为特点。图像形式虽然多样，其本质都是考查细胞分裂过程中染色体的变化。\\n②解题思想：染色体的行为决定细胞分裂时期。\\n③模式图中的判断依据：有丝分裂与减数第一次分裂的细胞都有同源染色体，减数第二次分裂的细胞无同源染色体；前期染色体散乱分布，中期染色体排列在赤道板位置，后期着丝粒分裂、姐妹染色单体分开并分别移向细胞两极；减数分裂Ⅰ中期的染色体排列在赤道板位置的两侧，后期染色体沿两条平行线排布，减数分裂Ⅱ中期染色体沿一条线排布、后期染色体均分布在四个区域。\\n④“三秒法”快速判断（以二倍体生物为例）：先看有无MⅠ特殊行为，即同源染色体联会（形成四分体）、染色体排列在赤道板位置的两侧、同源染色体分离和非同源染色体自由组合，有则直接判断为MⅠ的具体时期；无则再看有无同源染色体，有则为有丝分裂的具体时期，无则为MⅡ的具体时期。由于MⅠ每个时期的特点与MⅡ及有丝分裂差异显著，先找出MⅠ比较容易，之后只需看有无同源染色体。\\n⑤“两步法”判断：第一步确认有丝分裂还是减数分裂，根据题目信息从实验材料切入，如根尖分生区细胞只能进行有丝分裂，性原细胞可进行有丝分裂或减数分裂；第二步再根据染色体的行为（有丝分裂）或染色体的分布特点（减数分裂）判断具体时期。细胞轮廓明显的图像还可根据细胞数目判断MⅠ、MⅡ——MⅠ的染色体分布在一个细胞中，MⅡ的染色体分布在两个细胞中。\\n⑥分裂方式是否均等的判断：均等分裂也常作为细胞分裂时期及细胞类型的判断依据，处于减数分裂中的细胞，形成精子的过程中细胞均等分裂，形成卵细胞的过程中细胞存在不均等分裂，但第一极体在减数分裂Ⅱ中也是均等分裂。\\n⑦显微图像的判断：有丝分裂图中染色体比较清晰，减数分裂图中连染色体的形态都看不清，此时一定要重视题目文字的补充，判断原则也和模式图大有不同。如某题配图只能看出细胞处在中期、无法判断具体时期，但文字信息“四分体”则能明确提示该细胞处在MⅠ的中期。\\n⑧适用范围：“三秒法”适用于二倍体的细胞分裂图像判断；对于单倍体和四倍体而言染色体组数不同，分裂时细胞特点也不同，如仅有一个染色体组的单倍体细胞的有丝分裂过程也不含同源染色体，同源四倍体生物细胞处于MⅡ时也含有同源染色体；MⅠ、MⅡ分别指减数第一次分裂、减数第二次分裂。",
+   "boundaryMarkdown": "“三秒法”只适用于二倍体细胞的图像判断，单倍体与四倍体细胞的同源染色体情况不同；显微照片要结合题干文字信息，不能仅凭图像形态下结论；着丝粒分裂使染色体数目加倍发生在有丝分裂后期与减数分裂Ⅱ后期，不要与核DNA加倍混淆。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3dd32e4bb8:biology",
+   "sourceLocator": "桌面资料 06-【生物】2027版高中《解题觉醒》 / 06-【生物】2027版高中《解题觉醒》/生物解题觉醒-第2册 名师大招册.pdf（块 26746c92ba-063）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞分裂时期的判断方法",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-bio-26746c92ba-069",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "分裂异常的口诀与逆推判断",
+   "summaryMarkdown": "相同MⅠ不同MⅡ定异常时期，再由异常配子的基因型逆推发生异常的时期",
+   "applicabilityMarkdown": "配子基因型异常、染色体数目异常的成因分析题",
+   "contentMarkdown": "①解题思想：同源互补，姐妹相同，这一基本逻辑同样用来判断分裂异常。\\n②异常问题的口诀：相同MⅠ，不同MⅡ。若同一个次级精母细胞（或第一极体）产生的子细胞均相同，则减数分裂Ⅰ异常；若同一个次级精母细胞（或第一极体）产生的子细胞不相同，则减数分裂Ⅱ异常。\\n③口诀也适用于由细胞分裂异常导致的基因型异常，可通过逆推法推断异常细胞产生的原因（以基因型为Aa的生物为例，不考虑基因突变和互换）：若配子中出现Aa，则减数分裂Ⅰ一定异常；若配子中出现AA或aa，则减数分裂Ⅱ一定异常；若配子中出现AAa或Aaa，则减数分裂Ⅰ和减数分裂Ⅱ均异常；若配子中无基因A和a，则可能是减数分裂Ⅰ或减数分裂Ⅱ异常。\\n④未来可期：该类型题的本质还是减数分裂时染色体的行为变化，现在的高考题目越来越新颖，很多题目的信息比常规思路复杂很多，解题只依靠基本逻辑和口诀是不行的；还需要从根本上理解染色体变化的逻辑，并理解题目信息与基本逻辑的关系，才能解决更复杂的真题。",
+   "boundaryMarkdown": "口诀的前提是不考虑基因突变和互换，若题干允许互换或突变则不能直接用口诀判断；判断“相同”时应按来自同一个次级性母细胞的子细胞比较，跨次级性母细胞的子细胞不适用；无A和a的配子可能来自MⅠ也可能是MⅡ异常，不能一律判为MⅠ异常。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3dd32e4bb8:biology",
+   "sourceLocator": "桌面资料 06-【生物】2027版高中《解题觉醒》 / 06-【生物】2027版高中《解题觉醒》/生物解题觉醒-第2册 名师大招册.pdf（块 26746c92ba-069）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:减数分裂异常的原因分析",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-bio-cfff2e6c9b-003h",
+   "subject": "BIOLOGY",
+   "type": "REPRESENTATION_GUIDE",
+   "title": "常见实验的试剂与颜色变化",
+   "summaryMarkdown": "汇总十个常考实验中试剂与检测对象对应的颜色变化",
+   "applicabilityMarkdown": "实验现象判断与试剂选用类题目",
+   "contentMarkdown": "①斐林试剂用于检测生物组织中的糖类（还原糖），颜色变化为蓝色→棕色→砖红色；双缩脲试剂用于检测生物组织中的蛋白质，颜色变化为浅蓝色→紫色。\\n②苏丹Ⅲ用于检测生物组织中的脂肪，颜色变为橘黄色；碘液用于检测生物组织中的淀粉，颜色变为蓝色。\\n③溴麝香草酚蓝溶液用于探究酵母菌细胞呼吸的方式，检测CO₂，颜色变化为蓝色→绿色→黄色；（酸性）重铬酸钾溶液用于检测酒精，颜色变化为橙色→灰绿色。\\n④甲紫溶液（醋酸洋红液）用于观察根尖分生区组织细胞的有丝分裂，使染色体呈深色；台盼蓝用于鉴定活细胞或死细胞，活细胞不着色、死细胞显蓝色；刚果红用于分解纤维素的微生物的分离，与纤维素反应显红色；二苯胺用于DNA的粗提取与鉴定，与DNA反应显蓝色。\\n⑤记忆技巧：把试剂与检测对象成对记忆，注意区分斐林试剂与双缩脲试剂的成分和使用条件——斐林试剂需水浴加热且现配现用，双缩脲试剂先加A液再加B液、不需加热。",
+   "boundaryMarkdown": "颜色变化要与试剂和检测对象一一对应，不能用斐林试剂的砖红色描述双缩脲反应；台盼蓝是活体染色，活细胞不着色，不能反用；甲紫溶液使染色体深色是针对已解离的根尖细胞。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3dd32e4bb8:biology",
+   "sourceLocator": "桌面资料 06-【生物】2027版高中《解题觉醒》 / 06-【生物】2027版高中《解题觉醒》/生物要点觉醒.pdf（块 cfff2e6c9b-003）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:常见实验试剂与颜色变化",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-bio-cfff2e6c9b-004",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "15个必会的实验技术与方法",
+   "summaryMarkdown": "汇总高中生物常用实验技术与方法的用途，含观察、分离、标记、调查与控制条件",
+   "applicabilityMarkdown": "实验方法选择与实验设计类题目",
+   "contentMarkdown": "①显微观察法：观察多种多样的细胞、观察叶绿体、观察细胞有丝分裂、观察细胞减数分裂、观察质壁分离和复原、观察染色体变异等。\\n②差速离心法：分离细胞器；密度梯度离心法：用¹⁵N标记DNA，含¹⁵N的DNA比含¹⁴N的DNA密度大，利用离心技术在试管中区分含有不同相对原子质量的氮元素的DNA，进而证明DNA是半保留复制。\\n③对比实验：设置两个或两个以上的实验组，通过对结果的比较分析探究某种因素对实验对象的影响，如探究酵母菌细胞呼吸的方式时设置有氧和无氧两种条件。\\n④染色法：碘染色法证明光合作用产生淀粉；台盼蓝染色法鉴定死细胞与活细胞。同位素标记法：分泌蛋白的合成与运输（³H标记）、探究光合作用中释放的氧气的来源（¹⁸O标记）、探究暗反应中碳元素的去向（¹⁴C标记）、T2噬菌体侵染细菌实验（³²P、³⁵S标记）等。纸层析法：绿叶中色素的分离，原理是不同色素在层析液中的溶解度不同，溶解度高的色素随层析液在滤纸上扩散得快。\\n⑤梯度设置实验：探究生长素类调节剂促进插条生根的最适浓度、探究影响酶活性的最适温度和最适合pH。补充法：如用饲喂法研究甲状腺激素、性激素等的作用，用注射法研究胰岛素和生长激素的作用等。摘除法：如用摘除法研究性激素、甲状腺激素或生长激素的作用等。\\n⑥调查类方法：样方法用于估算植物及活动能力弱的动物（如蚜虫）等的种群密度；标记重捕法用于估算活动能力强、活动范围广的动物的种群密度；取样器取样法用于研究土壤中小动物类群的丰富度；抽样检测法用于探究培养液中酵母菌种群数量的变化。\\n⑦控制实验条件的方法：增加溶液中O₂可泵入空气或放入绿色植物；除去溶液中O₂可用煮沸后冷却的溶液并用油膜覆盖；除去装置中CO₂可在密闭实验装置中放入NaOH溶液或KOH溶液；维持装置中CO₂可在密闭装置中放入NaHCO₃溶液；排除植物光合作用对呼吸作用的干扰可采用遮光处理。",
+   "boundaryMarkdown": "不同方法的适用对象不同，如样方法适用于植物和活动能力弱的动物、标记重捕法适用于活动能力强且范围广的动物；同位素标记要选择待测物质特有的元素，并且要区分是否有放射性。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3dd32e4bb8:biology",
+   "sourceLocator": "桌面资料 06-【生物】2027版高中《解题觉醒》 / 06-【生物】2027版高中《解题觉醒》/生物要点觉醒.pdf（块 cfff2e6c9b-004）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:生物学实验技术与方法",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-bio-26746c92ba-087",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "遗传学实验设计的核心与交配方式选择",
+   "summaryMarkdown": "遗传实验设计以假说—演绎法为核心，先选恰当的交配方式，使亲子代形成一一对应关系，再据后代判断亲代。",
+   "applicabilityMarkdown": "题目要求设计实验验证某遗传假说、鉴定某显性个体是纯合子还是杂合子，或判断基因的位置。",
+   "contentMarkdown": "### 实验设计的核心：假说—演绎法\\n古典遗传学的基本研究方法是假说—演绎法，它是遗传学实验设计的核心：在提出假说之后，通过恰当的实验设计进行假说的演绎推理，然后进行实验验证，就可以严谨地论证假说的真伪。遗传题中的实验设计类题也是这个逻辑，题目要求通过合理的实验设计验证某一遗传学假说，实验设计的合理性决定验证的有效性。\\n\\n### 解题思想：交配方式决定亲子代对应关系\\n遗传学实验设计有两个核心，第一个是选择恰当的交配方式，第二个是亲子代的对应关系。恰当的交配方式设计，可以让亲代和子代形成一一对应的关系，由此验证亲代的基因或性状问题。\\n例如鉴定某一显性个体的基因型是 AA 还是 Aa：先选择交配方式为自交或测交，此个体的基因型若为 AA，则后代只有显性性状；基因型若为 Aa，则后代既有显性性状又有隐性性状，此时就形成了亲子代间的一一对应关系，从而对亲代个体的基因型进行鉴定。\\n\\n### 常用交配方式的选择\\n- 自交：对植物最简便，用于判断显隐性、鉴定纯合子与杂合子、提高纯合度；\\n- 测交：更适用于动物，用隐性纯合子作亲本，据后代是否出现隐性性状判断待测个体；\\n- 正交与反交：用于判断基因位于细胞核还是细胞质、位于常染色体还是 X 染色体。",
+   "boundaryMarkdown": "交配方式要与实验材料匹配（自交适用于雌雄同体的植物，动物只能用测交或杂交）；“一一对应”要求后代数量足够多，否则分离比会偏离理论值；设计题要写出预期结果与结论两种情况，不能只写操作步骤。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3dd32e4bb8:biology",
+   "sourceLocator": "桌面资料 06-【生物】2027版高中《解题觉醒》 / 06-【生物】2027版高中《解题觉醒》/生物解题觉醒-第2册 名师大招册.pdf（块 26746c92ba-087）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:遗传学实验设计的思路与方法",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-bio-26746c92ba-088",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "性状显隐性的两条判断路径",
+   "summaryMarkdown": "由子代性状判断（不同性状亲本杂交后代只出现一种性状则该性状为显性）或由子代性状比判断（3:1 中的 3、9:3:3:1 中的 9 为显性）。",
+   "applicabilityMarkdown": "题干只给出杂交后代的表现型或分离比，要求判断显隐性关系或判断亲本是否为纯合子。",
+   "contentMarkdown": "### 路径一：根据子代性状判断\\n- 不同性状的亲本杂交，后代只出现一种性状 $\\\\rightarrow$ 后代性状为显性性状，具有这一性状的亲本为显性纯合子；\\n- 相同性状的亲本杂交，后代出现不同于亲本的性状 $\\\\rightarrow$ 不同于亲本的性状为隐性性状，亲本都为杂合子。\\n\\n### 路径二：根据子代性状比判断\\n- 具有一对相对性状的亲本杂交，$F_1$ 自交子代性状比为 $3:1$ $\\\\rightarrow$ 性状比中“3”对应的性状为显性性状；\\n- 具有两对相对性状的亲本杂交，$F_1$ 自交子代性状比为 $9:3:3:1$ $\\\\rightarrow$ 性状比中“9”对应的两性状都为显性性状。\\n\\n### 使用要点\\n“相同性状亲本杂交出现新性状”是判断隐性最直接的依据，与系谱图中“无中生有为隐性”同理；判断结果要落到“谁为显性、谁为隐性、亲本为纯合子还是杂合子”三句话上。",
+   "boundaryMarkdown": "“后代只出现一种性状”必须建立在子代数量足够多的基础上，少量后代不能排除隐性基因；出现 3:1 的前提是亲本为杂合子且完全显性；若表现为不完全显性或共显性，则不能用 3:1 判断显隐性。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3dd32e4bb8:biology",
+   "sourceLocator": "桌面资料 06-【生物】2027版高中《解题觉醒》 / 06-【生物】2027版高中《解题觉醒》/生物解题觉醒-第2册 名师大招册.pdf（块 26746c92ba-088）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:性状显隐性的判断",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-bio-26746c92ba-088b",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "纯合子与杂合子的三种鉴定方法",
+   "summaryMarkdown": "植物用自交最简便、动物用测交，花粉鉴定法适用于能区分相对性状花粉的植物。",
+   "applicabilityMarkdown": "要求鉴定某显性个体是否为纯合子，或设计实验区分纯合子与杂合子的题目。",
+   "contentMarkdown": "### 自交法（对植物最简便）\\n若后代无性状分离，则待测个体为纯合子；若后代有性状分离，则待测个体为杂合子。\\n\\n### 测交法（更适用于动物）\\n待测个体 $\\\\times$ 隐性纯合子：若后代只有一种性状，则待测个体为纯合子；若后代显隐性性状都有，则待测个体为杂合子。\\n\\n### 花粉鉴定法\\n仅适用于有易于区分相对性状的花粉的植物。具体方法是：根据产生的花粉的类型进行判断——若产生一种类型的花粉，则为纯合子；若产生两种类型的花粉，则为杂合子。花粉类型的判断方法有多种，比如观察镜检花粉的形状或者染色情况。\\n\\n### 选择原则\\n植物优先用自交（操作最简便），动物只能用测交；花粉鉴定法要求花粉性状可直接观察或用染色区分。",
+   "boundaryMarkdown": "自交法要求待测个体能自交（雌雄同花或同株），动物不能自交；测交法要求已知隐性纯合子作亲本；花粉鉴定法只反映配子类型，不能直接说明子代情况，且只适用于花粉性状可区分的植物。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3dd32e4bb8:biology",
+   "sourceLocator": "桌面资料 06-【生物】2027版高中《解题觉醒》 / 06-【生物】2027版高中《解题觉醒》/生物解题觉醒-第2册 名师大招册.pdf（块 26746c92ba-088）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:纯合子与杂合子的判断",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-bio-26746c92ba-088c",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "基因位于细胞质还是细胞核等的判断",
+   "summaryMarkdown": "正反交结果相同说明基因位于细胞核中、结果不同且与母本一致则为细胞质遗传；判断 X 染色体还是常染色体可用隐性雌与显性雄杂交或正反交。",
+   "applicabilityMarkdown": "题干给出正反交结果或杂交后代的表现型，要求判断基因位于细胞质还是细胞核、位于常染色体还是 X 染色体。",
+   "contentMarkdown": "### 判断基因位于细胞质中还是细胞核中（不考虑基因在性染色体上）\\n选择具有相对性状的亲本进行正、反交：\\n- 结果相同 $\\\\rightarrow$ 基因位于细胞核中；\\n- 结果不同（与相应的母本一致）$\\\\rightarrow$ 基因位于细胞质中。\\n\\n### 判断基因位于 X 染色体上还是常染色体上\\n| 前提条件 | 亲本选择 | 交配方式 | 后代表现及结论 |\\n|---|---|---|---|\\n| 相对性状的显隐性关系已知 | 雌性隐性纯合 $\\\\times$ 雄性显性纯合 | 杂交 | 后代雄性全为隐性个体、雌性全为显性个体 $\\\\rightarrow$ 基因位于 X 染色体上；雌雄个体中显隐性出现的概率相同（显隐性的比例与性别无关）$\\\\rightarrow$ 基因位于常染色体上 |\\n| 相对性状的显隐性关系未知 | 具有相对性状的纯合亲本 | 正、反交 | 结果相同 $\\\\rightarrow$ 基因位于常染色体上；结果不同 $\\\\rightarrow$ 基因位于 X 染色体上 |\\n\\n### 使用要点\\n显隐性已知时用隐性雌与显性雄一次杂交即可判断；显隐性未知时用正反交；结论要与题干给出的具体表现型对应书写。",
+   "boundaryMarkdown": "正反交结果不同不一定是细胞质遗传，也可能是伴性遗传，需结合后代表现与性别的关系进一步区分；“与母本一致”是细胞质遗传（母系遗传）的关键特征；判断基因在常染色体上时要注意“与性别无关”指的是显隐性出现的概率与性别无关。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3dd32e4bb8:biology",
+   "sourceLocator": "桌面资料 06-【生物】2027版高中《解题觉醒》 / 06-【生物】2027版高中《解题觉醒》/生物解题觉醒-第2册 名师大招册.pdf（块 26746c92ba-088）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:基因位置的判断方法",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-bio-26746c92ba-090",
+   "subject": "BIOLOGY",
+   "type": "METHOD_MODEL",
+   "title": "遗传实验设计的思想延伸",
+   "summaryMarkdown": "遗传实验设计的核心是自变量与因变量的关系，交配方式只是实验手段，自交、测交、杂交只要能说明问题都是合理的实验设计。",
+   "applicabilityMarkdown": "需要自行设计实验方案验证遗传学假说，或评价某实验方案是否合理的题目。",
+   "contentMarkdown": "### 思想延伸一：回到自变量与因变量\\n遗传的实验设计和其他部分的实验设计没有本质的区别，核心实际上还是自变量和因变量的关系：实验探究对象的表现、交配方式（如自交、杂交等）是自变量，而通过自交、杂交等实验得到的结果是因变量，实验设计是实验手段。通过合理的实验设计，最终可以找到自变量和因变量的关系，由此可以把实验探究类题目统一到一个相同的框架下进行分析。做遗传学实验分析时，也应按照常规的实验分析思路，分析自变量和因变量的关系。\\n\\n### 思想延伸二：不局限于特定方案\\n孟德尔和摩尔根在设计实验探索遗传学基本定律时，验证的方式不只有测交实验，也通过自交、杂交等方式进行了验证。遗传学实验设计并不拘泥于特定的方案，只要能说明相关问题，都是合理的实验设计。\\n\\n### 落地提示\\n作答时先明确“要判断什么”（显隐性、纯合杂合、基因位置、是否遵循自由组合），再选能造成亲子代一一对应的交配方式，最后写出预期结果与结论。",
+   "boundaryMarkdown": "设计实验时自变量应控制为单一变量（如只改变交配方式或只改变亲本性状），否则无法归因；结论要写成“若……则……”的形式并与预期结果一一对应；不能因为教材用了测交就认为只有测交是合理的，自交、杂交、正反交都可作为手段。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-3dd32e4bb8:biology",
+   "sourceLocator": "桌面资料 06-【生物】2027版高中《解题觉醒》 / 06-【生物】2027版高中《解题觉醒》/生物解题觉醒-第2册 名师大招册.pdf（块 26746c92ba-090）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:遗传学实验设计的思路与方法",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-bio-eaaa47c6d7-003b",
+   "subject": "BIOLOGY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "遗传学核心术语速记",
+   "summaryMarkdown": "性状、相对性状、显隐性性状、性状分离、显隐性遗传因子、纯合子与杂合子的定义与书写规范。",
+   "applicabilityMarkdown": "判断相对性状、显隐性性状、纯合子与杂合子等概念辨析题，以及解释杂合子自交后代出现性状分离的现象。",
+   "contentMarkdown": "(1) 性状：生物体的形态特征和生理特性。\\n(2) 相对性状：一种生物的同一性状的不同表现类型（判断要素：同种生物、同一性状、不同表现）。\\n(3) 显性性状：F1 中表现出来的性状（例：高茎）。\\n(4) 隐性性状：F1 中未表现出来的性状（例：矮茎）。\\n(5) 性状分离：杂种后代中，同时出现显性和隐性性状的现象。\\n(6) 显性遗传因子：用大写字母表示（例：D）。\\n(7) 隐性遗传因子：用小写字母表示（例：d）。\\n(8) 纯合子：遗传因子组成相同（例：高茎 DD、矮茎 dd）。\\n(9) 杂合子：遗传因子组成不同（例：高茎 Dd）。\\n\\n【记忆点】杂合子（Dd）自交，后代出现性状分离。",
+   "boundaryMarkdown": "“相对性状”必须同时满足同种生物、同一性状、不同表现三个要素（兔的长毛与短毛是相对性状，兔的长毛与狗的长毛不是）；纯合子与杂合子只看遗传因子组成是否相同，与表现型无关；显隐性遗传因子用同一字母的大小写表示。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-2452b2cbe4:biology",
+   "sourceLocator": "桌面资料 6. 2026生物总复习 / 6. 2026生物总复习/2027年新高考资料【上新中】/2027年高考生物一轮/2027年高考生物一轮复习知识清单（全国通用）-G56/2027版/第15讲 分离定律（图文版知识清单）.pdf（块 eaaa47c6d7-003）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:遗传学核心概念与术语",
      "role": "PRIMARY"
     }
    ]

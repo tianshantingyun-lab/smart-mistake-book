@@ -12,7 +12,7 @@
    "sourceUri": "https://www.example.edu/material",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "6DCF1A9BC0E800977EB63197DD4221A6BAF056E53ED9DE6985AF31D900FF25F5",
-   "importedAtEpochMillis": 1784908800000,
+   "importedAtEpochMillis": 1784908740000,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -28,7 +28,7 @@
    "sourceUri": "https://www.example.edu/material",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "AE0F0750E5ECC4A52A0CFCEE8D39BCD6F1A2744F8DE917C8978664A009A34B4C",
-   "importedAtEpochMillis": 1784908800000,
+   "importedAtEpochMillis": 1784908740000,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -44,7 +44,7 @@
    "sourceUri": "https://www.example.edu/desktop-kb-source",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "DA44D7822E4E91D760B228E72495E4CE137101298124C0695FF0474FDFBE032B",
-   "importedAtEpochMillis": 1789669649286,
+   "importedAtEpochMillis": 1789669590286,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -60,7 +60,7 @@
    "sourceUri": "https://www.example.edu/desktop-kb-source",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "D45C35EA10D42D32A8A0A578557911B78B313C048345E31D7AB2381426DFFAA0",
-   "importedAtEpochMillis": 1789732985467,
+   "importedAtEpochMillis": 1789732926467,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -76,7 +76,7 @@
    "sourceUri": "https://www.example.edu/desktop-kb-source",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "25ACA917ED65BEC02141841019A23530CB07CA7F2004AF86BAF310C50D2B4D38",
-   "importedAtEpochMillis": 1789739866250,
+   "importedAtEpochMillis": 1789739807250,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -92,7 +92,7 @@
    "sourceUri": "https://www.example.edu/wusan-2027-a-jingjiang",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "222220C701A42B3E54A3AB7F5C17C4AEF53BC2C01FA5658CE86F03698C829C1D",
-   "importedAtEpochMillis": 1784908800000,
+   "importedAtEpochMillis": 1784908740000,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -108,7 +108,7 @@
    "sourceUri": "https://www.example.edu/wusan-2027-a-jingjiang",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "377D44166DBA34CCB0FD1356B741DB203AD37833B0E7644BAF15A9627B7FC743",
-   "importedAtEpochMillis": 1784908800000,
+   "importedAtEpochMillis": 1784908740000,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -124,7 +124,7 @@
    "sourceUri": "https://www.example.edu/desktop-kb-source",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "1959862E778D2A1D7D2EE9090A0A63B43B58107476639538E7E8AC1B178E0645",
-   "importedAtEpochMillis": 1789743761720,
+   "importedAtEpochMillis": 1789743702720,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -140,7 +140,23 @@
    "sourceUri": "https://www.example.edu/desktop-kb-source",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "76E45DFAA54E87666698DBFB15E71C331C3C7336A9F486CD7BD1E6E4FE13483D",
-   "importedAtEpochMillis": 1789739845865,
+   "importedAtEpochMillis": 1789739786865,
+   "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
+   "licenseExpression": null,
+   "licenseUri": null,
+   "attributionText": "桌面教辅资料直抽改写（REVIEWED_SYNTHESIS），仅内部教学参考。"
+  },
+  {
+   "sourceId": "desktop-src-5b2dfb6dc5:physics",
+   "subject": "PHYSICS",
+   "sourceType": "AUTHORIZED_EDUCATION_MATERIAL",
+   "title": "桌面教辅资料 · 04-【物理】2027版高中《解题觉醒》",
+   "publisher": "教辅汇编（桌面原始资料）",
+   "edition": "2026/2027版",
+   "sourceUri": "https://www.example.edu/desktop-kb-source",
+   "licenseStatus": "REFERENCE_ONLY",
+   "contentFingerprint": "08CB3F21BEE3E91BF55B9676C60B4868875956279344CFC30DE0798AC5AEDCBF",
+   "importedAtEpochMillis": 1789757064890,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -6534,6 +6550,506 @@
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:抛体运动的规律及其应用",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-phy-b6bd732b19-009",
+   "subject": "PHYSICS",
+   "type": "REPRESENTATION_GUIDE",
+   "title": "画线段图定位中间时刻速度",
+   "summaryMarkdown": "多段位移与时间并存时，用线段图标出每段的中间时刻，避免把求出的瞬时速度对应错位置。",
+   "applicabilityMarkdown": "已知连续两段（或多段）位移 $x_1$、$x_2$ 及各自所用时间 $T_1$、$T_2$，需要求加速度时。",
+   "contentMarkdown": "**易错点**：给了多段位移和时间时，$x_1/T_1$ 与 $x_2/T_2$ 分别是哪一点的瞬时速度容易对应错。\\n\\n**做法**：画一条简单线段图，把每段位移的中点（中间时刻）标出来。物体由 $A$ 经 $B$ 到 $C$，$D$、$E$ 分别是 $AB$ 段、$BC$ 段的中间时刻位置，则 $\\frac{x_1}{T_1}$ 就是 $D$ 点的瞬时速度，$\\frac{x_2}{T_2}$ 就是 $E$ 点的瞬时速度。\\n\\n**衔接**：$D$ 与 $E$ 的时间间隔 $t_{DE}=\\frac{T_1}{2}+\\frac{T_2}{2}=\\frac{T_1+T_2}{2}$，再由速度时间公式 $v_E=v_D+at_{DE}$ 即可求加速度。当两段位移相等且均为 $\\Delta x$ 时得 $a=\\frac{v_E-v_D}{t_{DE}}=\\frac{2\\Delta x(t_1-t_2)}{t_1t_2(t_1+t_2)}$。",
+   "boundaryMarkdown": "线段图只是帮助定位，真正的计算依据仍是均速法（$v_{t/2}=\\bar v$）与匀变速公式；每段位移都必须对应同一段匀变速过程；两段之间若运动性质改变（如中间已达最大速度并转匀速），不能再用同一个 $a$ 联立。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-5b2dfb6dc5:physics",
+   "sourceLocator": "桌面资料 04-【物理】2027版高中《解题觉醒》 / 04-【物理】2027版高中《解题觉醒》/物理解题觉醒-第2册 名师大招册.pdf（块 b6bd732b19-009）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:线段图定位中间时刻速度",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-phy-b6bd732b19-016",
+   "subject": "PHYSICS",
+   "type": "METHOD_MODEL",
+   "title": "0-v-0 模型的分段与全程结论",
+   "summaryMarkdown": "物体从静止先匀加速到最大速度再匀减速到零，两段的时间与位移之比等于两段加速度的反比，最大速度等于全程平均速度的两倍。",
+   "applicabilityMarkdown": "物体从静止开始先匀加速后匀减速直到停止的多过程问题，如刹车、无人机升降、跳伞、滑行一段后停下等。",
+   "contentMarkdown": "**识别标志**：物体的初速度为 0，先匀加速到某一速度 $v$，紧接着做匀减速直线运动直到速度减为 0。物体速度从 0 增加到 $v$ 再减小到 0，故称 $0$-$v$-$0$ 模型，其 $v$-$t$ 图像为一条折线（呈三角形）。\\n\\n**分段结论**：$\\frac{t_1}{t_2}=\\frac{x_1}{x_2}=\\frac{a_2}{a_1}$。推导：$v$-$t$ 图与 $t$ 轴围成的面积表示位移，加速段与减速段的三角形等高，故面积之比等于底边之比，即 $\\frac{x_1}{x_2}=\\frac{t_1}{t_2}$；又 $a_1=\\frac{v_m}{t_1}$、$a_2=\\frac{v_m}{t_2}$，于是 $\\frac{a_2}{a_1}=\\frac{t_1}{t_2}$，联立得结论。即分段的时间与位移都跟加速度成反比。\\n\\n**全程结论**：加速阶段、减速阶段和全程的平均速度相同，最大速度 $v_m=2\\bar v=\\frac{2x_总}{t_总}$。因为三个过程的中位线均对应 $v$ 轴上同一刻度 $v_中$，所以三个阶段平均速度相同；显然 $v_m=2v_中=2\\bar v$，再由 $\\bar v=\\frac{x_总}{t_总}$ 得 $v_m=\\frac{2x_总}{t_总}$。\\n\\n**解题提醒**：题目问的是某一段的物理量，就用分段结论分析；问全过程的相关物理量，就用全程结论分析。",
+   "boundaryMarkdown": "只适用于中间只经历一次加速—减速转换、且初末速度都为零的过程；全程结论中的 $\\bar v$ 必须是全程平均速度，不能取某一段的平均速度；若中间还夹有匀速段，则三大阶段的平均速度不再相同，两个结论都不成立；加速与减速是两段不同的匀变速过程，各自的 $a$、$t$、$x$ 必须分开设量。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-5b2dfb6dc5:physics",
+   "sourceLocator": "桌面资料 04-【物理】2027版高中《解题觉醒》 / 04-【物理】2027版高中《解题觉醒》/物理解题觉醒-第2册 名师大招册.pdf（块 b6bd732b19-016）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:0-v-0模型",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-phy-b6bd732b19-017b",
+   "subject": "PHYSICS",
+   "type": "METHOD_MODEL",
+   "title": "消参法巧选多段方程",
+   "summaryMarkdown": "多段运动每段先写速度公式与位移公式，再消去题目没有提及的物理量，从而减少需要联立的方程数量。",
+   "applicabilityMarkdown": "多段匀变速直线运动问题中未知量多、直接联立方程过于繁琐时；需要用速度衔接两段运动时。",
+   "contentMarkdown": "**基础**：运动的每一段都可以直接写出 $v_t=v_0+at$ 与 $x=v_0t+\\frac{1}{2}at^2$ 这两个方程，它们适用范围最广、是最基本的式子。\\n\\n**消参原则**：消去两段运动过程中题目没有提及的物理量。\\n\\n**操作**：对每一段，把涉及的量分成已知量、待求量、题目未提及的量，凡未被提及的量（通常是本段的时间）就通过换成位移—速度关系式把它消掉。\\n\\n**示例**：质点沿直线 $ABC$ 做匀变速直线运动，从 $A$ 到 $B$ 速度增加 4 m/s，从 $B$ 到 $C$ 速度增加 12 m/s，已知 $x_{AB}=6$ m、$x_{BC}=42$ m，求加速度。$AB$ 段中 $v_A$ 不能消、$x_{AB}$ 为已知量不能消、$a$ 是待求量不能消、$t_1$ 未提及应消去，故列 $v_B^2-v_A^2=2ax_{AB}$；$BC$ 段同理列 $v_C^2-v_B^2=2ax_{BC}$；再联立 $v_B=v_A+4$ m/s、$v_C=v_B+12$ m/s，解得 $a=4$ m/s²。\\n\\n**两点提醒**：① 消参后得到的方程仍是五个核心方程之一，方法熟练后可以直接选写消参后的方程；② 若物体运动的某一段为匀速运动，那一段只列 $x=vt$ 即可。",
+   "boundaryMarkdown": "只能在同一段匀变速过程内部消去未提及的量；各段加速度不同时必须分别设 $a_1$、$a_2$，不能把不同段的加速度当成同一个；消参后剩余方程要与该段的已知量匹配，否则要从已知条件补关系；匀速段用 $x=vt$ 处理，不套用匀变速公式。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-5b2dfb6dc5:physics",
+   "sourceLocator": "桌面资料 04-【物理】2027版高中《解题觉醒》 / 04-【物理】2027版高中《解题觉醒》/物理解题觉醒-第2册 名师大招册.pdf（块 b6bd732b19-017）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:消参法",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-phy-b6bd732b19-028",
+   "subject": "PHYSICS",
+   "type": "METHOD_MODEL",
+   "title": "全反力与摩擦角巧解四力平衡",
+   "summaryMarkdown": "把支持力与摩擦力合成一个全反力，四力平衡就化为三力平衡，全反力方向固定且与支持力的夹角满足 tanθ=μ。",
+   "applicabilityMarkdown": "物体受四个力平衡、其中一个力为支持力、一个力为滑动摩擦力时，求除支持力、摩擦力和重力之外的第四个力的大小与方向，或求动摩擦因数。",
+   "contentMarkdown": "**全反力**：支持力与摩擦力的合力称为全反力（记为 $F_R$）。滑动摩擦力 $f=\\mu N$，$f$ 与 $N$ 的方向垂直；若动摩擦因数 $\\mu$ 不变，则 $f$ 与 $N$ 成比例增大或减小，全反力 $F_R$ 的方向不变。\\n\\n**摩擦角**：当物体处于滑动状态时，全反力 $F_R$ 与支持力 $N$ 的夹角称为摩擦角（记为 $\\theta$），其正切值 $\\tan\\theta=\\frac{f}{N}=\\mu$。对物体进行受力分析时，可以把支持力和摩擦力这两个力看成一个全反力。\\n\\n**自锁现象**：若外力与支持力 $N$ 的夹角 $\\alpha$ 小于等于摩擦角 $\\theta$，则物体自锁，无论 $F_外$ 为多大，物体都将处于静止状态。理由：物体平衡时静摩擦力不一定达到最大值，可在零与最大值之间变化，所以全反力与支持力间的夹角也在 $0°$ 与摩擦角 $\\theta$ 之间变化；若作用在物体上的力的作用线落在摩擦角 $\\theta$ 之内，则无论这个外力多大，总有一个全反力与之平衡，物体保持静止。\\n\\n**解题步骤**：① 化四为三——将支持力与摩擦力合为全反力，四力平衡转化为三力平衡；② 求外力的最小值时，使用动态平衡“斜不转模型”的口诀“转动力垂直最小，不转力画图分析”。",
+   "boundaryMarkdown": "摩擦角的正切等于动摩擦因数，只在滑动摩擦（或恰好达到最大静摩擦）时成立，静摩擦未达最大值时全反力方向可在摩擦角范围内变化；务必注意摩擦角是全反力与支持力（垂直于接触面方向）的夹角，不是全反力与竖直方向的夹角；自锁的结论要求外力作用线落在摩擦角范围之内，超出范围则不成立。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-5b2dfb6dc5:physics",
+   "sourceLocator": "桌面资料 04-【物理】2027版高中《解题觉醒》 / 04-【物理】2027版高中《解题觉醒》/物理解题觉醒-第2册 名师大招册.pdf（块 b6bd732b19-028）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:全反力与摩擦角",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-phy-b6bd732b19-037",
+   "subject": "PHYSICS",
+   "type": "METHOD_MODEL",
+   "title": "降维法巧解三维空间中的平衡问题",
+   "summaryMarkdown": "物体受不在同一平面内的力平衡时，把三维图化为二维图，选相互垂直的两个平面分别列平衡式求解。",
+   "applicabilityMarkdown": "处于平衡状态的物体受到的力不在同一平面内（如物块在斜置平板上沿斜线方向运动、受空间三根绳拉力等）时。",
+   "contentMarkdown": "**识别**：处于平衡状态的物体受到的力不在同一平面内。\\n\\n**困难**：力不在同一平面内时，很多人不知如何画受力图；即使把所有力画在同一平面内，也很难列出受力平衡方程。\\n\\n**降维法**：将一个三维图变成二维图，选合适的平面去观察，把物体受到的力分解到两个不同平面上再求解。观察的平面一般是正视、俯视、侧视这三个平面中的两个（即把力分解到两个相互垂直的平面；当我们正对所选的那个平面时，就可以将垂直于该平面的维度忽略，从而解决该平面的问题）。\\n\\n**用法示例**：矩形平板 $ABCD$ 的 $AD$ 边固定在水平面上，平板与水平面夹角为 $\\theta$，$AC$ 与 $AB$ 的夹角也为 $\\theta$；质量为 $m$ 的物块在平行于平板的拉力作用下沿 $AC$ 方向匀速运动，物块与平板间动摩擦因数 $\\mu=\\tan\\theta$。\\n- 从平板侧面看：物块受重力 $mg$、平板支持力 $F_N$；重力分解为沿平板向下的 $mg\\sin\\theta$ 与垂直平板向下的 $mg\\cos\\theta$，由垂直于平板方向受力平衡得 $F_N=mg\\cos\\theta$。\\n- 从垂直于平板的方向看：物块受沿平板方向的重力分量 $mg\\sin\\theta$、摩擦力 $F_f$ 及拉力 $F$；$F_f$ 与 $mg\\sin\\theta$ 的夹角为 $\\theta$，二者的合力与 $F$ 等大反向，且 $F_f=\\mu F_N$。\\n由矢量三角形可解得 $F=2mg\\sin\\theta\\cos\\frac{\\theta}{2}$。",
+   "boundaryMarkdown": "只适用于平衡（含缓慢运动）的三维受力问题；所选的观察平面应相互垂直，并能容纳全部待求的力；不同平面内的方程不能混用，$F_f=\\mu F_N$ 这类关系要在同一平面内使用；投影时要注意夹角关系（分清是夹角还是余角）。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-5b2dfb6dc5:physics",
+   "sourceLocator": "桌面资料 04-【物理】2027版高中《解题觉醒》 / 04-【物理】2027版高中《解题觉醒》/物理解题觉醒-第2册 名师大招册.pdf（块 b6bd732b19-037）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:降维法处理三维空间平衡",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-phy-b6bd732b19-044",
+   "subject": "PHYSICS",
+   "type": "METHOD_MODEL",
+   "title": "弹簧分离问题的临界特征与解题步骤",
+   "summaryMarkdown": "两物体叠放在竖直轻弹簧上被外力牵引而分离时，临界特征是加速度相同且两物体间相互作用力为零。",
+   "applicabilityMarkdown": "两个物体叠放在竖直轻弹簧（或沿斜面放置）上，在外力牵引下移动直至两物体分离，求分离时刻、分离时的弹力或劲度系数时。",
+   "contentMarkdown": "**识别**：两个物体叠放在竖直轻弹簧上，在外力牵引下移动直至两物体分离，围绕何时两物体分离展开问题。\\n\\n**受力分析与核心方程**（轻弹簧拴接 $A$、$A$ 上放着 $B$，开始时弹簧处于压缩状态，用外力 $F$ 往上拉 $B$）：\\n- 对 $B$ 列牛顿第二定律：$F+F_{AB}-m_Bg=m_Ba$；\\n- 对 $A$ 列牛顿第二定律：$F_{弹}-F_{BA}-m_Ag=m_Aa$；\\n- 根据牛顿第三定律：$F_{AB}=F_{BA}$。\\n\\n**临界特征**：两物体的加速度相同；两物体之间的相互作用力为 0。这是分离问题的破题点。\\n\\n**解题步骤**：① 分别对各物体列牛顿第二定律；② 根据条件找出接触力和加速度的关系；③ 结合两个等式和已知条件进行解答。\\n\\n**常见考法**：已知恒力 $F$ 求分离瞬间弹簧的弹力（先对整体求加速度，再隔离其中一个物体求接触力或弹力）；已知运动距离 $L$ 时分离，求弹簧的劲度系数（先求分离时与开始时弹簧弹力的变化量 $|\\Delta T|$，再由 $k=\\frac{|\\Delta T|}{L}$ 求）；判断分离前后整体加速度方向变化导致的动能变化。",
+   "boundaryMarkdown": "分离瞬间两物体仍然接触、加速度仍然相同，只是相互作用力为零；分离过程中速度始终连续，动能的变化由加速度与速度是否同向决定；求劲度系数时要用弹力变化量比位移，位移必须是沿弹簧方向的位移；弹簧不是始终处于原长，分离时弹力是否为零必须通过计算判断。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-5b2dfb6dc5:physics",
+   "sourceLocator": "桌面资料 04-【物理】2027版高中《解题觉醒》 / 04-【物理】2027版高中《解题觉醒》/物理解题觉醒-第2册 名师大招册.pdf（块 b6bd732b19-044）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:弹簧分离问题",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-phy-b6bd732b19-045",
+   "subject": "PHYSICS",
+   "type": "MISCONCEPTION_GUIDE",
+   "title": "两物体分离时弹簧不一定处于原长",
+   "summaryMarkdown": "分离瞬间的判据是两物体间作用力为零、加速度相同，而不是弹簧回到原长，弹簧弹力需要用牛顿第二定律算出。",
+   "applicabilityMarkdown": "两个物体叠放在轻弹簧上分离的问题中，判断分离时弹簧的形变状态或求分离时的弹力时。",
+   "contentMarkdown": "**易错认识**：以为两物体分离时弹簧恰好回到原长（弹力为零）。分离瞬间两物体之间的相互作用力确实为 0，但弹簧对下方物体的弹力不一定为零。\\n\\n**正确做法**：分离瞬间 $A$、$B$ 之间的相互作用力为 0、两物体加速度相同。先对其中一个物体列牛顿第二定律求出分离瞬间的加速度，再对另一个物体列式求出此时弹簧的弹力，判断它是否为零。\\n\\n**示例**：光滑斜面上（倾角 $\\theta=30°$）物块 $A$、$B$ 质量均为 $m$，用劲度系数为 $k$ 的轻弹簧连接，用大小等于 $\\frac{1}{4}mg$ 的恒力 $F$ 平行于斜面向上拉 $B$，运动距离 $L$ 时 $B$ 与 $A$ 分离。\\n- 分离瞬时 $A$、$B$ 间作用力为 0，对 $B$ 由牛顿第二定律得 $mg\\sin\\theta-F=ma$，解得 $a=\\frac{g}{4}$，方向沿斜面向下（因为重力沿斜面向下的分量大于 $F$，合力方向沿斜面向下）；\\n- 再对 $A$ 由牛顿第二定律得 $mg\\sin\\theta-T=ma$，解得此时弹簧的弹力 $T=\\frac{1}{4}mg$，不为零，因此分离时弹簧并非处于原长。\\n- 开始时弹簧弹力 $T_0=2mg\\sin\\theta=mg$，从开始到分离弹簧一直处于压缩状态，弹力变化量 $|\\Delta T|=mg-\\frac{1}{4}mg=\\frac{3}{4}mg$，故 $k=\\frac{|\\Delta T|}{L}=\\frac{3mg}{4L}$。\\n\\n**动能变化的判断**：分离前把两物块当成整体分析，开始时整体加速度沿斜面向上，分离瞬间加速度沿斜面向下；速度方向一直沿斜面向上，则 $v$ 与 $a$ 先同向后反向，整体先加速再减速，动能先增大后减小。",
+   "boundaryMarkdown": "分离瞬间加速度相同这一条件必须用上，否则无法求出弹力；弹力是否为零要靠计算判断，不能凭直觉；求劲度系数时要用弹力变化量的绝对值除以沿弹簧方向的位移；判断动能变化要看 $v$ 与 $a$ 是否同向，不能只看受力.",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-5b2dfb6dc5:physics",
+   "sourceLocator": "桌面资料 04-【物理】2027版高中《解题觉醒》 / 04-【物理】2027版高中《解题觉醒》/物理解题觉醒-第2册 名师大招册.pdf（块 b6bd732b19-045）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:弹簧分离问题",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-phy-b6bd732b19-053",
+   "subject": "PHYSICS",
+   "type": "METHOD_MODEL",
+   "title": "传送带模型：水平传送带与倾斜传送带底端放入",
+   "summaryMarkdown": "水平传送带先判断能否共速，倾斜传送带还要先判断能否被传送上去，判断方法都是比较假设共速的位移与传送带长度。",
+   "applicabilityMarkdown": "物体放在水平或倾斜传送带上，要求物体在传送带上运动的时间、离开传送带时的速度时。",
+   "contentMarkdown": "**识别**：物体放在传送带上，求物体在传送带上运动的时间、离开传送带时的速度等。\\n\\n**水平同向传送带**：小物块由静止轻放于传送带一端，物块受到沿运动方向的摩擦力开始做加速运动。\\n- 第 1 类（传送带足够长）：阶段 1 物块做匀加速运动，加速度 $a=\\mu g$，直到与传送带共速；阶段 2 物块与传送带共速后做匀速运动，两者之间无摩擦力。\\n- 第 2 类（传送带不太长）：物块与传送带还没共速就到达传送带的另一端，则物块全程做匀加速运动。\\n\\n**判断能否共速**：假设物块能与传送带共速，计算从开始到共速的位移 $x_共$（即 $v$-$t$ 图中阴影部分的面积）；设传送带长度为 $L$，若 $x_共>L$ 则不能共速；若 $x_共\\le L$ 则可以共速。结论：解决水平传送带问题，先判断物块与传送带能否共速。物块初速度不为 0 时分析方法类似，同样比较 $x_共$ 与 $L$ 的大小关系。\\n\\n**水平反向传送带**：传送带的运动方向与物块初速度方向相反，物块能在传送带上先做匀减速运动。若传送带足够长，物块能在传送带上减速到 0，接下来的问题就变成水平同向传送带问题；若传送带不够长，物块未减速到 0 就到达另一端。关键点是判断物块能否在传送带上减速到 0：假设物块可以减速到 0、且位移为 $x_零$，比较 $x_零$ 与 $L$：$x_零>L$ 时物块不能减速到 0；$x_零\\le L$ 时物块可以减速到 0。\\n\\n**倾斜传送带（物块轻放在底端）**：要想把物块传上去，需满足 $\\mu mg\\cos\\theta>mg\\sin\\theta$；共速前由牛顿第二定律有 $\\mu mg\\cos\\theta-mg\\sin\\theta=ma$，物块做匀加速运动；再比较 $x_共$ 与 $L$ 判断能否共速。",
+   "boundaryMarkdown": "判断能否共速必须用假设共速后算出的位移与传送带长度比较，不能只看受力；传送带不够长时结论完全不同，不能照搬足够长的结论；物块初速度不为 0 时 $x_共$ 要按实际初、末速度计算；倾斜传送带中摩擦力方向由物块相对传送带的运动方向决定；正压力用 $mg\\cos\\theta$，不要漏掉。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-5b2dfb6dc5:physics",
+   "sourceLocator": "桌面资料 04-【物理】2027版高中《解题觉醒》 / 04-【物理】2027版高中《解题觉醒》/物理解题觉醒-第2册 名师大招册.pdf（块 b6bd732b19-053）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:传送带模型",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-phy-b6bd732b19-054",
+   "subject": "PHYSICS",
+   "type": "METHOD_MODEL",
+   "title": "传送带模型：倾斜顶端放入与关键点总结",
+   "summaryMarkdown": "物块轻放在倾斜传送带顶端时，先判断能否共速，再比较重力分量与最大静摩擦力判断共速后能否一起匀速。",
+   "applicabilityMarkdown": "物块轻放于倾斜传送带顶端，求运到另一端的时间或判断共速后的运动状态时。",
+   "contentMarkdown": "**倾斜传送带：物块轻放在顶端**\\n1. 传送带向上转动（沿斜面向上）：要使物块下滑，需满足 $\\mu mg\\cos\\theta<mg\\sin\\theta$，此时摩擦力沿斜面向上，加速度 $a=g\\sin\\theta-\\mu g\\cos\\theta$；\\n2. 传送带向下转动（沿斜面向下）：放上物块后物块做匀加速运动，摩擦力沿斜面向下，对物块由牛顿第二定律有 $\\mu mg\\cos\\theta+mg\\sin\\theta=ma$。\\n\\n**能否共速**：判断方法同水平传送带，比较 $x_共$ 与 $L$ 的大小关系。\\n\\n**共速后能否一起匀速运动**：若 $\\mu mg\\cos\\theta\\ge mg\\sin\\theta$，两者一起匀速运动；若 $\\mu mg\\cos\\theta<mg\\sin\\theta$，物块继续在传送带上做加速运动，由牛顿第二定律有 $mg\\sin\\theta-\\mu mg\\cos\\theta=ma'$。\\n\\n**传送带问题关键点总结**\\n1. 水平同向传送带：判断能否共速；\\n2. 水平反向传送带：判断物块能否减速到 0；\\n3. 物块轻放在倾斜传送带底端：判断能否共速；\\n4. 物块轻放在倾斜传送带顶端：先判断能否共速，后判断共速后物块能否匀速运动。",
+   "boundaryMarkdown": "倾斜传送带中摩擦力的方向由物块与传送带的相对运动方向决定，传送带转向不同摩擦力方向可能相反，不能套用同一个加速度；共速后能否匀速要用 $\\mu mg\\cos\\theta$ 与 $mg\\sin\\theta$ 比较；共速后若继续加速，加速度公式中的摩擦力方向要按新的相对运动方向重新判断；所有比较都以传送带足够长为前提，实际长度不够时要重新分析。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-5b2dfb6dc5:physics",
+   "sourceLocator": "桌面资料 04-【物理】2027版高中《解题觉醒》 / 04-【物理】2027版高中《解题觉醒》/物理解题觉醒-第2册 名师大招册.pdf（块 b6bd732b19-054）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:传送带模型",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-phy-b6bd732b19-055",
+   "subject": "PHYSICS",
+   "type": "METHOD_MODEL",
+   "title": "传送带上摩擦痕迹长度的计算",
+   "summaryMarkdown": "物块在传送带上留下的摩擦痕迹长度等于物块与传送带之间的相对位移大小，用两者的位移之差计算。",
+   "applicabilityMarkdown": "求物块在传送带上留下的摩擦痕迹（划痕）长度，或比较痕迹长度与物块位移、传送带位移的关系时。",
+   "contentMarkdown": "**概念**：物体在传送带上留下的摩擦痕迹（划痕）长度等于物块与传送带之间的相对位移的大小，即 $\\Delta x=|x_物-x_带|$。\\n\\n**计算步骤**：① 先按传送带模型的分析流程判断物块与传送带能否共速；② 求出从放上物块到共速（或到达另一端）这段时间内物块的位移与传送带的位移；③ 两者运动方向相同时取两段位移之差的绝对值，方向相反时相当于两者位移大小相加。\\n\\n**示例结论**：物块轻放后先匀加速（$a=\\mu g$），若能与传送带共速，则加速时间 $t_1=\\frac{v}{a}$、物块位移 $x_共=\\frac{1}{2}at_1^2$、传送带位移 $x_带=vt_1$，痕迹长度 $\\Delta x=vt_1-x_共$；若共速时传送带立刻停止运动，物块随后做匀减速运动、位移为 $\\frac{v^2}{2a}$，此时两段痕迹重合，痕迹长度取两段中较长者。",
+   "boundaryMarkdown": "痕迹长度是相对位移，既不是物块位移也不是传送带位移；物块与传送带反向运动时相对位移是两者位移大小之和；分两段运动时若痕迹重合，总长度不是两段长度相加；必须先判断能否共速，否则位移算错、痕迹长度也错。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-5b2dfb6dc5:physics",
+   "sourceLocator": "桌面资料 04-【物理】2027版高中《解题觉醒》 / 04-【物理】2027版高中《解题觉醒》/物理解题觉醒-第2册 名师大招册.pdf（块 b6bd732b19-055）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:传送带模型",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-phy-b6bd732b19-055b",
+   "subject": "PHYSICS",
+   "type": "METHOD_MODEL",
+   "title": "物块滑上反向传送带后的运动分析",
+   "summaryMarkdown": "物块滑上与初速度方向相反的传送带时先减速到 0 再反向加速，两段加速度大小相同，需分段求时间与位移。",
+   "applicabilityMarkdown": "物块以一定初速度滑上运动方向相反的传送带，求在传送带上的运动时间、位移或离开后的位置关系时。",
+   "contentMarkdown": "**情景**：物块以一定初速度滑上与它初速度方向相反的传送带。\\n\\n**运动分析**：物块先在传送带上做匀减速运动，速度减到 0 后反向加速。由于正压力大小不变（水平传送带上等于重力）、动摩擦因数不变，因此减速段与反向加速段的加速度大小相同，均为 $a=\\mu g$，只是方向随相对运动方向改变。\\n\\n**计算要点**：① 分别求出减速到 0 的时间与反向加速到与传送带共速的时间，再加上之后匀速运动的时间，得到物块在传送带上的总时间；② 位移用平均速度公式计算（如由 $v_B$ 反向加速到与传送带共速 $v$ 的过程中，$x=\\frac{v_B-v}{2}t_1$，符号按所选正方向确定）；③ 物块离开传送带后在水平面上滑行的距离用 $0-v^2=-2ax$ 单独计算，最后比较两者的位置关系求距离。",
+   "boundaryMarkdown": "加速度大小相同的前提是正压力与动摩擦因数在前后两段都不变（物块未离开传送带）；减速段与加速段的加速度方向相反，代入公式时必须取符号；求两物块之间的距离时要先明确各自的出发点和运动方向，分别求出相对同一参考点的位移再作差；求总时间要按运动性质分段相加。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-5b2dfb6dc5:physics",
+   "sourceLocator": "桌面资料 04-【物理】2027版高中《解题觉醒》 / 04-【物理】2027版高中《解题觉醒》/物理解题觉醒-第2册 名师大招册.pdf（块 b6bd732b19-055）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:传送带模型",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-phy-afa44298fc-001c",
+   "subject": "PHYSICS",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "活结模型与死结模型的受力区别",
+   "summaryMarkdown": "绳跨过光滑滑轮或挂光滑挂钩时结点两侧拉力相等（活结），结点不能移动时两侧拉力不一定相等（死结）。",
+   "applicabilityMarkdown": "绳绕过光滑滑轮或绳上挂有光滑挂钩、绳打结或系在杆（墙）上时的受力分析。",
+   "contentMarkdown": "**活结模型**：特征是轻绳跨过光滑滑轮或绳上挂一光滑挂钩；受力特点是结点两侧轻绳的拉力大小总是相等。\\n\\n**死结模型**：特征是结点不能沿轻绳移动；受力特点是结点两侧轻绳的拉力大小不一定相等。\\n\\n**判断用途**：遇到绳打结、绳系在杆上或墙上的情形按死结处理，结点两侧的拉力要分别设为不同的未知量；遇到绳绕过光滑滑轮、绳上挂光滑挂钩的情形按活结处理，两侧拉力大小相等，可以只用同一个字母表示。",
+   "boundaryMarkdown": "活结两侧拉力相等的前提是滑轮（挂钩）光滑、不计摩擦；死结两侧拉力不等，必须分别设未知量；绳的拉力方向一定沿绳；模型判断错了会把两个拉力当成相等的，导致方程个数不足或结果错误。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-5b2dfb6dc5:physics",
+   "sourceLocator": "桌面资料 04-【物理】2027版高中《解题觉醒》 / 04-【物理】2027版高中《解题觉醒》/物理要点觉醒.pdf（块 afa44298fc-001）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:活结与死结模型",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-phy-afa44298fc-001d",
+   "subject": "PHYSICS",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "活杆模型与定杆模型的受力区别",
+   "summaryMarkdown": "杆端为光滑铰链或可绕固定端转动时杆的力一定沿杆（活杆），杆端固定死时杆的力不一定沿杆（定杆）。",
+   "applicabilityMarkdown": "轻杆一端铰接在墙上、或插入墙中固定时，分析杆对物体（或绳）的作用力方向。",
+   "contentMarkdown": "**活杆模型**：特征是轻杆一端通过光滑铰链或者光滑转轴固定，且轻杆可绕固定端转动；受力特点是轻杆两端的力一定沿杆。\\n\\n**定杆模型**：特征是轻杆的一端固定，不可绕固定端转动；受力特点是轻杆两端的力不一定沿杆。\\n\\n**判断用途**：杆端有铰链、可自由转动时，杆只能提供沿杆方向的力（拉力或压力）；杆被固定死（插入墙中、焊接）时，杆提供的力可以不沿杆，需要用平行四边形定则或三力平衡求其大小和方向。",
+   "boundaryMarkdown": "活杆两端力沿杆的前提是杆端为光滑铰链（或光滑转轴）且杆是轻杆；定杆的力方向未知，不能假设沿杆，否则受力图错误；杆与绳不同：绳只能拉，杆既能拉也能压；判断错模型是常见的失分点。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-5b2dfb6dc5:physics",
+   "sourceLocator": "桌面资料 04-【物理】2027版高中《解题觉醒》 / 04-【物理】2027版高中《解题觉醒》/物理要点觉醒.pdf（块 afa44298fc-001）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:活杆与定杆模型",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-phy-afa44298fc-002b",
+   "subject": "PHYSICS",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "左手定则与右手定则的区分",
+   "summaryMarkdown": "左手定则由电流（运动）方向判断安培力（洛伦兹力）方向，右手定则由导体切割磁感线的运动方向判断感应电流方向。",
+   "applicabilityMarkdown": "判断通电导线、带电粒子的受力方向，或判断导体切割磁感线时的感应电流方向时。",
+   "contentMarkdown": "**左手定则**：作用是判断通电导线所受安培力的方向或带电粒子在磁场中所受洛伦兹力的方向；已知条件是已知电流方向和磁场方向，或已知带电粒子的电性、运动方向和磁场方向；因果关系是电流→力、运动→力（因电而动）。\\n\\n**右手定则**：作用是判断感应电流方向；已知条件是已知导线切割磁感线的运动方向和磁场方向；因果关系是运动→电流（因动生电）。\\n\\n**使用要点**：左手定则用于已知电（流）求力，右手定则用于已知运动求电流；判断时让磁感线穿入手心，拇指指向力的方向（左手）或导体运动方向（右手），四指指向电流方向。",
+   "boundaryMarkdown": "两个定则不能互换，判断的因果关系不同；用左手定则判断洛伦兹力时，若粒子带负电，四指要指向其运动的反方向；右手定则只适用于导体切割磁感线产生感应电流的情形，磁通量变化类（非切割）问题要用楞次定律；磁场、电流、力三者的方向关系要画图核实，不能凭记忆。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-5b2dfb6dc5:physics",
+   "sourceLocator": "桌面资料 04-【物理】2027版高中《解题觉醒》 / 04-【物理】2027版高中《解题觉醒》/物理要点觉醒.pdf（块 afa44298fc-002）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:左手定则与右手定则",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-phy-afa44298fc-004f",
+   "subject": "PHYSICS",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "微元法的含义与用法",
+   "summaryMarkdown": "把研究对象或过程分解为很多遵循相同物理规律的无穷小微元，分析微元后再用数学或物理方法处理。",
+   "applicabilityMarkdown": "研究变力做功、非匀速运动、连续流体（水流、气流、绳链）等变化过程时。",
+   "contentMarkdown": "微元法是将研究对象或物理过程分解为很多无穷小的「微元」，而且每个「微元」所遵循的物理规律是相同的；这样我们只需分析这些「微元」，然后再将「微元」用相应的数学思想或物理方法进行处理，进而使问题得到解决。",
+   "boundaryMarkdown": "微元要足够小，使该微元内的物理量可视为不变（如速度、力在该段内视为恒定）；每个微元遵循的物理规律必须相同；只分析一个微元的结论不能直接推广到全过程，必须用累加（求和、取面积）等数学方法合成；注意微元的选取要与所求量对应。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-5b2dfb6dc5:physics",
+   "sourceLocator": "桌面资料 04-【物理】2027版高中《解题觉醒》 / 04-【物理】2027版高中《解题觉醒》/物理要点觉醒.pdf（块 afa44298fc-004）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:微元法",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-phy-afa44298fc-004i",
+   "subject": "PHYSICS",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "降维法：把三维空间问题化为二维",
+   "summaryMarkdown": "研究对象分布在三维空间、物理过程在三维空间中进行时，用降维法降低解题难度。",
+   "applicabilityMarkdown": "空间受力平衡、空间磁场与空间运动等三维情境问题。",
+   "contentMarkdown": "物理中三维空间情境表现在研究对象分布在三维空间中、物理过程在三维空间中进行，对空间想象能力要求较高。在实际解题时，可以使用降维法来有效降低解题难度，常用的降维法有等效对称法、截面法、三视图法、拆分法等。",
+   "boundaryMarkdown": "降维后必须保证全部所研究的力（或运动分量）都被包含或投影到所观察的平面上；投影时夹角关系要判断正确（分清夹角与余角）；降维只是把三维问题化为二维问题，物理规律不变；不同平面内的方程不能混用。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-5b2dfb6dc5:physics",
+   "sourceLocator": "桌面资料 04-【物理】2027版高中《解题觉醒》 / 04-【物理】2027版高中《解题觉醒》/物理要点觉醒.pdf（块 afa44298fc-004）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:降维法处理三维空间平衡",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-phy-afa44298fc-004j",
+   "subject": "PHYSICS",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "二级结论法：记住推论提高解题速度",
+   "summaryMarkdown": "二级结论是由基本规律和基本公式推导出的推论，熟记并巧用可以简化思维、提高解题速度，但必须明确其适用条件。",
+   "applicabilityMarkdown": "常规模型（匀变速比例式、等时圆、内力公式、碰撞结论等）的快速求解与选择题判断时。",
+   "contentMarkdown": "「二级结论」是由基本规律和基本公式推导出的推论。熟记并巧用一些「二级结论」可以使思维过程简化，提高解题速度和正确率，节约解题时间。注意使用「二级结论」时一定要明确适用条件和情境。",
+   "boundaryMarkdown": "必须明确每个二级结论的适用条件（如只适用于匀变速直线运动、只适用于共速前等），条件不符时结论失效；解答题中要用基本规律写出关键步骤，不能只用二级结论作答；不要把二级结论当作定义或普适公式使用；记错结论比不记更危险，使用前先核对其前提。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-5b2dfb6dc5:physics",
+   "sourceLocator": "桌面资料 04-【物理】2027版高中《解题觉醒》 / 04-【物理】2027版高中《解题觉醒》/物理要点觉醒.pdf（块 afa44298fc-004）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:二级结论法",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-phy-b6bd732b19-062",
+   "subject": "PHYSICS",
+   "type": "METHOD_MODEL",
+   "title": "口诀法速解平抛轨迹比较",
+   "summaryMarkdown": "用高度大时间长、同起点大压小、起点不同先平移的口诀，快速比较多个平抛轨迹的初速度与飞行时间。",
+   "applicabilityMarkdown": "给出两条或多条平抛轨迹，要求比较初速度大小、判断落地先后或比较水平射程的图象题与选择题。",
+   "contentMarkdown": "**大招识别**：① 给出两个或多个物体的平抛轨迹，比较物体的初速度和落地时间；② 抛出点在斜面上的同一点，以不同初速度做平抛运动，求各物理量的比例关系。\\n\\n**口诀**：高度大时间长，同起点大压小，起点不同先平移。\\n\\n**原理**：由竖直位移 $h=\\frac{1}{2}gt^2$ 可知下落高度 $h$ 越大下落时间越长，$t=\\sqrt{\\frac{2h}{g}}$；由水平位移 $x=v_0t$ 可知从抛出时刻起下落相同时间时，初速度 $v_0$ 越大水平位移越大。\\n\\n**口诀用法**：\\n\\n- 高度大时间长：比较竖直高度，高的轨迹对应时间更长。\\n- 同起点大压小：同一抛出点的两条轨迹，初速度大的轨迹在初速度小的轨迹上面（相同水平位置处更高），即大压小。\\n- 起点不同先平移：抛出点不同时，先把其中一条轨迹平移到与另一条轨迹抛出点重合，再按大压小比较。",
+   "boundaryMarkdown": "只适用于初速度水平且不计空气阻力的平抛轨迹比较；口诀只作定性判断，涉及具体数值时必须回到 $t=\\sqrt{\\frac{2h}{g}}$ 与 $x=v_0t$ 计算；比较高度时取的是下降的竖直高度，不是轨迹上某点到抛出点的直线距离；平移法只对水平方向的比较有效。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-5b2dfb6dc5:physics",
+   "sourceLocator": "桌面资料 04-【物理】2027版高中《解题觉醒》 / 04-【物理】2027版高中《解题觉醒》/物理解题觉醒-第2册 名师大招册.pdf（块 b6bd732b19-062）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:口诀法比较平抛轨迹",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-phy-b6bd732b19-074",
+   "subject": "PHYSICS",
+   "type": "METHOD_MODEL",
+   "title": "知二求三求解卫星物理量",
+   "summaryMarkdown": "卫星的向心加速度、线速度、角速度（周期）、轨道半径与中心天体质量五个量中任取两个，即可用三个方程求出其余三个。",
+   "applicabilityMarkdown": "卫星或行星绕中心天体运动的问题中只给出两个物理量，要求轨道半径、中心天体质量或速度、周期的题。",
+   "contentMarkdown": "**大招识别**：已知环绕卫星的 $a$、$v$、$\\omega$（$T$）、$r$ 和中心天体的质量 $M$ 这五个物理量中的任意两个，可求其余三个。由于 $T=\\frac{2\\pi}{\\omega}$ 说明 $T$、$\\omega$ 可以互相推导，两者看成一个参量即可。\\n\\n**五个物理量之间的关系**：由万有引力提供向心力 $F=\\frac{GMm}{r^2}=ma$ 得 $a=\\frac{GM}{r^2}$；卫星做匀速圆周运动还有 $a=\\frac{v^2}{r}$ 与 $T=\\frac{2\\pi r}{v}$（或 $v=\\omega r$）。三个方程、五个参量，知道任意两个即可求出剩下三个。\\n\\n**验证**：若已知 $a$ 和 $v$，先用 $a=\\frac{v^2}{r}$ 求出 $r$，再求 $M$ 与 $\\omega$（或 $T$）；任取另外两个物理量也可以按同样方式求出其余三个。\\n\\n**解题步骤**：① 列出 $a=\\frac{GM}{r^2}$、$a=\\frac{v^2}{r}$、$v=\\frac{2\\pi r}{T}$ 三个方程；② 把已知量与待求量对应起来，优先选择含已知量最多的方程先消元；③ 求出目标物理量。",
+   "boundaryMarkdown": "三个方程只适用于卫星（或行星）绕中心天体做匀速圆周运动的情形，椭圆轨道不能直接套用；$T$ 与 $\\omega$ 只能算一个独立参量，若题目给的两个量一个是周期一个是角速度，仍然有一个量未知；该方法求出的只能是中心天体的质量 $M$；计算时半径用轨道半径而不是离地高度，各单位要统一。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-5b2dfb6dc5:physics",
+   "sourceLocator": "桌面资料 04-【物理】2027版高中《解题觉醒》 / 04-【物理】2027版高中《解题觉醒》/物理解题觉醒-第2册 名师大招册.pdf（块 b6bd732b19-074）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:知二求三求解卫星运动物理量",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-phy-b6bd732b19-075b",
+   "subject": "PHYSICS",
+   "type": "MISCONCEPTION_GUIDE",
+   "title": "知二求三求不出卫星质量",
+   "summaryMarkdown": "卫星质量在向心力方程两边被约掉，知二求三只能求出中心天体质量，求不出环绕天体自身的质量。",
+   "applicabilityMarkdown": "题目要求求卫星质量或行星质量、需要判断所给条件是否充足的选项题与计算题。",
+   "contentMarkdown": "**易错点**：在知二求三模型中无法求出围绕着中心天体运动的卫星（环绕天体）的质量。\\n\\n**原因**：卫星做圆周运动的方程 $\\frac{GMm}{r^2}=ma=m\\frac{v^2}{r}=m\\omega^2r$ 中，卫星质量 $m$ 在等式两边都被约去，它不参与决定卫星的 $a$、$v$、$\\omega$、$T$ 和轨道半径，所以无论已知哪两个物理量都解不出 $m$。\\n\\n**判断方法**：题目问中心天体质量时用知二求三可行；题目问环绕天体质量时必须另有条件，仅靠轨道运动参量无法求出。",
+   "boundaryMarkdown": "该结论只说明用轨道运动参量求不出环绕天体质量，若题目另外给出该天体的表面重力加速度、半径或它的卫星的运动参量，则可以求出；答题时要区分中心天体质量 $M$ 与环绕天体质量 $m$，选项中常把两者混在一起设置错误选项。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-5b2dfb6dc5:physics",
+   "sourceLocator": "桌面资料 04-【物理】2027版高中《解题觉醒》 / 04-【物理】2027版高中《解题觉醒》/物理解题觉醒-第2册 名师大招册.pdf（块 b6bd732b19-075）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:知二求三求解卫星运动物理量",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-phy-b6bd732b19-076",
+   "subject": "PHYSICS",
+   "type": "METHOD_MODEL",
+   "title": "天体追及相遇的核心方程",
+   "summaryMarkdown": "低轨天体追高轨天体，从相距最近到再次相距最近用 (1/T1-1/T2)t=1，从相距最近到相距最远用 (1/T1-1/T2)t=1/2。",
+   "applicabilityMarkdown": "求两个绕同一天体运行的卫星（行星）下次相距最近或最远的时间的题。",
+   "contentMarkdown": "**大招识别**：求两个绕同一天体运行的卫星下次相距最近（最远）的时间，或题目出现冲日。\\n\\n**谁追谁**：参与追及相遇的两个天体绕同一个中心天体做匀速圆周运动，且在高度不同的轨道上运动方向相同。由高轨低速大周期可知，轨道低的天体角速度大、转得快，所以一定是低轨天体追高轨天体；如果处在高度相同的轨道上，线速度必然相同，无法追上。\\n\\n**相遇的含义**：不同轨道上的天体相遇时不可能真的紧挨在一起，因此相遇指两天体与中心天体共线时的距离最近（两星在中心天体同侧）与距离最远（两星分居中心天体两侧）。\\n\\n**核心方程**：\\n\\n- 从某次相距最近到下次相距最近：低轨天体比高轨天体多走一圈，转过的角度满足 $\\theta_1-\\theta_2=2\\pi$，写成 $\\omega_1t-\\omega_2t=2\\pi$，即 $(\\frac{1}{T_1}-\\frac{1}{T_2})t=1$；\\n- 从相距最近到相距最远：低轨天体比高轨天体多走半圈，$\\theta_1-\\theta_2=\\pi$，即 $(\\frac{1}{T_1}-\\frac{1}{T_2})t=\\frac{1}{2}$。\\n\\n**理解方式**：如同在环形操场上跑得快的同学套跑得慢的同学的圈，套一圈就是再次相距最近；$T_1$ 取低轨天体（周期小）的周期，$T_2$ 取高轨天体的周期。",
+   "boundaryMarkdown": "两个天体必须绕同一个中心天体、沿同一方向做匀速圆周运动，方向相反时要改用角度之和等于 $2\\pi$ 或 $\\pi$；$T_1$、$T_2$ 必须取两个天体各自的真实周期，不能把地球自转周期与卫星周期混用；相遇指与中心天体共线，不是两星相碰；不同轨道上的天体不会真正靠在一起，最近与最远都是相对位置。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-5b2dfb6dc5:physics",
+   "sourceLocator": "桌面资料 04-【物理】2027版高中《解题觉醒》 / 04-【物理】2027版高中《解题觉醒》/物理解题觉醒-第2册 名师大招册.pdf（块 b6bd732b19-076）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:公式法解天体追及相遇问题",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-phy-b6bd732b19-076b",
+   "subject": "PHYSICS",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "行星冲日的时间间隔",
+   "summaryMarkdown": "行星冲日是地球运行到地外行星与太阳之间且三者几乎排成直线的现象，本质是距离最近问题，轨道半径达地球 5 倍以上的行星冲日间隔近似为 1 年。",
+   "applicabilityMarkdown": "冲日、冲日时间间隔或判断某行星某年是否冲日的比较题。",
+   "contentMarkdown": "**现象**：当地球恰好运行到某地外行星和太阳之间，且三者几乎排成一条直线的现象，天文学家称为行星冲日。\\n\\n**本质**：分析两次冲日的时间间隔，本质就是距离最近问题，其中冲日问题的低轨天体是地球（周期为 1 年），地外行星是高轨天体。\\n\\n**记住数字 5**：当高轨天体的轨道半径大于等于地球轨道半径的 5 倍时，可以认为高轨天体的角速度极慢、约等于静止，于是冲日间隔时间将近似等于地球的公转周期，即约 1 年。\\n\\n**判断应用**：轨道半径达到地球轨道半径 5 倍以上的地外行星（如木星、土星、天王星、海王星）冲日间隔都约为 1 年，其中轨道半径最大的行星角速度最慢、地球追它最容易，相邻两次冲日的时间间隔最短；轨道半径较小的地外行星如火星不可能每年冲日。",
+   "boundaryMarkdown": "冲日只发生在地外行星（轨道在地球轨道之外的行星）上，地内行星不能用冲日讨论；5 倍判据只是近似处理方法，用于快速判断，精确计算仍要用 $(\\frac{1}{T_1}-\\frac{1}{T_2})t=1$；冲日间隔是相邻两次冲日的时间差，不等于行星的公转周期；判断某年是否冲日时要先看轨道半径是否达到地球轨道半径的 5 倍。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-5b2dfb6dc5:physics",
+   "sourceLocator": "桌面资料 04-【物理】2027版高中《解题觉醒》 / 04-【物理】2027版高中《解题觉醒》/物理解题觉醒-第2册 名师大招册.pdf（块 b6bd732b19-076）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:公式法解天体追及相遇问题",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-phy-b6bd732b19-077b",
+   "subject": "PHYSICS",
+   "type": "METHOD_MODEL",
+   "title": "信号强度图象的相距最近问题",
+   "summaryMarkdown": "观测站随地球自转，信号强度相邻两个波峰的间隔是卫星与观测站两次相距最近的时间间隔，不是卫星的周期。",
+   "applicabilityMarkdown": "题目给出接收信号强度随时间变化的图象、要求卫星的轨道半径或周期的题。",
+   "contentMarkdown": "**情景**：卫星运行轨道与赤道共面、绕行方向与地球自转方向相同，位于赤道的某观测站接收到的信号强度随时间变化的图象中，强度达到峰值时该卫星与观测站相距最近。\\n\\n**易错点**：图象中信号强度的相邻两个波峰的间隔时间不是卫星的周期，而是卫星与观测站两次相距最近的时间间隔；列式时必须把随地球自转的观测站考虑进来，相当于一个周期等于地球自转周期 $T$ 的低轨天体。\\n\\n**做法**：设观测站随地球自转的周期为 $T$（即地球自转周期）、卫星的周期为 $T_1$、两次相距最近的时间间隔为 $\\Delta t$，代入核心方程 $(\\frac{1}{T}-\\frac{1}{T_1})\\Delta t=1$ 求出卫星的周期 $T_1$；再由万有引力提供向心力 $\\frac{GMm}{r^2}=m(\\frac{2\\pi}{T_1})^2r$ 解出卫星的轨道半径 $r$。",
+   "boundaryMarkdown": "只有图象的波峰对应相距最近时才能这样列式，若波峰对应相距最远则应把右边的 1 换成 $\\frac{1}{2}$；观测站随地球自转不是真正的卫星，只是等效成一个周期等于地球自转周期的低轨天体；核心方程中两个周期必须取各自的真实周期，且卫星与观测站的运动方向相同才用周期倒数之差。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-5b2dfb6dc5:physics",
+   "sourceLocator": "桌面资料 04-【物理】2027版高中《解题觉醒》 / 04-【物理】2027版高中《解题觉醒》/物理解题觉醒-第2册 名师大招册.pdf（块 b6bd732b19-077）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:公式法解天体追及相遇问题",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-phy-b6bd732b19-117",
+   "subject": "PHYSICS",
+   "type": "METHOD_MODEL",
+   "title": "复合场中上抛模型的时间与位移关系",
+   "summaryMarkdown": "重力场与匀强电场复合场中竖直上抛带电小球时，上升与下落时间相等，水平方向位移之比为 1:3。",
+   "applicabilityMarkdown": "\\n重力场加匀强电场的复合场中竖直上抛带电小球，求运动时间或水平位移之比的题。",
+   "contentMarkdown": "**大招识别**：复合场指重力场加匀强电场；常见情景是在复合场中竖直上抛带电体。\\n\\n**模型**：在 A 点竖直上抛一个质量不可忽略的带电小球，小球上升到最高点 M 后下落到与 A 处于同一水平面的 B 点。\\n\\n**时间关系**：小球在竖直方向上做竖直上抛运动，所以 $t_{AM}=t_{MB}$，上升时间等于下落时间。\\n\\n**水平位移关系**：小球在水平方向上做初速度为零的匀加速直线运动，由初速度为零的匀变速直线运动的零点推论（相等时间内的位移之比为 $1:3:5:\\cdots$）可知 $x_1:x_2=1:3$，其中 $x_1$、$x_2$ 分别是上升段与下落段的水平位移。\\n\\n**用法**：题目给出上升或下落时间、水平位移时，可用这两个比例关系直接写出另一段的对应量，再结合动能定理或功能关系求动能与能量变化。",
+   "boundaryMarkdown": "两个结论成立的前提是电场力沿水平方向且为恒力（匀强电场），竖直方向只受重力、水平方向只受电场力；水平方向的位移之比 $1:3$ 只适用于上升段与下落段的时间相等且水平方向初速度为零的情形；电场方向竖直时模型变为竖直方向的匀变速运动，不能用本例的位移比例。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-5b2dfb6dc5:physics",
+   "sourceLocator": "桌面资料 04-【物理】2027版高中《解题觉醒》 / 04-【物理】2027版高中《解题觉醒》/物理解题觉醒-第2册 名师大招册.pdf（块 b6bd732b19-117）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:复合场中的上抛模型",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-phy-b6bd732b19-118",
+   "subject": "PHYSICS",
+   "type": "METHOD_MODEL",
+   "title": "复合场中上抛的功能关系与重画路径法",
+   "summaryMarkdown": "把曲线路径重画成竖直与水平两段折线，把重力的功与电场力的功分开，逐点标出动能即可求解能量问题。",
+   "applicabilityMarkdown": "\\n复合场中带电小球做抛体运动、已知某些点动能求其他点动能或求各力做功的题。",
+   "contentMarkdown": "**方法：重新画路径**。化曲为直，把路径化为沿竖直、水平两个方向，将重力的功 $W_G$ 和电场力的功 $W_电$ 分开，标出关键点的动能。\\n\\n**原理**：重力做功只与竖直高度差有关、电场力做功只与水平位移有关，二者都与路径无关，所以可以把曲线的运动路径重新画成沿竖直和水平方向的折线，在折线的各拐点处标出动能，再逐段计算能量的变化。\\n\\n**示例**：小球在 A 点的动能为 6 J、在最高点 M 的动能为 8 J，求小球下落到与 A 同一水平面的 B 点时的动能。将路径重画为折线并依次标出各点动能，可得 B 点的动能为 38 J；其中上升段与下落段的水平位移之比 $x_1:x_2=1:3$，对应两段中电场力做的功之比也为 $1:3$。\\n\\n**配套关系**：由 $x_1:x_2=1:3$ 把电场力做的总功按比例分配到两段，再与竖直方向重力做功（上升段做负功、下落段做正功，大小相等）叠加，即可由已知点的动能推出其他点的动能。",
+   "boundaryMarkdown": "重画路径时两个方向的位移要分别对应各自力的功，不能把重力做功与电场力做功混在一段里；上升段与下落段重力做功大小相等方向相反，总功为零，所以 A 到 B 的动能变化只由电场力做功决定；水平位移之比 $1:3$ 只在两段时间相等（竖直方向为竖直上抛）时成立；电场力做功与路径无关的前提是匀强电场。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-5b2dfb6dc5:physics",
+   "sourceLocator": "桌面资料 04-【物理】2027版高中《解题觉醒》 / 04-【物理】2027版高中《解题觉醒》/物理解题觉醒-第2册 名师大招册.pdf（块 b6bd732b19-118）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:复合场中的上抛模型",
      "role": "PRIMARY"
     }
    ]

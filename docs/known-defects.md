@@ -684,3 +684,53 @@ priority is low.
 
 **Reopen condition.** n/a — close by the chosen decision plus a device check
 that the draft is reachable or resolved.
+
+## KD-18 (open) · `tools/teaching_sources/epub_audit.py` 在本机 Python 3.13 下恒崩，4 条测试恒红
+
+**Symptom.** `PYTHONPATH=tools python -m pytest tools/tests -q` 里
+`test_teaching_sources.py` 的 4 条用例全部 ERROR，异常都是
+`TypeError: XMLParser() got an unexpected keyword argument 'resolve_entities'`
+（`tools/teaching_sources/epub_audit.py:101`）。
+
+**Evidence.** 2026-09-19 本机 Python 版本 `Python 3.13.14`；单独复现：
+`python -c "import xml.etree.ElementTree as ET; ET.XMLParser(resolve_entities=False)"`
+同样报错。`epub_audit.py` 最后一次改动在 `2f0b98a9`（与本轮改动无关），
+`git diff HEAD -- tools/teaching_sources/epub_audit.py` 为空 —— 缺陷是既有环境兼容问题，
+不是新引入的回归。该文件原本是想关掉实体解析做 XXE 加固。
+
+**全量结果（2026-09-19 本轮实测）**：`4 failed, 212 passed`，红的 4 条全部来自本缺陷。
+
+**Fix direction.** 三行改法：把 `ElementTree.XMLParser(resolve_entities=False)`
+换成兼容写法 —— 优先 `defusedxml.ElementTree`（若可引入），否则
+`try: parser = ElementTree.XMLParser(resolve_entities=False)` /
+`except TypeError: parser = ElementTree.XMLParser()`（3.8 起默认解析器不再解析外部实体，
+裸解析在这些用例的输入上是安全的）。修完必须重跑该文件并把 4 条转绿。
+
+**Owner.** 归 `tools/teaching_sources/` 的维护方（本轮未动该模块，避免与并行会话冲突）。
+
+**Reopen condition.** n/a —— 修好后 4 条用例转绿即关。
+
+## KD-19 (fixed 2026-09-19) · 同一来源在多卷的时间戳不一致，导致内置包导入被拒（KD-15 同类复发）
+
+**Symptom.** 视觉转写批次入库后，`:core:data:testDebugUnitTest` 的
+`BundledTeachingMaterialsContractTest` 报
+`DatabaseContractViolationException: Teaching-material review cannot predate its source import`；
+424 条用例里 7 条红（另有 6 条是 KD-18）。
+
+**Root cause.** 同一 `sourceId` 会随不同批次落进不同卷，每卷各带一份 `source` 条目、
+各自盖"写入时刻 − 60s"。Kotlin 侧 `distinctBy` 只认先出现的那份，于是后写的那份
+（时间更晚）成为生效值，先前批次里 `reviewedAt` 更早的材料就被判成"材料早于来源导入"。
+
+**Evidence.** 修前实测：命中 `desktop-src-3692ca65ed:math`（91 条）与
+`desktop-src-5b2dfb6dc5:physics`（193 条）共 284 条材料违反契约；
+同 sourceId 的两份副本时间戳分别来自第 1、2 次写入。修后复算违反数 0，
+`:core:data` 424 条全绿（结果时间 03:04:17，晚于包改动 02:59:34）。
+
+**Fix.**
+1. `tools/kb_coverage/materialize.py` 新增 `_existing_source_entries()`：写入前先扫全卷，
+   同一 `sourceId` 已有条目就**复用最早那份**（`importedAt` 取最早），不再各写各的；
+2. 数据修复：把每个来源的 `importedAt` 压到
+   `min(各副本原值, 该来源全部材料的 reviewedAt 最小值 − 60s)`，改写 76 条来源。
+
+**Reopen condition.** n/a —— 由 `BundledTeachingMaterialsContractTest` 持续守门；
+任何再引入该缺陷的写入都会让该用例直接变红。

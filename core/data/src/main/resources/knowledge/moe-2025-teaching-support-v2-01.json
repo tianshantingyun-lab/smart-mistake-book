@@ -12,7 +12,7 @@
    "sourceUri": "https://www.example.edu/material",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "E4CA82006401B1ABA2512FBE06564643111B91D282D3E929757A1ED1CAD12D82",
-   "importedAtEpochMillis": 1784908800000,
+   "importedAtEpochMillis": 1784908740000,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -28,7 +28,7 @@
    "sourceUri": "https://www.example.edu/material",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "9EE829AD6BF919AD290AE96063BAFE2AD4D52CB75B338186E0578BD629942420",
-   "importedAtEpochMillis": 1784908800000,
+   "importedAtEpochMillis": 1784908740000,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -44,7 +44,7 @@
    "sourceUri": "https://www.example.edu/material",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "3E76C56976DE3548A00520AC08789251CFE44EABDB1A16B59A1B36F3F8D53D43",
-   "importedAtEpochMillis": 1784908800000,
+   "importedAtEpochMillis": 1784908740000,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -60,7 +60,7 @@
    "sourceUri": "https://www.example.edu/material",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "386616F8CDA45EF700036542FA2FBA4FAF7695AFA84EB6006C93D6BF601BEDA8",
-   "importedAtEpochMillis": 1784908800000,
+   "importedAtEpochMillis": 1784908740000,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -76,7 +76,7 @@
    "sourceUri": "https://www.example.edu/material",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "0AFB567D910961E2E04D665004A5189AE06B34D49C9106BDA8B77A34990BFDB2",
-   "importedAtEpochMillis": 1784908800000,
+   "importedAtEpochMillis": 1784908740000,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -92,7 +92,7 @@
    "sourceUri": "https://www.example.edu/material",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "D56A70F80D2CDEEFCD2529081F424DC0C4D3E8B099CECADC102B6EA6D8342543",
-   "importedAtEpochMillis": 1784908800000,
+   "importedAtEpochMillis": 1784908740000,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -108,7 +108,7 @@
    "sourceUri": "https://www.example.edu/material",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "B3FB665273D9BEF9111CF26765CBC4832E7DBF079FBB86ED9B5180B342A5A7ED",
-   "importedAtEpochMillis": 1784908800000,
+   "importedAtEpochMillis": 1784908740000,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -124,7 +124,7 @@
    "sourceUri": "https://www.example.edu/desktop-kb-source",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "D45C35EA10D42D32A8A0A578557911B78B313C048345E31D7AB2381426DFFAA0",
-   "importedAtEpochMillis": 1789732985467,
+   "importedAtEpochMillis": 1789732926467,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -140,7 +140,7 @@
    "sourceUri": "https://www.example.edu/desktop-kb-source",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "35F0C03E99DD5E9D9DB8814B589AAB6804DCE7A5B4A35BC2E6DA76A4311544B7",
-   "importedAtEpochMillis": 1789733277691,
+   "importedAtEpochMillis": 1789733218691,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -156,7 +156,7 @@
    "sourceUri": "https://www.example.edu/desktop-kb-source",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "A260977C1AF61A08745DC6E7DF5F37300664058178B807E6D755BD2527F5F596",
-   "importedAtEpochMillis": 1789733277957,
+   "importedAtEpochMillis": 1789733218957,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -172,7 +172,7 @@
    "sourceUri": "https://www.example.edu/desktop-kb-source",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "4B8F903AC2C5A9739CDCC344BA479B913BC40B09177389C4BFCF34FCEECA5001",
-   "importedAtEpochMillis": 1789733278373,
+   "importedAtEpochMillis": 1789733219373,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -188,7 +188,7 @@
    "sourceUri": "https://www.example.edu/wusan-2027-a-jingjiang",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "2011B658897C1A5FB7A4F28711CE553EDB9329E95695B8F9EFE01088DA48CF60",
-   "importedAtEpochMillis": 1784908800000,
+   "importedAtEpochMillis": 1784908740000,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
@@ -204,11 +204,27 @@
    "sourceUri": "https://www.example.edu/wusan-2027-a-jingjiang",
    "licenseStatus": "REFERENCE_ONLY",
    "contentFingerprint": "D25D4C0DDB4F8973E327855319C0699CD7AF8CA6DD2229AA27CB0AD550864C85",
-   "importedAtEpochMillis": 1784908800000,
+   "importedAtEpochMillis": 1784908740000,
    "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
    "licenseExpression": null,
    "licenseUri": null,
    "attributionText": "五三精讲册视觉转写改写（REVIEWED_SYNTHESIS），仅内部教学参考。"
+  },
+  {
+   "sourceId": "desktop-src-9c54443f53:chemistry",
+   "subject": "CHEMISTRY",
+   "sourceType": "AUTHORIZED_EDUCATION_MATERIAL",
+   "title": "桌面教辅资料 · 05-【化学】2027版高中《解题觉醒》",
+   "publisher": "教辅汇编（桌面原始资料）",
+   "edition": "2026/2027版",
+   "sourceUri": "https://www.example.edu/desktop-kb-source",
+   "licenseStatus": "REFERENCE_ONLY",
+   "contentFingerprint": "914B64DE0F667ECAB3C381B845C3906D53AB46B8206A635E3BF6CD30E2AC63D9",
+   "importedAtEpochMillis": 1789757064890,
+   "contentUsePolicy": "REVIEWED_SYNTHESIS_ONLY",
+   "licenseExpression": null,
+   "licenseUri": null,
+   "attributionText": "桌面教辅资料直抽改写（REVIEWED_SYNTHESIS），仅内部教学参考。"
   }
  ],
  "materials": [
@@ -43163,6 +43179,546 @@
    "bindings": [
     {
      "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:免疫失调",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-4dd2e79693-023",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "化工流程题的杂质追踪法模型",
+   "summaryMarkdown": "化工流程题按“原料预处理—核心反应—目标产品”三段建模，用试剂线、转化线、操作线、杂质线追踪每一步。",
+   "applicabilityMarkdown": "所有以矿样或原料制备目标产品的无机工艺流程题（推断、填空、方程式书写）。",
+   "contentMarkdown": "### 命题模型（三段式流程）\\n原料预处理阶段 → 核心反应阶段 → 目标产品生成阶段。\\n\\n流程主线：矿样 → 粉碎（研磨）或焙烧 → 浸取（水浸/酸浸/碱浸/盐浸）→ 固液分离（过滤操作）→ 滤液与滤渣 → 核心反应（①加入氧化剂或还原剂；②调节 pH；③加入萃取剂）→ 溶液 → 结晶/提取/分离、电解、加试剂 → 金属单质或沉淀物（目标产品）。\\n\\n### 思维模型（杂质追踪法）\\n1. 分析原材料中的目标元素、杂质元素及其价态、类别、存在形态；\\n2. 追踪每一步加入了什么物质（试剂线）、发生了什么反应（转化线）、进行了什么操作（操作线）、分离了什么杂质（杂质线）；\\n3. 遇到比较陌生的操作步骤时可用排除法分析，最后剩余的杂质元素一般对应那个操作步骤；\\n4. 前阶段所得物质通过一系列操作，得到目标产品。\\n\\n### 答题模板\\n- 涉及陌生反应方程式：调用信息型、工艺流程型、较强酸制较弱酸型的书写方法；\\n- 涉及分离提纯：按操作线核对试剂与滤液、滤渣成分，判断哪些离子进入了溶液、哪些留在渣中。",
+   "boundaryMarkdown": "模型只提供框架，具体物质与反应必须由题给信息确定，不能凭经验替题目补反应；流程中循环使用的物质（如 $CO_2$、饱和食盐水）要单独识别并说明；目标产品与副产物要分清。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-9c54443f53:chemistry",
+   "sourceLocator": "桌面资料 05-【化学】2027版高中《解题觉醒》 / 05-【化学】2027版高中《解题觉醒》/化学解题觉醒-第2册 名师大招册.pdf（块 4dd2e79693-023）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化工流程题的分析模型",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-4dd2e79693-023b",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "原料预处理阶段的设问与答题模板",
+   "summaryMarkdown": "粉碎与焙烧两个预处理操作的设问热点、剖析与答题模板。",
+   "applicabilityMarkdown": "工艺流程题第 1 问：粉碎（研磨）的目的、焙烧（煅烧）的目的与方程式书写。",
+   "contentMarkdown": "### 粉碎（研磨、球磨、喷洒、雾化）\\n- 设问热点：与浸取率（转化率）的关系。\\n- 剖析：工业上浸取率（转化率）指一定时间内通过化学反应得到目标物质的多少，与化学反应速率有关。\\n- 答题模板：增大反应物的接触面积，加快反应速率，提高原料浸取率（转化率）。\\n\\n### 焙烧（灼烧、煅烧）\\n- 设问热点：焙烧的目的；焙烧后产物的确定及相关反应方程式的书写。\\n- 剖析：①热稳定性差的物质考虑原料分解；②可燃性物质通过燃烧去除，如有机物、C；③将目标组分高温转化；若观察题给工艺流程发现元素化合价升高，可考虑原料与 $O_2$ 发生氧化还原反应。\\n- 答题模板：a. 除去 $××$ 杂质或将 $××$ 转化为 $××$；b. 利用陌生反应方程式书写的相关方法进行书写。",
+   "boundaryMarkdown": "温度过高可能造成目标产物分解或副反应、能耗增大，答题时若题目给出温度上限要说明原因；粉碎只影响速率与浸取率，不改变平衡转化率（对不可逆溶解过程而言）；焙烧产物的判断必须由化合价与元素守恒推出，不能凭经验直接写。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-9c54443f53:chemistry",
+   "sourceLocator": "桌面资料 05-【化学】2027版高中《解题觉醒》 / 05-【化学】2027版高中《解题觉醒》/化学解题觉醒-第2册 名师大招册.pdf（块 4dd2e79693-023）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化工流程题的分析模型",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-4dd2e79693-024",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "浸取的四种方式与提高浸取率的措施",
+   "summaryMarkdown": "水浸按溶解性、酸浸按酸的通性、碱浸按碱的通性、盐浸按所含离子的性质分析浸取作用与滤渣成分。",
+   "applicabilityMarkdown": "工艺流程题中“浸取”（水浸、酸浸、碱浸、盐浸）作用的分析、滤渣成分判断及相关离子方程式书写。",
+   "contentMarkdown": "浸取的作用、浸取所得滤渣成分的分析及相关化学（离子）方程式的书写。\\n\\n- **水浸**：一般考虑物质的溶解性，用于分离水溶性和非水溶性的物质。\\n- **酸浸**：一般考虑酸的通性，溶解原料中的碱性化合物、两性化合物、能溶于酸的盐和金属，将其转化为对应的盐，抑制该盐的水解，除去不溶于酸的杂质（如 $SiO_2$、$CaSO_4$、$PbSO_4$ 等）。\\n- **碱浸**：一般考虑碱的通性及酯类物质的水解，①溶解原料中的酸性化合物、两性化合物、能溶于碱性溶液的盐或金属等；②除去油污。\\n- **盐浸**：一般考虑所含离子的性质（互促水解、作沉淀剂、氧化性、还原性、溶解沉淀等），溶解原料中的某些盐或除杂。\\n\\n### 提高浸取率的措施\\n浸取率与化学反应速率有关，从接触面积、浓度、温度等角度入手：粉碎、搅拌、适当升温、适当提高酸（或碱）的浓度等。\\n\\n### 答题模板\\n- 根据物质性质或已知信息分析浸取作用；\\n- 涉及反应方程式时利用陌生反应方程式书写的相关方法书写。",
+   "boundaryMarkdown": "浸取方式必须与原料性质匹配（酸性氧化物用碱浸、碱性氧化物用酸浸）；“适当”二字不能丢，酸（碱）浓度过高会引入杂质或腐蚀设备、温度过高会造成产物分解或挥发；滤渣成分要结合后续操作反推，不可只看本步。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-9c54443f53:chemistry",
+   "sourceLocator": "桌面资料 05-【化学】2027版高中《解题觉醒》 / 05-【化学】2027版高中《解题觉醒》/化学解题觉醒-第2册 名师大招册.pdf（块 4dd2e79693-024）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化工流程题的分析模型",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-4dd2e79693-024b",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "沉淀分离法与调pH的考法模板",
+   "summaryMarkdown": "核心反应阶段的除杂手段：加入各类沉淀剂使杂质离子沉淀，或调 pH 使金属离子水解沉淀。",
+   "applicabilityMarkdown": "工艺流程题中沉淀剂的选择、沉淀是否完全的检验、滤渣成分分析、调 pH 的目的与范围判断。",
+   "contentMarkdown": "### 分离杂质①：沉淀分离法（加入沉淀剂）\\n- 碳酸氢盐：提供 $HCO_3^-$，使某些离子（如 $Fe^{3+}$、$Al^{3+}$、$Fe^{2+}$、$Mg^{2+}$、$Mn^{2+}$、$Co^{2+}$、$Ce^{3+}$ 等）形成沉淀；相对于碳酸盐，碳酸氢盐可避免溶液碱性过强。\\n- 碳酸盐：提供 $CO_3^{2-}$，使某些离子（如 $Cu^{2+}$、$Ca^{2+}$、$Pb^{2+}$、$Ba^{2+}$ 等）沉淀。\\n- 草酸盐：提供 $C_2O_4^{2-}$，使某些离子（如 $Ba^{2+}$、$Ca^{2+}$ 等）转化为沉淀。\\n- 硫化物：提供 $S^{2-}$，使某些离子（如 $Cu^{2+}$、$Pb^{2+}$、$Ag^+$、$Sn^{2+}$、$Zn^{2+}$、$Cd^{2+}$ 等）转化为沉淀。\\n- 氟化物：提供 $F^-$，使某些离子（如 $Ca^{2+}$、$Mg^{2+}$ 等）转化为沉淀。\\n- 活泼金属：利用较活泼金属将较不活泼金属从其盐溶液中置换出来，如用 Zn 将 $Cu^{2+}$ 置换出来。\\n\\n### 常见考法及答题模板\\n- Q1 陌生反应方程式的书写：链接陌生反应方程式书写的相关方法；\\n- Q2 判断沉淀是否完全：静置，取上层清液于试管中，向试管中滴加 $××$（沉淀剂），若无沉淀产生，则证明沉淀已经完全；\\n- Q3 滤渣成分分析：结合所加试剂进行分析。\\n\\n### 调 pH\\n- 目的：除物质分离角度外，调 pH 还可能有以下目的：增强物质的氧化性或还原性；促进或抑制某些离子的水解；改变离子的存在形式。一般是为了沉淀某些金属离子（如 $Fe^{3+}$、$Al^{3+}$、$Mn^{2+}$ 等），有时会先加入氧化剂或还原剂，再调 pH。\\n- 考法及答题模板（调 pH 范围）：\\n  1. 直接读图/表：需除去杂质离子完全沉淀时的 pH ≤ pH < 需保留目标离子开始沉淀时的 pH；\\n  2. 计算：根据 $K_{sp}$ 进行计算（一般离子完全沉淀时 $c\\leqslant10^{-5}\\ mol\\cdot L^{-1}$）。",
+   "boundaryMarkdown": "沉淀剂不能引入新的难除杂质；调 pH 范围要同时满足“杂质离子沉淀完全”与“目标离子不沉淀”两个条件，边界取等号时代表恰好完全沉淀；用 $K_{sp}$ 计算时要考虑水解、配位等副反应与溶液体积变化；检验沉淀完全的试剂必须能区分目标离子。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-9c54443f53:chemistry",
+   "sourceLocator": "桌面资料 05-【化学】2027版高中《解题觉醒》 / 05-【化学】2027版高中《解题觉醒》/化学解题觉醒-第2册 名师大招册.pdf（块 4dd2e79693-024）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化工流程题的分析模型",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-4dd2e79693-025b",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "控制反应温度的三个分析角度",
+   "summaryMarkdown": "加热、降温、控制一定温度三类温控设问的目的，要从反应原理与物质性质两个角度作答。",
+   "applicabilityMarkdown": "工艺流程题中“为什么要加热/降温”“为什么控制在某温度范围”的原因类设问。",
+   "contentMarkdown": "控制反应的温度。常见控温方式：直接加热、水浴加热、冰水浴、油浴、恒温控制（一般使用恒温箱或水浴锅）。\\n\\n**加热**\\n①提高反应速率；②使平衡向吸热反应方向移动；③除去热稳定性差的物质；④使沸点低的物质汽化或促进气体的逸出；⑤使 $Fe(OH)_3$ 胶体、$Al(OH)_3$ 胶体等完全聚沉，形成沉淀而除去。\\n\\n**降温**\\n①防止温度过高使某物质分解、溶解等；②使平衡向放热反应方向移动；③降低大多数晶体的溶解度，减少损失；④使某种沸点较高的物质液化，与其他物质分离。\\n\\n**控制一定温度**\\n①温度太低，反应速率较小；温度太高，反应物（如 $NaHCO_3$、$H_2O_2$、$HClO$、$HNO_3$、$NH_3\\cdot H_2O$、$KMnO_4$ 等）可能分解或挥发；②使催化剂催化效果最佳（温度过高催化剂可能失活）；③避免发生副反应，使目标产物的转化率、选择性、产率达到最佳；④产率相差不大时，尽可能选择较低温、较低压条件，降低成本和对设备的要求，符合绿色化学要求。",
+   "boundaryMarkdown": "答题必须落到具体物质的性质（热稳定性、挥发性、溶解度）与反应的吸放热方向，只写“加快反应速率”不得分；控温方式要与温度范围匹配（低于 100 ℃ 常用水浴，高于 100 ℃ 用油浴或直接加热）；“适当”二字不能丢。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-9c54443f53:chemistry",
+   "sourceLocator": "桌面资料 05-【化学】2027版高中《解题觉醒》 / 05-【化学】2027版高中《解题觉醒》/化学解题觉醒-第2册 名师大招册.pdf（块 4dd2e79693-025）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化工流程题的分析模型",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-4dd2e79693-026b",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "保护气条件下的结晶与物质的循环利用",
+   "summaryMarkdown": "易水解或易氧化的产品要在保护气流下结晶；循环利用的物质从逆向箭头、加入物质、可逆反应、母液四个角度判断。",
+   "applicabilityMarkdown": "工艺流程题中“为什么通入某气体”“如何提高产率”“哪些物质可循环利用”的设问。",
+   "contentMarkdown": "### 易水解型不带结晶水晶体的制备\\n根据物质的水解原理，选择合适的保护气：在 $××$（保护气）气流保护下，蒸发浓缩、冷却结晶、过滤、洗涤、干燥。\\n\\n### 还原型不带结晶水晶体的制备\\n目标产物还原性强，容易被空气中的氧气氧化，选择惰性气体作保护气：在 $××$（惰性气体）气流保护下，蒸发浓缩、冷却结晶、过滤、洗涤、干燥。\\n\\n### (3) 物质的循环利用\\n物质循环利用的目的：节能减排、绿色化学、降低成本等。目标产物、杂质一定不会用于循环；辅助试剂、母液等可用于循环。一般从四个角度分析确定可循环利用的物质：\\n1. “逆向箭头”：箭头将某产物或分离出的物质指向前面的步骤；\\n2. “加入的物质”：某加入的物质在后续反应中又生成；\\n3. “可逆反应”：可逆反应的反应物不能完全转化，剩余物质可循环利用；\\n4. “母液”：母液中若含有流程中加入的反应物，则可循环利用；若母液为该晶体溶质的饱和溶液，可循环利用以提高产率。",
+   "boundaryMarkdown": "保护气必须是对产品不反应的气体（易水解的选干燥酸性气体等、易氧化的选惰性气体）；循环物质必须能回到流程中且不引入新杂质；目标产物与杂质一律不循环。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-9c54443f53:chemistry",
+   "sourceLocator": "桌面资料 05-【化学】2027版高中《解题觉醒》 / 05-【化学】2027版高中《解题觉醒》/化学解题觉醒-第2册 名师大招册.pdf（块 4dd2e79693-026）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化工流程题的分析模型",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-4dd2e79693-026c",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "工艺流程题的模块融合考法",
+   "summaryMarkdown": "工艺流程可与化学平衡、电化学、物质结构三大模块融合命题，答题时先做流程分析再调用模块知识。",
+   "applicabilityMarkdown": "流程题的压轴设问：平衡常数计算、电极反应式书写、晶胞与结构分析。",
+   "contentMarkdown": "**4. 创新考查方式——模块融合**\\n\\n| 命题热点 | 热点剖析 |\\n|---|---|\\n| 结合平衡原理分析原因、计算等 | 将工艺流程与化学平衡相结合，考查利用平衡原理分析某试剂过量的原因、某试剂的作用、某过程的现象或原理；沉淀溶解平衡原理的应用；结合电离平衡常数、水解平衡常数等进行计算；滴定的相关计算 |\\n| 电化学原理分析 | 将工艺流程与电化学相结合，考查电极反应式的书写及电化学的相关计算，命题载体一般为产物的应用及通过电解获取产物 |\\n| 物质结构与性质 | 将工艺流程与物质结构性质相结合，考查元素在周期表中的位置、核外电子排布、分子结构与性质、化学键相关分析、晶体类型、晶胞分析等 |",
+   "boundaryMarkdown": "模块融合题本质仍是流程分析，必须先完成杂质追踪与元素去向判断，再调用对应模块的知识；计算时要回到流程给出的物质的量与转化率关系，不能脱离流程数据自行假设。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-9c54443f53:chemistry",
+   "sourceLocator": "桌面资料 05-【化学】2027版高中《解题觉醒》 / 05-【化学】2027版高中《解题觉醒》/化学解题觉醒-第2册 名师大招册.pdf（块 4dd2e79693-026）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化工流程题的分析模型",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-4dd2e79693-027",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "工艺流程题的三步读题法",
+   "summaryMarkdown": "泛读题干挖掘图示、胸怀问题剖析流程、跳跃思维规范作答是流程题稳定的读题顺序。",
+   "applicabilityMarkdown": "所有无机工艺流程大题的入手方法，尤其是题干长、图示复杂的题。",
+   "contentMarkdown": "**做题悟法（三步）**\\n\\n1. **泛读题干，挖掘图示**：明确工艺流程的最终目标；确认杂质元素；把握文字信息、图表数据、工艺流程中的有效信息。\\n2. **胸怀问题，剖析流程**：一切反应或操作都是为了获取产品而服务——要的留下来，不要的踢出去，做好“杂质追踪”。\\n3. **跳跃思维，规范作答**：根据设问规范严谨作答；答题时应注意前后问题往往没有相关性，即前一问未答出，不会影响后面答题。",
+   "boundaryMarkdown": "读题顺序不能颠倒（先题干与图示、再逐问剖析）；各小问相互独立，不能因前一问不会而放弃后面作答；杂质追踪必须落实到每一步的滤液与滤渣成分。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-9c54443f53:chemistry",
+   "sourceLocator": "桌面资料 05-【化学】2027版高中《解题觉醒》 / 05-【化学】2027版高中《解题觉醒》/化学解题觉醒-第2册 名师大招册.pdf（块 4dd2e79693-027）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化工流程题的分析模型",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-4dd2e79693-040",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "大π键的定义与表示方法",
+   "summaryMarkdown": "平面多原子分子中垂直于分子平面、对称性一致且未参与杂化的 p 轨道相互重叠形成多中心 π 键，记为 Π 上标电子数下标原子数。",
+   "applicabilityMarkdown": "判断分子或离子中大 π 键的数目与表示（如 CO3^2-、NO3-、苯环、N2 等）。",
+   "contentMarkdown": "### 1. 大 $\\pi$ 键的定义\\n在一个具有平面结构的多原子分子中，如果彼此相连的三个或多个原子中有垂直于分子平面、对称性一致且未参与杂化的 p 轨道，那么这些轨道可以相互重叠，形成多中心 $\\pi$ 键，这种多中心 $\\pi$ 键又称为“共轭 $\\pi$ 键”或“非定域 $\\pi$ 键”，简称大 $\\pi$ 键。\\n\\n### 2. 大 $\\pi$ 键的表示方法\\n$$\\Pi_n^m$$\\n- 上标 $m$：平行 p 轨道里的电子数；\\n- 下标 $n$：平行 p 轨道的数目（或构成大 $\\pi$ 键的原子数目）。\\n\\n判断时先确定参与共轭的原子数 $n$，再统计这些原子垂直于分子平面的 p 轨道中的电子总数 $m$。",
+   "boundaryMarkdown": "只有当分子（或离子）整体为平面结构且相关原子的 p 轨道未参与杂化、对称性一致时才能形成大 $\\pi$ 键（如 $N_2$ 中的两个 $\\pi$ 键不是大 $\\pi$ 键的情形要注意区分）；$m$ 统计的是平行 p 轨道中的电子总数，包括孤电子对中的电子；书写时上标为电子数、下标为原子数，不能颠倒。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-9c54443f53:chemistry",
+   "sourceLocator": "桌面资料 05-【化学】2027版高中《解题觉醒》 / 05-【化学】2027版高中《解题觉醒》/化学解题觉醒-第2册 名师大招册.pdf（块 4dd2e79693-040）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:大π键",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-4dd2e79693-041",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "大π键的形成条件与计算法",
+   "summaryMarkdown": "形成大π键要求原子平面化且杂化为 sp 或 sp²，用价电子总数减去参与杂化的电子数即得大π键电子数。",
+   "applicabilityMarkdown": "给分子式（ABn 型微粒）写出大 π 键的表示符号的计算类填空。",
+   "contentMarkdown": "### 注意\\n总电子数小于轨道数的 2 倍，即 $b<2a$（1 个轨道最多填充 2 个电子，$a$ 个轨道最多填充 $2a$ 个电子，$b$ 必然小于 $2a$）。\\n\\n### 形成大 $\\pi$ 键的条件\\n1. 参与形成大 $\\pi$ 键的原子杂化方式为 $sp$ 或 $sp^2$；\\n2. 参与形成大 $\\pi$ 键的多个原子在同一个平面上；\\n3. 每个原子可提供一个相互平行并垂直于该多原子形成的平面的 p 轨道。\\n\\n### 书写方法1 计算法（$AB_n$ 型微粒）\\n$$b=\\text{价电子总数}-\\text{参与杂化的电子数}=\\text{价电子总数}-(\\text{原子总数}\\times\\text{每个原子杂化轨道数}-\\sigma\\text{键个数})\\times2$$\\n计算总杂化轨道数时，A—B $\\sigma$ 键占据的轨道算了两遍，故需要减去 $\\sigma$ 键个数。\\n\\n超人点拨：(1) 价电子总数“负加正减”；(2) 杂化轨道不参与形成大 $\\pi$ 键，微粒中的价电子分成参与杂化与参与形成大 $\\pi$ 键两种；(3) 对于 $AB_n$ 型微粒，外围原子 B 一般采用与中心原子 A 相同的杂化方式，即每个原子的杂化轨道数相同。\\n\\n| 微粒 | $SO_3$ | $CO_2$ | $CO_3^{2-}$ |\\n|---|---|---|---|\\n| 价电子总数 | $6+6\\times3=24$ | $4+6\\times2=16$ | $4+6\\times3+2=24$ |\\n| 中心原子杂化轨道数 | $3+\\dfrac{6-2\\times3}{2}=3$ | $2+\\dfrac{4-2\\times2}{2}=2$ | $3+\\dfrac{4+2-2\\times3}{2}=3$ |\\n| $b$ | $24-(4\\times3-3)\\times2=6$ | $16-(3\\times2-2)\\times2=8$ | $24-(4\\times3-3)\\times2=6$ |\\n| 大 $\\pi$ 键 | $\\Pi_4^6$ | $\\Pi_4^8$ | $\\Pi_4^6$ |\\n\\n$CO_2$ 中 $8>2\\times3$，则存在 2 个大 $\\pi$ 键；形成多套大 $\\pi$ 键时填充电子要保证对称性，形成的多套大 $\\pi$ 键内电子填充数目相同。",
+   "boundaryMarkdown": "计算法要求微粒为 $AB_n$ 型且外围原子与中心原子杂化方式相同；价电子总数对阴离子要加电荷数、对阳离子要减电荷数；大 π 键电子数必须小于轨道数的 2 倍，若大于则说明存在多套大 π 键。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-9c54443f53:chemistry",
+   "sourceLocator": "桌面资料 05-【化学】2027版高中《解题觉醒》 / 05-【化学】2027版高中《解题觉醒》/化学解题觉醒-第2册 名师大招册.pdf（块 4dd2e79693-041）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:大π键",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-4dd2e79693-041b",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "大π键的电子式法四步",
+   "summaryMarkdown": "环状化合物按找共轭原子、画σ键、画剩余价电子、统计电子数四步写出大π键。",
+   "applicabilityMarkdown": "苯环、吡啶、吡咯等环状体系大 π 键的书写与电子数统计。",
+   "contentMarkdown": "### 方法2 电子式法（书写环状化合物，中心原子 C、N、O 等中的大 $\\pi$ 键）\\n- 第一步：找出微粒中参与形成大 $\\pi$ 键的原子。通常为采取 $sp$ 或 $sp^2$ 杂化的共轭体系中的原子（H 除外），狭义地讲就是单双键交替出现的体系。\\n- 第二步：画出结构中全部的 $\\sigma$ 键。\\n- 第三步：画出所有参与形成大 $\\pi$ 键的原子的剩余价电子。\\n- 第四步：统计形成大 $\\pi$ 键的电子数。优先把单电子算入大 $\\pi$ 键，如果没有单电子，则将 1 个孤电子对计入。若为离子，外部电荷要加上或减掉，“负加正减”。\\n\\n### 常见环状体系的结果\\n- 苯环（6 个 C）：$\\Pi_6^6$；\\n- 吡啶（5 个 C、1 个 N）：$\\Pi_6^6$，N 上的单电子计入大 $\\pi$ 键，孤电子对填入一个 $sp^2$ 杂化轨道中；\\n- 吡咯（4 个 C、1 个 N）：$\\Pi_5^6$，N 上没有单电子，将 1 个孤电子对计入大 $\\pi$ 键。\\n\\n计算法和电子式法是通用的，考试中可根据需要选择合适的方法，实现快速解题。",
+   "boundaryMarkdown": "统计电子数时“优先单电子、再孤电子对”的顺序不能颠倒；离子要按“负加正减”修正；杂化轨道中的电子不计入大 π 键；参与共轭的原子必须共平面。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-9c54443f53:chemistry",
+   "sourceLocator": "桌面资料 05-【化学】2027版高中《解题觉醒》 / 05-【化学】2027版高中《解题觉醒》/化学解题觉醒-第2册 名师大招册.pdf（块 4dd2e79693-041）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:大π键",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-4dd2e79693-042",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "大π键对结构与性质的影响",
+   "summaryMarkdown": "形成大π键后键长均匀化、原子趋于平面化、体系能量降低并出现特定反应性能。",
+   "applicabilityMarkdown": "解释苯、酰胺、羧酸根等结构的稳定性、平面性与反应选择性。",
+   "contentMarkdown": "### 5. 大 $\\pi$ 键的影响\\n1. 单、双键交替部分的键长均匀化，即单键键长缩短、双键键长增加；\\n2. 原子趋于平面化；\\n3. 体系的能量降低，趋于稳定化；\\n4. 出现特定的化学反应性能，如苯易进行取代反应，而不易进行加成反应。\\n\\n应用：解释为什么苯环上的碳原子共平面、为什么羧酸根的两个 C—O 键长相等、为什么酰胺中的 C—N 键具有部分双键性质而难以旋转、为什么苯酚的酸性比醇强（苯环与氧上孤电子对共轭使氧氢键更易断裂）。",
+   "boundaryMarkdown": "大 π 键的结论用于解释性质差别，不能反过来说“存在大 π 键就一定发生取代反应”；键长均匀化是统计结果，单个键仍不等同于理想的单键或双键。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-9c54443f53:chemistry",
+   "sourceLocator": "桌面资料 05-【化学】2027版高中《解题觉醒》 / 05-【化学】2027版高中《解题觉醒》/化学解题觉醒-第2册 名师大招册.pdf（块 4dd2e79693-042）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:大π键",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-4dd2e79693-043b",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "由大π键倒推杂化与比较键长",
+   "summaryMarkdown": "已知某物种为 V 形且存在大 π 键时可倒推中心原子为 sp² 杂化，含大 π 键的键长介于单双键之间。",
+   "applicabilityMarkdown": "已知空间结构与大 π 键信息，判断杂化类型、比较键角与键长的题目。",
+   "contentMarkdown": "### 由大 $\\pi$ 键倒推中心原子杂化\\n$ClO_2$ 为 V 形结构且分子中存在大 $\\pi$ 键（$\\Pi_3^3$），则中心原子 Cl 采取 $sp^2$ 杂化；$Cl_2O$ 的中心原子 O 的价层电子对数为 $2+\\dfrac{6-2\\times1}{2}=4$，中心原子 O 采取 $sp^3$ 杂化。因此 O—Cl—O 键角 $>$ Cl—O—Cl 键角。\\n\\n### 由大 $\\pi$ 键比较键长\\n$ClO_2$ 分子中存在大 $\\pi$ 键（$\\Pi_3^3$），电子云重叠程度大，导致 Cl—O 键长介于单键和双键之间；而 $Cl_2O$ 分子中 Cl—O 键为单键。因此 $ClO_2$ 分子中 Cl—O 键的键长小于 $Cl_2O$ 分子中 Cl—O 键的键长。",
+   "boundaryMarkdown": "倒推的前提是题给“存在大 π 键”或“为平面结构”的信息，不能凭 V 形直接断定 $sp^2$（$H_2O$ 也是 V 形但为 $sp^3$）；键长比较必须先确定键的级数再下结论。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-9c54443f53:chemistry",
+   "sourceLocator": "桌面资料 05-【化学】2027版高中《解题觉醒》 / 05-【化学】2027版高中《解题觉醒》/化学解题觉醒-第2册 名师大招册.pdf（块 4dd2e79693-043）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:大π键",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-4dd2e79693-064",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "离子交换膜的类型、原则与作用",
+   "summaryMarkdown": "阳膜只让阳离子通过、阴膜只让阴离子通过、双极膜让水解离出的 H+ 与 OH- 通过，隔膜不改变离子的原定移动方向。",
+   "applicabilityMarkdown": "含离子交换膜的电化学装置分析（电解制备、浓差电池、双极膜电池）。",
+   "contentMarkdown": "### 常见离子交换膜的种类与允许通过的离子\\n- **阳膜**：允许阳离子通过；\\n- **阴膜**：允许阴离子通过；\\n- **双极膜**：允许中间层的水解离出的 $H^+$、$OH^-$ 通过；\\n- **特定的交换膜**：允许特定的离子通过，如质子交换膜允许 $H^+$ 通过、氯离子交换膜允许 $Cl^-$ 通过。\\n\\n### 通性、原则与作用\\n- 通性：控制阴离子或阳离子单方向流入或流出；\\n- 原则：不改变离子原定的移动方向［阴离子移向阳（负）极，阳离子移向阴（正）极］；\\n- 作用：①隔离某些物质，防止发生反应；②物质制备；③物质的分离、提纯。",
+   "boundaryMarkdown": "离子交换膜只起选择性透过作用，不改变离子的移动方向，因此判膜必须先判离子移向；双极膜中间层需有水存在才能解离出 $H^+$ 与 $OH^-$；不同的膜不能混称（质子交换膜≠阳离子交换膜，虽然常可互换使用，但答复时要按题给信息）。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-9c54443f53:chemistry",
+   "sourceLocator": "桌面资料 05-【化学】2027版高中《解题觉醒》 / 05-【化学】2027版高中《解题觉醒》/化学解题觉醒-第2册 名师大招册.pdf（块 4dd2e79693-064）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:离子交换膜",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-4dd2e79693-065",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "单膜装置的两步分析法",
+   "summaryMarkdown": "先判电极并分析电极附近剩余离子，再按电中性原则确定可能移动的离子与膜的类型。",
+   "applicabilityMarkdown": "电解饱和食盐水（氯碱工业）等单膜装置的膜类型判断与离子移向分析。",
+   "contentMarkdown": "### 类型1 单膜（两步法）\\n- 第一步：判断电极名称，书写电极反应式，分析电极附近剩余离子；\\n- 第二步：根据电中性原则判断可能移动的离子，结合题目信息确定离子交换膜的类型。\\n\\n### 举例：氯碱工业\\n左侧电极为阳极，电极反应式为 $2Cl^--2e^-=Cl_2\\uparrow$；$Cl_2$ 会和 $OH^-$ 反应，所以离子交换膜必须为阳离子交换膜，目的是防止 $OH^-$ 进入电解池左侧和氯气反应。\\n右侧电极为阴极，电极反应式为 $2H_2O+2e^-=H_2\\uparrow+2OH^-$，有 $OH^-$ 剩余。根据电中性原则，要么 $OH^-$ 移向左室，要么阳离子移入右室；根据产物为 NaOH，应使左室的 $Na^+$ 移入，则离子交换膜为阳离子交换膜。",
+   "boundaryMarkdown": "单膜装置要先用“电中性原则”列出可能的离子移动方向，再用产物或电极反应确定膜的种类；必须检查电极产物是否会与对侧离子反应（如 $Cl_2$ 与 $OH^-$）；“防止 OH- 进入左侧”本身就是选膜的理由，答题要写出这一层。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-9c54443f53:chemistry",
+   "sourceLocator": "桌面资料 05-【化学】2027版高中《解题觉醒》 / 05-【化学】2027版高中《解题觉醒》/化学解题觉醒-第2册 名师大招册.pdf（块 4dd2e79693-065）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:离子交换膜",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-4dd2e79693-065b",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "双膜及多膜装置的三步分析法",
+   "summaryMarkdown": "读题干定原料与产品室，按离子移向判膜类型，再用离子移动口诀判断电极名称。",
+   "applicabilityMarkdown": "电解 Na2SO3 溶液再生 NaOH、三室式电解制备等双膜与多膜装置分析。",
+   "contentMarkdown": "### 类型2 双膜及多膜（三步读题）\\n1. **读题干，看装置，找原料，定产品**：提取题干有效信息，确定原料、产品，进而确定原料室、产品室；\\n2. **抓产品，去杂质，析移向，判类型**：原料室（提供离子）的离子往两边移动，两边的离子往产品室（获得离子）中移动，确定移动的离子及其移动方向，进而确定膜的类型；\\n3. **“正正负负”“阴阳相吸”判电极名称**：根据原电池中离子移动口诀“正正负负”及电解池中离子移动口诀“阴阳相吸”判断电极名称。\\n\\n题目往往设计为利用原电池正、负极或电解池阴、阳极来判断离子移动方向与交换膜种类，或设计为利用离子移动方向与交换膜种类来判断原电池正、负极或电解池阴、阳极，因此第二、三步没有固定的顺序。\\n\\n### 角度一 双膜\\n用 $NaOH$ 溶液吸收烟气中的 $SO_2$，将所得的 $Na_2SO_3$ 溶液进行电解，可循环再生 $NaOH$，同时得到 $H_2SO_4$：中间室为原料室，左室中得到 $NaOH$ 溶液、右室中得到 $H_2SO_4$ 溶液，则原料室中的 $Na^+$ 向左移动、$SO_3^{2-}$ 向右移动，即左侧的离子交换膜为阳离子交换膜、右侧的离子交换膜为阴离子交换膜；结合“阴阳相吸”可知左侧电极为阴极、右侧电极为阳极。\\n\\n### 超人建构\\n- 三室式电解池装置，中间室为原料室：离子由中间往两边移动，移动方向为“阴阳相吸”；\\n- 三室式电解池装置，中间室为产品室：离子由两边向中间移动，移动方向为“阴阳相吸”。",
+   "boundaryMarkdown": "膜的类型由离子实际移动方向决定，不是由室的位置决定；判膜前必须先定电极（或由膜反推电极）；原料室与产品室的角色可以互换，不能背死位置；“正正负负”用于原电池、“阴阳相吸”用于电解池，口诀不能混用。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-9c54443f53:chemistry",
+   "sourceLocator": "桌面资料 05-【化学】2027版高中《解题觉醒》 / 05-【化学】2027版高中《解题觉醒》/化学解题觉醒-第2册 名师大招册.pdf（块 4dd2e79693-065）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:离子交换膜",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-4dd2e79693-066",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "多膜装置的三膜四室与四室式建构",
+   "summaryMarkdown": "三膜四室制硼酸时逐膜判断离子的移向与膜的种类；四室式装置按中间室是原料室还是产品室判断离子移向。",
+   "applicabilityMarkdown": "三膜四室、四室式等多膜电解装置中膜类型与离子移向的判断。",
+   "contentMarkdown": "### 角度二 多膜：用三膜四室制备硼酸［$H_3BO_3$（一元弱酸）］\\n- 石墨 a 电极为阳极，电极反应为 $2H_2O-4e^-=O_2\\uparrow+4H^+$；石墨 b 电极为阴极，电极反应为 $2H_2O+2e^-=H_2\\uparrow+2OH^-$；\\n- 产品室中得到 $H_3BO_3$ 溶液，发生反应 $H^++[B(OH)_4]^-=H_3BO_3+H_2O$，则阳极生成的 $H^+$ 通过 a 膜进入产品室，即 a 膜为质子交换膜或阳离子交换膜；\\n- 原料室中 $[B(OH)_4]^-$ 向左移动、$Na^+$ 向右移动，则 b 膜为阴离子交换膜、c 膜为阳离子交换膜；原料室中的 $Na^+$ 向右移动，则该室中得到较浓的 $NaOH$ 溶液。\\n\\n### 超人建构（四室式）\\n四室式电解池装置中，离子由中间向两边移动的是原料室，离子由两边向中间移动的是产品室，移动方向皆为“阴阳相吸”。\\n\\n### 超人提醒\\n电化学试题灵活多变，大招所讲的内容是普遍性原则，做题时一定要根据题目信息来分析，注意特殊情况的处理，千万不要固化思维。",
+   "boundaryMarkdown": "多膜装置要逐膜分析，每层膜按其允许通过的离子电性命名；产品室生成弱酸（如 $H_3BO_3$）需要 $H^+$ 与酸根离子共同迁移，两侧膜的判断要分别进行；遇到题给的特殊膜（质子交换膜、氯离子交换膜）必须按题给信息作答。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-9c54443f53:chemistry",
+   "sourceLocator": "桌面资料 05-【化学】2027版高中《解题觉醒》 / 05-【化学】2027版高中《解题觉醒》/化学解题觉醒-第2册 名师大招册.pdf（块 4dd2e79693-066）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:离子交换膜",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-1b5c8b791f-001",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "实验综合题答题模板（仪器与操作类）",
+   "summaryMarkdown": "实验综合题中“加入过量某物质”“通入气体”“某装置的作用”“控温”“趁热过滤”等设问的目的与原因都有固定答题模板。",
+   "applicabilityMarkdown": "实验综合题中目的、作用、原因类简答设问的标准作答。",
+   "contentMarkdown": "### 实验综合题的 18 个答题模板（仪器与操作类）\\n| 热点设问 | 目的、作用、原因等答题模板 |\\n|---|---|\\n| A 物质与 B 物质反应，加入过量 A 物质的原因 | 使 B 物质反应完全或提高 B 物质的转化率等 |\\n| 通入不与体系内物质作用的气体（如 $N_2$、稀有气体等）的原因 | 反应前通入气体，排出装置内的空气，避免对反应造成干扰或发生副反应；反应后通入气体，将产生的气体全部排出，使其被后续装置完全吸收 |\\n| 不能用 A 溶液代替 B 溶液的原因 | 防止 A 溶液中的某离子对实验产生干扰；防止发生 $××$ 反应，干扰实验现象和实验结果等 |\\n| 反应容器中和大气相通的玻璃导管的作用 | 平衡容器内外压强；指示容器中压强大小，避免反应容器中压强过大 |\\n| 制备气体时，恒压滴液漏斗上的支管或分液漏斗上口连接反应容器的橡胶管的作用 | 平衡压强，使液体顺利滴下；在定量测定生成气体体积的实验中，还可以消除加入液体所造成的体积误差 |\\n| 装置末端干燥管的作用 | 防止空气中的水蒸气等进入装置，干扰实验 |\\n| 逐步（分批）加入某物质的目的 | 若反应放热，是为了防止升温太快；若产生气体，是为了防止反应速率过快、产生气体过快、压强过大；控制反应体系 pH 等 |\\n| 控制温度在一定范围的目的 | 若温度过低，反应速率较慢；若温度过高，某物质会分解或挥发；防止副反应的发生等 |\\n| 趁热过滤的目的 | 保持过滤温度，防止温度降低后溶解度随温度降低而减小的物质析出 |\\n| 减压蒸发、减压蒸馏的目的 | 减小压强，降低蒸发温度或物质沸点，防止某物质受热分解或实现在较低温度下蒸发分离 |\\n| 沉淀用冷水洗涤的目的 | 除去沉淀吸附的可溶性杂质；降低沉淀在水中的溶解度，减少溶解损失 |\\n| 有机溶剂洗涤的目的 | 减少产品在洗涤过程中的溶解损失，且有机溶剂易挥发，能快速带走固体表面的水分，易于干燥产品 |\\n| 在某气体氛围中蒸发、反应的目的 | 抑制某离子的水解；防止某离子被氧化 |",
+   "boundaryMarkdown": "答题要落到具体物质与具体操作上（“排出空气”“防止水解”“降低溶解度”），不能只写“防止干扰”；同一个操作可能有多重目的，要按题给条件选择并写全；模板中的 $××$ 要替换成题目中的真实离子、试剂与颜色。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-9c54443f53:chemistry",
+   "sourceLocator": "桌面资料 05-【化学】2027版高中《解题觉醒》 / 05-【化学】2027版高中《解题觉醒》/化学要点觉醒图示.pdf（块 1b5c8b791f-001）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:实验综合题答题模板",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-1b5c8b791f-002",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "实验综合题答题模板（检验与判断类）",
+   "summaryMarkdown": "检验离子、判断沉淀是否洗净或完全、滴定终点判断以及常见实验缺陷都有标准表述。",
+   "applicabilityMarkdown": "实验综合题中检验类操作描述、判断类操作描述与实验缺陷查找。",
+   "contentMarkdown": "### 实验综合题的 18 个答题模板（检验与判断类）\\n| 热点设问 | 目的、作用、原因等答题模板 |\\n|---|---|\\n| 检验 A 离子的操作 | 取少量待测液于试管中，滴加 $××$ 溶液，产生 $××$ 色沉淀或产生 $××$ 色 $××$ 味气体或溶液由 $××$ 色变为 $××$ 色，证明溶液中含有 A 离子 |\\n| 判断沉淀是否洗涤干净的操作 | 取少量最后一次洗涤液，滴加 $××$（试剂），若不出现 $××$ 现象，证明沉淀已经洗涤干净 |\\n| 判断是否沉淀完全的操作 | 静置，取适量上层清液于一洁净试管中，向其中滴加少量沉淀剂，若无沉淀产生，证明已沉淀完全 |\\n| 滴定终点判断 | 当滴加最后半滴 $××$ 标准溶液时，溶液由 $××$ 色变为 $××$ 色，且半分钟内不恢复原色（不褪色），说明滴定已达终点 |\\n| 常见实验缺陷 | 未防止空气中的氧气或水蒸气等进入装置干扰实验；参与反应的杂质气体未除去，导致产物不纯；未吸收尾气，污染环境；未防止倒吸 |",
+   "boundaryMarkdown": "检验类描述必须包含“取样—加试剂—现象—结论”四步；判断洗涤干净要取“最后一次洗涤液”而不是滤液；沉淀完全要“静置后取上层清液”；滴定终点必须写“半分钟内不恢复原色”。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-9c54443f53:chemistry",
+   "sourceLocator": "桌面资料 05-【化学】2027版高中《解题觉醒》 / 05-【化学】2027版高中《解题觉醒》/化学要点觉醒图示.pdf（块 1b5c8b791f-002）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:实验综合题答题模板",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-1b5c8b791f-002b",
+   "subject": "CHEMISTRY",
+   "type": "MISCONCEPTION_GUIDE",
+   "title": "临考必读的14个“不一定”（上）",
+   "summaryMarkdown": "高考中大量结论都带有前提条件，“不一定”清单用于纠正绝对化记忆。",
+   "applicabilityMarkdown": "选择题中判断“一定”“不一定”类说法的正误。",
+   "contentMarkdown": "### 临考必读的 14 个“不一定”（1~11）\\n1. 有机物不一定都易燃，如四氯化碳和聚四氟乙烯不易燃。\\n2. 氢卤酸不一定都是强酸，如氢氟酸是弱酸。\\n3. 金属元素不一定都能观察到焰色，如铁、铂等观察不到焰色。\\n4. 既能与酸反应生成气体，又能与碱反应生成气体的物质不一定是 Al，还可能是 $(NH_4)_2CO_3$ 或 $NH_4HCO_3$ 等。\\n5. 固体物质的溶解度不一定都随温度升高而增大，如 $Ca(OH)_2$ 等的溶解度随温度的升高而减小。\\n6. 苯的同系物不一定都能被酸性高锰酸钾溶液氧化。若某苯的同系物的侧链上与苯环直接相连的碳原子上无氢原子，则该物质不能被酸性高锰酸钾溶液氧化。\\n7. 物质中的原子不一定都满足 8 电子稳定结构，如 H 在化合物中一般形成 2 电子稳定结构，$BF_3$ 中 B 不是 8 电子稳定结构。\\n8. 最高正价与最低负价的绝对值相等的元素不一定是第ⅣA族元素，还可能是 H。\\n9. 加热固体时，试管口不一定都略向下倾斜（如加热草酸等熔点低于分解温度的固体时要特殊处理）。\\n10. 蒸干能水解的盐溶液不一定得不到对应的盐：蒸干 $AlCl_3$、$FeCl_3$ 等溶液不能得到对应的盐（水解生成的 HCl 易挥发）；蒸干 $Al_2(SO_4)_3$、$Fe_2(SO_4)_3$ 等溶液能得到对应的盐（水解生成的 $H_2SO_4$ 难挥发）。\\n11. 平衡正向移动，反应物的转化率不一定增大。一般情况下，若有多种反应物，增大其中一种反应物的量，平衡正向移动，该反应物的转化率减小，其他反应物的转化率增大。",
+   "boundaryMarkdown": "每条“不一定”都要能举出反例才算掌握；判断“一定”类说法只要找到一个反例即可否定；蒸干水解盐溶液的产物由水解生成的酸是否挥发决定。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-9c54443f53:chemistry",
+   "sourceLocator": "桌面资料 05-【化学】2027版高中《解题觉醒》 / 05-【化学】2027版高中《解题觉醒》/化学要点觉醒图示.pdf（块 1b5c8b791f-002）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:高考化学“不一定”易错清单",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-1b5c8b791f-003",
+   "subject": "CHEMISTRY",
+   "type": "MISCONCEPTION_GUIDE",
+   "title": "临考必读的14个“不一定”（下）",
+   "summaryMarkdown": "平衡常数只受温度影响，酸式盐的酸碱性要比较 Ka 与 Kh，银镜反应不一定说明是醛。",
+   "applicabilityMarkdown": "酸式盐酸碱性判断、平衡常数影响因素、银镜反应范围的判断。",
+   "contentMarkdown": "### 临考必读的 14 个“不一定”（12~14）\\n12. 平衡正向移动，平衡常数 $K$ 不一定增大，因为 $K$ 只与温度有关。\\n13. 多元强酸的酸式盐溶液呈酸性，多元弱酸的酸式盐溶液不一定显碱性：需比较该多元弱酸的酸式酸根离子的水解常数 $K_h$ 与电离常数 $K_a$ 的大小——水解程度大于电离程度（$K_h>K_a$）时溶液呈碱性，如 $NaHCO_3$、$NaHS$ 等；电离程度大于水解程度时溶液呈酸性，如 $NaH_2PO_4$、$NaHSO_3$ 等。\\n14. 能发生银镜反应的有机物不一定是醛类，还可能是甲酸、甲酸某酯等；银镜反应需要在碱性条件下发生。",
+   "boundaryMarkdown": "平衡移动与平衡常数变化是两回事（只有温度改变才改 $K$）；酸式盐的酸碱性必须比较 $K_h$ 与 $K_a$，不能一律按“酸式盐显酸性”判断；甲酸与甲酸酯因含醛基而能发生银镜反应，反应必须在碱性条件下进行。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-9c54443f53:chemistry",
+   "sourceLocator": "桌面资料 05-【化学】2027版高中《解题觉醒》 / 05-【化学】2027版高中《解题觉醒》/化学要点觉醒图示.pdf（块 1b5c8b791f-003）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:高考化学“不一定”易错清单",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-1b5c8b791f-003b",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "考前必知的12个关键（1~5）",
+   "summaryMarkdown": "反应热的五种算法、平衡常数的三条关系、电化学电荷守恒、速率常数与平衡常数的关系、难溶电解质的溶解与转化。",
+   "applicabilityMarkdown": "涉及反应热计算、平衡常数换算、电化学计算、速率方程与 Ksp 的题目。",
+   "contentMarkdown": "### 1. 反应热的计算\\n1. 根据热化学方程式计算：若反应Ⅰ $=a\\times$ 反应Ⅱ $+b\\times$ 反应Ⅲ $-c\\times$ 反应Ⅳ，则 $\\Delta H_Ⅰ=a\\Delta H_Ⅱ+b\\Delta H_Ⅲ-c\\Delta H_Ⅳ$（盖斯定律）。注意物质的状态，状态不同，不能“抵消”。\\n2. 根据反应物和生成物的总能量计算：$\\Delta H=$ 生成物的总能量 $-$ 反应物的总能量。\\n3. 根据键能计算：$\\Delta H=$ 反应物键能总和 $-$ 生成物键能总和。既要考虑热化学方程式中各物质前的化学计量数，又要考虑各物质中化学键的个数，如 1 个 $H_2O$ 分子中含有 2 个 O—H。\\n4. 根据物质燃烧热计算：$\\Delta H=$ 反应物燃烧热 $\\Delta H$ 之和 $-$ 生成物燃烧热 $\\Delta H$ 之和。\\n5. 根据活化能计算：$\\Delta H=$ 正反应的活化能 $-$ 逆反应的活化能。\\n\\n### 2. 平衡常数的关系\\n若反应 1（平衡常数为 $K_1$）$+$ 反应 2（平衡常数为 $K_2$）$=$ 反应 3（平衡常数为 $K_3$），则 $K_3=K_1\\cdot K_2$；若两反应互为逆反应，则其平衡常数互为倒数；若反应中各物质的化学计量数扩大 $n$ 倍，则其平衡常数为原平衡常数的 $n$ 次幂。\\n\\n### 3. 电化学相关计算\\n1. 电荷守恒：电路中转移的电子数 $=$ 参与电极反应的物质得（失）电子总数 $=$ 溶液中迁移的阴离子（阳离子）所带电荷总数（含膜装置）。\\n2. 判断电解质溶液质量变化时，不能只注意电极产物（沉淀、气体）的影响，还要关注离子迁移对溶液的影响。\\n\\n### 4. 速率常数\\n对于基元反应 $aA+dD=gG+hH$，其速率可表示为 $v_正=k_正\\cdot c^a(A)\\cdot c^d(D)$、$v_逆=k_逆\\cdot c^g(G)\\cdot c^h(H)$，式中的 $k_正$、$k_逆$ 称为反应速率常数或速率常数，其与浓度无关，但受温度、催化剂等因素的影响；平衡常数 $K=\\dfrac{k_正}{k_逆}$，解题时可直接利用该公式，省略推导过程，节约时间。\\n\\n### 5. 难溶电解质的溶解\\n同类型的难溶物，$K_{sp}$ 越大，物质的溶解度就越大；不同类型的难溶物，不能根据 $K_{sp}$ 的大小直接比较溶解度大小。一般情况下，$K_{sp}$ 大的难溶电解质可以转化为 $K_{sp}$ 小的难溶电解质，但当某一离子浓度较大，使 $Q>K_{sp}$ 时，也能实现 $K_{sp}$ 小的难溶电解质转化为 $K_{sp}$ 大的难溶电解质。",
+   "boundaryMarkdown": "用盖斯定律叠加时要核对物质状态（同一物质不同状态不能相消）；键能法必须数清化学键个数；$K$ 的换算要与方程式的计量数对应；比较溶解度必须先判定难溶物类型；速率常数只适用于基元反应。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-9c54443f53:chemistry",
+   "sourceLocator": "桌面资料 05-【化学】2027版高中《解题觉醒》 / 05-【化学】2027版高中《解题觉醒》/化学要点觉醒图示.pdf（块 1b5c8b791f-003）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:高考化学“考前必知的关键”清单",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-1b5c8b791f-004",
+   "subject": "CHEMISTRY",
+   "type": "CONCEPT_EXPLANATION",
+   "title": "考前必知的12个关键（6~12）",
+   "summaryMarkdown": "不饱和度公式、溶解性规律、孤电子对数公式、焰色试验操作、氢氧化铁胶体制备、尾气处理与离子电子电流方向。",
+   "applicabilityMarkdown": "有机不饱和度计算、物质溶解性判断、杂化计算、焰色试验、胶体制备与电化学方向判断。",
+   "contentMarkdown": "### 6. 不饱和度的计算\\n1. 烃（$C_nH_m$）：$\\Omega=\\dfrac{2n+2-m}{2}=n+1-\\dfrac{m}{2}$（碳加一减一半氢）。\\n2. 卤代烃（$C_nH_mX_z$）：$\\Omega=\\dfrac{2n+2-m-z}{2}=n+1-\\dfrac{m+z}{2}$（将卤素原子视作氢原子）。\\n3. 烃的含氧衍生物（$C_nH_mO_z$）：$\\Omega=\\dfrac{2n+2-m}{2}=n+1-\\dfrac{m}{2}$（不考虑氧原子）。\\n4. $\\Omega=$ 双键数 $+$ 三键数 $\\times2+$ 环数（除苯环外）$+$ 苯环数 $\\times4$。\\n\\n### 7. 溶解性\\n“相似相溶”：非极性溶质一般能溶于非极性溶剂，极性溶质一般能溶于极性溶剂。氢键的影响：若溶剂和溶质分子间可以形成氢键，则溶质的溶解度增大。疏水基团的影响：随着溶质分子中疏水基团中碳链的增长及疏水基团个数的增多，溶质在水中的溶解度减小，如甲醇、乙醇均可以与水以任意比例互溶，而戊醇在水中的溶解度明显减小。\\n\\n### 8. 中心原子孤电子对数的计算\\n$$\\text{中心原子孤电子对数}=\\dfrac{a-xb}{2}$$\\n其中 $a$ 为中心原子的价电子数，$b$ 为与中心原子结合的原子最多能接受的电子数，$x$ 为与中心原子结合的原子数。当为阳离子时，$a=$ 中心原子的价电子数 $-$ 离子所带电荷数；当为阴离子时，$a=$ 中心原子的价电子数 $+$ 离子所带电荷数（绝对值）。\\n\\n### 9. 焰色试验（焰色反应）\\n先用铂丝（或铁丝）蘸取盐酸在酒精灯外焰上灼烧至与原来的火焰颜色相同，然后再用铂丝（或铁丝）蘸取待测液在酒精灯外焰上灼烧，观察火焰颜色。若火焰呈黄色，则说明待测液中含 $Na^+$；若透过蓝色钴玻璃观察到火焰呈紫色，则说明待测液中含 $K^+$。\\n\\n### 10. 氢氧化铁胶体的制备\\n向煮沸的蒸馏水中逐滴滴加饱和 $FeCl_3$ 溶液，当液体变为红褐色时，立即停止加热。\\n\\n### 11. 尾气处理\\n尾气吸收装置要注意是否需要防倒吸；可燃性气体可以点燃处理，但应先验纯后点燃，若点燃不纯的可燃性气体可能会发生爆炸。\\n\\n### 12. 离子或电子的移动方向、电流的方向\\n离子只在电解质溶液中移动，阳离子移向得电子的电极，阴离子移向失电子的电极（离子不上岸）；电子只在导线中移动，电子从原电池负极流出，经过外电路，流向正极（电子不下水）；电流从正极出发，经外电路流向负极，电解质溶液中阴、阳离子定向移动形成电流，构成闭合回路（电流形成环）。",
+   "boundaryMarkdown": "不饱和度公式只适用于烃与卤代烃、含氧衍生物（不含 N 等杂原子）；溶解性判断要先看“相似相溶”再看氢键与疏水基团；$K^+$ 的焰色必须透过蓝色钴玻璃观察以滤去钠的黄光；胶体制备用饱和 $FeCl_3$ 溶液且不能用 NaOH；电化学方向记忆口诀“离子不上岸、电子不下水”。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-9c54443f53:chemistry",
+   "sourceLocator": "桌面资料 05-【化学】2027版高中《解题觉醒》 / 05-【化学】2027版高中《解题觉醒》/化学要点觉醒图示.pdf（块 1b5c8b791f-004）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:高考化学“考前必知的关键”清单",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-4dd2e79693-074",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "阿伦尼乌斯公式与lnk–1/T图像",
+   "summaryMarkdown": "速率常数随温度变化的定量规律以及把公式化成直线读斜率的方法。",
+   "applicabilityMarkdown": "给出 ln k 与 1/T 的图像或速率常数随温度变化的数据，要求判断活化能大小、曲线归属或温度对速率的影响程度。",
+   "contentMarkdown": "**公式**：$k=A\\cdot e^{-E_a/(RT)}$，其中 $A$ 为指前因子，$R$ 为常数，$T$ 为热力学温度，$E_a$ 为活化能。\\n**线性化**：两边取自然对数得 $\\ln k=-\\frac{E_a}{R}\\cdot\\frac{1}{T}+C$，以 $\\ln k$ 对 $\\frac{1}{T}$ 作图是一条直线，斜率 $=-\\frac{E_a}{R}<0$（$R$、$C$ 为常数）。\\n**三条结论**：\\n1. $\\frac{1}{T}$ 越大（即温度越低），$k$ 越小；\\n2. $E_a$ 越大，直线的斜率绝对值越大，曲线越陡；\\n3. $k$ 只与 $E_a$、$T$ 有关，改变浓度、压强不改变 $k$。\\n**解题用法**：同一反应正逆方向的 $\\ln k-\\frac{1}{T}$ 直线画在同一图中时，越陡的一方活化能越大；再结合 $\\Delta H=E_a(正)-E_a(逆)$ 的正负判断哪条曲线属于正反应。",
+   "boundaryMarkdown": "只反映速率常数与温度、活化能的关系，不能用它判断浓度、压强对速率的影响；读图前必须确认横坐标是 1/T 还是 T，横坐标不同斜率的含义相反；A 视为常数，仅适用于温度变化范围不大的情形。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-9c54443f53:chemistry",
+   "sourceLocator": "桌面资料 05-【化学】2027版高中《解题觉醒》 / 05-【化学】2027版高中《解题觉醒》/化学解题觉醒-第2册 名师大招册.pdf（块 4dd2e79693-074）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:阿伦尼乌斯公式",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-4dd2e79693-096",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "对数折线图的四步破解法",
+   "summaryMarkdown": "明含义写常数、取对数建联系、看斜率定曲线、代数据算常数。",
+   "applicabilityMarkdown": "给出 pH 或 −lg c 为横轴、lg 浓度比或 −lg c 为纵轴的水溶液对数折线图，要求判断曲线归属或计算电离常数、溶度积。",
+   "contentMarkdown": "**第一步·明含义，写常数**：明确横轴和纵轴的含义，写出含有相关离子的平衡常数 $K$ 的表达式。\\n**第二步·取对数，建联系**：根据横、纵轴的含义对 $K$ 取常用对数或常用负对数，找出横、纵轴之间的联系。\\n**第三步·看斜率（或截距），定曲线**：根据斜率或截距确定曲线代表的物理量。\\n**第四步·代数据，算常数**：根据图像中的特殊点（如零点、交点、赋值点等）计算所求物理量。\\n**示例（二元弱酸 H2Y）**：由 $K_{a1}=\\frac{c(H^+)\\cdot c(HY^-)}{c(H_2Y)}$ 得 $-lgK_{a1}=-lgc(H^+)-lg\\frac{c(HY^-)}{c(H_2Y)}$，即 $lg\\frac{c(HY^-)}{c(H_2Y)}=pH+lgK_{a1}$，斜率为 +1，故曲线 M 表示 pH 与 $lg\\frac{c(HY^-)}{c(H_2Y)}$ 的关系；同理 $lg\\frac{c(HY^-)}{c(Y^{2-})}=-pH-lgK_{a2}$，斜率为 −1，对应曲线 N。代入点 d（2，0.7）得 $0.7=2+lgK_{a1}$，$K_{a1}=10^{-1.3}$；代入点 e（3，1.3）得 $1.3=-3-lgK_{a2}$，$K_{a2}=10^{-4.3}$。",
+   "boundaryMarkdown": "取对数时必须弄清纵轴是 lg 还是 −lg，符号不同斜率与截距的含义相反；斜率只决定曲线属于哪一类物理量，具体常数要靠特殊点代入；图中曲线相交时交点处是浓度比等于 1，不能只看形状猜结论。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-9c54443f53:chemistry",
+   "sourceLocator": "桌面资料 05-【化学】2027版高中《解题觉醒》 / 05-【化学】2027版高中《解题觉醒》/化学解题觉醒-第2册 名师大招册.pdf（块 4dd2e79693-096）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:对数折线图四步法",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-4dd2e79693-099",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "分布分数图像的读图四步",
+   "summaryMarkdown": "依先后定曲线、找交点算常数、作垂线比浓度、看峰值定主次。",
+   "applicabilityMarkdown": "给出某元素各微粒的分布分数随 pH 变化的曲线，要求判断曲线归属、计算 Ka 与 Kh 或比较微粒浓度。",
+   "contentMarkdown": "**分布分数**：含某种元素的一种微粒的平衡浓度与所有含该种元素的微粒的平衡浓度总和之比，用 $\\delta$ 表示。如一元弱酸 HA 在溶液中只有 HA、$A^-$ 两种形式，则 $\\delta(HA)=\\frac{c(HA)}{c(HA)+c(A^-)}$、$\\delta(A^-)=\\frac{c(A^-)}{c(HA)+c(A^-)}$；图像一般以 pH 为横轴、分布分数为纵轴。\\n**一元弱酸（以 HA 为例）**：$HA\\rightleftharpoons H^++A^-$，随 pH 增大 $\\delta_0$（HA，最初微粒）不断减小、$\\delta_1$（$A^-$，最终微粒）逐渐增大。交点处 $c(HA)=c(A^-)$，此时 $K_a(HA)=\\frac{c(H^+)\\cdot c(A^-)}{c(HA)}=c(H^+)$，即交点的 pH 就等于 $pK_a$：作图可知 pH=4.76 时 $\\delta(HA)=\\delta(A^-)$，故 $K_a(HA)=10^{-4.76}$。在 pH=a 处作垂线，读图可得 $c(HA)>c(A^-)$。\\n**二元弱酸（以 H2B 为例）**：随 pH 增大，$H_2B$（最初微粒）浓度不断减小、$HB^-$（中间微粒）先增大后减小、$B^{2-}$（最终微粒）逐渐增大，$\\delta_0$、$\\delta_1$、$\\delta_2$ 依次对应这三种微粒。",
+   "boundaryMarkdown": "判断曲线归属只看最初微粒递减、中间微粒先增后减、最终微粒递增的先后次序，不能只凭曲线高低；交点处只是相邻两级微粒浓度相等，不说明它们的浓度一定很大；分布分数只与 pH 有关而与总浓度无关。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-9c54443f53:chemistry",
+   "sourceLocator": "桌面资料 05-【化学】2027版高中《解题觉醒》 / 05-【化学】2027版高中《解题觉醒》/化学解题觉醒-第2册 名师大招册.pdf（块 4dd2e79693-099）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:分布分数图像",
+     "role": "PRIMARY"
+    }
+   ]
+  },
+  {
+   "slug": "ext-che-4dd2e79693-100",
+   "subject": "CHEMISTRY",
+   "type": "METHOD_MODEL",
+   "title": "三元弱酸分布分数图像的读法",
+   "summaryMarkdown": "四条分布曲线按先后次序排列，交点依次给出各级pKa，峰值得出酸式盐的酸碱性。",
+   "applicabilityMarkdown": "给出三元弱酸 H3X 各微粒的分布分数曲线，要求判断曲线归属或计算各级电离常数、水解常数。",
+   "contentMarkdown": "**三条电离平衡**：$H_3X\\rightleftharpoons H_2X^-+H^+$、$H_2X^-\\rightleftharpoons HX^{2-}+H^+$、$HX^{2-}\\rightleftharpoons X^{3-}+H^+$。随 pH 增大（用 NaOH 调节），$H_3X$（最初微粒）浓度不断减小、$H_2X^-$ 与 $HX^{2-}$（中间微粒）浓度先增大后减小、$X^{3-}$（最终微粒）浓度逐渐增大，$\\delta_0$ 至 $\\delta_3$ 依次对应这四种微粒。\\n**找交点算常数**：$c(H_2X^-)=c(HX^{2-})$ 时交点处的 pH 就是 $pK_{a2}$（示例为 7.1）；$c(H_3X)=c(H_2X^-)$ 与 $c(HX^{2-})=c(X^{3-})$ 的交点分别对应两级 pKa 的平均值（示例为 4.55 与 9.65）。由交点读得 $K_{a1}(H_3X)=10^{-2}$、$K_{a2}(H_3X)=10^{-7.1}$、$K_{a3}(H_3X)=10^{-12.2}$。\\n**求水解常数**：由 $K_{a1}\\cdot K_h(H_2X^-)=K_{a2}\\cdot K_h(HX^{2-})=K_{a3}\\cdot K_h(X^{3-})=K_w$，得 $K_h(X^{3-})=10^{-1.8}$、$K_h(HX^{2-})=10^{-6.9}$、$K_h(H_2X^-)=10^{-12}$。\\n**看峰值定主次**：$\\delta_1$ 最大时可认为溶质全部是 $NaH_2X$，此时 pH<7，说明 $H_2X^-$ 以电离为主；$\\delta_2$ 最大时可认为溶质全部是 $Na_2HX$，此时 pH>7，说明 $HX^{2-}$ 以水解为主。",
+   "boundaryMarkdown": "三元弱酸中相邻两级微粒交点的 pH 等于该级 pKa，而相隔两级（如 H3X 与 HX2−）的交点 pH 是两个 pKa 的平均值，不要混用；峰值的酸碱性判断只看 pH 是否大于 7；水解常数要用对应那一级的 Ka 换算。",
+   "derivationKind": "REVIEWED_SYNTHESIS",
+   "sourceId": "desktop-src-9c54443f53:chemistry",
+   "sourceLocator": "桌面资料 05-【化学】2027版高中《解题觉醒》 / 05-【化学】2027版高中《解题觉醒》/化学解题觉醒-第2册 名师大招册.pdf（块 4dd2e79693-100）",
+   "reviewedAtEpochMillis": 1789757548788,
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:分布分数图像",
      "role": "PRIMARY"
     }
    ]

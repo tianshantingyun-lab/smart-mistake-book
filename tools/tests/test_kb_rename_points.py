@@ -51,10 +51,11 @@ class RealPackTest(unittest.TestCase):
         renames = rp.load_renames()
         self.assertEqual(0, rp.rename(pack, renames))
 
-    def test_shipped_point_count_is_2115(self):
+    def test_shipped_point_count_is_2264(self):
         from kb_build import delete_points as dp
         pack = pack_io.load_json(pack_io.pack_path())
-        self.assertEqual(2115, dp._point_count(pack))
+        # 2026-09-19：《解题觉醒》名师大招册视觉转写新增 149 个方法/概念节点（2115→2264）
+        self.assertEqual(2264, dp._point_count(pack))
 
 
 if __name__ == "__main__":

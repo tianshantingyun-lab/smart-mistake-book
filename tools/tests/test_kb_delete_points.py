@@ -63,10 +63,11 @@ class RealPackTest(unittest.TestCase):
         self.assertEqual(0, dp.delete(pack, deletes)[0])
         self.assertEqual(0, dp.delete(pack, deletes)[1], "不得清理悬挂前置")
 
-    def test_shipped_point_count_is_2115(self):
+    def test_shipped_point_count_is_2264(self):
         from kb_build import pack_io
         pack = pack_io.load_json(pack_io.pack_path())
-        self.assertEqual(2115, dp._point_count(pack))
+        # 2026-09-19：《解题觉醒》名师大招册视觉转写新增 149 个方法/概念节点（2115→2264）
+        self.assertEqual(2264, dp._point_count(pack))
 
     def test_purge_table_refs_is_clean_on_shipped(self):
         """成品已删过点、外部表已清过——再 purge 必须 0（无悬空引用残留）。"""

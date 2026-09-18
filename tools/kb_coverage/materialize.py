@@ -83,6 +83,30 @@ def _source_entry(top_dir: str, subject: str) -> dict:
     }
 
 
+def _existing_source_entries() -> dict[str, dict]:
+    """把各卷里已有的 source 条目按 sourceId 汇总，取 importedAt 最早的那份。
+
+    为什么必须复用而不是重新生成：同一个 sourceId 会随不同批次落进不同卷，各卷带的
+    importedAt 是各自写入时刻。Kotlin 侧 distinctBy 只认**先出现**的那份，于是后写的
+    那份（时间更晚）可能成为生效值，让先前批次里 reviewedAt 更早的材料"早于来源导入"
+    —— 正是 KD-15 的同类失败。复用最早时间戳可让任意写入顺序都不触发契约。
+    """
+    out: dict[str, dict] = {}
+    for sp in pack_io.sidecar_paths():
+        try:
+            doc = pack_io.load_json(sp)
+        except Exception:  # noqa: BLE001 - 单卷读不出不该打断整批
+            continue
+        for s in doc.get("sources") or []:
+            sid = s.get("sourceId")
+            if not sid:
+                continue
+            prev = out.get(sid)
+            if prev is None or (s.get("importedAtEpochMillis") or 0) < (prev.get("importedAtEpochMillis") or 0):
+                out[sid] = s
+    return out
+
+
 def load_judgments() -> list[dict]:
     if not JUDGMENTS.exists():
         return []
@@ -163,6 +187,7 @@ def write(judgments: list[dict]) -> dict:
             existing_slugs.add(m["slug"])
             for b in m.get("bindings") or []:
                 existing_targets.setdefault(m["slug"], b["knowledgeNodeId"].split(":")[-1])
+    known_sources = _existing_source_entries()
     changed_sidecars: dict[Path, dict] = {}
     sources_added: dict[str, list[str]] = {}
     done = 0
@@ -194,7 +219,8 @@ def write(judgments: list[dict]) -> dict:
             doc = changed_sidecars.get(target) or pack_io.load_json(target)
             changed_sidecars[target] = doc
         if not any(s["sourceId"] == sid for s in doc["sources"]):
-            doc["sources"].append(_source_entry(top_dir, subject))
+            entry = known_sources.get(sid) or _source_entry(top_dir, subject)
+            doc["sources"].append(dict(entry))
             sources_added.setdefault(target.name, []).append(sid)
         node = (f"kb:moe-2025-four-subjects-v1:{subject.lower()}:atomic:{r['node_slug']}")
         doc["materials"].append({
