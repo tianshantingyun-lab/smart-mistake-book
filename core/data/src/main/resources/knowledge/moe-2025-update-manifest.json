@@ -1,0 +1,1717 @@
+{
+ "schemaVersion": 1,
+ "packId": "moe-2025-four-subjects-v1",
+ "contentVersion": "64c9abc140b2a0ce",
+ "retired": [
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:dna是主要的遗传物质-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:dna是主要的遗传物质",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 DNA是主要的遗传物质"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:人类遗传病-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:人类遗传病",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 人类遗传病"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:人类遗传病-x2",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:人类遗传病",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 人类遗传病"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:伴性遗传的特点及应用-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:伴性遗传的特点及应用",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 伴性遗传"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:免疫失调-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:免疫失调",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 免疫失调"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:其他植物激素-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:其他植物激素",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 其他植物激素"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:动物细胞的吸水和失水-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:动物细胞的吸水和失水",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 动物细胞工程"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:原核细胞和真核细胞-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:原核细胞和真核细胞",
+   "kind": "MERGE",
+   "reason": "跨章同名同概念"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:受精作用-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:受精作用",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 减数分裂和受精作用"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:基因位于染色体上的实验证据-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:基因位于染色体上的实验证据",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 遗传的细胞基础"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:基因型-表型的推断-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:基因型-表型的推断",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 遗传的基本规律"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:孟德尔两对相对性状的杂交实验-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:孟德尔两对相对性状的杂交实验",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 孟德尔的豌豆杂交实验（一"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:实验-探究酵母菌细胞呼吸的方式-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:实验-探究酵母菌细胞呼吸的方式",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 细胞呼吸的原理和应用"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:实验-检测生物组织中的糖类-脂肪和蛋白质-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:实验-检测生物组织中的糖类-脂肪和蛋白质",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 细胞与生命活动"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:对细胞膜的探究历程",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞膜成分和结构的探究历程",
+   "kind": "MERGE",
+   "reason": "I-08 归位后会聚重复对"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:成熟植物细胞的吸水和失水-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:成熟植物细胞的吸水和失水",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 植物细胞工程"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:无氧呼吸-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:无氧呼吸",
+   "kind": "MERGE",
+   "reason": "跨章同名同概念"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:无氧呼吸-x2",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:无氧呼吸-x1",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 细胞与生命活动"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:有丝分裂-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:有丝分裂",
+   "kind": "MERGE",
+   "reason": "跨章同名同概念"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:有氧呼吸-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:有氧呼吸",
+   "kind": "MERGE",
+   "reason": "跨章同名同概念"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:有氧呼吸-x2",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:有氧呼吸-x1",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 细胞与生命活动"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:染色体变异",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:染色体变异-x1",
+   "kind": "MERGE",
+   "reason": "跨章同名同概念"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:核酸是由核苷酸连接而成的长链-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:核酸是由核苷酸连接而成的长链",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 核酸是遗传信息的携带者"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:流动镶嵌模型",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:膜的流动镶嵌模型",
+   "kind": "MERGE",
+   "reason": "I-08 归位后会聚重复对"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:物质出入细胞的方式-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:物质出入细胞的方式",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 物质的输入与输出"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:特异性免疫-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:特异性免疫",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 特异性免疫"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:生物多样性-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:生物多样性",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 生物多样性及其保护"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:生物大分子以碳链为骨架-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:生物大分子以碳链为骨架",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 细胞的分子组成"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:生物膜系统及其功能",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞的生物膜系统",
+   "kind": "MERGE",
+   "reason": "I-08 归位后会聚重复对"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:用高倍显微镜观察叶绿体和细胞质的流动-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:用高倍显微镜观察叶绿体和细胞质的流动",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 细胞与生命活动"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:病毒-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:病毒",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 细胞与生命活动"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的水-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的水",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 细胞中的元素和化合物"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的糖类-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的糖类",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 细胞中的元素和化合物"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞呼吸的影响因素及其应用",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞呼吸的影响因素及应用",
+   "kind": "MERGE",
+   "reason": "跨章近重复同名概念（影响因素的应用/及其应用）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞呼吸的影响因素及应用-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞呼吸的影响因素及应用",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 细胞呼吸的原理和应用"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞器",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞器的结构和功能",
+   "kind": "MERGE",
+   "reason": "I-08 归位后会聚重复对"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞器的结构和功能-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞器的结构和功能",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 细胞器之间的分工合作"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞核",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞核的结构和功能",
+   "kind": "MERGE",
+   "reason": "I-08 归位后会聚重复对"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞核的结构和功能-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞核的结构和功能",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 细胞核的结构和功能"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞的生物膜系统-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞的生物膜系统",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 细胞的多样性和统一性"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞膜",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞膜的结构和功能",
+   "kind": "MERGE",
+   "reason": "I-08 归位后会聚重复对"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:群落的结构-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:群落的结构",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 群落的结构"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:蛋白质的功能-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:蛋白质的功能",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 蛋白质是生命活动的主要承"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:豌豆用作遗传实验的材料-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:豌豆用作遗传实验的材料",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 遗传的基本规律"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:0-1-mol-l-1的nahso3溶液ph-7-各离子浓度的关系",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "整句话当名称"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:02-1022个na-的物质的量为",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:atomic:物质的量-阿伏加德罗常数",
+   "kind": "MERGE",
+   "reason": "KEEP 分流：与既有节点同物"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:1-mol某醛和足量的银氨溶液反应-析出432-g-ag-则该醛不可能为",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:atomic:有关醛的定量计算",
+   "kind": "MERGE",
+   "reason": "KEEP 分流：与既有节点同物"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:1-下列物质中属于乙烯的同系物的是________-填序号-下同",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:1-中含氧官能团名称是________",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:1-判断下列溶液的酸碱性-用-酸性-碱性-中性-或-不确定-填空",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:atomic:溶液的酸碱性",
+   "kind": "MERGE",
+   "reason": "KEEP 分流：与既有节点同物"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:1-在一定温度下-有a-盐酸b-硫酸c-醋酸三种酸",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "整句话当名称"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:1-指出下列粒子的空间结构",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:1-按要求完成下列填空",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:1-某催化转化过程如图所示",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:1-比较下列分子或离子中的键角大小-填-或",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:atomic:键角大小的比较",
+   "kind": "MERGE",
+   "reason": "KEEP 分流：与既有节点同物"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:2024-湖南卷-恒压下-向某密闭容器中充入一定量的和-发生如下反应",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:2024-经典习题改编-按要求正确书写相关离子方程式",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "纯题干/指令节点，材料亦为残片（代理分流+主会话复核）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:2025-北京卷-一种受体拮抗剂中间体p合成路线如下",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "高考题干残句"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:2025-北京卷-为研究三价铁配合物性质进行如下实验-忽略溶液体积变化",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:2025-北京昌平-二模-催化加氢直接合成二甲醚过程中有以下2个反应",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:2025-天津-一模-化合物z是合成连翘酯苷类似物的重要中间体-其合成路线如下",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "高考题干残句"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:2025-江苏卷-甘油水蒸气重整获得过程中的主要反应",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:2025-湖北卷-化合物g是某药物的关键原料-合成路线如下",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已归位差量法节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:25-时-和的沉淀溶解平衡曲线如图-代表或-所示-下列说法不正确的是",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:al3-al-oh-3-alo-al-oh-4-之间的转化",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "整句话当名称"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:c-o-na-al-si-s-cl是常见的几种元素-请回答下列问题",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:c919大型飞机的主结构材料大量使用了铝锂合金-铝锂合金的优点是",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:na2o2是一种常见的过氧化物-具有强氧化性和漂白性",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:atomic:过氧化钠",
+   "kind": "MERGE",
+   "reason": "KEEP 分流：与既有节点同物"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:一种由cu-in-te组成的晶体属四方晶系-晶胞参数如图所示",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:下列事实不能说明元素的金属性或非金属性相对强弱的是",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:atomic:元素金属性强弱的判断",
+   "kind": "MERGE",
+   "reason": "KEEP 分流：与既有节点同物"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:下列关于有机物的分离-提纯方法-正确的是",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:下列分子晶体中-关于熔-沸点高低的叙述正确的是",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:下列各组物质中化学键的类型和化合物的类型都相同的是",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化学键与物质的类别",
+   "kind": "MERGE",
+   "reason": "KEEP 分流：与既有节点同物"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:下列合成高分子化合物的反应及类型均正确的是",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:下列指定反应的离子方程式正确的是",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:下列措施可以增大化学反应速率的是________-填序号",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:atomic:影响化学反应速率的因素",
+   "kind": "MERGE",
+   "reason": "KEEP 分流：与既有节点同物"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:下列有关离子的鉴别方法不正确的是",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:下列有机物分子中所有原子一定在同一平面内的是",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:atomic:有机化合物的共面共线的判断",
+   "kind": "MERGE",
+   "reason": "KEEP 分流：与既有节点同物"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:下列物质的性质变化与范德华力有关的是",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:atomic:范德华力",
+   "kind": "MERGE",
+   "reason": "KEEP 分流：与既有节点同物"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:下列离子在未知溶液中的检验方法正确的是",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:下列离子的中心原子的杂化方式与其他三种不同的是",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:atomic:中心原子杂化类型的判断",
+   "kind": "MERGE",
+   "reason": "KEEP 分流：与既有节点同物"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:下图是检验某无色气体a是so2和co2的混合气体的装置图-按要求回答下列问题",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:下表是几种弱酸常温下的电离平衡常数",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:丙酮-是最简单的酮-常用作有机溶剂-关于丙酮的说法正确的是",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:举例说明下列反应在一定条件下可以实现",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "纯题干/指令节点，材料亦为残片（代理分流+主会话复核）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:书写盐类水解离子方程式的注意事项",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:atomic:盐类水解离子方程式的书写",
+   "kind": "MERGE",
+   "reason": "KEEP 分流：与既有节点同物"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:从溶液改变角度分析产生的误差-用-偏大-偏小-或-无影响-填空",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "整句话当名称"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:从溶质改变角度分析产生的误差-用-偏大-偏小-或-无影响-填空",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "整句话当名称"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:以混有sio2的mgco3为原料制备氧化镁的实验流程如图",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:以溴乙烷为原料制备1-2-二溴乙烷-下列方案中最合理的是",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:依据事实-写出下列反应的热化学方程式",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:依据图示关系-请回答",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "只有标题冒号"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:共价键-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:atomic:共价键",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 共价键"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:共价键-x2",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:atomic:共价键",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 共价键"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:关于中和反应反应热的测定实验-请回答下列问题",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:关于氢氧燃料电池说法正确的是",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:写出下列原子-或离子-核外电子排布的表示方法",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:写出下列官能团名称",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:写出下列有机物的名称",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:写出下列燃烧元素对应的稳定产物及状态",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:写出下列物质的电子式",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:写出下列物质转化涉及的化学方程式",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:写出符合下列情况的离子方程式",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:分别对稀溶液进行下列操作-一定可使增大的是",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:分别测定不同浓度溶液-溶液和溶液的电导率数值-测定结果的数据处理如下表",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:判断下列实验过程是否正确",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "纯题干/指令节点，材料亦为残片（代理分流+主会话复核）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:判断下列物质中心原子的杂化方式",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:atomic:中心原子杂化类型的判断",
+   "kind": "MERGE",
+   "reason": "KEEP 分流：与既有节点同物"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:劳动创造美好生活-下列关于劳动项目的做法或对应化学知识的描述错误的是",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化合物g可用于药用多肽的结构修饰-其人工合成路线如下",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "整句话当名称"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化学反应速率-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化学反应速率",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 化学反应的速率与限度"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化学平衡状态-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化学平衡状态",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 化学平衡"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化学平衡的移动-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化学平衡的移动",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 化学平衡"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化学键-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化学键",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 化学键"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:北京冬奥会期间使用氢燃料清洁能源汽车-其氢氧燃料电池工作示意图如图所示",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:原子结构-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:atomic:原子结构",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 原子结构与元素周期表"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:原电池-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:atomic:原电池",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 原电池"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:含碳元素的物质是化学世界中最庞大的家族-请填写下列空格",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:含铁化合物的应用研究是科学研究的前沿之一-回答下列问题",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:在b-的同分异构体中-同时满足下列条件的共有____种-不考虑立体异构",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:在e-的同分异构体中-同时满足下列条件的总数为_____种",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:在下列反应中硫元素只表现氧化性的是",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:在不同温度下的沉淀溶解平衡曲线如图所示-下列说法不正确的是",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:在相同浓度-相同温度下-与强电解质溶液做导电性对比实验",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "整句话当名称"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:在酸性条件下-黄铁矿-fes2-其中s为-1价-催化氧化的反应转化如图所示",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:填写下表",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:如图-回答下列问题",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:如图所示是检验某无色气体a是so2和co2的混合气体的装置-按要求回答下列问题",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:如图是通过热化学循环在较低温度下由水或硫化氢分解制备氢气的反应系统原理",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:完成下列反应的离子方程式",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:实验室制备溴苯的反应装置如图所示-下列关于实验操作或叙述错误的是",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:室温下-进行如下实验",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:室温时-关于1ml盐酸的说法不正确的是",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:对于以下反应-从反应开始进行到达到平衡后-保持温度-体积不变-按要求回答下列问题",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:对于反应n2-g-3h2-g-2nh3-g",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "整句话当名称"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:已知-co-g-2h2-g-ch3oh-g-δh",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:已知-①环己烯可以通过1-3-丁二烯与乙烯发生环化加成反应得到",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:已知g-q-x-y-z均为含氯元素的化合物-在一定条件下有下列转化关系-未配平",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:已知nabh4与水反应的化学方程式为nabh4-2h2o-nabo2-4h2",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:已知几种共价键的键能如下",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:已知反应-4co-2no2n2-4co2在不同条件下的化学反应速率如下",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:已知反应-feo-s-co-g-fe-s-co2-g-δh-0",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:已知某100-ml溶液中含有的部分离子的浓度大小如表所示",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:已知锂电池的正极反应物和产物-写出其正极反应",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:常温下-下列操作能抑制水的电离-并使溶液的ph小于7的是",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:常温下-下列有关电解质溶液的说法正确的是",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:常温下-用溶液滴定溶液过程中的变化如下图所示-下列说法错误的是",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:常温下-过量固体溶于水的ph随时间变化的关系如图所示",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:平衡常数",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:atomic:平衡常数-x1",
+   "kind": "MERGE",
+   "reason": "跨章同名同概念"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:按官能团的不同可以对有机物进行分类-请指出下列有机物所属的类别",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:atomic:依据官能团分类",
+   "kind": "MERGE",
+   "reason": "KEEP 分流：与既有节点同物"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:有关晶体的结构如图所示-下列说法不正确的是",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:有机物a是一种重要的化工原料-其结构简式如图所示",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:有机物g-是一种调香香精-也可用作抗氧化剂-工业合成路线之一如下",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:atomic:有机合成路线的推断方法",
+   "kind": "MERGE",
+   "reason": "KEEP 分流：与既有节点同物"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:析图关键-关注曲线变化趋势-采取-定一议二-法",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "整句话当名称"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:某兴趣小组利用电解装置-探究-铁作阳极-时发生反应的多样性-实验过程如图",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:某反应的反应过程与能量关系如图所示",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:某同学在一张ph试纸上滴几滴新制氯水-现象如图-下列有关该实验的说法中正确的是",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:某同学用na2co3和nahco3溶液进行如图所示实验-下列说法不正确的是",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:某有机物结构为-回答下列问题",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:某溶液中可能含有下列阴离子-so-so-co-cl",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "纯题干/指令节点，材料亦为残片（代理分流+主会话复核）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:某离子晶体的晶胞结构如图所示-x位于立方体的顶点-y位于立方体的中心",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:柠檬酸是一种重要的有机酸-存在于柠檬-柑橘-菠萝等水果中-其结构简式如图所示",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:标准状态下-下列物质气态时的相对能量如下表",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:根据以下热化学方程式-δh1和δh2的大小比较错误的是",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:根据信息回答下列问题",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:根据元素周期律比较下列各组性质-用-或-填空",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:根据要求回答下列问题",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:正误判断-正确的打-错误的打",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "纯题干残渣，跨章3份"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:正误判断-正确的打-错误的打-x1",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "纯题干残渣，跨章3份"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:正误判断-正确的打-错误的打-x2",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "纯题干残渣，跨章3份"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:比较下列微粒半径的大小-用-或-填空",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:atomic:微粒半径大小比较",
+   "kind": "MERGE",
+   "reason": "KEEP 分流：与既有节点同物"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:气体摩尔体积-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:atomic:气体摩尔体积",
+   "kind": "MERGE",
+   "reason": "跨章同名同概念"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:氢能是极具发展潜力的清洁能源-以氢燃料为代表的燃料电池有良好的应用前景",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "整句话当名称"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:氧化还原反应-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:atomic:氧化还原反应",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 氧化还原反应"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:水电离出的c-h-或c-oh-的相关计算-25",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "整句话当名称"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:沉淀溶解平衡-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:atomic:沉淀溶解平衡",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 沉淀溶解平衡"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:溶度积-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:atomic:溶度积",
+   "kind": "MERGE",
+   "reason": "跨章同名同概念"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:烷烃的命名-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:atomic:烷烃的命名",
+   "kind": "MERGE",
+   "reason": "跨章同名同概念"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:燃烧热-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:atomic:燃烧热",
+   "kind": "MERGE",
+   "reason": "跨章同名同概念"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:物质的量是高中化学常用的物理量-请完成以下有关计算",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "整句话当名称"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:物质的量浓度-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:atomic:物质的量浓度",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 物质的量"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:特点",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "通用名词无主语"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:现有下列三个氧化还原反应",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:用fe-oh-3胶体进行下列实验",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:用如图所示装置-夹持仪器省略-制备氢氧化亚铁",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:用系统命名法给下列有机物命名",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:由下列实验事实得出的结论正确的是",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:由工业废渣-主要含fe-si-al等的氧化物-制取聚合硫酸铁铝净水剂的流程如下",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "整句话当名称"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:甲基丁香酚g-可用作食用香精-某小组设计的制备甲基丁香酚的流程如下",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "公式被剥离"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电子工业常用30-的fecl3溶液腐蚀敷在绝缘板上的铜箔-制造印刷电路板",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "整句话当名称"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电离能-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电离能",
+   "kind": "MERGE",
+   "reason": "跨章同名同概念"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电负性-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电负性",
+   "kind": "MERGE",
+   "reason": "跨章同名同概念"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:盖斯定律-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:atomic:盖斯定律",
+   "kind": "MERGE",
+   "reason": "跨章同名同概念"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:硅单质及其化合物应用范围很广-请回答下列问题",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:硅及其化合物的应用范围很广-下列说法正确的是",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:硅是地壳中储量仅次于氧的元素-在自然界中主要以和硅酸盐的形式存在",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "整句话当名称"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:确定下列指定元素的原子序数",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:碘-紫黑色固体-微溶于水-及其化合物广泛用于医药-染料等方面-回答下列问题",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:碳酸亚乙烯酯是锂离子电池低温电解液的重要添加剂-其分子结构如图",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:粗铜的电解精炼示意图如图所示",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:绿色化学-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:atomic:绿色化学",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 环境保护与绿色化学"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:聚苯乙烯是一类重要的高分子材料-可通过苯乙烯聚合制得",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:atomic:聚合反应",
+   "kind": "MERGE",
+   "reason": "KEEP 分流：与既有节点同物"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:能正确表示下列反应的离子方程式为",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:观察下列有机物-并按碳骨架把它们分类-完成填空",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:规律",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "通用名词无主语"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:设为阿伏加德罗常数的值-下列说法正确的是",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:试比较下列各组δh的大小",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:请写出298-k-101-kpa时-下列反应的热化学方程式",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:atomic:热化学方程式",
+   "kind": "MERGE",
+   "reason": "KEEP 分流：与既有节点同物"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:请把下列物质的序号填写到下图的横线上",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:通过对比物理变化和化学变化的不同-回答下列问题",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:通过此次实验活动-你认为物质分离和提纯原则应该有哪些",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "整句话当名称"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:部分含铜物质的分类与相应铜元素的化合价关系如图所示-下列说法正确的是",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已全部归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:配平下列化学方程式",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:配平下列氧化还原反应方程式",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:铁与水蒸气反应实验改进前后的装置如图所示",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:键参数-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:atomic:键参数",
+   "kind": "MERGE",
+   "reason": "跨章同名同概念"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:高分子材料在疫情防控和新冠肺炎治疗中起到了重要的作用-下列说法正确的是",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:高聚物g是一种合成纤维-由a与e为原料制备j和g的一种合成路线如下",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "整句话当名称"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:黑色的水溶性很差-已知-平衡常数-下列有关说法错误的是",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2023-天津-一模-在中-内角-的对边分别为-已知",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "高考题干残句"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2023-山西-模拟预测-已知-且-则",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "高考题干残句"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2024-四川宜宾-一模-已知函数-在锐角中-内角的对边分别为-且",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2024-天津-一模-在中-角-的对边分别为-已知",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2024-天津红桥-二模-在中-内角-的对边分别为-已知-且",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "高考题干残句"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2025-云南昭通-模拟预测-已知数列是等差数列-且-数列的前项和为-且",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2025-四川广安-模拟预测-已知数列满足-则使得成立的最小自然数为",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2025-四川成都-一模-在等差数列中-则",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "高考题干残句"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2025-天津南开-一模-在中-内角的对边分别为-且",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "高考题干残句"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2025-安徽蚌埠-三模-已知-则",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "高考题干残句"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2025-山西-三模-已知数列的通项公式为-则下列说法正确的是",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2025-广东佛山-三模-已知数列满足-且是关于的方程的两个根",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2025-广东广州-三模-已知等差数列的前n项和为-则",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "高考题干残句"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2025-新疆喀什-模拟预测-已知数列中-则",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2025-江苏-模拟预测-函数满足-且-设-则的前项的和为",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干壳：材料已归位真节点"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2025-江苏苏州-三模-已知数列满足-则",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "高考题干残句"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2025-海南海口-模拟预测-若数列满足-已知-则",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "高考题干残句"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2025-福建福州-模拟预测-记为正整数-的最大公约数-正整数数列满足",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "高考题干残句"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2025-黑龙江吉林-模拟预测-已知-则的值为",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "高考题干残句"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:math:atomic:α-γ-β-γ-α-β-l-l-γ-客观题可用",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "整句话当名称"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:math:atomic:二面角-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:math:atomic:二面角",
+   "kind": "MERGE",
+   "reason": "跨章同名同概念"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:math:atomic:在中-角a-的对边分别为-且",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "公式被剥离"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:math:atomic:在等差数列-an-中-当m-n时-d-为公差公式-利用这个公式很容易求出公差",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:math:atomic:等差数列的常用性质",
+   "kind": "MERGE",
+   "reason": "KEEP 分流：与既有节点同物"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:math:atomic:已知函数",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:math:atomic:已知数列-求证",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:math:atomic:已知的定义域-求的定义域-要先按-2-求出的定义域",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "整句话当名称"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:math:atomic:已知的定义域为-求的定义域-其实质是的取值范围为-求的取值范围",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "整句话当名称"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:math:atomic:累乘法-适用于an-1-f-n-an-可变形为-f-n",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "整句话当名称"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:math:atomic:若s奇表示奇数项的和-s偶表示偶数项的和-公差为d",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:math:atomic:等差数列前项和的常用性质",
+   "kind": "MERGE",
+   "reason": "KEEP 分流：与既有节点同物"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:math:atomic:零次幂的底数不能为零-即中",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "公式被剥离"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:不要漏掉大气压强-同时又要尽可能平衡掉某些大气的压力",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "整句话当名称"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:两个质量均为m的木块a-b用恰好伸直的轻绳相连-放在水平圆盘上",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "整句话当名称"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:两种运动状态",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:physics:atomic:两种运动状态-x1",
+   "kind": "MERGE",
+   "reason": "跨章同名同概念"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:产生条件",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "通用名词无主语"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:产生条件-穿过回路的磁通量发生改变-与电路是否闭合无关",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:physics:atomic:产生感应电流的条件",
+   "kind": "MERGE",
+   "reason": "KEEP 分流：与既有节点同物"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:以基本的力学模型为载体-依托运动学规律和力学定律设计实验",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:位移-速度和加速度",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "只有标题冒号"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:倾斜传送带-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:physics:atomic:倾斜传送带",
+   "kind": "MERGE",
+   "reason": "跨章同名同概念"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:偏振光-在垂直于光的传播方向的平面上-只沿着某个特定的方向振动的光",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "整句话当名称"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:关键物理量",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "通用名词无主语"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:内容-一个热力学系统的内能变化量等于外界向它传递的热量与外界对它所做的功的和",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:physics:atomic:热力学第一定律",
+   "kind": "MERGE",
+   "reason": "KEEP 分流：与既有节点同物"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:力学对象和电学对象的相互联系",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:physics:atomic:力学对象和电学对象的相互联系-x1",
+   "kind": "MERGE",
+   "reason": "跨章同名同概念"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:力的分解-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:physics:atomic:力的分解",
+   "kind": "MERGE",
+   "reason": "KEEP 分流：与既有节点同物"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:匝数比不变的分析思路",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "只有标题冒号"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:危害-互感现象能发生在任何两个相互靠近的电路之间-互感现象有时会影响电路的工作",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "整句话当名称"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:受迫振动-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:physics:atomic:受迫振动",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 6 受迫振动 共振"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:向心力-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:physics:atomic:向心力",
+   "kind": "MERGE",
+   "reason": "KEEP 分流：与既有节点同物"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:向心加速度-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:physics:atomic:向心加速度",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 3 向心加速度"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:图像法在处理实验数据方面的应用-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:physics:atomic:图像法在处理实验数据方面的应用",
+   "kind": "MERGE",
+   "reason": "跨章同名同概念"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:地下-在天体内部距离中心r处-r-r-加速度为g-r",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "整句话当名称"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:基本概念",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "通用名词无主语"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:基本规律",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "通用名词无主语"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:定义-一个线圈中的电流变化时-它所产生的变化的磁场在它本身激发出感应电动势的现象",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:physics:atomic:自感",
+   "kind": "MERGE",
+   "reason": "KEEP 分流：与既有节点同物"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:定义-物体在一个过程中所受合外力的冲量等于该物体在这个过程中动量的变化量",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:physics:atomic:动量定理",
+   "kind": "MERGE",
+   "reason": "KEEP 分流：与既有节点同物"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:应用-1-涡流热效应的应用-如真空冶炼炉-2-涡流磁效应的应用-如探雷器",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "整句话当名称"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:应用场景",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "通用名词无主语"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:机械波-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:physics:atomic:机械波",
+   "kind": "MERGE",
+   "reason": "跨章同名同概念"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:求解电能的思路",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:physics:atomic:求解电能的思路-x1",
+   "kind": "MERGE",
+   "reason": "跨章同名同概念"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:波的干涉-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:physics:atomic:波的干涉",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 4 波的干涉"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:特点-x1",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "通用名词无主语"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:电子束衍射实验-戴维孙-g-p-汤姆孙-证实电子的波动性",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "整句话当名称"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:电磁感应中的线框模型-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:physics:atomic:电磁感应中的线框模型",
+   "kind": "MERGE",
+   "reason": "同章同名去重副本 3 电磁感应现象及应用"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:结构",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "通用名词无主语"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:规律",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "通用名词无主语"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:解题关键",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "通用名词无主语"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:解题方法-x1",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "通用名词无主语"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:解题的思路",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "通用名词无主语"
+  }
+ ]
+}

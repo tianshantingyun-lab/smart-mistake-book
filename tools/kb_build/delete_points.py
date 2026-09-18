@@ -36,7 +36,7 @@ import argparse
 import csv
 from pathlib import Path
 
-from kb_build import pack_io, tables
+from kb_build import pack_io, tables, update_manifest
 
 TABLE = "point_delete.csv"
 COLUMNS = ("subject", "slug", "reason")
@@ -156,9 +156,14 @@ def main(argv: list[str] | None = None) -> int:
     pack = pack_io.load_json(path)
     deletes = load_deletes()
 
+    # 实际被删的 slug 用**前后集合求差**拿到，而不是改 `delete()` 的返回值——它的二元组
+    # 被现有用例解包（`removed, dangling = dp.delete(...)`），改签名会白白打断那些断言。
+    slugs_before = {(s["subject"], p["slug"]) for s, _t, p in pack_io.iter_points(pack)}
     before = _point_count(pack)
     removed, dangling = delete(pack, deletes)
     after = _point_count(pack)
+    slugs_after = {(s["subject"], p["slug"]) for s, _t, p in pack_io.iter_points(pack)}
+    removed_keys = sorted(slugs_before - slugs_after)
     already = len(deletes) - removed
     print(f"删除 {removed} 个；已在包外（幂等跳过）{already} 个；清理错误前置引用 {dangling} 个")
     print(f"点数 {before} → {after}")
@@ -191,6 +196,25 @@ def main(argv: list[str] | None = None) -> int:
         purged = _purge_table_refs(pack)
         purged_txt = "、".join(f"{k} {v}" for k, v in purged.items() if v) or "无"
         print(f"→ 已写回 {path}；清除外部表悬空引用 {purged_txt}")
+
+        # 删除是"无取代目标"的退役：运行时据此把节点置 RETIRED 而**不**物删，
+        # 学生数据（错题绑定/掌握度/复习队列）因此不会悬空。
+        entries = [
+            {
+                "nodeId": update_manifest.node_id(pack["packId"], subj, slug),
+                "supersededBy": None,
+                "kind": update_manifest.KIND_DELETE,
+                "reason": deletes[(subj, slug)][0],
+            }
+            for subj, slug in removed_keys
+            if (subj, slug) in deletes
+        ]
+        sidecars = [pack_io.load_json(sp) for sp in pack_io.sidecar_paths()]
+        doc = update_manifest.load_or_empty(pack["packId"])
+        added = update_manifest.record(doc, entries)
+        doc["contentVersion"] = update_manifest.content_version(pack, sidecars)
+        update_manifest.write(doc)
+        print(f"→ 取代台账 +{added} 条（共 {len(doc['retired'])} 条退役）；内容戳 {doc['contentVersion']}")
     return 0
 
 

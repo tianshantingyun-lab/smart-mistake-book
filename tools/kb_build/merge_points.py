@@ -39,7 +39,7 @@ import csv
 import re
 from pathlib import Path
 
-from kb_build import pack_io, tables
+from kb_build import pack_io, tables, update_manifest
 
 TABLE = "point_merge.csv"
 COLUMNS = ("subject", "survivor_slug", "merged_slug", "reason")
@@ -140,7 +140,7 @@ def merge(pack: dict, sidecars: list[dict], rows: list[dict]) -> dict:
     """逐条合并，每条先在同一份 pack 副本上试跑并做环检测；产生环则跳过并报告。"""
     pack_id = pack["packId"]
     stats = {"merged": 0, "skipped": 0, "skipped_cycle": 0, "materials_repointed": 0,
-             "bindings_deduped": 0}
+             "bindings_deduped": 0, "retired": []}
     points_before = sum(len(t.get("knowledgePoints") or []) for s in pack["subjects"] for t in s["topics"])
     mats_before = sum(len(sc["materials"]) for sc in sidecars)
 
@@ -176,6 +176,14 @@ def merge(pack: dict, sidecars: list[dict], rows: list[dict]) -> dict:
                     m["bindings"] = nb
                 stats["materials_repointed"] += 1
         stats["merged"] += 1
+        # 台账条目必须**在执行的这一次**就收集：merged 一旦从包里消失，下一次跑会因幂等
+        # 跳过，映射就永久丢了。`reason` 留给运行时的"为什么不见了"回答。
+        stats["retired"].append({
+            "nodeId": merged_id,
+            "supersededBy": surv_id,
+            "kind": update_manifest.KIND_MERGE,
+            "reason": (row.get("reason") or "").strip(),
+        })
 
     points_after = sum(len(t.get("knowledgePoints") or []) for s in pack["subjects"] for t in s["topics"])
     mats_after = sum(len(sc["materials"]) for sc in sidecars)
@@ -251,6 +259,12 @@ def main(argv: list[str] | None = None) -> int:
         purged = _purge_table_refs(pack)
         pt = "、".join(f"{k} {v}" for k, v in purged.items() if v) or "无"
         print(f"→ 已写回成品包 + {len(sidecars)} 个 sidecar；清除外部表悬空引用 {pt}")
+
+        doc = update_manifest.load_or_empty(pack["packId"])
+        added = update_manifest.record(doc, stats["retired"])
+        doc["contentVersion"] = update_manifest.content_version(pack, sidecars)
+        update_manifest.write(doc)
+        print(f"→ 取代台账 +{added} 条（共 {len(doc['retired'])} 条退役）；内容戳 {doc['contentVersion']}")
     return 0
 
 
