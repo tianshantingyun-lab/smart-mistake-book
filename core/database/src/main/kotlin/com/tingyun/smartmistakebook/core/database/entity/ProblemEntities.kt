@@ -201,6 +201,25 @@ internal data class KnowledgeNodeEntity(
     val taxonomyVersion: String,
     @ColumnInfo(name = "created_at_epoch_millis")
     val createdAtEpochMillis: Long,
+    /**
+     * 内容生命周期：`ACTIVE`（现行，参与新工作）或 `RETIRED`（已退役）。
+     *
+     * **退役永不物删**：外键在 8 张表上是 RESTRICT，而 `learner_knowledge_mastery_state`
+     * 之类挂着学生的错题绑定、掌握度、复习队列——物删要么被外键挡住，要么（对 CASCADE 的
+     * 表）静默带走学生数据。退役的节点从**新工作**里消失（不再被召回、不再进整理提示词、
+     * 不再进新复习计划），但行与 id 保留，学生历史照旧可读。
+     */
+    @ColumnInfo(name = "status", defaultValue = "'ACTIVE'")
+    val status: String = "ACTIVE",
+    /**
+     * 被谁取代（合并时的 1:1 重定向目标，取 `knowledge_node_id`）。
+     *
+     * **刻意不建外键**：这是软指针，悬空无害（解析不到就退回显示原节点自己的名字），
+     * 而建外键会引入自引用约束、并让"目标也被退役"这类链式情形变得难以迁移。
+     * `DELETE` 与 `SPLIT` 没有唯一目标，此列为 null——那两类在历史界面显示旧名。
+     */
+    @ColumnInfo(name = "superseded_by")
+    val supersededBy: String? = null,
 )
 
 @Entity(

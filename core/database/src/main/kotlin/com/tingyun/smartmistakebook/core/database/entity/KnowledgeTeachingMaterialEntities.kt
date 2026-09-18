@@ -51,6 +51,13 @@ internal data class KnowledgeTeachingMaterialEntity(
     val contentFingerprint: String,
     @ColumnInfo(name = "reviewed_at_epoch_millis")
     val reviewedAtEpochMillis: Long,
+    /**
+     * `ACTIVE` / `RETIRED`（见 [KnowledgeNodeEntity.status]）。退役的材料从**新工作**
+     * 里消失（不再生成复习题、不再进讲题参考），但行保留——学生可能在用它生成的题上
+     * 留下过作答记录。
+     */
+    @ColumnInfo(name = "status", defaultValue = "'ACTIVE'")
+    val status: String = "ACTIVE",
 )
 
 @Entity(
