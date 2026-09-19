@@ -110,16 +110,22 @@ class RealPackTest(unittest.TestCase):
         reloc = rel.load_relocations()
         self.assertEqual(0, rel.relocate(pack, reloc), "重放必须幂等")
 
-    def test_shipped_chapter_layer_is_12(self):
+    def test_shipped_chapter_layer_is_6(self):
         """成品章层挂点的当前快照。
 
         167（原始）→ 64（归位真知识点）→ 33（删 31 无材料残渣）→ 20
-        （再删 11 个被错误前置引用的纯题干垃圾 + 2 点改名归位）。
-        剩余 20 = "题目被当成知识点"的节点（名字是题干、挂着材料解析）+ 2 个带★错挂
-        进化内容的点——它们是材料重绑/跨章问题，属绑定门（Phase 5），非归位能解决。
+        （再删 11 个被错误前置引用的纯题干垃圾 + 2 点改名归位）→ 12。
+        2026-09-19 又归位 6 个（其中 3 个是先经坏名分流改名成合法知识点——键线式 /
+        淀粉水解产物的检验 / 石油裂解的产物；另 3 个本就是合法点——晶体类型与晶胞构型的判断 /
+        卤代烃中卤素原子的检验 / 乙醇的性质与转化）→ **6**。
+        剩余 6 **刻意不归位**：化学 3（`碳元素的单质有多种形式`、`(1)写出分子式为C5H12的
+        烷烃的结构简式：`、`一种2-甲基色酮内酯`）要按各自绑的材料复核后定去留
+        （教训见登记册 M-06）；生物 3（`实验：探究抗生素对细菌的选择作用`、
+        `隔离在物种形成中的作用`、`结束后`）的主战场是**归属**——前两条其实是必修2
+        第六章「生物的进化」的内容，挂在选必3 主题下，属归属判定而非归位。
         """
         pack = pack_io.load_json(pack_io.pack_path())
-        self.assertEqual(12, rel.chapter_layer_count(pack))
+        self.assertEqual(6, rel.chapter_layer_count(pack))
 
     def test_new_themes_have_local_names(self):
         """下移新建的主题名必须是层内名（不含 ·），否则会重新引入 I-01 的冗余。"""
