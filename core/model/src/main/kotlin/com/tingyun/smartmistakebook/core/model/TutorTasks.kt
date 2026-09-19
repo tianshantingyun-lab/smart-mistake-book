@@ -354,6 +354,11 @@ data class TutorRespondInput(
     val studentMessage: String,
     val visibleTutorContextMarkdown: String? = null,
     val priorMessages: List<TutorChatHistoryEntry> = emptyList(),
+    /**
+     * 更早轮次的确定性摘要（超出预算被挤出原样窗口的那些轮）：让模型知道前面聊过什么、
+     * 已经给过什么结论，而不是让它们无声消失。为空表示没有轮次被挤出。
+     */
+    val priorDigest: String? = null,
     val requestedMove: TutorMoveType? = null,
     /**
      * 当前消息附带的规范资产 id（按选择顺序，最多
@@ -423,6 +428,11 @@ data class TutorRespondInput(
                 message.studentMessage.length + message.assistantMarkdown.length
             } <= MAX_PRIOR_MESSAGE_CHARS,
         ) { "Tutor response prior chat exceeds its total text budget" }
+        priorDigest?.requireSafeModelText(
+            "Tutor response prior digest",
+            MAX_PRIOR_DIGEST_CHARS,
+            true,
+        )
         require(studentImageAssetRefs.size <= TutorChatHistoryEntry.MAX_IMAGE_ASSETS_PER_MESSAGE) {
             "Too many images in current message (max ${TutorChatHistoryEntry.MAX_IMAGE_ASSETS_PER_MESSAGE})"
         }
@@ -451,6 +461,12 @@ data class TutorRespondInput(
         const val MAX_VISIBLE_CONTEXT_CHARS = 12_000
         const val MAX_PRIOR_MESSAGES = 8
         const val MAX_PRIOR_MESSAGE_CHARS = 24_000
+
+        /**
+         * 早期对话摘要的长度上限。摘要是"要点提示"，不该反过来挤占原样保留的轮次，
+         * 所以它远小于原样窗口；生成端（`TutorChatDigest`）另有一条更紧的上限。
+         */
+        const val MAX_PRIOR_DIGEST_CHARS = 2_000
     }
 }
 

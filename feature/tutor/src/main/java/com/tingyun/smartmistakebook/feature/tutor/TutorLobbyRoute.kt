@@ -54,6 +54,7 @@ import com.tingyun.smartmistakebook.core.domain.ClearTutorConversationDraftComma
 import com.tingyun.smartmistakebook.core.domain.CreateTutorConversationCommand
 import com.tingyun.smartmistakebook.core.domain.MAX_TUTOR_MESSAGE_IMAGES
 import com.tingyun.smartmistakebook.core.domain.SaveTutorConversationDraftCommand
+import com.tingyun.smartmistakebook.core.domain.TutorContextComposer
 import com.tingyun.smartmistakebook.core.domain.TutorConversationAnchorKind
 import com.tingyun.smartmistakebook.core.domain.TutorConversationRepository
 import com.tingyun.smartmistakebook.core.domain.TutorHistoryBudget
@@ -519,16 +520,20 @@ internal fun TutorLobbyRoute(
                 )
                 pendingImages = emptyList()
                 lastFailedMessage = null
+                val context = TutorContextComposer.compose(freshMessages.toLobbyExchanges())
+                val contextImages = freshMessages.toContextImages(intake, studentOrdinal)
                 val request = try {
                     buildTutorLobbyRequest(
                         provider = currentProvider,
                         conversationId = conversationId,
                         messageOrdinal = logicalTurnOrdinal,
                         studentMessage = effectiveMessage,
-                        priorMessages = freshMessages.toLobbyHistory(),
+                        priorMessages = context.recent,
+                        priorDigest = context.digest,
                         occurredAtEpochMillis = occurredAt,
                         approvedAtEpochMillis = decidedAtEpochMillis,
                         imageAssets = imageAssets,
+                        contextImageAssets = contextImages,
                     )
                 } catch (_: IllegalArgumentException) {
                     // 契约违规不是网络问题：重试会逐字重放同一个非法请求，所以如实说
@@ -591,6 +596,16 @@ internal fun TutorLobbyRoute(
                 val snapshot = runCatching {
                     conversations.observeConversation(conversationId).first()
                 }.getOrNull() ?: return@launch
+                // 只允许重发"最后一条学生消息"：界面按钮同样只在这时出现，这里再挡一次是因为
+                // 渲染与点击之间学生可能已经发了新消息——那时重发就会把一个更晚的轮次，
+                // 连同它的回复一起塞进这次请求的上下文里。
+                if (snapshot.messages.any { message ->
+                        message.role == TutorMessageRole.STUDENT &&
+                            message.ordinal > studentMessage.ordinal
+                    }
+                ) {
+                    return@launch
+                }
                 // 逻辑轮次按"这是第几条学生消息"数，而不是按 ordinal 推算：一旦某次派发
                 // 异常导致助手行缺失，ordinal 的奇偶就会错位，进而把两轮映射成同一个请求标识。
                 val logicalTurnOrdinal = snapshot.messages.count {
@@ -603,17 +618,24 @@ internal fun TutorLobbyRoute(
                 // 而不是让整条消息发不出去。
                 val imageAssets = studentMessage.sourceImageAssetIds
                     .mapNotNull { assetId -> imageIntake?.describeImage(assetId) }
+                val context = TutorContextComposer.compose(snapshot.messages.toLobbyExchanges())
+                val contextImages = snapshot.messages.toContextImages(
+                    intake = imageIntake,
+                    beforeOrdinal = studentMessage.ordinal,
+                )
                 val request = try {
                     buildTutorLobbyRequest(
                         provider = currentProvider,
                         conversationId = conversationId,
                         messageOrdinal = logicalTurnOrdinal,
                         studentMessage = studentMessage.bodyMarkdown,
-                        priorMessages = snapshot.messages.toLobbyHistory(),
+                        priorMessages = context.recent,
+                        priorDigest = context.digest,
                         occurredAtEpochMillis = decidedAtEpochMillis,
                         approvedAtEpochMillis = decidedAtEpochMillis,
                         attempt = attempt,
                         imageAssets = imageAssets,
+                        contextImageAssets = contextImages,
                     )
                 } catch (_: IllegalArgumentException) {
                     sendError = appFailure(
@@ -1041,7 +1063,14 @@ internal fun TutorMessage.resendTargetOrNull(
  * inside [TutorLobbyInput]: passing an over-budget list straight through made
  * every later send fail permanently (reported, wrongly, as a network error).
  */
-internal fun List<TutorMessage>.toLobbyHistory(): List<TutorChatHistoryEntry> {
+internal fun List<TutorMessage>.toLobbyHistory(): List<TutorChatHistoryEntry> =
+    TutorHistoryBudget.bounded(toLobbyExchanges())
+
+/**
+ * 会话里所有完整轮次（不裁剪）。装配器要拿到**未裁剪**的列表，才能把被挤出原样窗口的
+ * 轮次压成摘要；先裁剪再摘要就等于让它们无声消失，那正是要修的失败。
+ */
+internal fun List<TutorMessage>.toLobbyExchanges(): List<TutorChatHistoryEntry> {
     val entries = mutableListOf<TutorChatHistoryEntry>()
     var pendingStudent: TutorMessage? = null
     sortedBy { it.ordinal }.forEach { message ->
@@ -1061,7 +1090,29 @@ internal fun List<TutorMessage>.toLobbyHistory(): List<TutorChatHistoryEntry> {
             TutorMessageRole.LOCAL_EVENT -> Unit
         }
     }
-    return TutorHistoryBudget.bounded(entries)
+    return entries
+}
+
+/**
+ * 上文图片：最近一条带图学生消息的图片，[beforeOrdinal] 之前的那些消息里找。
+ *
+ * 消灭的失败：学生先发题图问"解一下这个题吧"，再追问"第三题"时上下文里只剩文字——模型
+ * 自己在回答里写了「这道题的题面细节我这边看不到」，追问全部落空。图片属于那条历史消息，
+ * 只是随本次发送一并回去；读不回元数据的图（被清理或被改动）按"这张不再出网"跳过，
+ * 不让它把整条消息顶成发送失败。
+ */
+internal suspend fun List<TutorMessage>.toContextImages(
+    intake: LobbyMessageImageIntake?,
+    beforeOrdinal: Int?,
+): List<LobbyMessageImage> {
+    if (intake == null) return emptyList()
+    val latest = sortedBy { it.ordinal }
+        .filter { message -> beforeOrdinal == null || message.ordinal < beforeOrdinal }
+        .lastOrNull { message ->
+            message.role == TutorMessageRole.STUDENT && message.sourceImageAssetIds.isNotEmpty()
+        }
+        ?: return emptyList()
+    return latest.sourceImageAssetIds.mapNotNull { assetId -> intake.describeImage(assetId) }
 }
 
 private const val MAX_VISIBLE_MESSAGES = 20

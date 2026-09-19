@@ -335,6 +335,7 @@ internal fun tutorRespondRequestId(
     studentMessage: String,
     visibleTutorContextMarkdown: String?,
     priorMessages: List<TutorChatHistoryEntry>,
+    priorDigest: String? = null,
     requestedMove: TutorMoveType? = null,
     studentImageAssetIds: List<String> = emptyList(),
     attempt: Int,
@@ -362,6 +363,9 @@ internal fun tutorRespondRequestId(
                 appendLengthPrefixed(message.studentMessage)
                 appendLengthPrefixed(message.assistantMarkdown)
             }
+            // 摘要是会话被压缩后的"实际上下文"的一部分：它变了（挤出更多轮次）就意味着
+            // 模型看到的东西变了，因此也必须参与请求标识。
+            appendLengthPrefixed(priorDigest)
             question.reviewedTeachingReferences.forEach { reference ->
                 appendLengthPrefixed(reference.materialId)
             }
@@ -384,6 +388,7 @@ internal fun buildTutorRespondRequest(
     studentMessage: String,
     visibleTutorContextMarkdown: String?,
     priorMessages: List<TutorChatHistoryEntry>,
+    priorDigest: String? = null,
     requestedMove: TutorMoveType? = null,
     /** 本条消息附带的规范资产 id（按选择顺序）；空表示纯文字。 */
     studentImageAssetIds: List<String> = emptyList(),
@@ -407,6 +412,7 @@ internal fun buildTutorRespondRequest(
         studentMessage = studentMessage,
         visibleTutorContextMarkdown = visibleTutorContextMarkdown,
         priorMessages = priorMessages,
+        priorDigest = priorDigest,
         requestedMove = requestedMove,
         studentImageAssetRefs = studentImageAssetIds,
         toolDeclarations = listOf(

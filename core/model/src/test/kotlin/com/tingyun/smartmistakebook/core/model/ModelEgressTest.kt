@@ -309,6 +309,67 @@ class ModelEgressTest {
         assertEquals(ModelFailureCode.EGRESS_AUTHORIZATION_INVALID, rejected.failureCode)
     }
 
+    @Test
+    fun aLobbyMessageMayCarryEarlierImagesOnlyWithinItsGrantedScope() {
+        // 追问带上文图片：授权范围必须逐张覆盖它们。少授权一张就拒绝——图片不因为来自
+        // 历史消息而少一分披露；这些字节这次同样要出网。
+        val carried = CaptureSourceAssetRef(
+            assetId = "asset-old",
+            sha256 = "b".repeat(64),
+            width = 1_080,
+            height = 1_440,
+            pageIndex = 0,
+        )
+        val granted = tutorLobbyManifest(
+            approvedAtEpochMillis = 100,
+        ).copy(
+            assets = listOf(
+                ModelEgressAssetGrant(
+                    assetId = "asset-old",
+                    sha256 = "b".repeat(64),
+                    byteSize = 2_048,
+                    width = 1_080,
+                    height = 1_440,
+                ),
+            ),
+            disclosedData = ModelEgressManifest.TUTOR_LOBBY_IMAGE_DISCLOSURE,
+            prohibitedData = ModelEgressManifest.TUTOR_LOBBY_IMAGE_PROHIBITED_DATA,
+        )
+
+        val authorized = ModelEgressPolicy.authorize(
+            tutorLobbyRequest(granted).copy(
+                input = TutorLobbyInput(
+                    conversationId = "tutor-conv-1",
+                    messageOrdinal = 2,
+                    studentMessage = "第三题",
+                    contextImageAssetRefs = listOf(carried),
+                ),
+                occurredAtEpochMillis = 100,
+            ),
+            tutorProvider(ModelTaskKind.TUTOR_LOBBY),
+            100,
+        )
+        val withoutGrant = runCatching {
+            // 只授权纯文本的清单：这次偏偏要带一张上文图片出网，必须被拒。
+            ModelEgressPolicy.authorize(
+                tutorLobbyRequest(tutorLobbyManifest(approvedAtEpochMillis = 100)).copy(
+                    input = TutorLobbyInput(
+                        conversationId = "tutor-conv-1",
+                        messageOrdinal = 2,
+                        studentMessage = "第三题",
+                        contextImageAssetRefs = listOf(carried),
+                    ),
+                    occurredAtEpochMillis = 100,
+                ),
+                tutorProvider(ModelTaskKind.TUTOR_LOBBY),
+                100,
+            )
+        }.exceptionOrNull() as ModelEgressAuthorizationException
+
+        assertTrue(authorized.permit is ModelExecutionPermit.External)
+        assertEquals(ModelFailureCode.EGRESS_AUTHORIZATION_INVALID, withoutGrant.failureCode)
+    }
+
     private fun request(manifest: ModelEgressManifest?) = ModelTaskRequest(
         requestId = "capture-assess:request-1",
         input = CaptureAssessmentInput(

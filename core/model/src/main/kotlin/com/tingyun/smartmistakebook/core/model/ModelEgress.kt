@@ -713,18 +713,24 @@ private fun ModelEgressManifest.requireAuthorizes(
         is TutorLobbyInput -> {
             require(schemaVersion >= 4) { "Tutor lobby requires egress manifest schema four" }
             require(purpose == ModelEgressPurpose.TUTORING)
-            val includesImage = input.sourceImageAssetRefs.isNotEmpty()
+            // 本条消息的图 + 上文图片（最近一次带图消息的那几张）：两者都是本次真正出网的字节，
+            // 所以授权范围必须逐张覆盖它们，缺一张就拒绝——图片不因"来自历史消息"而少一分披露。
+            val disclosedImages = input.sourceImageAssetRefs + input.contextImageAssetRefs
+            val includesImage = disclosedImages.isNotEmpty()
             if (includesImage) {
                 require(schemaVersion >= ModelEgressManifest.LOBBY_IMAGE_SCHEMA_VERSION) {
                     "Tutor lobby image egress requires egress manifest schema six"
                 }
-                require(input.sourceImageAssetRefs.size <= ModelEgressManifest.MAX_LOBBY_IMAGE_ASSETS) {
+                require(
+                    input.sourceImageAssetRefs.size <= ModelEgressManifest.MAX_LOBBY_IMAGE_ASSETS &&
+                        input.contextImageAssetRefs.size <= ModelEgressManifest.MAX_LOBBY_IMAGE_ASSETS,
+                ) {
                     "Tutor lobby image count exceeds the message budget"
                 }
-                require(assets.size == input.sourceImageAssetRefs.size) {
+                require(assets.size == disclosedImages.size) {
                     "Lobby image scope changed"
                 }
-                input.sourceImageAssetRefs.forEach { source ->
+                disclosedImages.forEach { source ->
                     val grant = assets.singleOrNull { it.assetId == source.assetId }
                         ?: error("Lobby image is outside egress scope")
                     require(

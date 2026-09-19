@@ -6,6 +6,7 @@ import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
 import com.tingyun.smartmistakebook.core.domain.TutorSendAction
 import com.tingyun.smartmistakebook.core.domain.TutorSendState
 import com.tingyun.smartmistakebook.core.domain.TutorTurnResponse
+import com.tingyun.smartmistakebook.core.domain.TutorContextComposer
 import com.tingyun.smartmistakebook.core.domain.TutorConversationRepository
 import com.tingyun.smartmistakebook.core.domain.TutorTurnSendStateMachine
 import com.tingyun.smartmistakebook.core.model.ActionType
@@ -205,9 +206,12 @@ internal class TutorRespondCommands(
             (task.request.input as? TutorRespondInput)?.responseOrdinal ?: 0
         } ?: 0
         val responseOrdinal = lastResponseOrdinal + 1
-        val priorMessages = tutorChatHistory(
-            respondTasks,
-            answerExposureKeys = sink.answerExposureKeys(),
+        // 原样保留能装下的轮次，装不下的压成摘要：长会话里模型不再"忘记"前面讲过什么。
+        val context = TutorContextComposer.compose(
+            tutorChatExchanges(
+                respondTasks,
+                answerExposureKeys = sink.answerExposureKeys(),
+            ),
         )
         val currentInput = sink.currentInput()
         val visibleContext = visibleTutorContextMarkdown(
@@ -226,7 +230,8 @@ internal class TutorRespondCommands(
             turnOrdinal = currentInput.turnOrdinal,
             studentMessage = effectiveMessage,
             visibleTutorContextMarkdown = visibleContext,
-            priorMessages = priorMessages,
+            priorMessages = context.recent,
+            priorDigest = context.digest,
             requestedMove = requestedMove,
             studentImageAssetIds = studentImageAssetIds,
             attempt = attempt,
@@ -247,7 +252,8 @@ internal class TutorRespondCommands(
                 turnOrdinal = currentInput.turnOrdinal,
                 studentMessage = effectiveMessage,
                 visibleTutorContextMarkdown = visibleContext,
-                priorMessages = priorMessages,
+                priorMessages = context.recent,
+                priorDigest = context.digest,
                 requestedMove = requestedMove,
                 studentImageAssetIds = studentImageAssetIds,
             )

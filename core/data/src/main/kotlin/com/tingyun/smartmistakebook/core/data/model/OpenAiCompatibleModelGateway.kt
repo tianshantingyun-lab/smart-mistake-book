@@ -604,8 +604,13 @@ private fun ModelGatewayExecution.requireImageRequestFits(
         is ImagePipelineClassifyInput -> listOf(input.sourceAssetId)
         is TutorVisualGenerateInput -> input.sourceAssets.sortedBy { it.pageIndex }.map { it.assetId }
         is TutorVisualReviewInput -> input.sourceAssets.sortedBy { it.pageIndex }.map { it.assetId }
-        is TutorLobbyInput -> input.sourceImageAssetRefs.sortedBy { it.pageIndex }.map { it.assetId }
-        // 学生随本条消息附带的图片，按选择顺序出网（历史轮次从不带图）。
+        // 本条消息的图在前，上文图片在后（顺序与提示词里的说明一致，模型据此区分）。
+        is TutorLobbyInput -> (
+            input.sourceImageAssetRefs.sortedBy { it.pageIndex } +
+                input.contextImageAssetRefs.sortedBy { it.pageIndex }
+            ).map { it.assetId }
+        // 学生随本条消息附带的图片，按选择顺序出网。讲题页的"本题题图"不在其中：
+        // TutorQuestionContext 里没有资产引用，追问时模型只看解析出的文字题面。
         is TutorRespondInput -> input.studentImageAssetRefs
         else -> emptyList()
     }

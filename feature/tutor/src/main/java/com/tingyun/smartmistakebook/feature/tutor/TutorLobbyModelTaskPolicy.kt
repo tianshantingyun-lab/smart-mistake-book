@@ -28,6 +28,10 @@ internal fun buildTutorLobbyRequest(
     approvedAtEpochMillis: Long = occurredAtEpochMillis,
     attempt: Int = 0,
     imageAssets: List<LobbyMessageImage> = emptyList(),
+    /** 上文学生消息里的图片（最近一次带图消息的那几张），随本次一并出网。 */
+    contextImageAssets: List<LobbyMessageImage> = emptyList(),
+    /** 更早轮次的确定性摘要；空表示没有轮次被挤出原样窗口。 */
+    priorDigest: String? = null,
 ): ModelTaskRequest {
     require(conversationId.isNotBlank()) { "Tutor lobby conversation id must not be blank" }
     require(provider.supports(ModelTaskKind.TUTOR_LOBBY)) {
@@ -37,7 +41,19 @@ internal fun buildTutorLobbyRequest(
     require(imageAssets.size <= ModelEgressManifest.MAX_LOBBY_IMAGE_ASSETS) {
         "Tutor lobby message carries too many images"
     }
+    require(contextImageAssets.size <= ModelEgressManifest.MAX_LOBBY_IMAGE_ASSETS) {
+        "Tutor lobby message context carries too many images"
+    }
     val imageRefs = imageAssets.mapIndexed { index, image ->
+        CaptureSourceAssetRef(
+            assetId = image.assetId,
+            sha256 = image.sha256,
+            width = image.width,
+            height = image.height,
+            pageIndex = index,
+        )
+    }
+    val contextImageRefs = contextImageAssets.mapIndexed { index, image ->
         CaptureSourceAssetRef(
             assetId = image.assetId,
             sha256 = image.sha256,
@@ -51,7 +67,9 @@ internal fun buildTutorLobbyRequest(
         messageOrdinal = messageOrdinal,
         studentMessage = studentMessage,
         priorMessages = priorMessages.takeLast(TutorLobbyInput.MAX_PRIOR_MESSAGES),
+        priorDigest = priorDigest,
         sourceImageAssetRefs = imageRefs,
+        contextImageAssetRefs = contextImageRefs,
         // Lobby 只声明错题本读取：MASTERY_READ 的产出（掌握度明细）无法归入 Lobby 的
         // 披露集合，注入 round-2 出网 prompt 会违反 least-disclosure；掌握度读取仅保留在
         // Respond（其披露集合含 RELEVANT_LEARNING_EVIDENCE）。
@@ -66,8 +84,10 @@ internal fun buildTutorLobbyRequest(
                 append(prior.studentMessage.length).append(':').append(prior.studentMessage)
                 append(prior.assistantMarkdown.length).append(':').append(prior.assistantMarkdown)
             }
+            append(priorDigest.orEmpty()).append('\n')
             // 图片是消息的一部分：换图必须换请求标识，避免幂等重放串页。
-            imageRefs.forEach { ref ->
+            // 上文图片同理——换了带的是哪几张图，就是另一次发送。
+            (imageRefs + contextImageRefs).forEach { ref ->
                 append(ref.assetId).append(':').append(ref.sha256).append('\n')
             }
             append(provider.providerConfigurationVersion)
@@ -75,7 +95,8 @@ internal fun buildTutorLobbyRequest(
     ).take(24)
     val requestId = "tutor-lobby:$messageOrdinal:$requestHash:$attempt"
     val manifest = if (provider.executionLocation == ModelExecutionLocation.EXTERNAL_PROVIDER) {
-        val includesImage = imageRefs.isNotEmpty()
+        val egressAssets = imageAssets + contextImageAssets
+        val includesImage = egressAssets.isNotEmpty()
         ModelEgressManifest(
             authorizationId = "authorization:$requestId",
             subjectId = input.conversationId,
@@ -86,7 +107,7 @@ internal fun buildTutorLobbyRequest(
             providerConfigurationVersion = provider.providerConfigurationVersion,
             promptPolicyVersion = TUTOR_LOBBY_PROMPT_POLICY_VERSION,
             approvedAtEpochMillis = approvedAtEpochMillis,
-            assets = imageAssets.map { image ->
+            assets = egressAssets.map { image ->
                 ModelEgressAssetGrant(
                     assetId = image.assetId,
                     sha256 = image.sha256,

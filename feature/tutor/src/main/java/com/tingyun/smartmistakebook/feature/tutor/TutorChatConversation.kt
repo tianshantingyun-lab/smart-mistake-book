@@ -151,6 +151,17 @@ private fun ModelTaskSnapshot.requiresTutorModelSettings(): Boolean {
 internal fun tutorChatHistory(
     tasks: List<ModelTaskSnapshot>,
     answerExposureKeys: Set<TutorAnswerExposureKey>,
+): List<TutorChatHistoryEntry> = TutorHistoryBudget.bounded(
+    tutorChatExchanges(tasks, answerExposureKeys),
+)
+
+/**
+ * 会话里所有已成功的完整轮次（不裁剪）。装配器要拿到**未裁剪**的列表才能把被挤出原样
+ * 窗口的轮次压成摘要；先裁剪再摘要就等于让它们无声消失。
+ */
+internal fun tutorChatExchanges(
+    tasks: List<ModelTaskSnapshot>,
+    answerExposureKeys: Set<TutorAnswerExposureKey>,
 ): List<TutorChatHistoryEntry> {
     val succeeded = latestTutorRespondTasks(tasks).mapNotNull { task ->
         val input = task.request.input as TutorRespondInput
@@ -167,7 +178,7 @@ internal fun tutorChatHistory(
             },
         )
     }
-    return TutorHistoryBudget.bounded(succeeded)
+    return succeeded
 }
 
 private const val HIDDEN_TUTOR_ANSWER_CONTEXT =

@@ -17,8 +17,21 @@ data class TutorLobbyInput(
     val messageOrdinal: Int,
     val studentMessage: String,
     val priorMessages: List<TutorChatHistoryEntry> = emptyList(),
+    /**
+     * 更早轮次的确定性摘要（超出预算被挤出原样窗口的那些轮）：让模型知道前面聊过什么、
+     * 已经给过什么结论，而不是让它们无声消失。为空表示没有轮次被挤出。
+     */
+    val priorDigest: String? = null,
     /** 本条消息附带的图片（学生主动选择，最多 9 张）；空表示纯文字。 */
     val sourceImageAssetRefs: List<CaptureSourceAssetRef> = emptyList(),
+    /**
+     * 上文图片：本会话里学生此前发过的图片（取最近一次带图消息的那几张）。
+     *
+     * 图片仍属于那条历史消息，只是随本次发送一并出网。它存在的理由是一条实测失败：学生先
+     * 发一张题图问"解一下这个题吧"，再追问"第三题"时上下文里只剩文字，模型自己在回答里写
+     * 「这道题的题面细节我这边看不到」——追问全部落空。
+     */
+    val contextImageAssetRefs: List<CaptureSourceAssetRef> = emptyList(),
     /** Non-empty enables the tool protocol for this dispatch (spec §3.1). */
     val toolDeclarations: List<TutorToolName> = emptyList(),
     /** Results of prior tool rounds; round 1 dispatch always leaves this empty. */
@@ -32,7 +45,7 @@ data class TutorLobbyInput(
 
     /** 消息带图时要求 provider 具备图片输入能力（Lobby 不在 agent-eligible 集合内，此位只驱动能力门）。 */
     override val requestsImageBytes: Boolean
-        get() = sourceImageAssetRefs.isNotEmpty()
+        get() = sourceImageAssetRefs.isNotEmpty() || contextImageAssetRefs.isNotEmpty()
 
     init {
         conversationId.requireSafeModelText(
@@ -57,6 +70,24 @@ data class TutorLobbyInput(
         ) {
             "Tutor lobby message image order must be contiguous from zero"
         }
+        require(contextImageAssetRefs.size <= ModelEgressManifest.MAX_LOBBY_IMAGE_ASSETS) {
+            "Tutor lobby context carries too many images"
+        }
+        require(contextImageAssetRefs.map { it.assetId }.distinct().size == contextImageAssetRefs.size) {
+            "Tutor lobby context image ids must be unique"
+        }
+        require(
+            contextImageAssetRefs.map { it.pageIndex } == contextImageAssetRefs.indices.toList(),
+        ) {
+            "Tutor lobby context image order must be contiguous from zero"
+        }
+        require(
+            sourceImageAssetRefs.map { it.assetId }
+                .intersect(contextImageAssetRefs.map { it.assetId }.toSet())
+                .isEmpty(),
+        ) {
+            "Tutor lobby must not disclose the same image twice in one message"
+        }
         require(priorMessages.size <= TutorRespondInput.MAX_PRIOR_MESSAGES) {
             "Tutor lobby contains too many prior messages"
         }
@@ -65,6 +96,11 @@ data class TutorLobbyInput(
                 message.studentMessage.length + message.assistantMarkdown.length
             } <= TutorRespondInput.MAX_PRIOR_MESSAGE_CHARS,
         ) { "Tutor lobby prior messages exceed their text budget" }
+        priorDigest?.requireSafeModelText(
+            "Tutor lobby prior digest",
+            TutorRespondInput.MAX_PRIOR_DIGEST_CHARS,
+            true,
+        )
         require(toolDeclarations.size <= MAX_TOOL_DECLARATIONS) {
             "Tutor lobby declares too many tools"
         }
