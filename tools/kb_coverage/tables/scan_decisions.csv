@@ -13,9 +13,9 @@ rel_path,subject,decision,rule,reason
 06-【生物】2027版高中《解题觉醒》/生物解题觉醒-第1册 主书.pdf,BIOLOGY,TRANSCRIBE_LATER,jjdx-zhushu,主书含讲解+题，需抽样后再定
 06-【生物】2027版高中《解题觉醒》/生物解题觉醒-第2册 名师大招册.pdf,BIOLOGY,TRANSCRIBE_THIS_ROUND,jjdx-dazhao,方法/大招知识密集，本轮已渲染 build/render/jjdx-*-dazhao/
 06-【生物】2027版高中《解题觉醒》/生物解题觉醒-第3册 大招解析册.pdf,BIOLOGY,SKIP_ANSWERS,jjdx-dazhao-jiexi,大招配套解析（题解）
-2026年新高考资料/一轮复习/2026年大一轮复习讲义数学课件讲义练习/基础版/Word版题库/第五章　平面向量、复数/课堂笔记.pdf,MATH,PENDING_UNCLASSIFIED,-,规则未覆盖，需人工判定
-2026年新高考资料/一轮复习/2026年高考数学一轮复习知识清单（全国通用）/2026版/解三角形及其应用.pdf,MATH,PENDING_UNCLASSIFIED,-,规则未覆盖，需人工判定
-2026年新高考资料/一轮复习/2026年高考数学一轮复习讲义+练习+课件（新教材新高考）/2026版/第四章 三角函数与解三角形/解三角形及其应用.pdf,MATH,PENDING_UNCLASSIFIED,-,规则未覆盖，需人工判定
+2026年新高考资料/一轮复习/2026年大一轮复习讲义数学课件讲义练习/基础版/Word版题库/第五章　平面向量、复数/课堂笔记.pdf,MATH,SKIP_NO_CONTENT,vision-ktbj,渲染后人工看图：整页为微信资料群二维码广告（“资料共享/最牛鸡娃教育资料共享群”），零知识内容 → 跳过
+2026年新高考资料/一轮复习/2026年高考数学一轮复习知识清单（全国通用）/2026版/解三角形及其应用.pdf,MATH,TRANSCRIBED,vision-round2,已视觉转写并入库（第 10 号代理，见 .agent_jjdx_misc.csv / extractor chunk 前缀 5fd81512c2、eaaa47c6d7、9f2a9cc9b9、f49eeec233、34aeb73fd5、6a5be116da）
+2026年新高考资料/一轮复习/2026年高考数学一轮复习讲义+练习+课件（新教材新高考）/2026版/第四章 三角函数与解三角形/解三角形及其应用.pdf,MATH,TRANSCRIBED,vision-round2,已视觉转写并入库（第 10 号代理，见 .agent_jjdx_misc.csv / extractor chunk 前缀 5fd81512c2、eaaa47c6d7、9f2a9cc9b9、f49eeec233、34aeb73fd5、6a5be116da）
 2026年新高考资料(1)/二轮复习/2026版物理二轮复习/2026版物理 复习讲义扫描版【通用版】/物理二轮专题强化练 【考前特训】.pdf,PHYSICS,SKIP_EXERCISES,kaoqian-texun,强化练
 2026年新高考资料(1)/二轮复习/2026版物理二轮复习/2026版物理 复习讲义扫描版【通用版】/物理大二轮【专题复习】.pdf,PHYSICS,TRANSCRIBE_LATER,erlun-jiangyi,物理大二轮专题复习讲义，方法/知识型
 2026年新高考资料(1)/二轮复习/2026版物理二轮复习/2026版物理 复习讲义扫描版【通用版】/物理大二轮专题复习【答案精析】.pdf,PHYSICS,SKIP_ANSWERS,daan-jingxi,答案
@@ -394,10 +394,10 @@ rel_path,subject,decision,rule,reason
 27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.物理.5·3A版/二、加赠电子资源/22026届优质模拟题精选/1_资源拓展/77_河北省2026届高三第一次八省联考（T8联考）物理试卷（含答案）.pdf,PHYSICS,SKIP_EXERCISES,moni,模拟卷
 27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.物理.5·3A版/二、加赠电子资源/22026届优质模拟题精选/1_资源拓展/7_广东省广州市2026届高三年级上学期12月调研测试（广州零模）物理试卷（答案）.pdf,PHYSICS,SKIP_EXERCISES,moni,模拟卷
 27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.物理.5·3A版/二、加赠电子资源/22026届优质模拟题精选/1_资源拓展/8_广东省广州市2026届高三年级上学期12月调研测试（广州零模）物理试卷.pdf,PHYSICS,SKIP_EXERCISES,moni,模拟卷
-6. 2026生物总复习/2027年新高考资料【上新中】/2027年高考生物一轮/2027年高考生物一轮复习知识清单（全国通用）-G56/2027版/第01讲 走近细胞（图文版知识清单）.pdf,BIOLOGY,PENDING_UNCLASSIFIED,-,规则未覆盖，需人工判定
-6. 2026生物总复习/2027年新高考资料【上新中】/2027年高考生物一轮/2027年高考生物一轮复习知识清单（全国通用）-G56/2027版/第15讲 分离定律（图文版知识清单）.pdf,BIOLOGY,PENDING_UNCLASSIFIED,-,规则未覆盖，需人工判定
-6. 2026生物总复习/2027年新高考资料【上新中】/2027年高考生物一轮/2027年高考生物一轮复习知识清单（全国通用）-G56/2027版/第16讲 自由组合定律（图文版知识清单）.pdf,BIOLOGY,PENDING_UNCLASSIFIED,-,规则未覆盖，需人工判定
-6. 2026生物总复习/2027年新高考资料【上新中】/2027年高考生物一轮/2027年高考生物一轮复习知识清单（全国通用）-G56/2027版/第17讲 伴性遗传和人类遗传病（图文版知识清单）.pdf,BIOLOGY,PENDING_UNCLASSIFIED,-,规则未覆盖，需人工判定
+6. 2026生物总复习/2027年新高考资料【上新中】/2027年高考生物一轮/2027年高考生物一轮复习知识清单（全国通用）-G56/2027版/第01讲 走近细胞（图文版知识清单）.pdf,BIOLOGY,TRANSCRIBED,vision-round2,已视觉转写并入库（第 10 号代理，见 .agent_jjdx_misc.csv）
+6. 2026生物总复习/2027年新高考资料【上新中】/2027年高考生物一轮/2027年高考生物一轮复习知识清单（全国通用）-G56/2027版/第15讲 分离定律（图文版知识清单）.pdf,BIOLOGY,TRANSCRIBED,vision-round2,已视觉转写并入库（第 10 号代理，见 .agent_jjdx_misc.csv）
+6. 2026生物总复习/2027年新高考资料【上新中】/2027年高考生物一轮/2027年高考生物一轮复习知识清单（全国通用）-G56/2027版/第16讲 自由组合定律（图文版知识清单）.pdf,BIOLOGY,TRANSCRIBED,vision-round2,已视觉转写并入库（第 10 号代理，见 .agent_jjdx_misc.csv）
+6. 2026生物总复习/2027年新高考资料【上新中】/2027年高考生物一轮/2027年高考生物一轮复习知识清单（全国通用）-G56/2027版/第17讲 伴性遗传和人类遗传病（图文版知识清单）.pdf,BIOLOGY,TRANSCRIBED,vision-round2,已视觉转写并入库（第 10 号代理，见 .agent_jjdx_misc.csv）
 高中必刷题合订版/化学/27化学必刷题合订本狂K重点.pdf,CHEMISTRY,SKIP_EXERCISES,bishuati,题集
 高中必刷题合订版/数学/2027高考必刷题数学 狂k重难点.pdf,MATH,SKIP_EXERCISES,bishuati,题集
 高中必刷题合订版/物理/物理-高考必刷题合订本27版-狂K重难点.pdf,PHYSICS,SKIP_EXERCISES,bishuati,题集

@@ -721,3 +721,14 @@ bmath_6 缺 p591–660、bbio_3 缺 40 页、phyjc_1 缺 28–133。其中 3 个
 - 修数据（不靠改门）：10 条 LaTeX 受损材料、13 条带 \t\r 材料、3 个 C1 控制符字段；
   并补 `\otimes/\oplus/\ominus/\odot/...` 进 `_REAL_LATEX_COMMANDS`
   （`otimes` 以 `imes` 结尾，会被"`\times` 丢反斜杠"的模式误伤）。
+
+### K-05 · 407 个扫描件全部有了处置决定（PENDING_UNCLASSIFIED 归零）【P2 · 已收口】
+
+**做法.** 把 7 条待判定逐条落地：其中 6 条其实**上一轮已经转写**（4 个生物"图文版知识清单" +
+2 个数学单页讲义，见第 10 号代理的 `.agent_jjdx_misc.csv`，合计 56 行材料），只是决定表没回头看；
+最后 1 条 `第五章　平面向量、复数/课堂笔记.pdf` 渲染后人工看图，整页是
+**微信资料群二维码广告**（"资料共享/最牛鸡娃教育资料共享群"），零知识内容 → 判 `SKIP_NO_CONTENT`。
+
+**结论.** 407 个扫描 PDF 现在分布为：TRANSCRIBE_LATER 227、SKIP_EXERCISES 100、
+DUPLICATE_OF_BOOK 56、TRANSCRIBED 10、TRANSCRIBE_THIS_ROUND 9（本轮批次，已随批次做成 TRANSCRIBED）、
+SKIP_ANSWERS 5、SKIP_NO_CONTENT 1，**无待判定**。
