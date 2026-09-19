@@ -73,10 +73,14 @@ class ReviewedKnowledgePackJsonCodecTest {
         // 同日别名取证反查（audit_bindings_by_alias）发现 96 条错绑嫌疑，逐条裁定后改绑 92 条、
         // 合并 9 条同物重复 → 2443→2434 point。合计 468 + 2434 = 2902 节点。
         //
-        // ⚠️ 这个数字**每次内容入库都会过期**，需要同步更新——它钉的是"当前内容规模"，
-        // 不是不变量。真正的不变量是下面那条（节点 = topic + 原子点、层级完整），
-        // 那几条不会随内容增长而变红。若这个数字频繁成为阻塞，应考虑改成下界断言。
-        assertEquals(2902, pack.nodes.size)
+        // 这里**只守下界**：节点总数随每次内容入库变化（曾钉死 2902，随后续入库立即过期并
+        // 阻塞 CI，见 KD 台账与 docs/known-defects 的收口记录）。真正的不变量是下面几条
+        // （节点 = topic + 原子点、父链完整、绑定=材料、材料量双阈值），它们不随内容增长而变红；
+        // 精确规模由台账记录，不在这里钉死。
+        assertTrue(
+            "pack must carry the full four-subject tree, got ${pack.nodes.size} nodes",
+            pack.nodes.size >= 2_500,
+        )
         // 多层知识树：卷 -> 章 -> 主题 -> 子主题 -> 知识点，topic 父链必须完整落到节点层
         val topicNodes = pack.nodes.filter { it.nodeKind == "TOPIC" }
         assertTrue(topicNodes.size >= 400)
