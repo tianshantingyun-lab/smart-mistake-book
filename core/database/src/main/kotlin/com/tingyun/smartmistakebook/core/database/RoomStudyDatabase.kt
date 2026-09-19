@@ -449,6 +449,9 @@ internal class RoomStudyDatabase(
     override suspend fun readKnowledgeNodesByIds(ids: Set<String>): List<KnowledgeNodeSeedRecord> =
         knowledgeBase.readKnowledgeNodesByIds(ids)
 
+    override suspend fun readActiveKnowledgeNodeIds(ids: Set<String>): Set<String> =
+        knowledgeBase.readActiveKnowledgeNodeIds(ids)
+
     override suspend fun readKnowledgeSourcesByIds(ids: Set<String>): List<KnowledgeSourceSeedRecord> =
         knowledgeBase.readKnowledgeSourcesByIds(ids)
 

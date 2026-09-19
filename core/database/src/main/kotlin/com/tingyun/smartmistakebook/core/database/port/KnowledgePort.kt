@@ -36,6 +36,14 @@ interface KnowledgeReadPort {
     ): List<KnowledgeNodeSeedRecord>
 
     suspend fun readKnowledgeNodesByIds(ids: Set<String>): List<KnowledgeNodeSeedRecord>
+
+    /**
+     * 这些 id 里仍然有效的那些（未退役）。
+     *
+     * "当前工作"路径用它把集合收一道；[readKnowledgeNodesByIds] 是历史解释路径、不过滤——
+     * 分界见 `ProblemOrganizationDao.readActiveKnowledgeNodeIds` 的注释。
+     */
+    suspend fun readActiveKnowledgeNodeIds(ids: Set<String>): Set<String>
     suspend fun readKnowledgeSourcesByIds(ids: Set<String>): List<KnowledgeSourceSeedRecord>
 
     suspend fun readKnowledgeNodeSourceBindings(

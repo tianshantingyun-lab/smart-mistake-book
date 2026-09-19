@@ -154,13 +154,16 @@ internal interface MasteryOverviewDao {
      * would read the short list as the whole subject.
      *
      * Mirrors the verification-status filter `countReviewedKnowledgeNodesBySubject`
-     * uses, so the two counts describe the same population.
+     * uses, so the two counts describe the same population. It also mirrors that
+     * query's `status != 'RETIRED'`: a retired knowledge point is not reviewable,
+     * and counting it would overstate "另有 N 个尚无学习证据" to the model.
      */
     @Query(
         """
         SELECT COUNT(*) FROM knowledge_node
         WHERE subject = :subject
           AND verification_status IN ('CURATED', 'SOURCE_GROUNDED', 'USER_CONFIRMED')
+          AND status != 'RETIRED'
         """,
     )
     suspend fun countReviewableKnowledgeNodes(subject: String): Int

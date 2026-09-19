@@ -484,7 +484,7 @@ internal class StudyReviewPlannerService(
 
         // 范围 = 今天错题复习队列的题绑定知识点并集（T1），只取今天队列实际覆盖的点，
         // 不把整个知识库拖进来（spec §1.3：范围 = 今天错题里涉及的知识点）。
-        val queueScope = extractReviewKnowledgeScope(
+        val requestedScope = extractReviewKnowledgeScope(
             planQueue.map { queueItem ->
                 ReviewScopeQuestion(
                     practiceUnitId = queueItem.practiceUnitId,
@@ -492,6 +492,11 @@ internal class StudyReviewPlannerService(
                 )
             },
         )
+        if (requestedScope.isEmpty()) return KnowledgeReviewSessionPlan()
+        // **已退役的知识点不进新复习计划。这一道必须在这里，不能塞进 resolveKnowledgeContexts**
+        // ——那个函数只是名字/路径解析器，而掌握度列表（StudySnapshotBuilder）用的是同一个它，
+        // 在解析器里过滤会让学生的旧记录凭空消失。
+        val queueScope = database.readActiveKnowledgeNodeIds(requestedScope)
         if (queueScope.isEmpty()) return KnowledgeReviewSessionPlan()
 
         val learnerSnapshot = learnerSnapshot()

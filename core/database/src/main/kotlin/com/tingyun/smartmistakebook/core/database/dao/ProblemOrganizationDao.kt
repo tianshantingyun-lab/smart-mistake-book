@@ -45,6 +45,7 @@ internal interface ProblemOrganizationDao {
             ON provenance.knowledge_node_id = node.knowledge_node_id
            AND provenance.reviewed_at_epoch_millis IS NOT NULL
         WHERE node.verification_status IN ('CURATED', 'SOURCE_GROUNDED', 'USER_CONFIRMED')
+          AND node.status != 'RETIRED'
         GROUP BY node.subject
         ORDER BY node.subject ASC
         """,
@@ -111,6 +112,7 @@ internal interface ProblemOrganizationDao {
         """
         SELECT * FROM knowledge_node
         WHERE subject = :subject
+          AND status != 'RETIRED'
         ORDER BY
             CASE verification_status
                 WHEN 'CURATED' THEN 0
@@ -125,11 +127,18 @@ internal interface ProblemOrganizationDao {
     )
     suspend fun readSubjectKnowledgeNodes(subject: String, limit: Int): List<KnowledgeNodeEntity>
 
+    // ---- "当前工作"的读路径：一律排除已退役内容 ----
+    //
+    // 退役的节点从新工作里消失（不再被召回、不再进整理提示词、不再进新复习计划），
+    // 但**历史解释路径不过滤**——学生错题上的标签、掌握度列表仍要能解释旧记录。
+    // 这条分界是本文件里几个查询带 status 过滤、而 readKnowledgeNodesByIds 不带的原因。
+
     @Query(
         """
         SELECT * FROM knowledge_node
         WHERE subject = :subject
           AND verification_status IN ('CURATED', 'SOURCE_GROUNDED', 'USER_CONFIRMED')
+          AND status != 'RETIRED'
         ORDER BY canonical_name ASC
         LIMIT :limit
         """,
@@ -148,6 +157,7 @@ internal interface ProblemOrganizationDao {
         WHERE feature.subject = :subject
           AND feature.search_feature IN (:searchFeatures)
           AND node.verification_status IN ('CURATED', 'SOURCE_GROUNDED', 'USER_CONFIRMED')
+          AND node.status != 'RETIRED'
         GROUP BY node.knowledge_node_id
         ORDER BY
             COUNT(DISTINCT feature.search_feature) DESC,
@@ -163,15 +173,26 @@ internal interface ProblemOrganizationDao {
         limit: Int,
     ): List<KnowledgeNodeEntity>
 
+    /**
+     * 检索索引自愈的分母。过滤条件**必须与召回查询逐条一致**（同样的
+     * `verification_status`、同样排 `RETIRED`）——否则两个计数会永久漂移，
+     * 自愈要么空转要么反复补建。
+     */
     @Query(
         """
         SELECT COUNT(*) FROM knowledge_node
         WHERE subject = :subject
           AND verification_status IN ('CURATED', 'SOURCE_GROUNDED', 'USER_CONFIRMED')
+          AND status != 'RETIRED'
         """,
     )
     suspend fun countReviewedKnowledgeNodesBySubject(subject: String): Int
 
+    /**
+     * 已索引的节点数（自愈的分子）。**不必**再排 RETIRED：退役时会
+     * 删掉该节点的特征行（见 `deleteSearchFeaturesForNodes`），所以两个计数同步下降。
+     * 若哪天真要改这里，必须同时改退役路径——两处必须一起动。
+     */
     @Query(
         """
         SELECT COUNT(DISTINCT knowledge_node_id)
@@ -181,6 +202,24 @@ internal interface ProblemOrganizationDao {
     )
     suspend fun countIndexedKnowledgeNodesBySubject(subject: String): Int
 
+    /**
+     * 这些 id 里**仍然有效**的那些（未退役）。
+     *
+     * "当前工作"的读路径用它把集合收一道。**刻意不把它塞进 [readKnowledgeNodesByIds]**：
+     * 那是历史解释路径（错题标签、掌握度列表要能解释旧记录），在那过滤会让学生的旧记录凭空消失。
+     * 某 id 该不该在集合里，由**构造集合的那一方**决定，而不是由名字解析器决定。
+     */
+    @Query(
+        "SELECT knowledge_node_id FROM knowledge_node " +
+            "WHERE knowledge_node_id IN (:ids) AND status != 'RETIRED'",
+    )
+    suspend fun readActiveKnowledgeNodeIds(ids: Set<String>): List<String>
+
+    /**
+     * 按 id 读节点。**刻意不过滤 RETIRED**：这是历史解释路径（错题详情、掌握度列表要能
+     * 解释旧记录），过滤会让"学生错题上的知识点标签、他的掌握度条目"凭空消失。
+     * 新的工作路径请用上面带过滤的那几个查询。
+     */
     @Query("SELECT * FROM knowledge_node WHERE knowledge_node_id IN (:ids)")
     suspend fun readKnowledgeNodesByIds(ids: Set<String>): List<KnowledgeNodeEntity>
 

@@ -2113,6 +2113,10 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
     /** 默认无合并重定向。要测合并语义的用例覆写它（见 `KnowledgeNodeSuccessorsTest`）。 */
     override suspend fun readKnowledgeNodeSuccessors(): Map<String, String> = emptyMap()
 
+    /** 夹具里的节点都视为有效（未退役）；要测退役语义的用例覆写它。 */
+    override suspend fun readActiveKnowledgeNodeIds(ids: Set<String>): Set<String> =
+        knowledgeNodes.mapTo(hashSetOf()) { it.knowledgeNodeId }.intersect(ids)
+
     /**
      * 夹具按"调和即全部接收"实现：这些用例测的是讲题/复习链路，不是调和本身
      * （调和的逐对象行为由 `BundledKnowledgeBaseInstallerTest` 覆盖）。

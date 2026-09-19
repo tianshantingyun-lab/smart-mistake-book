@@ -41,6 +41,7 @@ internal interface KnowledgeTeachingMaterialDao {
         ) AS matched
           ON matched.material_id = material.material_id
         WHERE material.subject = :subject
+          AND material.status != 'RETIRED'
         ORDER BY
           matched.best_role_rank ASC,
           CASE material.material_type

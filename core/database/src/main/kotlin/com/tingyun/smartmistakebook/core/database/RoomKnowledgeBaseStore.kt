@@ -153,6 +153,15 @@ internal class RoomKnowledgeBaseStore(
             .map(KnowledgeNodeEntity::toSeedRecord)
     }
 
+    suspend fun readActiveKnowledgeNodeIds(ids: Set<String>): Set<String> {
+        if (ids.isEmpty()) return emptySet()
+        return ids.chunked(KNOWLEDGE_NODE_QUERY_CHUNK_SIZE)
+            .flatMap { chunk ->
+                database.problemOrganizationDao().readActiveKnowledgeNodeIds(chunk.toSet())
+            }
+            .toSet()
+    }
+
     suspend fun readKnowledgeSourcesByIds(ids: Set<String>): List<KnowledgeSourceSeedRecord> {
         if (ids.isEmpty()) return emptyList()
         return ids.chunked(KNOWLEDGE_NODE_QUERY_CHUNK_SIZE)
