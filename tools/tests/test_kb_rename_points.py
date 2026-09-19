@@ -58,7 +58,9 @@ class RealPackTest(unittest.TestCase):
         # 2026-09-19 坏名分流收口：把 fix_bad_names 的定稿移植进权威表后又合并 9 条
         # （属性条目/碎片并入主节点）→ 2434−9=2425
         # 同日再删 1 条题干残片（含它唯一的题干材料）→ 2424
-        self.assertEqual(2424, dp._point_count(pack))
+        # 2026-09-19 文本判定轮：化学/生物讲义与知识清单 9,405 块判定入库，新建 428 个知识点
+        # 并合并 1 条同物重复 → 2424 + 428 = 2852
+        self.assertEqual(2852, dp._point_count(pack))
 
 
 if __name__ == "__main__":

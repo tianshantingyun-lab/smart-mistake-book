@@ -155,20 +155,33 @@ def plan(judgments: list[dict]) -> dict:
             "skip_count": skips, "states": states, "pack": pack, "chunks": chunks}
 
 
-def _pick_sidecar(pack: dict, subject: str) -> tuple[Path, dict]:
-    """选目标卷：同科材料最少的；预计超 2.5M 字符则开新卷。"""
+def _pick_sidecar(pack: dict, subject: str) -> tuple[Path, dict | None]:
+    """选目标卷：同科材料最少的；预计超 2.5M 字符则开新卷并**立刻登记索引**。
+
+    曾经踩过的坑（静默丢数据）：滚动只返回新路径、不登记索引，于是**每一行都重新滚动**
+    到同一个"未登记的新卷名"、并各自新建空 doc —— 4,606 条材料只有最后 1 条落盘，
+    而状态机照样推进（报 materialized 4,606）。现在开卷即登记，后续行会选中这份新卷。
+    """
     sizes: dict[Path, int] = {}
     counts: dict[Path, dict[str, int]] = {}
-    for p in pack_io.sidecar_paths():
+    paths = list(pack_io.sidecar_paths())
+    for p in paths:
+        if not p.exists():           # 刚登记进索引、还没落盘的新卷
+            sizes[p] = 0
+            counts[p] = {}
+            continue
         doc = pack_io.load_json(p)
         sizes[p] = len(pack_io.serialize(doc))
         c = counts[p] = {}
         for m in doc["materials"]:
             c[m["subject"]] = c.get(m["subject"], 0) + 1
-    target = min(pack_io.sidecar_paths(), key=lambda p: counts[p].get(subject, 0))
+    target = min(paths, key=lambda p: counts[p].get(subject, 0))
+    if not target.exists():
+        return target, None          # 刚登记还没落盘的空卷：交给调用方建 doc
     if sizes[target] + 5000 > ROLL_AT_CHARS:
-        target = pack_io.next_sidecar_path()
-        return target, None
+        new = pack_io.next_sidecar_path()
+        pack_io.write_sidecar_index([*paths, new])
+        return new, None
     return target, pack_io.load_json(target)
 
 
@@ -213,8 +226,12 @@ def write(judgments: list[dict]) -> dict:
         sid = _source_id(top_dir, subject)
         target, doc = _pick_sidecar(pl["pack"], subject)
         if doc is None:
-            doc = {"schemaVersion": 2, "packId": "moe-2025-four-subjects-v1",
-                   "sources": [], "materials": []}
+            # 新卷（或已登记未落盘）：本批之前在内存里累积的部分必须继续沿用，
+            # 否则每行都会新建空 doc —— 实测曾因此丢掉 4,605 条材料。
+            doc = changed_sidecars.get(target) or {
+                "schemaVersion": 2, "packId": "moe-2025-four-subjects-v1",
+                "sources": [], "materials": []}
+            changed_sidecars[target] = doc
         else:
             doc = changed_sidecars.get(target) or pack_io.load_json(target)
             changed_sidecars[target] = doc

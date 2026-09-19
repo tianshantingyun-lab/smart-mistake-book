@@ -71,7 +71,9 @@ class RealPackTest(unittest.TestCase):
         # （属性条目/碎片并入主节点）→ 2434−9=2425
         # 同日再删 1 条题干残片（`(1)写出分子式为C5H12的烷烃的结构简式：`，连同它唯一的
         # 题干材料，用户批准）→ 2424
-        self.assertEqual(2424, dp._point_count(pack))
+        # 2026-09-19 文本判定轮：化学/生物「一轮复习讲义·学生版 + 知识清单·学生版」9,405 块判定入库，
+        # 新建 428 个知识点并合并 1 条同物重复 → 2424 + 428 = 2852
+        self.assertEqual(2852, dp._point_count(pack))
 
     def test_purge_table_refs_is_clean_on_shipped(self):
         """成品已删过点、外部表已清过——再 purge 必须 0（无悬空引用残留）。"""

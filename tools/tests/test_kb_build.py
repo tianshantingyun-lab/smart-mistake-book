@@ -19,7 +19,8 @@ from kb_build import gate, pack_io, roundtrip, tables, textfix
 class RoundTripTest(unittest.TestCase):
     def test_every_bundled_file_round_trips(self):
         targets = [pack_io.pack_path(), *pack_io.sidecar_paths()]
-        self.assertEqual(7, len(targets), "知识库应由 1 个知识树 + 6 个 sidecar 组成")
+        # 2026-09-19 文本判定轮：材料突破单卷 2.5M 字符上限，滚动出新卷 v2-07 → 1 树 + 7 卷
+        self.assertEqual(8, len(targets), "知识库应由 1 个知识树 + 7 个 sidecar 组成")
         for path in targets:
             with self.subTest(path=path.name):
                 ok, message = roundtrip.verify_file(path)
