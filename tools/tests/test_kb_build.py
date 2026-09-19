@@ -19,8 +19,9 @@ from kb_build import gate, pack_io, roundtrip, tables, textfix
 class RoundTripTest(unittest.TestCase):
     def test_every_bundled_file_round_trips(self):
         targets = [pack_io.pack_path(), *pack_io.sidecar_paths()]
-        # 2026-09-19 文本判定轮：材料突破单卷 2.5M 字符上限，滚动出新卷 v2-07 → 1 树 + 7 卷
-        self.assertEqual(8, len(targets), "知识库应由 1 个知识树 + 7 个 sidecar 组成")
+        # sidecar 按单卷 2.5M 字符上限滚动：2026-09-19 文本判定两轮后滚到 v2-10 → 1 树 + 10 卷。
+        # 卷数随材料入库增长，断言的是"当前成品构成"，滚动入库时随更新（台账可查）。
+        self.assertEqual(11, len(targets), "知识库应由 1 个知识树 + 10 个 sidecar 组成")
         for path in targets:
             with self.subTest(path=path.name):
                 ok, message = roundtrip.verify_file(path)
@@ -120,7 +121,9 @@ class GateTest(unittest.TestCase):
         # 逐条裁定后改绑 92 条（含 9 条同物重复的合并）——被"错绑材料假装覆盖"的两个知识点露出来了：
         # MATH「由线、面关系误解向量关系」、CHEMISTRY「自然资源的开发利用」。它们是真内容缺口，
         # 待后续轮次补材料，不做数字上的遮掩。
-        self.assertEqual(2, metrics["unbound_points"].value)
+        # 同日并行入库轮（讲义/知识清单）补上了 MATH 那条的材料 → 2→1；
+        # 剩 CHEMISTRY「自然资源的开发利用」，缺料登记册（O 节）里注明"块池只有真题碎片"。
+        self.assertEqual(1, metrics["unbound_points"].value)
         self.assertEqual(892, metrics["unbound_materials"].value)
         # 2026-09-19 两批扫描件视觉转写入库（951 + 3,609 条材料）后：
         #   unbound_points 1→0（最后一个零材料点拿到材料）。
@@ -135,14 +138,15 @@ class GateTest(unittest.TestCase):
         # 带无损三查与幂等）后归零。两项从此充当防回归哨兵。
         self.assertEqual(0, metrics["latex_damage"].value)
         self.assertEqual(0, metrics["control_chars"].value)
-        # 2026-09-19 合并 9 条同物重复/残渣节点后：boundary_excerpt 677→676；
-        # 同日文本修复（boundaryMarkdown 里的 LaTeX 损坏/控制字符被修好）再 676→675。
-        self.assertEqual(675, metrics["boundary_excerpt"].value)
-        # 只留占位写法（`（见知识清单/教材）`）的条数。旧判据是"以 `定位：` 开头"，
-        # 而本包每个 boundary 都这样开头，于是该项恒等于节点总数 2573、毫无信息量。
-        # 2026-09-19 合并 9 条同物重复/残渣节点后：locator_boundary 581→579
-        # （被合并的残渣节点边界只有定位串，如「自然资源的开发利用」式的占位写法随之减少）。
-        self.assertEqual(579, metrics["locator_boundary"].value)
+        # 2026-09-19 内容裁定轮（R 节）：boundary_excerpt 675→0（675 条含第三方原文摘录的边界
+        # 全部按合规要求重写为自己的归纳，不再保存原文段落）、locator_boundary 579→0
+        # （579 条只有定位串/占位的边界全部补写了真边界正文）。两项从此充当防回归哨兵。
+        self.assertEqual(0, metrics["boundary_excerpt"].value)
+        self.assertEqual(0, metrics["locator_boundary"].value)
+        # 2026-09-19 内容裁定轮（R 节）：undeclared_prereq 1246→0。1246 条前置逐条语义审计
+        # （valid 259 / inverted 147 / unrelated 840——67% 的边根本不成立，印证"前置是假链"），
+        # 假边删除、反边翻转，`prereq_map.csv` 由最终图（406 条真边）整体重建。哨兵。
+        self.assertEqual(0, metrics["undeclared_prereq"].value)
         # 两项必须不相交：一条边界不可能既是原文摘录、又是没写边界。
         # 旧判据下两项交集 1984、皆假 0，即"任何写法都至少中一项"，指标失去意义。
         bundled = pack_io.load_json(pack_io.pack_path())
@@ -165,10 +169,12 @@ class GateTest(unittest.TestCase):
         # 全量对齐（1676→1307→1306→0），单元映射逐一目验过教材目录：
         # 它从此是防回归哨兵——新内容带着旧写法定位串进包时它会红。
         self.assertEqual(0, metrics["chapter_locator_mismatch"].value)
-        # unbound_points 2026-09-19 改绑后回到 2（真实内容缺口），留在"必须非零"列表里。
-        # duplicate_names / bad_names 已修到 0（上方专门断言），不在此"必须非零"列表
-        for key in ("unbound_points", "unbound_materials", "undeclared_prereq",
-                    "boundary_excerpt", "locator_boundary"):
+        # unbound_points 2026-09-19 改绑后回到 2（真实内容缺口），并行入库补 1 条后剩 1，
+        # 留在"必须非零"列表里（它是内容缺口哨兵，不是可工程修的缺陷）。
+        # duplicate_names / bad_names 已修到 0（上方专门断言），不在此"必须非零"列表。
+        # undeclared_prereq / boundary_excerpt / locator_boundary 2026-09-19 内容裁定轮（R 节）
+        # 修到 0，已移出此列（上方 assertEqual(0,…) 充当防回归哨兵）。
+        for key in ("unbound_points", "unbound_materials"):
             with self.subTest(metric=key):
                 self.assertFalse(metrics[key].ok, f"{key} 修复前不该是 0")
         # 章节覆盖率与归属完整性在现行包上本来就是满的，不该被当成缺陷

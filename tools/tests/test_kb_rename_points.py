@@ -60,7 +60,9 @@ class RealPackTest(unittest.TestCase):
         # 同日再删 1 条题干残片（含它唯一的题干材料）→ 2424
         # 2026-09-19 文本判定轮：化学/生物讲义与知识清单 9,405 块判定入库，新建 428 个知识点
         # 并合并 1 条同物重复 → 2424 + 428 = 2852
-        self.assertEqual(2852, dp._point_count(pack))
+        # 2026-09-19 文本判定第二轮（并行会话）再入库 729 个知识点（sidecar 滚到 v2-10）
+        # → 2852 + 729 = 3581。点数随入库轮次增长，由入库侧在提交里维护本 pin。
+        self.assertEqual(3581, dp._point_count(pack))
 
 
 if __name__ == "__main__":
