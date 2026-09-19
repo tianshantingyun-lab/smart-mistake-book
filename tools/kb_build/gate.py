@@ -315,6 +315,26 @@ def evaluate() -> list[Metric]:
                 break
     metrics.append(m6)
 
+    # 6b) 别名歧义：别名与**同学科另一节点的主名**相同。
+    # 这是比"幽灵别名"更危险的一类：别名是检索打分（权重 7/精确短语加成 70）与
+    # 模型选点的输入，指向别的概念的名字会把匹配直接引到错误节点上。
+    # 2026-09-19 重建别名时按"全局互斥"清掉了 325 条这类候选，此指标守住不变量。
+    m6b = Metric("alias_collision", "别名与同学科另一节点主名相同（歧义）")
+    names_by_subject: dict[str, set[str]] = {}
+    for subject, _t, point in points:
+        names_by_subject.setdefault(subject, set()).add(point["name"])
+    for subject, _t, point in points:
+        others = names_by_subject[subject] - {point["name"]}
+        for alias in point.get("aliases") or []:
+            if alias == point["name"]:
+                continue
+            if alias in others:
+                m6b.value += 1
+                if len(m6b.detail) < 40:
+                    m6b.detail.append(f"[{subject}] {point['name'][:24]} -> 别名「{alias[:24]}」")
+                break
+    metrics.append(m6b)
+
     # 7) 未声明前置（权威表里没有的一律算违规；定稿不了就该置空）
     m7 = Metric("undeclared_prereq", "未在权威表中声明的前置")
     for subject, _t, point in points:
