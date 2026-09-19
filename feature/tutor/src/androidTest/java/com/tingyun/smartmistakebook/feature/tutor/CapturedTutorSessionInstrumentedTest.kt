@@ -19,6 +19,8 @@ import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.tingyun.smartmistakebook.core.domain.AppendTutorStudentMessageCommand
+import com.tingyun.smartmistakebook.core.domain.LobbyMessageImage
+import com.tingyun.smartmistakebook.core.domain.LobbyMessageImageIntake
 import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
 import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
 import com.tingyun.smartmistakebook.core.domain.StudyQuestionMemory
@@ -811,6 +813,63 @@ class CapturedTutorSessionInstrumentedTest : CapturedTutorSessionTestBase() {
         // 学生第 n 轮固定落在第 2n-1 条：序号由请求自身决定，恢复重放不会因"当前最大 +1"漂移。
         assertEquals(1, command.ordinal)
         assertTrue(command.messageId.startsWith("tutor-message:"))
+    }
+
+    /**
+     * 会话页的附图入口只在资产读取器接线时出现。
+     *
+     * 这条钉的是接线本身：`imageIntake` 从 App 一路穿过
+     * `CapturedTutorSessionRoute` → `CapturedTutorSessionContent` → `ReadyCapturedSession`
+     * → `TutorModelPanel` 才到输入框。任何一层漏传，入口都会消失——而一个消失的入口
+     * 在真机上表现成"学生说好的附图功能不见了"，不会报错。
+     */
+    @Test
+    fun theSessionOffersTheImageEntryOnlyWhenAnIntakeIsWired() {
+        val session = session()
+        val intakeState = mutableStateOf<LobbyMessageImageIntake?>(null)
+
+        composeRule.setContent {
+            MaterialTheme {
+                ReadyCapturedSession(
+                    session = session,
+                    clock = { 10_000L },
+                    saveInProgress = false,
+                    saveError = null,
+                    onSave = {},
+                    modelTasks = ChatModelTaskRepository(session),
+                    interactions = RecordingTutorInteractions(),
+                    conversations = emptyConversations(),
+                    profile = StudyProfileOverview(),
+                    imageIntake = intakeState.value,
+                    onOpenModelSettings = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag("tutor_chat_attach").assertDoesNotExist()
+
+        composeRule.runOnIdle { intakeState.value = RecordingImageIntake() }
+
+        composeRule.onNodeWithTag("tutor_chat_attach").assertExists()
+    }
+
+    /**
+     * 会话页只把读取器用于「发送时登记」与「气泡回显」；这条测试只关心入口是否接线，
+     * 所以登记返回一个固定的资产引用，不触碰真实资产库。
+     */
+    private class RecordingImageIntake : LobbyMessageImageIntake {
+        override suspend fun registerImage(
+            localUri: String,
+            occurredAtEpochMillis: Long,
+        ): LobbyMessageImage = LobbyMessageImage(
+            assetId = "asset-session-test",
+            sha256 = "a".repeat(64),
+            byteSize = 1,
+            width = 1,
+            height = 1,
+        )
+
+        override suspend fun resolveImageUri(assetId: String): String? = null
     }
 
     @Test

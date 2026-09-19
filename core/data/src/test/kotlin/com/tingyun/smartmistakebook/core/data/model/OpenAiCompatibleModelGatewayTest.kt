@@ -467,6 +467,68 @@ class OpenAiCompatibleModelGatewayTest {
         }
     }
 
+    /**
+     * 学生会话里附的图片必须真的出网。
+     *
+     * 会话走的是"已配置模型 = 全局同意"通道（没有逐次披露清单），所以图片能不能出去完全
+     * 取决于 gateway 是否把 `studentImageAssetRefs` 解析成读取计划——这一条就是钉住那个分支。
+     */
+    @Test
+    fun imageBearingTutorRespondSendsTheStudentsImageOnTheWire() = runBlocking {
+        var sentBody = ""
+        val gateway = OpenAiCompatibleModelGateway(
+            configurationStore = FakeConfigurationStore(CONFIGURATION),
+            assetSource = assetSource { _, assetId ->
+                assertEquals(ASSET_ID, assetId)
+                asset()
+            },
+            transport = modelTransport { request ->
+                sentBody = request.body
+                ModelHttpResponse(200, envelope(tutorRespondPayload()))
+            },
+            clock = { AUTHORIZATION_NOW },
+        )
+
+        val events = gateway.execute(
+            consentedTutorRespond(
+                gateway = gateway,
+                input = tutorRespondInput().copy(studentImageAssetRefs = listOf(ASSET_ID)),
+            ),
+        ).toList()
+
+        assertTrue(events.last() is ModelGatewayEvent.Completed)
+        assertTrue(
+            "学生附的图片必须以图片内容片段出网",
+            sentBody.contains("data:image/jpeg;base64,"),
+        )
+        // 资产 id 是内部标识，不该出现在提示词或线上报文里。
+        assertFalse(sentBody.contains(ASSET_ID))
+    }
+
+    /** 纯文本会话不读任何资产、也不带图片片段：文本模型照常可用。 */
+    @Test
+    fun textOnlyTutorRespondReadsNoAssetAndSendsNoImageBytes() = runBlocking {
+        var sentBody = ""
+        val gateway = OpenAiCompatibleModelGateway(
+            configurationStore = FakeConfigurationStore(CONFIGURATION),
+            assetSource = assetSource { _, assetId ->
+                error("A text-only tutor response must not read asset $assetId")
+            },
+            transport = modelTransport { request ->
+                sentBody = request.body
+                ModelHttpResponse(200, envelope(tutorRespondPayload()))
+            },
+            clock = { AUTHORIZATION_NOW },
+        )
+
+        val events = gateway.execute(
+            consentedTutorRespond(gateway = gateway, input = tutorRespondInput()),
+        ).toList()
+
+        assertTrue(events.last() is ModelGatewayEvent.Completed)
+        assertFalse(sentBody.contains("data:image/jpeg;base64,"))
+    }
+
     @Test
     fun http429MapsToRateLimitedFailureThroughTheGatewayExecutionPath() = runBlocking {
         val gateway = OpenAiCompatibleModelGateway(
@@ -2227,6 +2289,43 @@ class OpenAiCompatibleModelGatewayTest {
             assetId: String,
         ): RestrictedModelAsset = open(execution, assetId)
     }
+
+    /**
+     * 会话带图走的是全局同意通道：没有逐次披露清单，能力门自己把关（见 ModelEgressTest）。
+     * 这正是 production 的形状——`TutorModelTaskPolicy` 构造会话请求时就是
+     * `agentConsentGranted = external` + `egressManifest = null`。
+     */
+    private suspend fun consentedTutorRespond(
+        gateway: OpenAiCompatibleModelGateway,
+        input: TutorRespondInput,
+    ): ModelGatewayExecution {
+        val capabilities = gateway.capabilities()
+        val request = ModelTaskRequest(
+            requestId = "tutor-respond-images",
+            input = input,
+            occurredAtEpochMillis = REQUEST_OCCURRED_AT,
+            agentConsentGranted = true,
+            egressManifest = null,
+        )
+        return ModelEgressPolicy.authorize(request, capabilities, AUTHORIZATION_NOW)
+    }
+
+    private fun tutorRespondPayload(): String = Json.encodeToString(
+        buildJsonObject {
+            put(
+                "intentDecision",
+                buildJsonObject {
+                    put("intent", "CURRENT_QUESTION_HELP")
+                    put("confidence", 0.9)
+                    put("explicitActionRequest", false)
+                    put("memoryPreference", "UNCHANGED")
+                    put("requestedLocalCapability", "NONE")
+                },
+            )
+            put("messageMarkdown", "先看导数的符号。")
+            put("solutionRevealed", false)
+        },
+    )
 
     private fun envelope(content: String): String = Json.encodeToString(
         buildJsonObject {
