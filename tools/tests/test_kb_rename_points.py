@@ -57,7 +57,8 @@ class RealPackTest(unittest.TestCase):
         # 2026-09-19：两批视觉转写新增 328 个方法节点、别名取证反查改绑 92 条并合并 9 条同物重复
         # 2026-09-19 坏名分流收口：把 fix_bad_names 的定稿移植进权威表后又合并 9 条
         # （属性条目/碎片并入主节点）→ 2434−9=2425
-        self.assertEqual(2425, dp._point_count(pack))
+        # 同日再删 1 条题干残片（含它唯一的题干材料）→ 2424
+        self.assertEqual(2424, dp._point_count(pack))
 
 
 if __name__ == "__main__":

@@ -69,7 +69,9 @@ class RealPackTest(unittest.TestCase):
         # 2026-09-19：两批视觉转写新增 328 个方法节点、别名取证反查改绑 92 条并合并 9 条同物重复
         # 2026-09-19 坏名分流收口：把 fix_bad_names 的定稿移植进权威表后又合并 9 条
         # （属性条目/碎片并入主节点）→ 2434−9=2425
-        self.assertEqual(2425, dp._point_count(pack))
+        # 同日再删 1 条题干残片（`(1)写出分子式为C5H12的烷烃的结构简式：`，连同它唯一的
+        # 题干材料，用户批准）→ 2424
+        self.assertEqual(2424, dp._point_count(pack))
 
     def test_purge_table_refs_is_clean_on_shipped(self):
         """成品已删过点、外部表已清过——再 purge 必须 0（无悬空引用残留）。"""
@@ -77,6 +79,16 @@ class RealPackTest(unittest.TestCase):
         pack = pack_io.load_json(pack_io.pack_path())
         purged = dp._purge_table_refs(pack)
         self.assertEqual(0, sum(purged.values()), purged)
+
+    def test_cli_runs_without_crashing(self):
+        """**CLI 必须真的能跑通**——这是库函数级用例照不到的一块。
+
+        它消灭的失败（2026-09-19 实测）：`main()` 里"用前后集合求差算出被删 slug"那一段写的是
+        `s["subject"]`，而 `iter_points` 产出的第一项是 subject **字符串**，于是 CLI 一跑就
+        TypeError；而库函数 `delete()` 的用例全绿、没有任何门会红——因为"加一段无损求差"
+        的改动**没有对应的执行验证**。同类形态在别的表驱动工具上也查一遍。
+        """
+        self.assertEqual(0, dp.main([]), "delete_points 的 CLI 在成品上应当跑通且不改任何东西")
 
 
 if __name__ == "__main__":

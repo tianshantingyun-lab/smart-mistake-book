@@ -37578,26 +37578,6 @@
    ]
   },
   {
-   "slug": "chem-fx-qing-de-jie-gou-jian-shi-wei-f21x10",
-   "subject": "CHEMISTRY",
-   "type": "CONCEPT_EXPLANATION",
-   "title": "氰[(CN)2]的结构简式为N≡C",
-   "summaryMarkdown": "9．氰[(CN)2]的结构简式为N≡C—C≡N，其化学性质与卤素(X2)很相似，化学上称之为拟卤素，其氧化性介于Br2和I2之间。",
-   "applicabilityMarkdown": "分析氧化还原反应、比较氧化性还原性强弱与电子转移数目时使用。",
-   "contentMarkdown": "9．氰[(CN)2]的结构简式为N≡C—C≡N，其化学性质与卤素(X2)很相似，化学上称之为拟卤素，其氧化性介于Br2和I2之间。",
-   "boundaryMarkdown": "该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。",
-   "derivationKind": "REVIEWED_SYNTHESIS",
-   "sourceId": "registry-kb-chemistry-methods:chemistry",
-   "sourceLocator": "化学方法类《（重点·方法·点拨）第18讲 卤族元素　溴、碘单质的提取- （学生版）》",
-   "reviewedAtEpochMillis": 1784908800000,
-   "bindings": [
-    {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:1-写出分子式为c5h12的烷烃的结构简式",
-     "role": "PRIMARY"
-    }
-   ]
-  },
-  {
    "slug": "chem-fx-yi-lv-hua-dian-f21x11",
    "subject": "CHEMISTRY",
    "type": "CONCEPT_EXPLANATION",

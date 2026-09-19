@@ -1,7 +1,7 @@
 {
  "schemaVersion": 1,
  "packId": "moe-2025-four-subjects-v1",
- "contentVersion": "4062d39b6f57cffa",
+ "contentVersion": "f78151f7157d86fb",
  "retired": [
   {
    "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:dna是主要的遗传物质-x1",
@@ -296,6 +296,12 @@
    "supersededBy": null,
    "kind": "DELETE",
    "reason": "题干/答案标记"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:1-写出分子式为c5h12的烷烃的结构简式",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "题干抽取残片：边界是'(2)写出所有分子式为C4H8的烃的结构简式：'，唯一材料《氰[(CN)2]…》也是题干（用户批准连带材料删除·2026-09-19）"
   },
   {
    "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:1-判断下列溶液的酸碱性-用-酸性-碱性-中性-或-不确定-填空",

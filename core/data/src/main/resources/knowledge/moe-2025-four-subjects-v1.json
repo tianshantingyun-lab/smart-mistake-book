@@ -33926,20 +33926,7 @@
      "name": "有机化学基础",
      "sourceLocator": "定位：化学选择性必修3·有机化学基础",
      "parentSlug": "化学选择性必修3",
-     "knowledgePoints": [
-      {
-       "slug": "1-写出分子式为c5h12的烷烃的结构简式",
-       "name": "(1)写出分子式为C5H12的烷烃的结构简式：",
-       "aliases": [
-        "(1)写出分子式为C5H12的烷烃的结构简式：",
-        "氰[(CN)2]的结构简式为N≡C"
-       ],
-       "kind": "REPRESENTATION",
-       "boundary": "定位：化学选择性必修3·有机化学基础。(2)写出所有分子式为C4H8的烃的结构简式：",
-       "sourceLocator": "知识清单（全国通用）：《专题02 烃（知识清单）（全国通用）（学生版）.docx》",
-       "prerequisiteSlugs": []
-      }
-     ]
+     "knowledgePoints": []
     },
     {
      "slug": "化学选择性必修3·有机化学基础·烯烃 炔烃",

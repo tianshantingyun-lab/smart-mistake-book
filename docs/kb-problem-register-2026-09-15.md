@@ -1052,6 +1052,33 @@ delete 永不该执行）；改名本身的"已应用"由 `test_kb_rename_points
 `一种2-甲基色酮内酯`（材料是《黄鸣龙还原法》真知识）改名 `黄鸣龙还原法` → 主题 `有机合成`。
 两条都命中已有主题、**零新建**，`chapter_layer_has_points` **6 → 4**。
 
+**再删 1 条（用户批准）**：`(1)写出分子式为C5H12的烷烃的结构简式：` 连同它唯一的题干材料
+（`point_delete.csv` 加 `drop_materials=yes`）→ 点数 2425 → 2424、材料 15862 → 15861、
+`chapter_layer_has_points` **4 → 3**、`chapter_locator_mismatch` 1307 → 1306，其余 17 项不变。
+剩余 3 条（生物）见上。
+
+### M-08 · 表驱动工具的 **CLI 从没被执行过**（跑不动也没人知道） 【P1 · 已修 + 已加锁】
+
+**症状.** 执行上面那条删除时，`delete_points` 的 CLI 一跑就 `TypeError: string indices must be
+integers`——`main()` 里"用前后集合求差算出被删 slug"那两行写的是 `s["subject"]`，而
+`iter_points` 产出的第一项是 subject **字符串**。
+
+**为什么一直没被发现.** 库函数级用例（`delete()`, `_purge_table_refs()`）**全绿**，而没有任何
+门会去跑 `main()`。这段求差代码是"删除也记退役台账"那一轮加的，加完没人执行过整条 CLI。
+**与 M-04/M-05 同一形态：改动没有对应的执行验证。**
+
+**处置.** 修那两行（`s["subject"]` → `s`），并做两件防复发的事：
+1. 新增用例 `test_cli_runs_without_crashing`——直接跑 `main([])` 要求返回 0（成品上幂等）；
+2. **把所有表驱动工具的 CLI 冒烟跑一遍**：`rename_points / merge_points / delete_points /
+   rebuild_aliases / relocate_chapter_points / relocate_points / fix_topic_parents /
+   shorten_topic_names / order_topics / align_chapter_locators / fix_material_text /
+   check_pack_contract / blank_nodes` 全部返回 0（只有下面那条 `verify_tables` 例外）。
+
+**顺带查出一条死工具**：`verify_tables` exit=1 报"70 条改名的低重合必须回读原文"，但**那些
+slug 一个都不在成品里**（它的输入 `node_actions_reviewed.csv` 是从已作废的 `node_actions.csv`
+派生的，与成品不是同一坐标系）。也就是说它现在**测的是废表**，输出不可执行——本次改动的
+0 条与它相关。要么把它重新指向权威表，要么明确标记为溯源工具、不参与门。
+
 ---
 
 ## N. 定位串与章表不一致：分类与裁定请求（2026-09-19）

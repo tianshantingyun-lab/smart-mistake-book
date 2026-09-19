@@ -110,7 +110,7 @@ class RealPackTest(unittest.TestCase):
         reloc = rel.load_relocations()
         self.assertEqual(0, rel.relocate(pack, reloc), "重放必须幂等")
 
-    def test_shipped_chapter_layer_is_4(self):
+    def test_shipped_chapter_layer_is_3(self):
         """成品章层挂点的当前快照。
 
         167（原始）→ 64（归位真知识点）→ 33（删 31 无材料残渣）→ 20
@@ -128,9 +128,11 @@ class RealPackTest(unittest.TestCase):
           前两条其实是必修2 第六章「生物的进化」的内容挂在选必3 下，属**归属**问题
           （走 chapter_locator_clusters 的簇判定）；第三条名字/别名/边界三方不一致，
           要先看它绑的材料。
+
+        2026-09-19 用户批准那条删除后执行 → **3**（点数 2425→2424，材料随删 1 条）。
         """
         pack = pack_io.load_json(pack_io.pack_path())
-        self.assertEqual(4, rel.chapter_layer_count(pack))
+        self.assertEqual(3, rel.chapter_layer_count(pack))
 
     def test_new_themes_have_local_names(self):
         """下移新建的主题名必须是层内名（不含 ·），否则会重新引入 I-01 的冗余。"""

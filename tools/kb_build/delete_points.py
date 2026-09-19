@@ -158,11 +158,11 @@ def main(argv: list[str] | None = None) -> int:
 
     # 实际被删的 slug 用**前后集合求差**拿到，而不是改 `delete()` 的返回值——它的二元组
     # 被现有用例解包（`removed, dangling = dp.delete(...)`），改签名会白白打断那些断言。
-    slugs_before = {(s["subject"], p["slug"]) for s, _t, p in pack_io.iter_points(pack)}
+    slugs_before = {(s, p["slug"]) for s, _t, p in pack_io.iter_points(pack)}
     before = _point_count(pack)
     removed, dangling = delete(pack, deletes)
     after = _point_count(pack)
-    slugs_after = {(s["subject"], p["slug"]) for s, _t, p in pack_io.iter_points(pack)}
+    slugs_after = {(s, p["slug"]) for s, _t, p in pack_io.iter_points(pack)}
     removed_keys = sorted(slugs_before - slugs_after)
     already = len(deletes) - removed
     print(f"删除 {removed} 个；已在包外（幂等跳过）{already} 个；清理错误前置引用 {dangling} 个")
