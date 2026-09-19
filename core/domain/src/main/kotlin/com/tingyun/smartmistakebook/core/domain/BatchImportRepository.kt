@@ -25,6 +25,18 @@ enum class BatchImportBoundaryStatus {
     FAILED,
 }
 
+/**
+ * The page's optional split-recognition stage. PENDING means the attempt has not
+ * finished; SETTLED means it is over, whether it produced a usable split or decided
+ * there was none. It is tracked apart from [BatchImportPageStatus] because the
+ * attempt deliberately runs after the page is READY — intake must never be blocked
+ * by the model — and a crash in that window is invisible on the intake axis alone.
+ */
+enum class BatchImportSplitStatus {
+    PENDING,
+    SETTLED,
+}
+
 data class BatchImportPage(
     val pageIndex: Int,
     val status: BatchImportPageStatus,
@@ -33,6 +45,12 @@ data class BatchImportPage(
     val attemptCount: Int,
     val updatedAtEpochMillis: Long,
     val boundaryAfterStatus: BatchImportBoundaryStatus = BatchImportBoundaryStatus.PENDING,
+    /**
+     * Whether the page's optional split attempt has run to completion. It is a
+     * separate axis from [status] on purpose: the attempt happens after the page is
+     * already READY, so PENDING is the only trace that it never finished.
+     */
+    val splitStatus: BatchImportSplitStatus = BatchImportSplitStatus.PENDING,
 ) {
     init {
         require(pageIndex >= 0) { "Batch page index must not be negative" }

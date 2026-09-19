@@ -94,6 +94,30 @@ internal interface BatchImportDao {
         updatedAtEpochMillis: Long,
     ): Int
 
+    /**
+     * The next page whose split stage has not settled yet, oldest page first. The
+     * page is already READY by construction, so its draft exists; only the optional
+     * split attempt is outstanding.
+     */
+    @Query(
+        """
+        SELECT * FROM batch_import_page
+        WHERE job_id = :jobId AND status = 'READY' AND split_after_status = 'PENDING'
+        ORDER BY page_index
+        LIMIT 1
+        """,
+    )
+    suspend fun readNextPendingSplitPage(jobId: String): BatchImportPageEntity?
+
+    @Query(
+        """
+        UPDATE batch_import_page
+        SET split_after_status = 'SETTLED', updated_at_epoch_millis = :updatedAtEpochMillis
+        WHERE job_id = :jobId AND page_index = :pageIndex AND split_after_status = 'PENDING'
+        """,
+    )
+    suspend fun markSplitSettled(jobId: String, pageIndex: Int, updatedAtEpochMillis: Long): Int
+
     @Query(
         """
         UPDATE batch_import_page
@@ -223,10 +247,20 @@ internal interface BatchImportDao {
     )
     suspend fun countActivePages(jobId: String): Int
 
+    /**
+     * Whether the staged source behind [sourceUri] must survive. A READY page counts as
+     * retaining while its split stage is still PENDING: the split attempt stores that uri
+     * as the review page's source image, so dropping it early would leave a review screen
+     * whose original photo cannot be opened.
+     */
     @Query(
         """
         SELECT COUNT(*) FROM batch_import_page
-        WHERE source_uri = :sourceUri AND status IN ('QUEUED', 'IMPORTING', 'FAILED')
+        WHERE source_uri = :sourceUri
+          AND (
+              status IN ('QUEUED', 'IMPORTING', 'FAILED')
+              OR (status = 'READY' AND split_after_status = 'PENDING')
+          )
         """,
     )
     suspend fun countRetainedSourceUri(sourceUri: String): Int

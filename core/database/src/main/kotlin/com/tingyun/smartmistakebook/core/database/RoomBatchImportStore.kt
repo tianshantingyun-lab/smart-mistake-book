@@ -49,6 +49,7 @@ internal class RoomBatchImportStore(
                     createdAtEpochMillis = command.occurredAtEpochMillis,
                     updatedAtEpochMillis = command.occurredAtEpochMillis,
                     boundaryAfterStatus = StudyDbValue.BatchImportBoundaryStatus.PENDING,
+                    splitAfterStatus = StudyDbValue.BatchImportSplitStatus.PENDING,
                 )
             }
             dao.insertJob(job)
@@ -205,6 +206,26 @@ internal class RoomBatchImportStore(
         return database.batchImportDao().countRetainedSourceUri(sourceUri) > 0
     }
 
+    /** The next READY page whose optional split attempt has not settled yet. */
+    suspend fun readNextPendingSplitPage(jobId: String): BatchImportPageRecord? {
+        require(jobId.isNotBlank())
+        return database.batchImportDao().readNextPendingSplitPage(jobId)?.toRecord()
+    }
+
+    /**
+     * Records that the page's split attempt is over, whatever its outcome. The
+     * attempt is best-effort and single-shot by design, so both a usable split and a
+     * plain "no split" settle the same way; only a crash before this write leaves the
+     * page PENDING, which is exactly what makes the driving pass re-runnable.
+     */
+    suspend fun settlePageSplit(
+        jobId: String,
+        pageIndex: Int,
+        occurredAtEpochMillis: Long,
+    ): Boolean = updatePageAndTouch(jobId, occurredAtEpochMillis) { dao ->
+        dao.markSplitSettled(jobId, pageIndex, occurredAtEpochMillis) == 1
+    }
+
     suspend fun resolveBoundary(
         command: ResolveBatchImportBoundaryCommand,
     ): BatchImportJobRecord {
@@ -337,6 +358,7 @@ private fun BatchImportPageEntity.toRecord() = BatchImportPageRecord(
     createdAtEpochMillis = createdAtEpochMillis,
     updatedAtEpochMillis = updatedAtEpochMillis,
     boundaryAfterStatus = boundaryAfterStatus,
+    splitAfterStatus = splitAfterStatus,
 )
 
 private fun BatchImportJobWithPages.toRecord() = job.toRecord(pages)

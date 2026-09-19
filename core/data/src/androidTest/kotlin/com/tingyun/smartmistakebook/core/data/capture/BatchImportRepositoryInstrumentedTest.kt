@@ -2,6 +2,7 @@ package com.tingyun.smartmistakebook.core.data.capture
 
 import android.content.ContentValues
 import android.content.Context
+import android.database.sqlite.SQLiteDatabase
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
@@ -581,6 +582,129 @@ class BatchImportRepositoryInstrumentedTest {
             }
         } finally {
             processingScope.cancel()
+        }
+    }
+
+    /**
+     * Regression for the crash window between a page becoming READY and its optional split
+     * attempt finishing. The page used to carry no record that the attempt had not
+     * happened, so an interrupted page silently degraded to a whole-page draft and nothing
+     * ever retried it.
+     *
+     * The interruption itself cannot be scheduled deterministically, so the state it leaves
+     * is reconstructed: run the import with the split provider present but the model
+     * unavailable (so every page settles as "no split" while still producing real drafts),
+     * then reopen the ledger with page 0's split stage back to PENDING and the job back to
+     * PROCESSING — exactly the two writes an interruption falls between. A working provider
+     * on the next drive must then cut that page instead of skipping it.
+     *
+     * The reconstruction cannot restore a staged file the first pass already deleted, so the
+     * retention rule that keeps a *real* interrupted page's photo alive is asserted directly.
+     */
+    @Test
+    fun aPageWhoseSplitAttemptNeverFinishedIsCutByTheNextDrive() = runBlocking {
+        val selected = listOf(insertImage(), insertImage())
+        val firstScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        val created = try {
+            val repository = BatchImportRepositoryFactory.create(
+                context = context,
+                database = database,
+                capture = captureRepository(database),
+                processingScope = firstScope,
+                // The default model tasks report UNAVAILABLE, so this pass settles every
+                // page as "no split" while still importing real drafts.
+                splitImports = SplitImportRepositoryFactory.createConcrete(database),
+            )
+            val job = repository.createBatchImport(
+                CreateBatchImportRequest(
+                    requestId = "interrupted-split",
+                    localUris = selected.map(Uri::toString),
+                    occurredAtEpochMillis = 3_000,
+                ),
+            )
+            withTimeout(30_000) {
+                repository.observeBatchImports().first { jobs ->
+                    jobs.firstOrNull()?.status == BatchImportStatus.COMPLETED
+                }
+            }
+            job
+        } finally {
+            firstScope.cancel()
+        }
+
+        database.close()
+        reopenInterruptedSplit(context, databaseName, created.jobId, pageIndex = 0)
+        database = StudyDatabaseFactory.open(context, databaseName)
+
+        val restoredPage = checkNotNull(database.readBatchImportJob(created.jobId))
+            .pages
+            .single { page -> page.pageIndex == 0 }
+        assertEquals(
+            StudyDbValue.BatchImportSplitStatus.PENDING,
+            restoredPage.splitAfterStatus,
+        )
+        assertTrue(
+            "A pending split must retain its staged source",
+            database.hasRetainedBatchImportSourceUri(restoredPage.sourceUri),
+        )
+
+        val driveScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        try {
+            val repository = BatchImportRepositoryFactory.create(
+                context = context,
+                database = database,
+                capture = captureRepository(database),
+                processingScope = driveScope,
+                modelTasks = ModelTaskRepositoryFactory.create(database, SplitRegionGateway()),
+                splitImports = SplitImportRepositoryFactory.createConcrete(database),
+                modelEgressAllowed = { true },
+            )
+
+            assertTrue(repository.drivePendingImports())
+
+            val driven = checkNotNull(database.readBatchImportJob(created.jobId))
+            assertEquals(BatchImportStatus.COMPLETED.name, driven.status)
+            assertTrue(
+                "Every page's split stage must be settled: " +
+                    driven.pages.map { page -> page.splitAfterStatus },
+                driven.pages.all { page ->
+                    page.splitAfterStatus == StudyDbValue.BatchImportSplitStatus.SETTLED
+                },
+            )
+            val splitJob = checkNotNull(
+                database.readSplitImportJob("split:${created.jobId}:0"),
+            ) { "The interrupted page must be cut by the next drive" }
+            assertEquals(StudyDbValue.SplitImportStatus.READY, splitJob.status)
+        } finally {
+            driveScope.cancel()
+        }
+    }
+
+    /**
+     * Restores the ledger to the state an interrupted sequence leaves behind: the page is
+     * READY with its split stage still open, and the job never reached COMPLETED.
+     */
+    private fun reopenInterruptedSplit(
+        context: Context,
+        databaseName: String,
+        jobId: String,
+        pageIndex: Int,
+    ) {
+        val sqlite = SQLiteDatabase.openDatabase(
+            context.getDatabasePath(databaseName).absolutePath,
+            null,
+            SQLiteDatabase.OPEN_READWRITE,
+        )
+        try {
+            sqlite.execSQL(
+                "UPDATE batch_import_page SET split_after_status = 'PENDING' " +
+                    "WHERE job_id = '$jobId' AND page_index = $pageIndex",
+            )
+            sqlite.execSQL(
+                "UPDATE batch_import_job SET status = 'PROCESSING' WHERE job_id = '$jobId'",
+            )
+        } finally {
+            sqlite.close()
         }
     }
 

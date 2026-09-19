@@ -66,4 +66,6 @@ internal data class BatchImportPageEntity(
     val updatedAtEpochMillis: Long,
     @ColumnInfo(name = "boundary_after_status", defaultValue = "PENDING")
     val boundaryAfterStatus: String,
+    @ColumnInfo(name = "split_after_status", defaultValue = "PENDING")
+    val splitAfterStatus: String,
 )

@@ -66,6 +66,18 @@ object StudyDbValue {
         const val FAILED = "FAILED"
     }
 
+    /**
+     * The page's optional split-recognition stage, tracked apart from [BatchImportPageStatus]
+     * because it deliberately runs *after* the page is READY (intake must never be blocked by
+     * the model). A crash between the page becoming READY and the attempt settling leaves the
+     * page PENDING, which is the only durable signal that the attempt never finished — without
+     * it the page silently degrades to a whole-page draft and nothing ever retries.
+     */
+    object BatchImportSplitStatus {
+        const val PENDING = "PENDING"
+        const val SETTLED = "SETTLED"
+    }
+
     object SplitImportSourceKind {
         const val SINGLE_PAGE = "SINGLE_PAGE"
         const val BATCH = "BATCH"

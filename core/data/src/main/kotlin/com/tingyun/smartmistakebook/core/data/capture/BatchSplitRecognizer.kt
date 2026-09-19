@@ -2,9 +2,7 @@ package com.tingyun.smartmistakebook.core.data.capture
 
 import com.tingyun.smartmistakebook.core.database.CreateSplitImportJobCommand
 import com.tingyun.smartmistakebook.core.database.SplitImportQuestionSeed
-import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.database.StudyDbValue
-import com.tingyun.smartmistakebook.core.domain.CaptureDraftSummary
 import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
 import com.tingyun.smartmistakebook.core.model.CaptureAssessment
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentOutput
@@ -19,20 +17,28 @@ import kotlinx.coroutines.flow.last
 internal suspend fun <T> kotlinx.coroutines.flow.Flow<T>.collectLast(): T = last()
 
 /**
- * Runs a CaptureAssessment against one staged batch page and, when the model
- * answers SPLIT with page-local question regions, records the cut into the
- * split-import ledger so the student can confirm which pieces to keep.
+ * Runs a CaptureAssessment against one batch page and, when the model answers SPLIT
+ * with page-local question regions, records the cut into the split-import ledger so
+ * the student can confirm which pieces to keep.
  *
- * The page stays IMPORTING while the model works; the assessment persists in
- * the model-task ledger, so a killed process resumes by re-running the same
- * request fingerprint instead of starting over.
+ * Best-effort by design: the page is already READY before this runs, because intake
+ * must never wait on the model. The caller therefore treats every failure as "no
+ * split" and settles the page's split stage afterwards. That settling write is what
+ * makes the attempt durable — a crash before it leaves the page PENDING, and the
+ * next driving pass calls this again instead of leaving a silently unsplit page.
+ *
+ * Re-running is cheap and safe: the model round is keyed by request fingerprint (the
+ * ledger replays a finished round instead of re-dispatching), the cut drafts use
+ * deterministic ids, and the split ledger dedups on the source fingerprint.
  */
 internal suspend fun recognizeAndSplitBatchPage(
     jobId: String,
     pageIndex: Int,
     sourceUri: String,
-    draft: CaptureDraftSummary,
-    database: StudyDatabasePort,
+    draftId: String,
+    sourceAssetId: String,
+    imageWidth: Int,
+    imageHeight: Int,
     capture: com.tingyun.smartmistakebook.core.domain.CaptureWorkflowRepository,
     modelTasks: ModelTaskRepository,
     splitImports: com.tingyun.smartmistakebook.core.data.splitimport.RoomSplitImportRepository,
@@ -58,11 +64,11 @@ internal suspend fun recognizeAndSplitBatchPage(
     val request = ModelTaskRequest(
         requestId = "batch-split:$jobId:$pageIndex",
         input = com.tingyun.smartmistakebook.core.model.CaptureAssessmentInput(
-            draftId = draft.draftId,
-            sourceAssetId = draft.sourceAssetId,
+            draftId = draftId,
+            sourceAssetId = sourceAssetId,
             origin = com.tingyun.smartmistakebook.core.model.CaptureAssessmentOrigin.LIBRARY,
-            imageWidth = draft.width,
-            imageHeight = draft.height,
+            imageWidth = imageWidth,
+            imageHeight = imageHeight,
         ),
         occurredAtEpochMillis = occurrenceTime,
         // The page import that produced this draft ran under the same egress allowance.
@@ -82,7 +88,7 @@ internal suspend fun recognizeAndSplitBatchPage(
     val splitDrafts = capture.createSplitRegionDrafts(
         com.tingyun.smartmistakebook.core.domain.SplitRegionDraftsRequest(
             requestId = "batch-split:$jobId:$pageIndex",
-            sourceAssetId = draft.sourceAssetId,
+            sourceAssetId = sourceAssetId,
             regions = assessment.questionRegions,
             origin = com.tingyun.smartmistakebook.core.domain.CaptureEntryOrigin.LIBRARY,
             occurredAtEpochMillis = occurrenceTime,

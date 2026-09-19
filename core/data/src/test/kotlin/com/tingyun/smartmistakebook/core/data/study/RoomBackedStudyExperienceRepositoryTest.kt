@@ -2264,6 +2264,16 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
         occurredAtEpochMillis: Long,
     ): Boolean = false
 
+    override suspend fun readNextPendingBatchImportSplitPage(
+        jobId: String,
+    ): BatchImportPageRecord? = null
+
+    override suspend fun settleBatchImportPageSplit(
+        jobId: String,
+        pageIndex: Int,
+        occurredAtEpochMillis: Long,
+    ): Boolean = false
+
     override suspend fun claimBatchImportBoundary(
         jobId: String,
         pageIndex: Int,

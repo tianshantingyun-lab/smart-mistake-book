@@ -1163,6 +1163,8 @@ data class BatchImportPageRecord(
     val createdAtEpochMillis: Long,
     val updatedAtEpochMillis: Long,
     val boundaryAfterStatus: String,
+    /** PENDING until the page's optional split attempt has run to completion. */
+    val splitAfterStatus: String = StudyDbValue.BatchImportSplitStatus.PENDING,
 )
 
 data class BatchImportJobRecord(

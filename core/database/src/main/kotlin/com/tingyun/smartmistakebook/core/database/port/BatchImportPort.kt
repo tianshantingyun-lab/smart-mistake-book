@@ -47,6 +47,22 @@ interface BatchImportWritePort {
         occurredAtEpochMillis: Long,
     ): Boolean
 
+    /**
+     * The next READY page whose optional split attempt has not settled yet, oldest
+     * first, or null when every page's attempt is done.
+     */
+    suspend fun readNextPendingBatchImportSplitPage(jobId: String): BatchImportPageRecord?
+
+    /**
+     * Records that the page's split attempt is over, whatever its outcome. A crash
+     * before this write is what leaves the page PENDING and therefore re-drivable.
+     */
+    suspend fun settleBatchImportPageSplit(
+        jobId: String,
+        pageIndex: Int,
+        occurredAtEpochMillis: Long,
+    ): Boolean
+
     suspend fun claimBatchImportBoundary(
         jobId: String,
         pageIndex: Int,

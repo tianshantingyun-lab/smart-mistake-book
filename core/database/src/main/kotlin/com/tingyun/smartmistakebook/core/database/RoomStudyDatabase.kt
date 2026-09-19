@@ -785,6 +785,16 @@ internal class RoomStudyDatabase(
         occurredAtEpochMillis: Long,
     ): Boolean = batchImports.completePage(jobId, pageIndex, draftId, occurredAtEpochMillis)
 
+    override suspend fun readNextPendingBatchImportSplitPage(
+        jobId: String,
+    ): BatchImportPageRecord? = batchImports.readNextPendingSplitPage(jobId)
+
+    override suspend fun settleBatchImportPageSplit(
+        jobId: String,
+        pageIndex: Int,
+        occurredAtEpochMillis: Long,
+    ): Boolean = batchImports.settlePageSplit(jobId, pageIndex, occurredAtEpochMillis)
+
     override suspend fun claimBatchImportBoundary(
         jobId: String,
         pageIndex: Int,

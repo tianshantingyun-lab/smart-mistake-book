@@ -329,7 +329,6 @@ internal class RoomBatchImportRepository(
     private suspend fun process(jobId: String) = processingMutex.withLock {
         withContext(Dispatchers.IO) {
             database.requeueInterruptedBatchImportPages(jobId, System.currentTimeMillis())
-            val splitProvider = splitImports
             while (true) {
                 val page = database.claimNextBatchImportPage(jobId, System.currentTimeMillis())
                     ?: break
@@ -367,38 +366,92 @@ internal class RoomBatchImportRepository(
                         System.currentTimeMillis(),
                     ),
                 ) { "Claimed batch page could not be completed" }
-                if (splitProvider != null) {
-                    // Best-effort only: the page is already imported, so any
-                    // split failure (unavailable provider, model error, an
-                    // unusable region set) degrades to the plain page import.
-                    // The READY review job is surfaced through observeBatchImports.
-                    try {
-                        recognizeAndSplitBatchPage(
-                            jobId = jobId,
-                            pageIndex = page.pageIndex,
-                            sourceUri = page.sourceUri,
-                            draft = draft,
-                            database = database,
-                            capture = capture,
-                            modelTasks = modelTasks,
-                            splitImports = splitProvider,
-                            occurrenceTime = page.createdAtEpochMillis,
-                            modelEgressAllowed = modelEgressAllowed,
-                        )
-                    } catch (cancelled: CancellationException) {
-                        throw cancelled
-                    } catch (failure: Exception) {
-                        // Split must never fail a page that already landed in
-                        // the library; the failure stays best-effort but is
-                        // logged so a silently dead auto-split is diagnosable.
-                        android.util.Log.w("BatchSplit", "split recognition failed", failure)
-                    }
-                }
-                if (!database.hasRetainedBatchImportSourceUri(page.sourceUri)) {
-                    sourceStaging.delete(page.sourceUri)
+                dropStagedSourceIfUnreferenced(page.sourceUri)
+            }
+            settlePendingSplits(jobId)
+            database.finishBatchImportIfSettled(jobId, System.currentTimeMillis())
+        }
+    }
+
+    /**
+     * Runs the optional split attempt for every READY page whose stage has not settled,
+     * and settles it afterwards.
+     *
+     * This pass is what makes the attempt durable. The page is settled no matter how the
+     * attempt ends — a usable split, a plain "no split", a model outage, or a missing
+     * draft — because the stage is best-effort by design and must not retry forever. A
+     * crash *before* the settle leaves the page PENDING and the job PROCESSING, so the
+     * next startup or WorkManager drive re-enters here; that is the defect this closes:
+     * previously nothing recorded that the attempt had not happened, so the page silently
+     * degraded to a whole-page draft and was never retried.
+     *
+     * Skipped once the job stops being PROCESSING, so pausing an import also stops it
+     * from spending model rounds.
+     */
+    private suspend fun settlePendingSplits(jobId: String) {
+        val job = database.readBatchImportJob(jobId)
+        if (job?.status != StudyDbValue.BatchImportStatus.PROCESSING) return
+        val splitProvider = splitImports
+        val now = System.currentTimeMillis()
+        while (true) {
+            val page = database.readNextPendingBatchImportSplitPage(jobId) ?: break
+            // No provider means this build has no split stage at all, yet the page still
+            // has to be settled: leaving it PENDING would retain its staging for a wait
+            // that can never happen. A missing draft (or a page that never recorded one)
+            // means the page can never produce a split, so it settles the same way rather
+            // than being re-read on every pass forever.
+            val resumable = if (splitProvider == null) {
+                null
+            } else {
+                page.resultDraftId?.let { draftId -> capture.readPendingCapture(draftId) }
+            }
+            if (splitProvider != null && resumable == null) {
+                android.util.Log.w(
+                    "BatchSplit",
+                    "Skipping split for batch page ${page.pageIndex}: its draft is missing",
+                )
+            }
+            if (splitProvider != null && resumable != null) {
+                try {
+                    recognizeAndSplitBatchPage(
+                        jobId = jobId,
+                        pageIndex = page.pageIndex,
+                        sourceUri = page.sourceUri,
+                        draftId = resumable.draftId,
+                        sourceAssetId = resumable.sourceAssetId,
+                        imageWidth = resumable.sourceWidth,
+                        imageHeight = resumable.sourceHeight,
+                        capture = capture,
+                        modelTasks = modelTasks,
+                        splitImports = splitProvider,
+                        occurrenceTime = page.createdAtEpochMillis,
+                        modelEgressAllowed = modelEgressAllowed,
+                    )
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (failure: Exception) {
+                    // Split must never fail a page that already landed in the library;
+                    // the failure stays best-effort but is logged so a silently dead
+                    // auto-split is diagnosable.
+                    android.util.Log.w("BatchSplit", "split recognition failed", failure)
                 }
             }
-            database.finishBatchImportIfSettled(jobId, System.currentTimeMillis())
+            check(database.settleBatchImportPageSplit(jobId, page.pageIndex, now)) {
+                "Pending batch split page could not be settled"
+            }
+            dropStagedSourceIfUnreferenced(page.sourceUri)
+        }
+    }
+
+    /**
+     * Deletes a page's staged source once nothing references it any more. A READY page
+     * counts as referencing it while its split stage is PENDING, because the split ledger
+     * stores that uri as the review page's source image — deleting it early would leave a
+     * review screen whose original photo cannot be opened.
+     */
+    private suspend fun dropStagedSourceIfUnreferenced(sourceUri: String) {
+        if (!database.hasRetainedBatchImportSourceUri(sourceUri)) {
+            sourceStaging.delete(sourceUri)
         }
     }
 
