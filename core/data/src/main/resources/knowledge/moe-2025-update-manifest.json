@@ -1,7 +1,7 @@
 {
  "schemaVersion": 1,
  "packId": "moe-2025-four-subjects-v1",
- "contentVersion": "d13fca4333979d80",
+ "contentVersion": "b0766f3426d1c8de",
  "retired": [
   {
    "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:dna是主要的遗传物质-x1",
@@ -266,6 +266,126 @@
    "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:豌豆用作遗传实验的材料",
    "kind": "MERGE",
    "reason": "同章同名去重副本 遗传的基本规律"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:topic:生物学必修1·第一章·细胞与生命活动·基因突变和基因重组",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "同名主题的空壳副本（0 点 0 子主题，2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:topic:生物学必修1·第一章·细胞与生命活动·植物细胞工程",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "同名主题的空壳副本（0 点 0 子主题，2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:topic:生物学必修1·第一章·细胞与生命活动·细胞中的元素和化合物",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "同名主题的空壳副本（0 点 0 子主题，2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:topic:生物学必修1·第一章·细胞与生命活动·细胞中的糖类和脂质",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "同名主题的空壳副本（0 点 0 子主题，2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:topic:生物学必修1·第一章·细胞与生命活动·细胞呼吸的原理和应用",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "同名主题的空壳副本（0 点 0 子主题，2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:topic:生物学必修1·第一章·细胞与生命活动·细胞器之间的分工合作",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "同名主题的空壳副本（0 点 0 子主题，2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:topic:生物学必修1·第一章·细胞与生命活动·细胞核的结构和功能",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "同名主题的空壳副本（0 点 0 子主题，2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:topic:生物学必修1·第一章·细胞与生命活动·细胞膜的结构和功能",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "同名主题的空壳副本（0 点 0 子主题，2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:topic:生物学必修1·第三章·细胞结构·植物细胞工程",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:topic:生物学必修1·第三章·细胞结构",
+   "kind": "MERGE",
+   "reason": "其唯一节点『高尔基体』是细胞器内容（2026-09-19 主题去重第二批·补漏）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:topic:生物学必修1·第二章·细胞的分子组成·DNA是主要的遗传物质",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:topic:生物学必修1·第二章·细胞的分子组成·细胞中的元素和化合物",
+   "kind": "MERGE",
+   "reason": "其唯一节点『有机物的水解与氧化分解产物』是必修1 第二章有机物内容（2026-09-19 主题去重第二批）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:topic:生物学必修1·第四章·物质的输入与输出·DNA是主要的遗传物质",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "同名主题的空壳副本（0 点 0 子，2026-09-19 主题去重第二批）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:topic:生物学必修1·第四章·物质的输入与输出·动物细胞工程",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:topic:生物学必修1·第四章·物质的输入与输出·被动运输",
+   "kind": "MERGE",
+   "reason": "其唯一节点『动物细胞的吸水和失水』是渗透/被动运输内容（2026-09-19 主题去重第二批）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:topic:生物学必修1·第四章·物质的输入与输出·植物细胞工程",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:topic:生物学必修1·第四章·物质的输入与输出·被动运输",
+   "kind": "MERGE",
+   "reason": "其唯一节点『成熟植物细胞的吸水和失水』（2026-09-19 主题去重第二批）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:topic:生物学必修2·第一章·遗传的细胞基础·伴性遗传",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:topic:生物学必修2·第一章第二节·遗传的基本规律·伴性遗传",
+   "kind": "MERGE",
+   "reason": "同名主题去重：并入遗传基本规律一侧（2026-09-19 主题去重第二批）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:topic:生物学必修2·第三四章·遗传的分子基础·基因在染色体上",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:topic:生物学必修2·第一章第二节·遗传的基本规律·基因在染色体上",
+   "kind": "MERGE",
+   "reason": "同名主题重复：stale 侧节点定位串（已按章表对齐）指向 canonical 侧所在册；旧教材结构位置的副本并入 2019 版位置（2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:topic:生物学必修2·第五六章·变异与进化·植物细胞工程",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:topic:生物学必修2·第五六章·变异与进化·染色体变异",
+   "kind": "MERGE",
+   "reason": "其唯一节点『实验：低温诱导植物细胞染色体数目变化』是染色体变异实验（2026-09-19 主题去重第二批）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:topic:生物学选择性必修1·第三章·体液调节·种群数量的变化",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "同名主题的空壳副本（0 点 0 子主题，2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:topic:生物学选择性必修1·第二章·神经调节·体液调节与神经调节的关系",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:topic:生物学选择性必修1·第三章·体液调节·体液调节与神经调节的关系",
+   "kind": "MERGE",
+   "reason": "2019 版『神经调节与体液调节的关系』在第三章（2026-09-19 主题去重第二批）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:topic:生物学选择性必修2·第三章·生态系统·生物多样性及其保护",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "同名主题的空壳副本（0 点 0 子主题，2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:topic:生物学选择性必修3·生物技术与工程·DNA是主要的遗传物质",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "同名主题的空壳副本（0 点 0 子，2026-09-19 主题去重第二批）"
   },
   {
    "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:0-1-mol-l-1的nahso3溶液ph-7-各离子浓度的关系",
@@ -1336,6 +1456,234 @@
    "reason": "题干/答案标记"
   },
   {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学必修第一册·第一章·物质分类与转化·化学反应的速率与限度",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学选择性必修1·第二章·化学平衡·化学反应的速率与限度",
+   "kind": "MERGE",
+   "reason": "同名主题重复：stale 侧节点定位串（已按章表对齐）指向 canonical 侧所在册；旧教材结构位置的副本并入 2019 版位置（2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学必修第一册·第一章·物质分类与转化·水的电离和溶液的pH",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学选择性必修1·第三章·水溶液中的离子平衡·水的电离和溶液的pH",
+   "kind": "MERGE",
+   "reason": "节点『溶液的稀释和混合问题』是 pH 计算（选必一 第三章）（2026-09-19 主题去重第二批）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学必修第一册·第一章·物质分类与转化·物质的量",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学必修第一册·第二章第三节·物质的量",
+   "kind": "MERGE",
+   "reason": "6 个节点全是物质的量/浓度/配制内容（2019 版在 2.3）（2026-09-19 主题去重第二批）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学必修第一册·第一章·离子反应与氧化还原·化学平衡",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学选择性必修1·第二章·化学平衡",
+   "kind": "MERGE",
+   "reason": "同名主题重复：stale 侧节点定位串（已按章表对齐）指向 canonical 侧所在册；旧教材结构位置的副本并入 2019 版位置（2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学必修第一册·第一章·离子反应与氧化还原·环境保护与绿色化学",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学必修第一册·第一章·离子反应与氧化还原",
+   "kind": "MERGE",
+   "reason": "其唯一节点『电荷守恒在离子推断中的应用』是离子反应内容（2026-09-19 主题去重第二批）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学必修第一册·第三章·铁与金属材料·化学反应的速率与限度",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学选择性必修1·第二章·化学平衡·化学反应的速率与限度",
+   "kind": "MERGE",
+   "reason": "同名主题重复：stale 侧节点定位串（已按章表对齐）指向 canonical 侧所在册；旧教材结构位置的副本并入 2019 版位置（2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学必修第一册·第三章·铁与金属材料·原子结构与元素周期表",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学必修第一册·第三章·铁与金属材料·铁及其化合物",
+   "kind": "MERGE",
+   "reason": "其唯一节点『铁的原子结构和存在』（2026-09-19 主题去重第二批）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学必修第一册·第三章·铁与金属材料·无机非金属材料",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学必修第一册·第三章·铁与金属材料·金属材料",
+   "kind": "MERGE",
+   "reason": "其唯一节点『金属材料』（2026-09-19 主题去重第二批）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学必修第一册·第三章·铁与金属材料·烯烃 炔烃",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学选择性必修3·有机化学基础·烯烃 炔烃",
+   "kind": "MERGE",
+   "reason": "同名主题重复：stale 侧节点定位串（已按章表对齐）指向 canonical 侧所在册；旧教材结构位置的副本并入 2019 版位置（2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学必修第一册·第三章·铁与金属材料·物质的分类及转化",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "同名主题的空壳副本（0 点 0 子，2026-09-19 主题去重第二批）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学必修第一册·第三章·铁与金属材料·电解池",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学选择性必修1·第四章·电化学·电解池",
+   "kind": "MERGE",
+   "reason": "同名主题重复：stale 侧节点定位串（已按章表对齐）指向 canonical 侧所在册；旧教材结构位置的副本并入 2019 版位置（2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学必修第一册·第三章·铁与金属材料·硫及其化合物",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学必修第一册·第三章·铁与金属材料",
+   "kind": "MERGE",
+   "reason": "其唯一节点『铜及其化合物的易错点』（2026-09-19 主题去重第二批）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学必修第一册·第三章·铁与金属材料·金属的腐蚀与防护",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学必修第一册·第三章·铁与金属材料·金属材料",
+   "kind": "MERGE",
+   "reason": "其唯一节点『金属的冶炼 金属矿物的开发』（2026-09-19 主题去重第二批）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学必修第一册·第二章·氯及其化合物·原子结构与元素周期表",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学必修第一册·第二章·氯及其化合物",
+   "kind": "MERGE",
+   "reason": "其唯一节点『从原子结构角度认识氯气的氧化性』是氯气内容（2026-09-19 主题去重第二批）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学必修第一册·第二章·氯及其化合物·氯及其化合物",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学必修第一册·第二章·氯及其化合物",
+   "kind": "MERGE",
+   "reason": "嵌套同名主题：其唯一节点『氯及其化合物的知识盲点』（2026-09-19 主题去重第二批）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学必修第一册·第二章第三节·物质的量·物质的量",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学必修第一册·第二章第三节·物质的量",
+   "kind": "MERGE",
+   "reason": "嵌套同名主题（2026-09-19 主题去重第二批）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学必修第一册·第四章·物质结构元素周期律·共价键",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学选择性必修2·物质结构与性质·共价键",
+   "kind": "MERGE",
+   "reason": "同名主题重复：stale 侧节点定位串（已按章表对齐）指向 canonical 侧所在册；旧教材结构位置的副本并入 2019 版位置（2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学必修第一册·第四章·物质结构元素周期律·化学键",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学选择性必修2·物质结构与性质·化学键",
+   "kind": "MERGE",
+   "reason": "同名主题重复：stale 侧节点定位串（已按章表对齐）指向 canonical 侧所在册；旧教材结构位置的副本并入 2019 版位置（2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学必修第一册·第四章·物质结构元素周期律·原子结构与元素周期表",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学选择性必修2·物质结构与性质·原子结构与元素周期表",
+   "kind": "MERGE",
+   "reason": "4 个节点全是原子结构/周期表内容（2019 版在选必二 第一章；旧版必修一 第四章结构）（2026-09-19 主题去重第二批）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学必修第二册·第七章·有机化合物·有机化合物的结构特点",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学选择性必修3·有机化学基础·有机化合物的结构特点",
+   "kind": "MERGE",
+   "reason": "同名主题重复：stale 侧节点定位串（已按章表对齐）指向 canonical 侧所在册；旧教材结构位置的副本并入 2019 版位置（2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学必修第二册·第七章·有机化合物·有机合成",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学选择性必修3·有机化学基础·有机合成",
+   "kind": "MERGE",
+   "reason": "同名主题重复：stale 侧节点定位串（已按章表对齐）指向 canonical 侧所在册；旧教材结构位置的副本并入 2019 版位置（2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学必修第二册·第五章·硫氮及其化合物·氧化还原反应",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学必修第一册·第一章·离子反应与氧化还原·氧化还原反应",
+   "kind": "MERGE",
+   "reason": "同名主题重复：stale 侧节点定位串（已按章表对齐）指向 canonical 侧所在册；旧教材结构位置的副本并入 2019 版位置（2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学必修第二册·第五章·硫氮及其化合物·环境保护与绿色化学",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "同名主题的空壳副本（0 点 0 子，2026-09-19 主题去重第二批）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学必修第二册·第六章·化学反应与能量·共价键",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学选择性必修2·物质结构与性质·共价键",
+   "kind": "MERGE",
+   "reason": "同名主题重复：stale 侧节点定位串（已按章表对齐）指向 canonical 侧所在册；旧教材结构位置的副本并入 2019 版位置（2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学必修第二册·第六章·化学反应与能量·分子晶体与共价晶体",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学选择性必修2·物质结构与性质·分子晶体与共价晶体",
+   "kind": "MERGE",
+   "reason": "节点『分子间作用力』章表定位选必二 第二章（2026-09-19 主题去重第二批）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学必修第二册·第六章·化学反应与能量·分子的空间结构",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学选择性必修2·物质结构与性质·分子的空间结构",
+   "kind": "MERGE",
+   "reason": "节点『分子的性质』章表定位选必二 第二章（2026-09-19 主题去重第二批）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学必修第二册·第六章·化学反应与能量·化学反应的速率与限度",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学选择性必修1·第二章·化学平衡·化学反应的速率与限度",
+   "kind": "MERGE",
+   "reason": "同名主题重复：stale 侧节点定位串（已按章表对齐）指向 canonical 侧所在册；旧教材结构位置的副本并入 2019 版位置（2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学必修第二册·第六章·化学反应与能量·化学平衡",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学选择性必修1·第二章·化学平衡",
+   "kind": "MERGE",
+   "reason": "同名主题重复：stale 侧节点定位串（已按章表对齐）指向 canonical 侧所在册；旧教材结构位置的副本并入 2019 版位置（2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学必修第二册·第六章·化学反应与能量·化学键",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学选择性必修2·物质结构与性质·化学键",
+   "kind": "MERGE",
+   "reason": "同名主题重复：stale 侧节点定位串（已按章表对齐）指向 canonical 侧所在册；旧教材结构位置的副本并入 2019 版位置（2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学必修第二册·第六章·化学反应与能量·原电池",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学选择性必修1·第四章·电化学·原电池",
+   "kind": "MERGE",
+   "reason": "同名主题重复：stale 侧节点定位串（已按章表对齐）指向 canonical 侧所在册；旧教材结构位置的副本并入 2019 版位置（2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学必修第二册·第六章·化学反应与能量·反应热",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学选择性必修1·第一章·反应热与能量·反应热",
+   "kind": "MERGE",
+   "reason": "同名主题重复：stale 侧节点定位串（已按章表对齐）指向 canonical 侧所在册；旧教材结构位置的副本并入 2019 版位置（2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学必修第二册·第六章·化学反应与能量·物质的量",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学选择性必修1·第二章·化学平衡",
+   "kind": "MERGE",
+   "reason": "其唯一节点『物质的量(或浓度)—时间图像』章表定位选必一，是平衡图像题（2026-09-19 主题去重第二批）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学必修第二册·第六章·化学反应与能量·配合物与超分子",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学选择性必修2·物质结构与性质·配合物与超分子",
+   "kind": "MERGE",
+   "reason": "节点『超分子』章表定位选必二（2026-09-19 主题去重第二批）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学选择性必修1·第一章·反应热与能量·氧化还原反应",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学必修第一册·第一章·离子反应与氧化还原·氧化还原反应",
+   "kind": "MERGE",
+   "reason": "同名主题重复：stale 侧节点定位串（已按章表对齐）指向 canonical 侧所在册；旧教材结构位置的副本并入 2019 版位置（2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学选择性必修1·第三章·水溶液中的离子平衡·有机化合物的结构特点",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学选择性必修3·有机化学基础·有机化合物的结构特点",
+   "kind": "MERGE",
+   "reason": "同名主题重复：stale 侧节点定位串（已按章表对齐）指向 canonical 侧所在册；旧教材结构位置的副本并入 2019 版位置（2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学选择性必修1·第二章·化学平衡·化学平衡",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学选择性必修1·第二章·化学平衡",
+   "kind": "MERGE",
+   "reason": "同名主题重复：stale 侧节点定位串（已按章表对齐）指向 canonical 侧所在册；旧教材结构位置的副本并入 2019 版位置（2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学选择性必修1·第二章·化学平衡·沉淀溶解平衡",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学选择性必修1·第三章·水溶液中的离子平衡·沉淀溶解平衡",
+   "kind": "MERGE",
+   "reason": "5 个节点章表定位全是选必一 第三章（2019 版沉淀溶解平衡在第三章）（2026-09-19 主题去重第二批）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学选择性必修1·第二章·化学平衡·电离平衡",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:topic:化学选择性必修1·第三章·水溶液中的离子平衡·电离平衡",
+   "kind": "MERGE",
+   "reason": "5 个节点章表定位全是选必一 第三章（电离平衡在 3.1）（2026-09-19 主题去重第二批）"
+  },
+  {
    "nodeId": "kb:moe-2025-four-subjects-v1:math:atomic:2023-天津-一模-在中-内角-的对边分别为-已知",
    "supersededBy": null,
    "kind": "DELETE",
@@ -1826,6 +2174,114 @@
    "supersededBy": "kb:moe-2025-four-subjects-v1:physics:atomic:运动的合成与分解",
    "kind": "MERGE",
    "reason": "同物重复：「运动分解（核心思想）」的边界正文讲的就是运动的合成与分解"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:topic:物理必修第一册·第一章·运动的描述·1 圆周运动",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:physics:topic:物理必修第二册·第五六章·抛体运动与圆周运动·1 圆周运动",
+   "kind": "MERGE",
+   "reason": "同名主题重复：stale 侧节点定位串（已按章表对齐）指向 canonical 侧所在册；旧教材结构位置的副本并入 2019 版位置（2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:topic:物理必修第一册·第一章·运动的描述·1 曲线运动",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:physics:topic:物理必修第二册·第五六章·抛体运动与圆周运动·1 曲线运动",
+   "kind": "MERGE",
+   "reason": "同名主题重复：stale 侧节点定位串（已按章表对齐）指向 canonical 侧所在册；旧教材结构位置的副本并入 2019 版位置（2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:topic:物理必修第一册·第一章·运动的描述·2 向心力",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "同名主题的空壳副本（0 点 0 子主题，2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:topic:物理必修第一册·第一章·运动的描述·2 运动的合成与分解",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:physics:topic:物理必修第二册·第五六章·抛体运动与圆周运动·2 运动的合成与分解",
+   "kind": "MERGE",
+   "reason": "其唯一节点的章表定位是必修二 第五章 抛体运动（2026-09-19 主题去重第二批）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:topic:物理必修第一册·第一章·运动的描述·3 向心加速度",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "同名主题的空壳副本（0 点 0 子主题，2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:topic:物理必修第一册·第一章·运动的描述·3 实验：探究平抛运动的特点",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:physics:topic:物理必修第二册·第五六章·抛体运动与圆周运动·3 实验：探究平抛运动的特点",
+   "kind": "MERGE",
+   "reason": "同名主题重复：stale 侧节点定位串（已按章表对齐）指向 canonical 侧所在册；旧教材结构位置的副本并入 2019 版位置（2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:topic:物理必修第一册·第一章·运动的描述·3 牛顿第三定律",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:physics:topic:物理必修第一册·第四章·牛顿运动定律·3 牛顿第三定律",
+   "kind": "MERGE",
+   "reason": "同名主题重复：stale 侧节点定位串（已按章表对齐）指向 canonical 侧所在册；旧教材结构位置的副本并入 2019 版位置（2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:topic:物理必修第一册·第二章·匀变速直线运动·2 匀变速直线运动的速度与时间的关系",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:physics:topic:物理必修第一册·第一章·运动的描述·2 匀变速直线运动的速度与时间的关系",
+   "kind": "MERGE",
+   "reason": "同名主题重复：stale 侧节点定位串（已按章表对齐）指向 canonical 侧所在册；旧教材结构位置的副本并入 2019 版位置（2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:topic:物理必修第三册·第九十章·静电场·2 常见传感器的工作原理及应用",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "同名主题的空壳副本（0 点 0 子主题，2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:topic:物理必修第三册·第十三章（安培力/洛伦兹力/感应定律见选择性必修第二册）·磁场与电磁感应·1 电路中的能量转化",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:physics:topic:物理必修第三册·第十三章（安培力/洛伦兹力/感应定律见选择性必修第二册）·磁场与电磁感应·3 电磁感应现象及应用",
+   "kind": "MERGE",
+   "reason": "其唯一节点『能量转化』的章表定位是选必二 第二章 电磁感应——与电磁感应主题同内容（2026-09-19 主题去重第二批）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:topic:物理必修第三册·第十三章（安培力/洛伦兹力/感应定律见选择性必修第二册）·磁场与电磁感应·2 常见传感器的工作原理及应用",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:physics:topic:物理选择性必修第二册·第三四章·交变电流与电磁波·2 常见传感器的工作原理及应用",
+   "kind": "MERGE",
+   "reason": "同名主题重复：stale 侧节点定位串（已按章表对齐）指向 canonical 侧所在册；旧教材结构位置的副本并入 2019 版位置（2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:topic:物理必修第三册·第十三章（安培力/洛伦兹力/感应定律见选择性必修第二册）·磁场与电磁感应·3 实验：探究平抛运动的特点",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "同名主题的空壳副本（0 点 0 子主题，2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:topic:物理必修第二册·第五六章·抛体运动与圆周运动·2 匀变速直线运动的速度与时间的关系",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:physics:topic:物理必修第二册·第五六章·抛体运动与圆周运动·2 运动的合成与分解",
+   "kind": "MERGE",
+   "reason": "同名主题重复：stale 侧节点定位串（已按章表对齐）指向 canonical 侧所在册；旧教材结构位置的副本并入 2019 版位置（2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:topic:物理必修第二册·第八章·机械能与能量守恒·3 简谐运动的回复力和能量",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:physics:topic:物理选择性必修第一册·第二三章·机械振动与机械波·3 简谐运动的回复力和能量",
+   "kind": "MERGE",
+   "reason": "同名主题重复：stale 侧节点定位串（已按章表对齐）指向 canonical 侧所在册；旧教材结构位置的副本并入 2019 版位置（2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:topic:物理必修第二册·第八章·机械能与能量守恒·4 波的干涉",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:physics:topic:物理选择性必修第一册·第二三章·机械振动与机械波·4 波的干涉",
+   "kind": "MERGE",
+   "reason": "同名主题重复：stale 侧节点定位串（已按章表对齐）指向 canonical 侧所在册；旧教材结构位置的副本并入 2019 版位置（2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:topic:物理必修第二册·第八章·机械能与能量守恒·5 多普勒效应",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:physics:topic:物理选择性必修第一册·第二三章·机械振动与机械波·5 多普勒效应",
+   "kind": "MERGE",
+   "reason": "同名主题重复：stale 侧节点定位串（已按章表对齐）指向 canonical 侧所在册；旧教材结构位置的副本并入 2019 版位置（2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:topic:物理必修第二册·第八章·机械能与能量守恒·6 受迫振动 共振",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "同名主题的空壳副本（0 点 0 子主题，2026-09-19 主题去重）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:topic:物理选择性必修第三册·第一至三章·热学·2 常见传感器的工作原理及应用",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "同名主题的空壳副本（0 点 0 子主题，2026-09-19 主题去重）"
   }
  ]
 }

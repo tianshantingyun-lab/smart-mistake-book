@@ -83,7 +83,10 @@ class ReviewedKnowledgePackJsonCodecTest {
         )
         // 多层知识树：卷 -> 章 -> 主题 -> 子主题 -> 知识点，topic 父链必须完整落到节点层
         val topicNodes = pack.nodes.filter { it.nodeKind == "TOPIC" }
-        assertTrue(topicNodes.size >= 400)
+        // 下界 2026-09-19 随主题去重调整：468 → 396 topic（同名主题的旧教材位置副本并入 2019 版
+        // 位置、16+4+1 个空壳删除、4 个漏建的章节主题补建；点 2852 全部守恒，父链完整）。
+        // 下界留 5% 余量，防的是"半棵树"而不是精确规模（精确规模在台账）。
+        assertTrue(topicNodes.size >= 380)
         assertTrue(topicNodes.count { it.parentKnowledgeNodeId != null } >= 300)
         // 无绑定残渣在聚合层剔除后，材料量 = 绑定量（每个材料都绑到原子节点）
         assertEquals(pack.teachingMaterialBindings.size, pack.teachingMaterials.size)
