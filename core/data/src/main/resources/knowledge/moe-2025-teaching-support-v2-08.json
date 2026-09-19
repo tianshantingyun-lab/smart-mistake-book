@@ -9651,7 +9651,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:硬解定理",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:圆锥曲线的弦长公式",
      "role": "PRIMARY"
     }
    ]
@@ -15451,7 +15451,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:平面向量与三角形的垂心",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:三角形垂心的向量特征",
      "role": "PRIMARY"
     }
    ]
@@ -18111,7 +18111,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:解分数不等式忽略分母不为零致错",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:分式不等式的解法",
      "role": "PRIMARY"
     }
    ]

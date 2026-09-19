@@ -53923,7 +53923,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:直线的方程",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:直线的倾斜角与斜率",
      "role": "PRIMARY"
     }
    ]

@@ -5847,7 +5847,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:对数运算",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:对数混合运算的一般原则",
      "role": "PRIMARY"
     }
    ]
@@ -18247,7 +18247,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:等差数列",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:等差数列的判定方法",
      "role": "PRIMARY"
     }
    ]

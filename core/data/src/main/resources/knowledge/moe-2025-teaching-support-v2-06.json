@@ -35395,7 +35395,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:三角形解的个数问题",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:三角形解的个数判断",
      "role": "PRIMARY"
     }
    ]
@@ -35675,7 +35675,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:圆的方程",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:圆的参数方程",
      "role": "PRIMARY"
     }
    ]
@@ -35835,7 +35835,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:奔驰定理",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:三角形四心的向量表示",
      "role": "PRIMARY"
     }
    ]

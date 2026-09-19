@@ -391,7 +391,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:复数的概念",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:复数相等的充要条件",
      "role": "PRIMARY"
     }
    ]
@@ -23991,7 +23991,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:分式不等式及其解法",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:分式不等式的解法",
      "role": "PRIMARY"
     }
    ]

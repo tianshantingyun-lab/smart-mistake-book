@@ -3199,7 +3199,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:极值点偏移问题",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:极值点偏移的对称化构造法",
      "role": "PRIMARY"
     }
    ]
@@ -9759,7 +9759,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:等比数列的有关公式",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:等比中项",
      "role": "PRIMARY"
     }
    ]
@@ -9939,7 +9939,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:等比数列的通项",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:等比数列的判断与证明方法",
      "role": "PRIMARY"
     }
    ]
@@ -10099,7 +10099,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:换元法-主要用于解决已知的解析式-求函数的解析式的问题",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:求函数解析式的常用方法",
      "role": "PRIMARY"
     }
    ]
@@ -11119,7 +11119,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:应用等比数列性质解题时的2个注意点",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:斐波那契数列",
      "role": "PRIMARY"
     }
    ]
@@ -11579,7 +11579,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:空间向量的有关定理",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:等角定理",
      "role": "PRIMARY"
     }
    ]
@@ -12339,7 +12339,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:空间向量数量积的坐标表示及其应用",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:空间直角坐标系的建立原则",
      "role": "PRIMARY"
     }
    ]
@@ -17519,7 +17519,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:二倍角公式",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:辅助角公式",
      "role": "PRIMARY"
     }
    ]
@@ -17579,7 +17579,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:二倍角公式",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:半角公式",
      "role": "PRIMARY"
     }
    ]
@@ -18239,7 +18239,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:直线与圆的位置关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:点与圆的位置关系",
      "role": "PRIMARY"
     }
    ]
@@ -18559,7 +18559,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:圆锥曲线的综合问题",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:圆锥曲线的弦长公式",
      "role": "PRIMARY"
     }
    ]
@@ -19319,7 +19319,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:绝对值不等式",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:均值不等式链",
      "role": "PRIMARY"
     }
    ]
@@ -21719,7 +21719,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:二倍角公式",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:辅助角公式",
      "role": "PRIMARY"
     }
    ]
@@ -21799,7 +21799,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:二倍角公式",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:半角公式",
      "role": "PRIMARY"
     }
    ]
@@ -22959,7 +22959,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:逆序相加法求数列的前n项和",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:倒序相加法",
      "role": "PRIMARY"
     }
    ]
@@ -27759,7 +27759,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:忽视异面直线的夹角与向量的夹角范围不同",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:直线的倾斜角与斜率",
      "role": "PRIMARY"
     }
    ]
@@ -27999,7 +27999,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:直线与圆的位置关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:点与圆的位置关系",
      "role": "PRIMARY"
     }
    ]
@@ -30479,7 +30479,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:向量共线定理",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:梅涅劳斯定理与塞瓦定理",
      "role": "PRIMARY"
     }
    ]
@@ -36179,7 +36179,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:三角形面积公式",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:扇形的弧长与面积公式",
      "role": "PRIMARY"
     }
    ]
