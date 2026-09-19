@@ -63,6 +63,7 @@ import com.tingyun.smartmistakebook.core.domain.TutorMessageRole
 import com.tingyun.smartmistakebook.core.domain.TutorMessageStatus
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
 import com.tingyun.smartmistakebook.core.model.ModelFailureCode
+import com.tingyun.smartmistakebook.core.model.ModelLiveKind
 import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
@@ -91,6 +92,7 @@ import com.tingyun.smartmistakebook.core.ui.RootPageLazyColumn
 import com.tingyun.smartmistakebook.core.ui.SafeMarkdownText
 import com.tingyun.smartmistakebook.core.ui.SmartDimens
 import com.tingyun.smartmistakebook.core.ui.ThinkingCollapsibleCard
+import com.tingyun.smartmistakebook.core.ui.TutorStreamingReply
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -98,6 +100,7 @@ import androidx.compose.ui.draw.clip
 import androidx.core.content.FileProvider
 import java.io.File
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
@@ -166,6 +169,10 @@ internal fun TutorLobbyRoute(
     var draftPersistJob by remember { mutableStateOf<Job?>(null) }
     // 正在生成时的实时状态文本：网关把上游思考链节流转成进度消息，学生等待时就能看到它在想什么。
     var liveReplyStatus by remember { mutableStateOf<String?>(null) }
+    // 逐 token 的实时文本（不落库的那条通道）：思考链与回答正文各自增长，工具调用是一行进度。
+    var liveThinking by remember { mutableStateOf<String?>(null) }
+    var liveAnswer by remember { mutableStateOf<String?>(null) }
+    var liveToolNote by remember { mutableStateOf<String?>(null) }
     // 会话任务可能因离开页面被取消而停在非终态（协程已死、DB 无终态）：
     // 这样的任务必须给出"继续回复"的恢复出口，否则输入框永久禁用。
     val stalledTask = conversationTasks.lastOrNull { task ->
@@ -278,50 +285,75 @@ internal fun TutorLobbyRoute(
         logicalOperationId: String,
     ) {
         var terminalHandled = false
-        modelTasks.execute(request).collect { task ->
-            if (terminalHandled) return@collect
-            liveReplyStatus = task.userMessage.takeIf {
-                it.isNotBlank() && task.status in LIVE_REPLY_STATUSES
-            }
-            val output = task.output as? TutorLobbyOutput
-            when {
-                task.status == ModelTaskStatus.SUCCEEDED && output != null -> {
-                    terminalHandled = true
-                    conversations.appendAssistantMessage(
-                        AppendTutorAssistantMessageCommand(
-                            conversationId = conversationId,
-                            messageId = "tutor-message:${UUID.randomUUID()}",
-                            ordinal = assistantOrdinal,
-                            replyToMessageId = replyToMessageId,
-                            bodyMarkdown = output.messageMarkdown,
-                            thinkingMarkdown = output.thinkingMarkdown,
-                            logicalOperationId = logicalOperationId,
-                            status = TutorMessageStatus.SUCCEEDED,
-                            createdAtEpochMillis = request.occurredAtEpochMillis,
-                            completedAtEpochMillis = task.updatedAtEpochMillis,
-                            errorCode = null,
-                        ),
-                    )
+        try {
+            coroutineScope {
+                // 逐 token 通道：不落库、不计事件上限，所以这里能收到每一次增长（网关按约
+                // 8 次/秒的节奏推进），学生的思考卡与回答气泡是"长出来的"而不是最后一次性出现。
+                val liveJob = launch {
+                    modelTasks.observeLiveText(request.requestId).collect { live ->
+                        when (live?.kind) {
+                            ModelLiveKind.THINKING -> liveThinking = live.text
+                            ModelLiveKind.ANSWER -> liveAnswer = live.text
+                            ModelLiveKind.TOOL -> liveToolNote = live.text
+                            null -> Unit
+                        }
+                    }
                 }
+                try {
+                    modelTasks.execute(request).collect { task ->
+                        if (terminalHandled) return@collect
+                        liveReplyStatus = task.userMessage.takeIf {
+                            it.isNotBlank() && task.status in LIVE_REPLY_STATUSES
+                        }
+                        val output = task.output as? TutorLobbyOutput
+                        when {
+                            task.status == ModelTaskStatus.SUCCEEDED && output != null -> {
+                                terminalHandled = true
+                                conversations.appendAssistantMessage(
+                                    AppendTutorAssistantMessageCommand(
+                                        conversationId = conversationId,
+                                        messageId = "tutor-message:${UUID.randomUUID()}",
+                                        ordinal = assistantOrdinal,
+                                        replyToMessageId = replyToMessageId,
+                                        bodyMarkdown = output.messageMarkdown,
+                                        thinkingMarkdown = output.thinkingMarkdown,
+                                        logicalOperationId = logicalOperationId,
+                                        status = TutorMessageStatus.SUCCEEDED,
+                                        createdAtEpochMillis = request.occurredAtEpochMillis,
+                                        completedAtEpochMillis = task.updatedAtEpochMillis,
+                                        errorCode = null,
+                                    ),
+                                )
+                            }
 
-                task.status in TERMINAL_FAILURE_STATUSES -> {
-                    terminalHandled = true
-                    conversations.appendAssistantMessage(
-                        AppendTutorAssistantMessageCommand(
-                            conversationId = conversationId,
-                            messageId = "tutor-message:${UUID.randomUUID()}",
-                            ordinal = assistantOrdinal,
-                            replyToMessageId = replyToMessageId,
-                            bodyMarkdown = TUTOR_LOBBY_FAILED_REPLY_BODY,
-                            logicalOperationId = logicalOperationId,
-                            status = TutorMessageStatus.FAILED,
-                            createdAtEpochMillis = request.occurredAtEpochMillis,
-                            completedAtEpochMillis = task.updatedAtEpochMillis,
-                            errorCode = task.failure?.code?.name,
-                        ),
-                    )
+                            task.status in TERMINAL_FAILURE_STATUSES -> {
+                                terminalHandled = true
+                                conversations.appendAssistantMessage(
+                                    AppendTutorAssistantMessageCommand(
+                                        conversationId = conversationId,
+                                        messageId = "tutor-message:${UUID.randomUUID()}",
+                                        ordinal = assistantOrdinal,
+                                        replyToMessageId = replyToMessageId,
+                                        bodyMarkdown = TUTOR_LOBBY_FAILED_REPLY_BODY,
+                                        logicalOperationId = logicalOperationId,
+                                        status = TutorMessageStatus.FAILED,
+                                        createdAtEpochMillis = request.occurredAtEpochMillis,
+                                        completedAtEpochMillis = task.updatedAtEpochMillis,
+                                        errorCode = task.failure?.code?.name,
+                                    ),
+                                )
+                            }
+                        }
+                    }
+                } finally {
+                    liveJob.cancel()
                 }
             }
+        } finally {
+            // 实时文本只属于"这一刻的等待"：终态正文已经落库，留着只会在下一次派发前闪出残留。
+            liveThinking = null
+            liveAnswer = null
+            liveToolNote = null
         }
         if (!terminalHandled) {
             conversations.appendAssistantMessage(
@@ -763,12 +795,26 @@ internal fun TutorLobbyRoute(
             if (resumingTaskId != null || sendInFlight) {
                 item(key = "lobby-resuming") {
                     Column(Modifier.padding(top = 10.dp)) {
-                        // 生成中：思考/工具调用自动展开、实时流式；回答落地后由消息自带的折叠卡接管。
+                        // 生成中：思考链与工具调用自动展开、逐 token 增长；回答一开始写就把思考收起，
+                        // 由消息自带的折叠卡在终态接管。
+                        val liveNotes = listOfNotNull(liveThinking, liveToolNote)
+                            .filter(String::isNotBlank)
+                        val thinkingText = liveNotes.takeIf { it.isNotEmpty() }
+                            ?.joinToString("\n\n")
+                            ?: liveReplyStatus
                         ThinkingCollapsibleCard(
-                            thinkingMarkdown = liveReplyStatus,
-                            thinking = true,
+                            thinkingMarkdown = thinkingText,
+                            thinking = liveAnswer.isNullOrBlank(),
                         )
-                        if (liveReplyStatus == null) {
+                        liveAnswer?.takeIf { it.isNotBlank() }?.let { answer ->
+                            TutorStreamingReply(
+                                markdown = answer,
+                                modifier = Modifier
+                                    .padding(top = 6.dp)
+                                    .testTag("tutor_lobby_streaming_reply"),
+                            )
+                        }
+                        if (thinkingText == null && liveAnswer.isNullOrBlank()) {
                             TutorPrompt(
                                 text = if (resumingTaskId != null) "正在回复…" else "正在发送…",
                                 modifier = Modifier.padding(top = 6.dp),

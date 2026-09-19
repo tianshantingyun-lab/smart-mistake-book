@@ -36,6 +36,7 @@ import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
 import com.tingyun.smartmistakebook.core.model.ModelExecutionPermit
 import com.tingyun.smartmistakebook.core.model.ModelFailureCode
 import com.tingyun.smartmistakebook.core.model.ModelGatewayEvent
+import com.tingyun.smartmistakebook.core.model.ModelLiveKind
 import com.tingyun.smartmistakebook.core.model.ModelGatewayExecution
 import com.tingyun.smartmistakebook.core.model.ModelRequestBudgetExceededException
 import com.tingyun.smartmistakebook.core.model.ModelRequestPayloadBudget
@@ -255,9 +256,9 @@ internal class OpenAiCompatibleModelGateway(
                             provider = currentProvider,
                             nowEpochMillis = clock(),
                         )
-                        val response = awaitWithLiveReasoning(
+                        val response = awaitWithLiveStream(
                             stream = stream,
-                            post = {
+                            post = { onReasoningDelta, onContentDelta ->
                                 transport.post(
                                     WireRequest(
                                         url = protocol.endpoint(baseUrl, provider.modelId, stream),
@@ -265,7 +266,8 @@ internal class OpenAiCompatibleModelGateway(
                                         body = requestBody,
                                         stream = stream,
                                         protocol = protocol,
-                                        onReasoningDelta = it,
+                                        onReasoningDelta = onReasoningDelta,
+                                        onContentDelta = onContentDelta,
                                     ),
                                     beforeEnqueue = {
                                         requireCurrentAuthorizationBeforeEnqueue(
@@ -679,44 +681,72 @@ private fun java.io.InputStream.readExactlyBounded(expectedBytes: Long): ByteArr
 private fun failure(value: ModelTaskFailure): ModelGatewayEvent = ModelGatewayEvent.Failed(value)
 
 /**
- * 发送请求，并在流式读取期间**实时**把思考链逐步转发成进度事件（推理模型先吐很久思考、
- * 最后才给答案；学生该在等待时就看见它在想什么）。思考增量由传输层在读取线程回调进一个
+ * 发送请求，并在流式读取期间**实时**转发两条通道：思考链与回答正文（推理模型先吐很久思考、
+ * 最后才给答案；学生该在等待时就看见它在想什么、在写什么）。增量由传输层在读取线程回调进
  * 同步缓冲区，主协程轮询转发——发射始终发生在 flow 的收集协程里，不跨协程 emit。
+ *
+ * 两条通道的代价不同，所以节奏也不同：逐 token 的 [ModelGatewayEvent.LiveProgress] 不落库、
+ * 不计入事件上限，按轮询节奏直接发；[ModelGatewayEvent.Progress] 每帧都要落一行状态与审计，
+ * 保持稀疏，只负责进程重启后的"进行中/恢复"。
  */
-private suspend fun awaitWithLiveReasoning(
+private suspend fun awaitWithLiveStream(
     stream: Boolean,
-    post: suspend (onReasoningDelta: ((String) -> Unit)?) -> ModelHttpResponse,
+    post: suspend (
+        onReasoningDelta: ((String) -> Unit)?,
+        onContentDelta: ((String) -> Unit)?,
+    ) -> ModelHttpResponse,
     emit: suspend (ModelGatewayEvent) -> Unit,
 ): ModelHttpResponse {
-    if (!stream) return post(null)
+    if (!stream) return post(null, null)
     val reasoning = Collections.synchronizedList(ArrayList<String>())
+    val answer = Collections.synchronizedList(ArrayList<String>())
     return coroutineScope {
-        val call = async { post { delta -> reasoning.add(delta) } }
-        var emittedFrames = 0
+        val call = async {
+            post(
+                { delta -> reasoning.add(delta) },
+                { delta -> answer.add(delta) },
+            )
+        }
+        var emittedPersistedFrames = 0
+        var lastLiveReasoningChars = -1
+        var lastLiveAnswerChars = -1
         var observedDeltas = 0
-        var nextEmitAtMillis = 0L
+        var nextPersistedEmitAtMillis = 0L
         var backoffMillis = LIVE_REASONING_FIRST_EMIT_MILLIS
         while (!call.isCompleted) {
-            delay(LIVE_REASONING_POLL_MILLIS)
-            val snapshot = synchronized(reasoning) { ArrayList(reasoning) }
-            if (snapshot.size == observedDeltas) continue
-            observedDeltas = snapshot.size
-            // The repository caps how many gateway events one task may produce, so the live
-            // thinking is deliberately sparse: a few frames with a growing interval, never a
-            // frame per poll.
-            if (emittedFrames >= LIVE_REASONING_MAX_FRAMES) continue
+            delay(LIVE_STREAM_POLL_MILLIS)
+            val reasoningText = synchronized(reasoning) { reasoning.joinToString("") }
+            val answerText = synchronized(answer) { answer.joinToString("") }
+            // 逐 token 通道：不落库、不写审计行，所以可以每个轮询周期都发（约 8 次/秒，
+            // 正好在 Compose 的重组舒适区内，不需要再加节流）。只在文本真的变长时发，
+            // 静止的等待不会产生无意义的重组。
+            if (reasoningText.length != lastLiveReasoningChars) {
+                lastLiveReasoningChars = reasoningText.length
+                emit(ModelGatewayEvent.LiveProgress(ModelLiveKind.THINKING, reasoningText))
+            }
+            if (answerText.length != lastLiveAnswerChars) {
+                lastLiveAnswerChars = answerText.length
+                emit(ModelGatewayEvent.LiveProgress(ModelLiveKind.ANSWER, answerText))
+            }
+            // 持久化通道：仓库会给每次 Progress 写状态行与审计行，且单任务事件数有上限，
+            // 所以这里保持稀疏（少数几帧、间隔递增），进程重启后的"进行中/恢复"靠它。
+            val deltaCount = synchronized(reasoning) { reasoning.size }
+            if (deltaCount == observedDeltas) continue
+            observedDeltas = deltaCount
+            if (emittedPersistedFrames >= LIVE_REASONING_MAX_FRAMES) continue
             val now = System.currentTimeMillis()
-            if (now < nextEmitAtMillis) continue
-            emittedFrames += 1
-            nextEmitAtMillis = now + backoffMillis
+            if (now < nextPersistedEmitAtMillis) continue
+            emittedPersistedFrames += 1
+            nextPersistedEmitAtMillis = now + backoffMillis
             backoffMillis = (backoffMillis * 2).coerceAtMost(LIVE_REASONING_MAX_INTERVAL_MILLIS)
-            emit(ModelGatewayEvent.Progress.of(streamingPrefix(snapshot.joinToString(""))))
+            emit(ModelGatewayEvent.Progress.of(streamingPrefix(reasoningText)))
         }
         call.await()
     }
 }
 
-private const val LIVE_REASONING_POLL_MILLIS = 400L
+/** 实时通道的轮询节奏：约 8 次/秒，足够"逐 token 在长"，又不至于让重组追不上。 */
+private const val LIVE_STREAM_POLL_MILLIS = 120L
 private const val LIVE_REASONING_FIRST_EMIT_MILLIS = 1_000L
 private const val LIVE_REASONING_MAX_INTERVAL_MILLIS = 8_000L
 private const val LIVE_REASONING_MAX_FRAMES = 8

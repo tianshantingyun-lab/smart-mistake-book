@@ -24,14 +24,13 @@ class EgressImageTranscoderInstrumentedTest {
         width: Int,
         height: Int,
         format: Bitmap.CompressFormat,
-        opaque: Boolean = true,
     ): ByteArray {
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         // 确定性噪声图案：均匀色块会压到几十 KB，测不出"超预算"这件事；这里要的是
         // "压不动"，不是随机性——固定图案也让测试可复现。
         val pixels = IntArray(width * height) { index ->
             val mixed = (index * 2_654_435_761L).toInt() xor (index shl 7)
-            if (opaque) mixed or 0xFF000000.toInt() else mixed and 0x00FFFFFF
+            mixed or 0xFF000000.toInt()
         }
         bitmap.setPixels(pixels, 0, width, 0, 0, width, height)
         val output = ByteArrayOutputStream()
@@ -113,7 +112,20 @@ class EgressImageTranscoderInstrumentedTest {
 
     @Test
     fun transparencyIsFlattenedOntoWhiteInsteadOfBlack() {
-        val source = photo(2_048, 2_048, Bitmap.CompressFormat.PNG, opaque = false)
+        // 左半张完全透明、右半张不可压缩：全透明图会被 PNG 编码器压成几 KB（RGB 被清零），
+        // 那样就跨不过体积预算，测不到重编码路径。
+        val size = 2_048
+        val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+        val pixels = IntArray(size * size) { index ->
+            val x = index % size
+            val mixed = (index * 2_654_435_761L).toInt() xor (index shl 7)
+            if (x < size / 2) 0 else mixed or 0xFF000000.toInt()
+        }
+        bitmap.setPixels(pixels, 0, size, 0, 0, size, size)
+        val source = ByteArrayOutputStream().also { output ->
+            check(bitmap.compress(Bitmap.CompressFormat.PNG, 95, output))
+        }.toByteArray()
+        bitmap.recycle()
         assertTrue(
             "前置条件：这份带透明通道的 PNG 必须真的超预算，实际 ${source.size}",
             source.size > EgressImageBudget.MAX_IMAGE_BYTES,
@@ -125,8 +137,16 @@ class EgressImageTranscoderInstrumentedTest {
 
         assertEquals("image/jpeg", egress.mimeType)
         val decoded = BitmapFactory.decodeByteArray(egress.bytes, 0, egress.bytes.size)
-        // 透明区域必须变成白底：JPEG 没有 alpha，不压白底就会整片发黑。
-        assertEquals(0xFFFFFFFF.toInt(), decoded.getPixel(0, 0))
+        // 透明区域必须变成白底：JPEG 没有 alpha，不压白底就会整片发黑。JPEG 是有损的，
+        // 所以断言"接近纯白"而不是逐位相等。
+        val pixel = decoded.getPixel(0, 0)
+        val red = (pixel shr 16) and 0xFF
+        val green = (pixel shr 8) and 0xFF
+        val blue = pixel and 0xFF
+        assertTrue(
+            "透明区域应压成白底，实际 RGB=$red,$green,$blue",
+            red >= 240 && green >= 240 && blue >= 240,
+        )
         decoded.recycle()
     }
 }

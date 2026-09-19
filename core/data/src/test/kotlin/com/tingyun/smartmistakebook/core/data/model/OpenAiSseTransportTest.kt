@@ -139,6 +139,33 @@ class OpenAiSseTransportTest {
         assertEquals(listOf("{\"ok\":true}"), response.streamChunks)
     }
 
+    @Test
+    fun streamedAnswerDeltasReachTheLiveCallbackAsTheyArrive() = runBlocking {
+        // 正文此前只有等整条流读完才按分片回放：学生在生成过程中看不到正在写出来的答案。
+        // 现在正文与思考同一条帧回调里分发，到达即回调。
+        val sseBody = buildString {
+            append("data: {\"choices\":[{\"delta\":{\"content\":\"先求导\"}}]}\n\n")
+            append("data: {\"choices\":[{\"delta\":{\"reasoning\":\"想一下\"}}]}\n\n")
+            append("data: {\"choices\":[{\"delta\":{\"content\":\"，再定号\"}}]}\n\n")
+            append("data: [DONE]\n\n")
+        }
+        val content = mutableListOf<String>()
+        val reasoning = mutableListOf<String>()
+
+        val response = SseDeliveringCall(code = 200, contentType = "text/event-stream", body = sseBody)
+            .awaitBoundedSseResponse(
+                protocol = OpenAiChatCompletionsProtocol,
+                onReasoningDelta = { delta -> reasoning.add(delta) },
+                onContentDelta = { delta -> content.add(delta) },
+            ) {}
+
+        assertEquals(200, response.statusCode)
+        assertEquals(listOf("先求导", "，再定号"), content)
+        assertEquals(listOf("想一下"), reasoning)
+        // 回放路径仍然给出同一批分片：终态正文不依赖实时通道。
+        assertEquals(listOf("先求导", "，再定号"), response.streamChunks)
+    }
+
     private class SseDeliveringCall(
         private val code: Int,
         private val contentType: String,

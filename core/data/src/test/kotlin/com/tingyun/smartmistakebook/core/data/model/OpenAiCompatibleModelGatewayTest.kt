@@ -31,6 +31,7 @@ import com.tingyun.smartmistakebook.core.model.ModelEgressPurpose
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
 import com.tingyun.smartmistakebook.core.model.ModelFailureCode
 import com.tingyun.smartmistakebook.core.model.ModelGatewayEvent
+import com.tingyun.smartmistakebook.core.model.ModelLiveKind
 import com.tingyun.smartmistakebook.core.model.ModelGatewayExecution
 import com.tingyun.smartmistakebook.core.model.MODEL_EGRESS_APPROVAL_TTL_MILLIS
 import com.tingyun.smartmistakebook.core.model.MODEL_EGRESS_MAX_CLOCK_SKEW_MILLIS
@@ -2157,6 +2158,53 @@ class OpenAiCompatibleModelGatewayTest {
         assertTrue(
             "progress frames must stay sparse, got ${progressFrames.size}",
             progressFrames.size <= 16,
+        )
+        assertEquals(
+            TUTOR_SESSION_ID,
+            ((events.last() as ModelGatewayEvent.Completed).output as TutorPlanOutput).sessionId,
+        )
+    }
+
+    @Test
+    fun liveFramesCarryThinkingAndAnswerAsTheyGrowWithoutTouchingThePersistedChannel() = runBlocking {
+        // 学生等待时该看到两件事同时长出来：模型在想什么，以及答案写到哪了。这条通道不落库、
+        // 不计入事件上限，所以它可以按轮询节奏直接发——不再受"24 帧 / 500 字"的限制。
+        val gateway = OpenAiCompatibleModelGateway(
+            configurationStore = FakeConfigurationStore(CONFIGURATION),
+            assetSource = assetSource { _, _ -> asset() },
+            transport = modelTransport { request ->
+                request.onReasoningDelta?.invoke("先判断定义域。")
+                request.onContentDelta?.invoke("第一步：")
+                delay(500)
+                request.onContentDelta?.invoke("求导。")
+                delay(500)
+                ModelHttpResponse(
+                    statusCode = 200,
+                    body = envelope(tutorPayload()),
+                    streamChunks = listOf("第一步：求导。"),
+                )
+            },
+            clock = { AUTHORIZATION_NOW },
+        )
+
+        val events = gateway.execute(authorizedTutor(gateway)).toList()
+        val live = events.filterIsInstance<ModelGatewayEvent.LiveProgress>()
+        val answerFrames = live.filter { it.kind == ModelLiveKind.ANSWER }.map { it.text }
+
+        assertTrue(
+            "思考必须以逐 token 通道出现",
+            live.any { it.kind == ModelLiveKind.THINKING && it.text.contains("定义域") },
+        )
+        assertTrue("回答必须以逐 token 通道增长：$answerFrames", answerFrames.contains("第一步："))
+        assertEquals("最后一条实时文本是完整前缀", "第一步：求导。", answerFrames.last())
+        // 两条通道的差别是"截断与否"：持久化进度每帧都要落库，所以只给被截断的前缀；
+        // 逐 token 通道才是学生真正读到的那份完整文本。
+        val persistedAnswerFrames = events.filterIsInstance<ModelGatewayEvent.Progress>()
+            .map { it.userMessage }
+            .filter { it.contains("第一步") }
+        assertTrue(
+            "持久化进度里的回答必须仍是被截断的前缀",
+            persistedAnswerFrames.all { it.length <= MODEL_TASK_STATUS_MESSAGE_MAX_CHARS },
         )
         assertEquals(
             TUTOR_SESSION_ID,

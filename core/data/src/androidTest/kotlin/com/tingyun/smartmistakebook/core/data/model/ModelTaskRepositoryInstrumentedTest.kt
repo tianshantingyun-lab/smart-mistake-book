@@ -5,7 +5,10 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.tingyun.smartmistakebook.core.database.StudyDatabaseFactory
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
+import com.tingyun.smartmistakebook.core.model.CaptureAssessment
+import com.tingyun.smartmistakebook.core.model.CaptureAssessmentDecision
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentInput
+import com.tingyun.smartmistakebook.core.model.CaptureAssessmentOutput
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentOrigin
 import com.tingyun.smartmistakebook.core.model.CaptureParseOutput
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocument
@@ -16,11 +19,14 @@ import com.tingyun.smartmistakebook.core.model.ModelEgressPurpose
 import com.tingyun.smartmistakebook.core.model.ModelFailureCode
 import com.tingyun.smartmistakebook.core.model.ModelGatewayEvent
 import com.tingyun.smartmistakebook.core.model.ModelGatewayExecution
+import com.tingyun.smartmistakebook.core.model.ModelLiveKind
+import com.tingyun.smartmistakebook.core.model.ModelLiveText
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
 import com.tingyun.smartmistakebook.core.model.ModelTaskFingerprint
 import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.ModelTaskRemoteDispatchPolicy
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
+import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ModelTaskStage
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
 import com.tingyun.smartmistakebook.core.model.ModelPromptPolicyVersions
@@ -34,6 +40,8 @@ import com.tingyun.smartmistakebook.core.model.WritingLayer
 import com.tingyun.smartmistakebook.core.domain.ModelGateway
 import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.cancelAndJoin
@@ -47,6 +55,7 @@ import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.withTimeoutOrNull
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -533,6 +542,77 @@ class ModelTaskRepositoryInstrumentedTest {
         assertEquals(0, completed.attemptCount)
         assertEquals(2, gatewayExecutions.get())
         assertEquals(completed, repository.observe(request().requestId).first())
+    }
+
+    @Test
+    fun liveTextStreamsWithoutPersistingFramesOrBlowingTheEventBudget() = runBlocking {
+        // 逐 token 通道存在的理由：走持久化快照的每一帧都要落库、且单任务事件数有上限，
+        // 于是长回答会被"模型返回了过多状态事件"直接打死。判据不是拍一个数字，而是
+        // **快照条数不能随实时帧数增长**：20 帧与 200 帧必须给出同样多的状态快照。
+        val now = AtomicInteger(3_000)
+
+        suspend fun runWithLiveFrames(
+            requestId: String,
+            frames: Int,
+        ): Pair<List<ModelTaskSnapshot>, List<ModelLiveText?>> {
+            val repository = RoomModelTaskRepository(
+                database = database,
+                gateway = object : ModelGateway {
+                    override suspend fun capabilities() = TEST_CAPABILITIES
+
+                    override fun execute(execution: ModelGatewayExecution) = flow<ModelGatewayEvent> {
+                        emit(ModelGatewayEvent.Started(TEST_CAPABILITIES))
+                        emit(ModelGatewayEvent.Progress(ModelTaskStage.READING_IMAGE, "正在读题"))
+                        repeat(frames) { index ->
+                            emit(
+                                ModelGatewayEvent.LiveProgress(
+                                    kind = ModelLiveKind.ANSWER,
+                                    text = "第$index 个增量",
+                                ),
+                            )
+                        }
+                        emit(
+                            ModelGatewayEvent.Completed(
+                                CaptureAssessmentOutput(
+                                    assessment = CaptureAssessment(
+                                        decision = CaptureAssessmentDecision.PASS,
+                                        issues = emptyList(),
+                                        suggestedActions = emptyList(),
+                                        modelVersion = "test/assess-v1",
+                                    ),
+                                ),
+                            ),
+                        )
+                    }
+                },
+                clock = { now.incrementAndGet().toLong() },
+            )
+            val seen = mutableListOf<ModelLiveText?>()
+            val collector = launch {
+                repository.observeLiveText(requestId).collect { live -> seen.add(live) }
+            }
+            val states = repository.execute(request().copy(requestId = requestId)).toList()
+            withTimeoutOrNull(5_000) {
+                while (seen.lastOrNull() != null) delay(10)
+            }
+            collector.cancelAndJoin()
+            return states to seen
+        }
+
+        val (fewStates, _) = runWithLiveFrames(requestId = "capture-assess:live-few", frames = 20)
+        val (manyStates, manySeen) = runWithLiveFrames(requestId = "capture-assess:live-many", frames = 200)
+
+        assertEquals(ModelTaskStatus.SUCCEEDED, manyStates.last().status)
+        assertTrue(
+            "实时文本必须被逐帧推送过（收到 ${manySeen.size} 帧）",
+            manySeen.any { live -> live?.text == "第199 个增量" },
+        )
+        assertNull("终态后实时文本必须清空，否则会闪出上一条的残留", manySeen.last())
+        assertEquals(
+            "快照条数必须与实时帧数无关（20 帧 ${fewStates.size} 条、200 帧 ${manyStates.size} 条）",
+            fewStates.size,
+            manyStates.size,
+        )
     }
 
     private fun request() = ModelTaskRequest(

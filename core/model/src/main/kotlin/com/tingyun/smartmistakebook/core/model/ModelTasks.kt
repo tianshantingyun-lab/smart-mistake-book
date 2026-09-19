@@ -570,8 +570,34 @@ sealed interface ModelGatewayEvent {
 
     data class Completed(val output: ModelTaskOutput) : ModelGatewayEvent
 
+    /**
+     * 逐 token 的实时文本：思考链、回答正文、工具调用进度在生成中逐段增长的样子。
+     *
+     * 它**不落库、不写审计行、不计入单任务的事件上限**——那三样是 [Progress] 每次都要付的
+     * 代价，也是此前实时文本只能"每 8 个分片发一帧、整条任务最多 24 帧、正文截到 500 字"
+     * 的原因。代价降到零之后，瓶颈只剩渲染，于是可以按读取节奏直接推送。
+     * 终态仍以 [Completed] 为准：这条通道只负责"还在生成时看到什么"。
+     */
+    data class LiveProgress(
+        val kind: ModelLiveKind,
+        val text: String,
+    ) : ModelGatewayEvent
+
     data class Failed(val failure: ModelTaskFailure) : ModelGatewayEvent
 }
+
+/** 实时文本属于哪一类：思考链 / 回答正文 / 工具调用进度。 */
+enum class ModelLiveKind {
+    THINKING,
+    ANSWER,
+    TOOL,
+}
+
+/** 生成中的实时文本快照。 */
+data class ModelLiveText(
+    val kind: ModelLiveKind,
+    val text: String,
+)
 
 object ModelTaskCodec {
     const val MAX_ENCODED_CHARS = 512_000

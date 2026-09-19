@@ -51,6 +51,11 @@ internal class WireRequest(
      * 由调用方自行转成事件流；不关心思考的调用方留空即可。
      */
     val onReasoningDelta: ((String) -> Unit)? = null,
+    /**
+     * 流式读取期间每个**回答正文**增量到达时调用。正文与思考同时分发：此前正文要等整条流
+     * 读完才回放，于是学生在生成过程中看不到正在写出来的答案。
+     */
+    val onContentDelta: ((String) -> Unit)? = null,
 )
 
 internal fun interface ModelHttpTransport {
@@ -119,6 +124,7 @@ internal class OkHttpModelTransport : ModelHttpTransport {
                 protocol = request.protocol,
                 beforeEnqueue = beforeEnqueue,
                 onReasoningDelta = request.onReasoningDelta,
+                onContentDelta = request.onContentDelta,
             )
         } else {
             call.awaitBoundedResponse(beforeEnqueue)
@@ -253,6 +259,7 @@ internal suspend fun Call.awaitBoundedResponse(
 internal suspend fun Call.awaitBoundedSseResponse(
     protocol: ModelWireProtocol,
     onReasoningDelta: ((String) -> Unit)? = null,
+    onContentDelta: ((String) -> Unit)? = null,
     beforeEnqueue: suspend () -> Unit,
 ): ModelHttpResponse {
     beforeEnqueue()
@@ -272,6 +279,9 @@ internal suspend fun Call.awaitBoundedSseResponse(
                             val raw = it.body.byteStream().readSse { frame ->
                                 protocol.streamReasoningDelta(frame)?.let { delta ->
                                     onReasoningDelta?.invoke(delta)
+                                }
+                                protocol.streamDelta(frame)?.let { delta ->
+                                    onContentDelta?.invoke(delta)
                                 }
                             }
                             val body = if (it.code in 200..299) {

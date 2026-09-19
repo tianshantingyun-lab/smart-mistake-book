@@ -17,6 +17,8 @@ import com.tingyun.smartmistakebook.core.model.ModelEgressPolicy
 import com.tingyun.smartmistakebook.core.model.ModelExecutionPermit
 import com.tingyun.smartmistakebook.core.model.ModelFailureCode
 import com.tingyun.smartmistakebook.core.model.ModelGatewayEvent
+import com.tingyun.smartmistakebook.core.model.ModelLiveKind
+import com.tingyun.smartmistakebook.core.model.ModelLiveText
 import com.tingyun.smartmistakebook.core.model.ModelTaskCompletionValidator
 import com.tingyun.smartmistakebook.core.model.ModelTaskFailure
 import com.tingyun.smartmistakebook.core.model.ModelTaskFingerprint
@@ -48,10 +50,14 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.takeWhile
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withTimeout
 
 class RoomModelTaskRepository internal constructor(
@@ -61,10 +67,27 @@ class RoomModelTaskRepository internal constructor(
 ) : ModelTaskRepository {
     internal val toolRunner = RoomTutorToolRunner(database)
 
+    /**
+     * 生成中的逐 token 实时文本，只存在内存里：它是"此刻屏幕上该显示什么"，不是事实来源，
+     * 所以既不落库也不写审计行（那两样是持久化进度帧的代价，也是实时文本此前必须稀疏的原因）。
+     */
+    private val liveTexts = MutableStateFlow<Map<String, ModelLiveText>>(emptyMap())
+
     override suspend fun capabilities(): ProviderCapabilitySnapshot = gateway.capabilities()
 
     override fun observe(requestId: String): Flow<ModelTaskSnapshot?> =
         database.observeModelTask(requestId)
+
+    override fun observeLiveText(requestId: String): Flow<ModelLiveText?> =
+        liveTexts.map { texts -> texts[requestId] }.distinctUntilChanged()
+
+    private fun publishLiveText(requestId: String, text: ModelLiveText) {
+        liveTexts.update { current -> current + (requestId to text) }
+    }
+
+    private fun clearLiveText(requestId: String) {
+        liveTexts.update { current -> current - requestId }
+    }
 
     override fun observeBySubject(
         subjectId: String,
@@ -216,9 +239,25 @@ class RoomModelTaskRepository internal constructor(
             withTimeout(MODEL_TASK_TIMEOUT_MILLIS) {
                 gateway.execute(execution)
                     .onEach { event ->
-                        eventCount += 1
-                        if (eventCount > MAX_GATEWAY_EVENTS) {
-                            throw InvalidProviderProtocol("模型返回了过多状态事件")
+                        // 逐 token 实时文本不计入事件预算：它不落库、不写审计行，正是为了让
+                        // "每个增量都能到屏幕"成为可能；计数只约束真正要落盘的进度与终态。
+                        if (event !is ModelGatewayEvent.LiveProgress) {
+                            eventCount += 1
+                            if (eventCount > MAX_GATEWAY_EVENTS) {
+                                throw InvalidProviderProtocol("模型返回了过多状态事件")
+                            }
+                        } else {
+                            // 实时文本不算状态变化：发布到内存通道后直接返回，不发快照也不落库。
+                            // 发快照的代价很具体——一帧一次 UI 重组，几百帧就是几百次白重组，
+                            // 而屏幕上要显示什么由 liveTexts 那条通道单独驱动。
+                            if (!providerStarted) {
+                                throw InvalidProviderProtocol("模型在开始任务前返回了内容")
+                            }
+                            publishLiveText(
+                                current.request.requestId,
+                                ModelLiveText(event.kind, event.text),
+                            )
+                            return@onEach
                         }
                         when (event) {
                             is ModelGatewayEvent.Started -> {
@@ -232,7 +271,9 @@ class RoomModelTaskRepository internal constructor(
                             -> if (!providerStarted) {
                                 throw InvalidProviderProtocol("模型在开始任务前返回了内容")
                             }
-                            is ModelGatewayEvent.Failed -> Unit
+                            is ModelGatewayEvent.LiveProgress,
+                            is ModelGatewayEvent.Failed,
+                            -> Unit
                         }
                         if (event is ModelGatewayEvent.Completed && event.output is TutorToolRequestsOutput) {
                             // 工具申请轮：不落终态，转回 QUEUED（RUNNING→QUEUED 合法，
@@ -274,6 +315,16 @@ class RoomModelTaskRepository internal constructor(
                     throw InvalidProviderProtocol("模型在工具配额用尽后仍未作答")
                 }
                 val authorization = tutorToolAuthorization(requests.intentDecision, declaredTools)
+                // 工具调用要看得见：学生此前完全看不到"正在查阅错题本"这类过程（工具环只把
+                // 结果塞进下一轮提示词，界面上一片安静），于是工具调用看起来"没有接进来"。
+                val toolLabels = requests.calls.map { call -> call.tool.liveLabel() }.distinct()
+                publishLiveText(
+                    request.requestId,
+                    ModelLiveText(
+                        kind = ModelLiveKind.TOOL,
+                        text = "正在查阅${toolLabels.joinToString("、")}…",
+                    ),
+                )
                 // 扩展结果预算每轮只放一次：一次读工具的结果最多 6k 字符，三个并发请求会在下一轮
                 // prompt 里堆到 18k。模型仍可对每次查询表达"需要更大预算"（语义），但放大几次由本地
                 // 定——与本项目"模型给语义、本地给数值"的划分一致。
@@ -309,6 +360,14 @@ class RoomModelTaskRepository internal constructor(
                     roundOrdinal = toolRoundsUsed,
                     outcomes = outcomes,
                     extendedResultUsed = extendedResultUsed,
+                )
+                publishLiveText(
+                    request.requestId,
+                    ModelLiveText(
+                        kind = ModelLiveKind.TOOL,
+                        text = "已查阅${toolLabels.joinToString("、")}" +
+                            "（${outcomes.count { outcome -> outcome.ok }} 条结果）",
+                    ),
                 )
                 // 收敛声明集：保留本轮已声明且仍允许的工具（非空），配额由轮次守卫保证。
                 val converged = toolDeclarationsFor(roundRequest.input).toList()
@@ -411,6 +470,11 @@ class RoomModelTaskRepository internal constructor(
         declaredProvider: ProviderCapabilitySnapshot,
         enforceRemoteDispatchBudget: Boolean,
     ): ModelTaskSnapshot = when (event) {
+        is ModelGatewayEvent.LiveProgress -> {
+            // 实时文本不改变任务状态：发布与"不发快照"都在 onEach 里完成，这里只保证状态机
+            // 对这类事件是显式的无变化（走到这里说明它被当成了状态事件，状态本身仍不动）。
+            current
+        }
         is ModelGatewayEvent.Started -> {
             if (current.status != ModelTaskStatus.RUNNING) {
                 throw InvalidProviderProtocol("模型返回了重复或乱序的开始事件")
@@ -554,6 +618,11 @@ class RoomModelTaskRepository internal constructor(
         ),
     ).let { result ->
         if (!result.applied) throw ConcurrentModelTaskTransition()
+        // 终态（含可重试失败）到了：内存里的实时文本已由落库正文接管，留着只会在下一次
+        // 派发前闪出上一条的残留。
+        if (nextStatus.isTerminal || nextStatus == ModelTaskStatus.RETRYABLE_FAILURE) {
+            clearLiveText(current.request.requestId)
+        }
         result.snapshot
     }
 
@@ -736,6 +805,15 @@ object ModelTaskRepositoryFactory {
 }
 
 private class ConcurrentModelTaskTransition : RuntimeException()
+
+/** 工具在实时状态里的短标签（学生看得懂的说法，不是内部工具名）。 */
+private fun TutorToolName.liveLabel(): String = when (this) {
+    TutorToolName.KNOWLEDGE_READ -> "知识点"
+    TutorToolName.NOTEBOOK_READ -> "错题本"
+    TutorToolName.MASTERY_READ -> "掌握情况"
+    TutorToolName.NOTEBOOK_WRITE -> "错题本"
+    TutorToolName.MASTERY_UPDATE -> "掌握记录"
+}
 
 private class InvalidProviderProtocol(val userMessage: String) : RuntimeException(userMessage)
 
