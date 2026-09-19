@@ -101,11 +101,6 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import java.util.UUID
 
-/** 输入框附件预览：本地 uri + 学生选择来源（用于发送前的顺序保持）。 */
-internal data class PendingLobbyImage(
-    val localUri: String,
-)
-
 @Composable
 internal fun TutorLobbyRoute(
     onCapture: () -> Unit,
@@ -181,7 +176,7 @@ internal fun TutorLobbyRoute(
 
     // 消息附图（学生裁定：加号打开"拍照/相册"二选一，一次最多 9 张）。
     val context = LocalContext.current
-    var pendingImages by remember { mutableStateOf<List<PendingLobbyImage>>(emptyList()) }
+    var pendingImages by remember { mutableStateOf<List<PendingMessageImage>>(emptyList()) }
     var attachMenuOpen by remember { mutableStateOf(false) }
     var pendingCameraImageUri by remember { mutableStateOf<String?>(null) }
     val lobbyImageEnabled = imageIntake != null
@@ -190,7 +185,7 @@ internal fun TutorLobbyRoute(
 
     fun addPendingImages(uris: List<String>) {
         if (uris.isEmpty()) return
-        pendingImages = (pendingImages + uris.map { PendingLobbyImage(it) })
+        pendingImages = (pendingImages + uris.map { PendingMessageImage(it) })
             .take(MAX_TUTOR_MESSAGE_IMAGES)
     }
 
@@ -754,11 +749,12 @@ internal fun TutorLobbyRoute(
                 },
                 attachmentPreview = if (pendingImages.isNotEmpty()) {
                     {
-                        PendingImagesRow(
+                        PendingMessageImagesRow(
                             images = pendingImages,
                             onRemove = { index ->
                                 pendingImages = pendingImages.filterIndexed { i, _ -> i != index }
                             },
+                            testTagPrefix = "lobby",
                         )
                     }
                 } else {
@@ -774,123 +770,20 @@ internal fun TutorLobbyRoute(
         }
     }
     if (attachMenuOpen) {
-        AlertDialog(
-            onDismissRequest = { attachMenuOpen = false },
-            title = { Text("添加图片") },
-            text = { Text("拍一张新照片，或从相册选择（最多 ${MAX_TUTOR_MESSAGE_IMAGES} 张）。") },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        attachMenuOpen = false
-                        launchLobbyCamera()
-                    },
-                    modifier = Modifier.testTag("lobby_attach_camera"),
-                ) {
-                    Icon(Icons.Outlined.CameraAlt, contentDescription = null)
-                    Text("拍照", modifier = Modifier.padding(start = 6.dp))
-                }
+        MessageAttachmentDialog(
+            onDismiss = { attachMenuOpen = false },
+            onLaunchCamera = {
+                attachMenuOpen = false
+                launchLobbyCamera()
             },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        attachMenuOpen = false
-                        lobbyGalleryLauncher.launch(
-                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
-                        )
-                    },
-                    modifier = Modifier.testTag("lobby_attach_gallery"),
-                ) {
-                    Icon(Icons.Outlined.PhotoLibrary, contentDescription = null)
-                    Text("从相册选择", modifier = Modifier.padding(start = 6.dp))
-                }
+            onLaunchGallery = {
+                attachMenuOpen = false
+                lobbyGalleryLauncher.launch(
+                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
+                )
             },
+            testTagPrefix = "lobby",
         )
-    }
-}
-
-/** 气泡内的消息图片行：从规范资产解析本地 uri 后内嵌渲染（微信式）。 */
-@Composable
-private fun LobbyMessageImagesRow(
-    assetIds: List<String>,
-    imageIntake: LobbyMessageImageIntake,
-) {
-    val uris by produceState<Map<String, String?>>(emptyMap(), assetIds, imageIntake) {
-        val resolved = buildMap {
-            for (assetId in assetIds) {
-                put(assetId, imageIntake.resolveImageUri(assetId))
-            }
-        }
-        value = resolved
-    }
-    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-        assetIds.forEachIndexed { index, assetId ->
-            val uri = uris[assetId]
-            if (uri != null) {
-                BoundedLocalImage(
-                    imageUri = uri,
-                    contentDescription = "消息图片 ${index + 1}",
-                    expanded = false,
-                    collapsedMaxHeight = 140.dp,
-                    modifier = Modifier
-                        .size(width = 120.dp, height = 120.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .testTag("lobby_message_image_$index"),
-                )
-            } else {
-                Text(
-                    text = "图片暂时打不开",
-                    color = InkSecondary,
-                    style = MaterialTheme.typography.labelSmall,
-                )
-            }
-        }
-    }
-}
-
-/** 输入框上方的附件预览行（微信式）：缩略图 + 删除角标。 */
-@Composable
-private fun PendingImagesRow(
-    images: List<PendingLobbyImage>,
-    onRemove: (Int) -> Unit,
-) {
-    androidx.compose.foundation.lazy.LazyRow(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = SmartDimens.ContentHorizontalPadding, vertical = 4.dp)
-            .testTag("lobby_pending_images"),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        items(images.size) { index ->
-            Box {
-                BoundedLocalImage(
-                    imageUri = images[index].localUri,
-                    contentDescription = "待发送图片 ${index + 1}",
-                    expanded = false,
-                    collapsedMaxHeight = 72.dp,
-                    modifier = Modifier
-                        .size(width = 72.dp, height = 72.dp)
-                        .clip(RoundedCornerShape(10.dp)),
-                )
-                Surface(
-                    color = Paper,
-                    shape = RoundedCornerShape(10.dp),
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(2.dp)
-                        .clickable { onRemove(index) }
-                        .testTag("lobby_pending_image_remove_$index"),
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Close,
-                        contentDescription = "移除这张图片",
-                        tint = InkSecondary,
-                        modifier = Modifier
-                            .size(20.dp)
-                            .padding(2.dp),
-                    )
-                }
-            }
-        }
     }
 }
 
@@ -915,9 +808,10 @@ private fun TutorLobbyMessageItem(
             ) {
                 Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 9.dp)) {
                     if (message.sourceImageAssetIds.isNotEmpty() && imageIntake != null) {
-                        LobbyMessageImagesRow(
+                        MessageImagesRow(
                             assetIds = message.sourceImageAssetIds,
                             imageIntake = imageIntake,
+                            testTagPrefix = "lobby",
                         )
                     }
                     Text(

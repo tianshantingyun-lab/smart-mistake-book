@@ -26,9 +26,10 @@ data class ModelTaskContract(
         require(kind == ModelTaskKind.TUTOR_VISUAL_GENERATE ||
             kind == ModelTaskKind.TUTOR_VISUAL_REVIEW ||
             kind == ModelTaskKind.TUTOR_LOBBY ||
+            kind == ModelTaskKind.TUTOR_RESPOND ||
             assetPolicy != ModelTaskAssetPolicy.CONTEXTUAL
         ) {
-            "Only visual tutor tasks and image-bearing lobby messages may authorize assets conditionally"
+            "Only tutor tasks that may carry a student-supplied image authorize assets conditionally"
         }
         require(promptPolicyVersion == ModelPromptPolicyVersions.currentFor(kind)) {
             "Contract prompt policy is not the current policy for ${kind.name}"
@@ -112,7 +113,8 @@ object ModelTaskContractRegistry {
             kind = ModelTaskKind.TUTOR_RESPOND,
             egressPurpose = ModelEgressPurpose.TUTORING,
             promptPolicyVersion = ModelPromptPolicyVersions.TUTOR_RESPOND,
-            assetPolicy = ModelTaskAssetPolicy.FORBIDDEN,
+            // 学生可以在讲题会话里附加自己的图片（如手写过程），所以资产是可选的而非禁止。
+            assetPolicy = ModelTaskAssetPolicy.CONTEXTUAL,
             requiredDisclosures = ModelEgressManifest.TUTOR_RESPOND_DISCLOSURE,
             prohibitedDisclosures = ModelEgressManifest.TUTOR_RESPOND_PROHIBITED_DATA,
         ),

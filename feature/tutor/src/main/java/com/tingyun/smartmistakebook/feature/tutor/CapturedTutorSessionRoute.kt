@@ -57,6 +57,7 @@ import com.tingyun.smartmistakebook.core.domain.CaptureWorkflowRepository
 import com.tingyun.smartmistakebook.core.domain.CreateTutorConversationCommand
 import com.tingyun.smartmistakebook.core.domain.ConfirmedTutorSession
 import com.tingyun.smartmistakebook.core.domain.EndTutorSessionWithoutSaveRequest
+import com.tingyun.smartmistakebook.core.domain.LobbyMessageImageIntake
 import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
 import com.tingyun.smartmistakebook.core.domain.RecordTutorChoiceCommand
 import com.tingyun.smartmistakebook.core.domain.RecordTutorMoveCommand
@@ -131,6 +132,8 @@ fun CapturedTutorSessionRoute(
     profile: StudyProfileOverview,
     catalogEntries: List<StudyCatalogEntry> = emptyList(),
     attachedImageResolver: (suspend (AttachedImage) -> String?)? = null,
+    /** 学生消息附图的资产读取器；null 时会话页不提供附图入口。 */
+    imageIntake: LobbyMessageImageIntake? = null,
     onOpenModelSettings: () -> Unit,
     onOpenMistakeNotebook: () -> Unit = {},
     onOpenProfile: () -> Unit = {},
@@ -179,6 +182,7 @@ fun CapturedTutorSessionRoute(
         catalogEntries = catalogEntries,
         longTermWritesBlocked = longTermWritesBlocked,
         attachedImageResolver = attachedImageResolver,
+        imageIntake = imageIntake,
         onLongTermWritesBlocked = viewModel::markLongTermWritesBlocked,
         onOpenModelSettings = onOpenModelSettings,
         onOpenMistakeNotebook = onOpenMistakeNotebook,
@@ -239,6 +243,7 @@ private fun CapturedTutorSessionContent(
     catalogEntries: List<StudyCatalogEntry>,
     longTermWritesBlocked: Boolean,
     attachedImageResolver: (suspend (AttachedImage) -> String?)? = null,
+    imageIntake: LobbyMessageImageIntake? = null,
     onLongTermWritesBlocked: () -> Unit,
     onOpenModelSettings: () -> Unit,
     onOpenMistakeNotebook: () -> Unit,
@@ -259,6 +264,7 @@ private fun CapturedTutorSessionContent(
                     repository.readTutorVisualSourceAssets(state.session.sessionId)
                 },
                 attachedImageResolver = attachedImageResolver,
+                imageIntake = imageIntake,
                 modelTasks = modelTasks,
                 interactions = interactions,
                 conversations = conversations,
@@ -361,6 +367,7 @@ internal fun ReadyCapturedSession(
         emptyList()
     },
     attachedImageResolver: (suspend (AttachedImage) -> String?)? = null,
+    imageIntake: LobbyMessageImageIntake? = null,
     modelTasks: ModelTaskRepository,
     interactions: TutorInteractionRepository,
     /** 学生文字落库用；缺省 null 时该界面不落库（门控按空语料 fail-closed）。 */
@@ -383,6 +390,7 @@ internal fun ReadyCapturedSession(
         modelTasks = modelTasks,
         visualSourceAssetsReader = visualSourceAssetsReader,
         attachedImageResolver = attachedImageResolver,
+        imageIntake = imageIntake,
         interactions = interactions,
         conversations = conversations,
         catalogEntries = catalogEntries,

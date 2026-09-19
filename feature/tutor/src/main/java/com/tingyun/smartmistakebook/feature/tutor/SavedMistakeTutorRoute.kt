@@ -25,6 +25,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tingyun.smartmistakebook.core.domain.MistakeDetailRepository
+import com.tingyun.smartmistakebook.core.domain.LobbyMessageImageIntake
 import com.tingyun.smartmistakebook.core.domain.MistakeDetailState
 import com.tingyun.smartmistakebook.core.domain.ConfirmedMistakeOrganization
 import com.tingyun.smartmistakebook.core.domain.MistakeOrganizationRepository
@@ -71,6 +72,8 @@ fun SavedMistakeTutorRoute(
     catalogEntries: List<StudyCatalogEntry> = emptyList(),
     profile: StudyProfileOverview,
     learningMemory: StudyQuestionMemory? = null,
+    /** 学生消息附图的资产读取器；null 时会话页不提供附图入口。 */
+    imageIntake: LobbyMessageImageIntake? = null,
     onOpenMistakeNotebook: () -> Unit = {},
     onOpenProfile: () -> Unit = {},
     onOpenModelSettings: () -> Unit,
@@ -138,6 +141,7 @@ fun SavedMistakeTutorRoute(
                 catalogEntries = catalogEntries,
                 profile = profile,
                 learningMemory = learningMemory,
+                imageIntake = imageIntake,
                 relatedKnowledgeNodeIds = requireNotNull(organization).knowledgeNodeIds,
                 reviewedTeachingReferences = teachingReferences,
                 onOpenMistakeNotebook = onOpenMistakeNotebook,
@@ -195,6 +199,7 @@ internal fun SavedMistakeTutorContent(
     catalogEntries: List<StudyCatalogEntry> = emptyList(),
     profile: StudyProfileOverview,
     learningMemory: StudyQuestionMemory?,
+    imageIntake: LobbyMessageImageIntake? = null,
     relatedKnowledgeNodeIds: Set<String> = emptySet(),
     reviewedTeachingReferences: List<TutorTeachingReference> = emptyList(),
     onOpenMistakeNotebook: () -> Unit = {},
@@ -315,6 +320,7 @@ internal fun SavedMistakeTutorContent(
         interactions = interactions,
         conversations = conversations,
         catalogEntries = catalogEntries,
+        imageIntake = imageIntake,
         onOpenMistakeNotebook = onOpenMistakeNotebook,
         onOpenProfile = onOpenProfile,
         onOpenModelSettings = onOpenModelSettings,

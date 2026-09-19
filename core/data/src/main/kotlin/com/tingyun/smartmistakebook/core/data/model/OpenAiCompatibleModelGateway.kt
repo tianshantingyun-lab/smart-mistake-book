@@ -601,6 +601,8 @@ private fun ModelGatewayExecution.requireImageRequestFits(
         is TutorVisualGenerateInput -> input.sourceAssets.sortedBy { it.pageIndex }.map { it.assetId }
         is TutorVisualReviewInput -> input.sourceAssets.sortedBy { it.pageIndex }.map { it.assetId }
         is TutorLobbyInput -> input.sourceImageAssetRefs.sortedBy { it.pageIndex }.map { it.assetId }
+        // 学生随本条消息附带的图片，按选择顺序出网（历史轮次从不带图）。
+        is TutorRespondInput -> input.studentImageAssetRefs
         else -> emptyList()
     }
     if (assetIds.isEmpty()) return emptyList()

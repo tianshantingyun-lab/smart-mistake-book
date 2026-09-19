@@ -53,6 +53,25 @@ internal fun tutorRespondValidationError(): AppFailure = appFailure(
     dataPreserved = true,
 )
 
+/**
+ * 当前模型看不了图：去掉图片或换模型，不给重试——重试会带上同一张图，必然再失败一次。
+ */
+internal fun tutorRespondImageUnsupportedError(): AppFailure = appFailure(
+    code = AppFailureCode.PROVIDER_CAPABILITY_MISMATCH,
+    title = "当前模型不支持看图",
+    message = "去掉图片或更换支持图片的模型后再发送。",
+    dataPreserved = true,
+    primaryAction = ActionType.OPEN_SETTINGS,
+)
+
+/** 图片没能进资产库：说清楚是图片的问题，而不是谎称网络故障。 */
+internal fun tutorRespondImageIntakeError(): AppFailure = appFailure(
+    code = AppFailureCode.VALIDATION_FAILED,
+    title = "这张图片没有准备好",
+    message = "图片暂时读不出来，换一张或去掉后再发送。",
+    dataPreserved = true,
+)
+
 internal fun tutorRespondNetworkError(): AppFailure = appFailure(
     code = AppFailureCode.NETWORK_UNAVAILABLE,
     title = TUTOR_RESPOND_NETWORK_TITLE,
@@ -163,12 +182,16 @@ internal class TutorRespondCommands(
         message: String,
         requestedMove: TutorMoveType? = null,
         clearDraftOnPersist: Boolean = false,
+        studentImageAssetIds: List<String> = emptyList(),
     ) {
+        // 纯图消息给一句可读的兜底文本：消息体不能为空，且落库、指纹与派发必须用同一份文本，
+        // 否则"学生看到的"和"模型读到的"会不是同一条消息。
+        val effectiveMessage = message.ifBlank { TUTOR_RESPOND_IMAGE_ONLY_MESSAGE }
         if (
             !tutorRespondExecuteCanStart(
                 hasPlanOutput = sink.currentPlanOutput() != null,
                 providerCanExecute = tutorRespondProviderCanExecute(sink.currentProvider()),
-                messageBlank = message.isBlank(),
+                messageBlank = effectiveMessage.isBlank(),
                 chatSending = sink.chatSending(),
             )
         ) {
@@ -201,10 +224,11 @@ internal class TutorRespondCommands(
             responseOrdinal = responseOrdinal,
             cycleOrdinal = currentInput.cycleOrdinal,
             turnOrdinal = currentInput.turnOrdinal,
-            studentMessage = message,
+            studentMessage = effectiveMessage,
             visibleTutorContextMarkdown = visibleContext,
             priorMessages = priorMessages,
             requestedMove = requestedMove,
+            studentImageAssetIds = studentImageAssetIds,
             attempt = attempt,
         )
         val occurredAt = maxOf(
@@ -221,10 +245,11 @@ internal class TutorRespondCommands(
                 responseOrdinal = responseOrdinal,
                 cycleOrdinal = currentInput.cycleOrdinal,
                 turnOrdinal = currentInput.turnOrdinal,
-                studentMessage = message,
+                studentMessage = effectiveMessage,
                 visibleTutorContextMarkdown = visibleContext,
                 priorMessages = priorMessages,
                 requestedMove = requestedMove,
+                studentImageAssetIds = studentImageAssetIds,
             )
         } catch (_: IllegalArgumentException) {
             sink.setChatStartError(tutorRespondValidationError())
@@ -262,6 +287,7 @@ internal class TutorRespondCommands(
                     bodyMarkdown = message,
                     logicalOperationId = request.requestId,
                     createdAtEpochMillis = request.occurredAtEpochMillis,
+                    sourceImageAssetIds = input.studentImageAssetRefs,
                 ),
             )
         }

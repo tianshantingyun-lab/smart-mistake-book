@@ -31,6 +31,20 @@ class ModelTaskContractRegistryTest {
     }
 
     @Test
+    fun tutorRespondCarriesStudentImagesConditionally() {
+        val contract = ModelTaskContractRegistry.require(ModelTaskKind.TUTOR_RESPOND)
+
+        // 学生可以在讲题会话里附上自己的图片（如手写过程），所以资产是条件性授权；
+        // 默认（无图）仍是纯文本最小披露——图片不能悄悄混进必需披露集合。
+        assertEquals(ModelTaskAssetPolicy.CONTEXTUAL, contract.assetPolicy)
+        assertEquals(ModelEgressPurpose.TUTORING, contract.egressPurpose)
+        assertEquals(ModelEgressManifest.TUTOR_RESPOND_DISCLOSURE, contract.requiredDisclosures)
+        assertFalse(
+            ModelEgressDataClass.SANITIZED_IMAGE_BYTES in contract.requiredDisclosures,
+        )
+    }
+
+    @Test
     fun captureContractsRequireExactImageScope() {
         listOf(ModelTaskKind.CAPTURE_ASSESS, ModelTaskKind.CAPTURE_PARSE).forEach { kind ->
             val contract = ModelTaskContractRegistry.require(kind)

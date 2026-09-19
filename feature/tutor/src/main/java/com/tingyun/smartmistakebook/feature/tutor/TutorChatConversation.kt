@@ -22,6 +22,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.automirrored.outlined.Send
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
@@ -45,6 +46,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import com.tingyun.smartmistakebook.core.domain.LobbyMessageImageIntake
 import com.tingyun.smartmistakebook.core.domain.TutorAnswerExposureKey
 import com.tingyun.smartmistakebook.core.domain.TutorHistoryBudget
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
@@ -234,6 +236,8 @@ internal fun TutorChatExchange(
     onOpenVisualOriginal: () -> Unit = {},
     onReportVisualIncorrect: (String) -> Unit = {},
     attachedImageResolver: (suspend (AttachedImage) -> String?)? = null,
+    /** 学生消息附图的规范资产读取器；为 null 时不渲染气泡里的图片。 */
+    studentImageIntake: LobbyMessageImageIntake? = null,
     assistantBottomModifier: Modifier = Modifier,
     modifier: Modifier = Modifier,
 ) {
@@ -245,6 +249,8 @@ internal fun TutorChatExchange(
         TutorStudentMessageBubble(
             message = input.studentMessage,
             modifier = Modifier.testTag("tutor_chat_user_${input.responseOrdinal}"),
+            attachedAssetIds = input.studentImageAssetRefs,
+            imageIntake = studentImageIntake,
         )
         TutorAssistantReplyBubble(
             task = task,
@@ -267,7 +273,12 @@ internal fun TutorChatExchange(
 }
 
 @Composable
-private fun TutorStudentMessageBubble(message: String, modifier: Modifier = Modifier) {
+private fun TutorStudentMessageBubble(
+    message: String,
+    modifier: Modifier = Modifier,
+    attachedAssetIds: List<String> = emptyList(),
+    imageIntake: LobbyMessageImageIntake? = null,
+) {
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.End,
@@ -277,12 +288,23 @@ private fun TutorStudentMessageBubble(message: String, modifier: Modifier = Modi
             color = JadeSoft.copy(alpha = 0.72f),
             shape = RoundedCornerShape(14.dp, 14.dp, 4.dp, 14.dp),
         ) {
-            Text(
-                text = message,
-                modifier = Modifier.padding(horizontal = 14.dp, vertical = 11.dp),
-                color = Ink,
-                style = MaterialTheme.typography.bodyMedium,
-            )
+            Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 11.dp)) {
+                if (attachedAssetIds.isNotEmpty() && imageIntake != null) {
+                    MessageImagesRow(
+                        assetIds = attachedAssetIds,
+                        imageIntake = imageIntake,
+                        testTagPrefix = "session",
+                    )
+                }
+                Text(
+                    text = message,
+                    modifier = Modifier.padding(
+                        top = if (attachedAssetIds.isEmpty()) 0.dp else 8.dp,
+                    ),
+                    color = Ink,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
         }
     }
 }
@@ -668,49 +690,74 @@ internal fun TutorChatComposer(
     onValueChange: (String) -> Unit,
     onSend: () -> Unit,
     modifier: Modifier = Modifier,
+    /** 非 null 时显示左侧“+”按钮并调用它打开添加菜单（拍照 / 相册二选一）。 */
+    onOpenAttachMenu: (() -> Unit)? = null,
+    /** 输入框上方的附件预览行（微信式，可选）。 */
+    attachmentPreview: (@Composable () -> Unit)? = null,
+    /** 已选好待发送的附件数：纯图消息也能发出（正文由调用方补一句兜底文本）。 */
+    attachmentCount: Int = 0,
 ) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = { changed ->
-            onValueChange(changed.take(TutorRespondInput.MAX_STUDENT_MESSAGE_CHARS))
-        },
-        modifier = modifier
-            .fillMaxWidth()
-            .testTag("tutor_chat_composer"),
-        enabled = enabled,
-        placeholder = { Text("问这道题，或说出你卡住的步骤") },
-        minLines = 1,
-        maxLines = 4,
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
-        keyboardActions = KeyboardActions(
-            onSend = { if (enabled && value.isNotBlank() && !sending) onSend() },
-        ),
-        trailingIcon = {
-            IconButton(
-                onClick = onSend,
-                enabled = enabled && value.isNotBlank() && !sending,
-                modifier = Modifier.testTag("tutor_chat_send"),
-            ) {
-                if (sending) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(20.dp),
-                        color = JadeActive,
-                        strokeWidth = 2.dp,
-                    )
-                } else {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.Send,
-                        contentDescription = "发送这条消息",
-                        tint = JadeActive,
-                    )
+    val canSend = enabled && !sending && (value.isNotBlank() || attachmentCount > 0)
+    Column(modifier = modifier.fillMaxWidth()) {
+        attachmentPreview?.invoke()
+        OutlinedTextField(
+            value = value,
+            onValueChange = { changed ->
+                onValueChange(changed.take(TutorRespondInput.MAX_STUDENT_MESSAGE_CHARS))
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("tutor_chat_composer"),
+            enabled = enabled,
+            placeholder = { Text("问这道题，或说出你卡住的步骤") },
+            minLines = 1,
+            maxLines = 4,
+            leadingIcon = onOpenAttachMenu?.let { openAttachMenu ->
+                {
+                    IconButton(
+                        onClick = openAttachMenu,
+                        enabled = enabled,
+                        modifier = Modifier.testTag("tutor_chat_attach"),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Add,
+                            contentDescription = "添加图片",
+                            tint = JadeActive,
+                        )
+                    }
                 }
-            }
-        },
-        supportingText = if (value.length >= 1_000) {
-            { Text("${value.length}/${TutorRespondInput.MAX_STUDENT_MESSAGE_CHARS}") }
-        } else {
-            null
-        },
-        shape = RoundedCornerShape(14.dp),
-    )
+            },
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
+            keyboardActions = KeyboardActions(
+                onSend = { if (canSend) onSend() },
+            ),
+            trailingIcon = {
+                IconButton(
+                    onClick = onSend,
+                    enabled = canSend,
+                    modifier = Modifier.testTag("tutor_chat_send"),
+                ) {
+                    if (sending) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            color = JadeActive,
+                            strokeWidth = 2.dp,
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.Send,
+                            contentDescription = "发送这条消息",
+                            tint = JadeActive,
+                        )
+                    }
+                }
+            },
+            supportingText = if (value.length >= 1_000) {
+                { Text("${value.length}/${TutorRespondInput.MAX_STUDENT_MESSAGE_CHARS}") }
+            } else {
+                null
+            },
+            shape = RoundedCornerShape(14.dp),
+        )
+    }
 }

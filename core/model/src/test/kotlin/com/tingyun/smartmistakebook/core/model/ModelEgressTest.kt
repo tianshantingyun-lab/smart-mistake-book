@@ -352,6 +352,65 @@ class ModelEgressTest {
             ModelEgressManifest.LEGACY_TUTOR_PLAN_DISCLOSURE,
     )
 
+    /**
+     * 学生可以在讲题会话里附上自己的图片，而 Respond 走的是"已配置模型 = 全局同意"这条通道，
+     * 没有逐次披露清单兜底。所以图片能否出网必须由图片能力门自己把关：文本模型既拿不到
+     * 全局同意的放行，也没有 manifest 可依，只能失败关闭。
+     */
+    @Test
+    fun anImageBearingRespondRoundNeedsAnImageCapableProvider() {
+        val request = ModelTaskRequest(
+            requestId = "tutor-respond:message-images",
+            input = TutorRespondInput(
+                sessionId = "tutor-session-1",
+                draftRevisionNumber = 2,
+                subject = "MATH",
+                questionDocument = confirmedQuestion(),
+                relevantLearningEvidence = emptyList(),
+                projectionIsCurrent = true,
+                responseOrdinal = 1,
+                studentMessage = "看看我写的这一步对不对。",
+                studentImageAssetRefs = listOf("asset-1"),
+            ),
+            occurredAtEpochMillis = 100,
+            agentConsentGranted = true,
+        )
+
+        val denied = runCatching {
+            ModelEgressPolicy.authorize(
+                request = request,
+                provider = tutorProvider(ModelTaskKind.TUTOR_RESPOND),
+                nowEpochMillis = 100,
+            )
+        }.exceptionOrNull()
+        assertTrue(
+            "A text-only provider must not receive a student image: $denied",
+            denied is ModelEgressAuthorizationException,
+        )
+
+        val authorized = ModelEgressPolicy.authorize(
+            request = request,
+            provider = tutorProvider(ModelTaskKind.TUTOR_RESPOND).copy(supportsImageInput = true),
+            nowEpochMillis = 100,
+        )
+        assertEquals(ModelExecutionPermit.ProviderConsented, authorized.permit)
+    }
+
+    /** 纯文本的 Respond 不受图片能力限制：它本来就不带图片字节。 */
+    @Test
+    fun aTextOnlyRespondRoundStillRunsOnATextOnlyProvider() {
+        val authorized = ModelEgressPolicy.authorize(
+            request = tutorRespondRequest(tutorRespondManifest()).copy(
+                egressManifest = null,
+                agentConsentGranted = true,
+            ),
+            provider = tutorProvider(ModelTaskKind.TUTOR_RESPOND),
+            nowEpochMillis = 100,
+        )
+
+        assertEquals(ModelExecutionPermit.ProviderConsented, authorized.permit)
+    }
+
     private fun currentTutorPlanManifest() = ModelEgressManifest(
         authorizationId = "tutor-plan-current-approval",
         subjectId = "tutor-session-1",

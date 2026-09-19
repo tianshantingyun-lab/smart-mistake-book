@@ -355,7 +355,12 @@ data class TutorRespondInput(
     val visibleTutorContextMarkdown: String? = null,
     val priorMessages: List<TutorChatHistoryEntry> = emptyList(),
     val requestedMove: TutorMoveType? = null,
-    val studentImageAssetRefs: List<String> = emptyList(),  // 新增：当前消息的图片
+    /**
+     * 当前消息附带的规范资产 id（按选择顺序，最多
+     * [TutorChatHistoryEntry.MAX_IMAGE_ASSETS_PER_MESSAGE] 张）。空表示纯文字。
+     * 图片只随本条消息出网，历史轮次不带图。
+     */
+    val studentImageAssetRefs: List<String> = emptyList(),
     /** Non-empty enables the tool protocol for this dispatch (spec §3.1). */
     val toolDeclarations: List<TutorToolName> = emptyList(),
     /** Results of prior tool rounds; round 1 dispatch always leaves this empty. */
@@ -369,6 +374,14 @@ data class TutorRespondInput(
 
     override val subjectId: String
         get() = sessionId
+
+    /**
+     * 消息带图时要求 provider 具备图片输入能力。Respond 属于 agent-eligible，
+     * 所以这一位会同时驱动出网许可判定（`requiresImageInput`）与图片读取计划；
+     * capture 题图走的正是同一条全局同意通道，因此不需要逐次披露清单。
+     */
+    override val requestsImageBytes: Boolean
+        get() = studentImageAssetRefs.isNotEmpty()
 
     init {
         sessionId.requireSafeModelText("Tutor response session id", ModelTaskRequest.MAX_ID_CHARS, false)

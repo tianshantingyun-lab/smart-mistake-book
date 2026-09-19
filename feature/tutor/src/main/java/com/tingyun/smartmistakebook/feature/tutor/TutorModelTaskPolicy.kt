@@ -336,6 +336,7 @@ internal fun tutorRespondRequestId(
     visibleTutorContextMarkdown: String?,
     priorMessages: List<TutorChatHistoryEntry>,
     requestedMove: TutorMoveType? = null,
+    studentImageAssetIds: List<String> = emptyList(),
     attempt: Int,
 ): String {
     require(responseOrdinal > 0)
@@ -353,6 +354,10 @@ internal fun tutorRespondRequestId(
             appendLengthPrefixed(studentMessage)
             appendLengthPrefixed(visibleTutorContextMarkdown)
             appendLengthPrefixed(requestedMove?.name)
+            // 附图是消息的一部分：换图必须换标识，否则同文本重发会命中旧请求、
+            // 把上一次的图片结果当成这一次的。资产 id 本身按内容寻址（asset-<sha256 前缀>），
+            // 所以 id 变了就等于内容变了，不需要再单独带哈希。
+            studentImageAssetIds.forEach { assetId -> appendLengthPrefixed(assetId) }
             priorMessages.forEach { message ->
                 appendLengthPrefixed(message.studentMessage)
                 appendLengthPrefixed(message.assistantMarkdown)
@@ -380,6 +385,8 @@ internal fun buildTutorRespondRequest(
     visibleTutorContextMarkdown: String?,
     priorMessages: List<TutorChatHistoryEntry>,
     requestedMove: TutorMoveType? = null,
+    /** 本条消息附带的规范资产 id（按选择顺序）；空表示纯文字。 */
+    studentImageAssetIds: List<String> = emptyList(),
 ): ModelTaskRequest {
     val input = TutorRespondInput(
         sessionId = question.sessionId,
@@ -401,6 +408,7 @@ internal fun buildTutorRespondRequest(
         visibleTutorContextMarkdown = visibleTutorContextMarkdown,
         priorMessages = priorMessages,
         requestedMove = requestedMove,
+        studentImageAssetRefs = studentImageAssetIds,
         toolDeclarations = listOf(
             TutorToolName.KNOWLEDGE_READ,
             TutorToolName.NOTEBOOK_READ,

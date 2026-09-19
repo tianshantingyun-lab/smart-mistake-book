@@ -93,6 +93,18 @@ import com.tingyun.smartmistakebook.core.ui.SectionHeader
 import com.tingyun.smartmistakebook.core.ui.SafeMarkdownText
 import com.tingyun.smartmistakebook.core.ui.StructuredContentRenderer
 import com.tingyun.smartmistakebook.core.ui.studentSubjectLabel
+import androidx.compose.ui.platform.LocalContext
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.FileProvider
+import com.tingyun.smartmistakebook.core.domain.LobbyMessageImageIntake
+import com.tingyun.smartmistakebook.core.domain.MAX_TUTOR_MESSAGE_IMAGES
+import com.tingyun.smartmistakebook.feature.tutor.MessageAttachmentDialog
+import com.tingyun.smartmistakebook.feature.tutor.PendingMessageImage
+import com.tingyun.smartmistakebook.feature.tutor.PendingMessageImagesRow
+import com.tingyun.smartmistakebook.feature.tutor.tutorRespondImageIntakeError
+import com.tingyun.smartmistakebook.feature.tutor.tutorRespondImageUnsupportedError
+import java.io.File
 import java.util.UUID
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -126,6 +138,11 @@ internal fun TutorModelPanel(
     onOpenProfile: () -> Unit = {},
     onOpenVisualOriginal: () -> Unit = {},
     attachedImageResolver: (suspend (AttachedImage) -> String?)? = null,
+    /**
+     * 学生消息附图的读取器：既用于把选中的图片登记成规范资产，也用于在气泡里回显。
+     * null 时会话页不提供附图入口（例如没有可用的资产库）。
+     */
+    imageIntake: LobbyMessageImageIntake? = null,
     onOpenModelSettings: () -> Unit,
     conversationEnabled: Boolean = true,
     headerContent: @Composable () -> Unit = {},
@@ -158,6 +175,7 @@ internal fun TutorModelPanel(
     var provider by remember(question.sessionId) { mutableStateOf<ProviderCapabilitySnapshot?>(null) }
     var providerLoadFailed by remember(question.sessionId) { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+    val sessionContext = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val persistedTasks by remember(question.sessionId) {
         modelTasks.observeBySubject(question.sessionId, ModelTaskKind.TUTOR_PLAN)
@@ -205,6 +223,13 @@ internal fun TutorModelPanel(
     var chatStartError by remember(question.sessionId) {
         mutableStateOf<AppFailure?>(null)
     }
+    // 待发送的附图：与大厅同一套（选择 → 预览 → 发送时登记成规范资产）。
+    var pendingImages by remember(question.sessionId) {
+        mutableStateOf<List<PendingMessageImage>>(emptyList())
+    }
+    var attachMenuOpen by remember(question.sessionId) { mutableStateOf(false) }
+    var pendingCameraImageUri by remember(question.sessionId) { mutableStateOf<String?>(null) }
+    val sessionImageEnabled = imageIntake != null
     var reportedVisualSceneIds by rememberSaveable(
         question.sessionId,
         question.revisionNumber,
@@ -577,12 +602,89 @@ internal fun TutorModelPanel(
         message: String,
         requestedMove: TutorMoveType? = null,
         clearDraftOnPersist: Boolean = false,
+        studentImageAssetIds: List<String> = emptyList(),
     ) {
         respondCommands.execute(
             message = message,
             requestedMove = requestedMove,
             clearDraftOnPersist = clearDraftOnPersist,
+            studentImageAssetIds = studentImageAssetIds,
         )
+    }
+
+    /**
+     * 发一条学生会话消息，带上已选好的附图。
+     *
+     * 附图在**发送时**才登记成规范资产（选中时只是本地 uri），这与大厅同口径：登记要读图、
+     * 解码、算哈希，不该在选图那一刻阻塞界面；而一旦登记失败就如实说图片读不出来，
+     * 不把消息发出去——否则模型会收到一条没有图的"看图"请求。
+     */
+    fun submitTutorResponse(message: String) {
+        val selected = pendingImages
+        val intake = imageIntake
+        if (selected.isEmpty() || intake == null) {
+            executeTutorResponse(message, clearDraftOnPersist = true)
+            return
+        }
+        if (provider?.supportsImageInput != true) {
+            chatStartError = tutorRespondImageUnsupportedError()
+            return
+        }
+        scope.launch {
+            val assetIds = runCatching {
+                selected
+                    .map { pending ->
+                        intake.registerImage(pending.localUri, System.currentTimeMillis())
+                    }
+                    // 资产库按内容寻址：同一张照片被选两次会得到同一个 assetId，而请求契约
+                    // 要求互不重复，所以按 assetId 去重而不是让重复选择顶掉整条消息。
+                    .distinctBy { image -> image.assetId }
+                    .map { image -> image.assetId }
+            }.getOrElse { failure ->
+                android.util.Log.w("TutorSession", "Attached image could not be registered", failure)
+                chatStartError = tutorRespondImageIntakeError()
+                return@launch
+            }
+            pendingImages = emptyList()
+            executeTutorResponse(
+                message = message,
+                clearDraftOnPersist = true,
+                studentImageAssetIds = assetIds,
+            )
+        }
+    }
+
+    val sessionCameraLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.TakePicture(),
+    ) { saved ->
+        val uri = pendingCameraImageUri
+        pendingCameraImageUri = null
+        if (saved && uri != null) {
+            pendingImages = (pendingImages + PendingMessageImage(uri))
+                .take(MAX_TUTOR_MESSAGE_IMAGES)
+        }
+    }
+    val sessionGalleryLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.PickMultipleVisualMedia(MAX_TUTOR_MESSAGE_IMAGES),
+    ) { selectedUris ->
+        val room = MAX_TUTOR_MESSAGE_IMAGES - pendingImages.size
+        pendingImages = (pendingImages + selectedUris.take(room).map { uri ->
+            PendingMessageImage(uri.toString())
+        }).take(MAX_TUTOR_MESSAGE_IMAGES)
+    }
+
+    fun launchSessionCamera() {
+        val directory = File(sessionContext.cacheDir, "captured_images").apply {
+            if (!isDirectory) mkdirs()
+        }
+        val file = File(directory, "session-${UUID.randomUUID()}.jpg")
+        val uri = FileProvider.getUriForFile(
+            sessionContext,
+            "${sessionContext.packageName}.capture.fileprovider",
+            file,
+        )
+        pendingCameraImageUri = uri.toString()
+        sessionCameraLauncher.launch(uri)
     }
 
     fun retryTutorResponse(task: ModelTaskSnapshot) {
@@ -729,12 +831,26 @@ internal fun TutorModelPanel(
                     chatDraft = it
                     chatStartError = null
                 },
-                onSend = {
-                    executeTutorResponse(
-                        message = chatDraft,
-                        clearDraftOnPersist = true,
-                    )
+                onSend = { submitTutorResponse(chatDraft) },
+                onOpenAttachMenu = if (sessionImageEnabled) {
+                    { attachMenuOpen = true }
+                } else {
+                    null
                 },
+                attachmentPreview = if (pendingImages.isNotEmpty()) {
+                    {
+                        PendingMessageImagesRow(
+                            images = pendingImages,
+                            onRemove = { index ->
+                                pendingImages = pendingImages.filterIndexed { i, _ -> i != index }
+                            },
+                            testTagPrefix = "session",
+                        )
+                    }
+                } else {
+                    null
+                },
+                attachmentCount = pendingImages.size,
             )
             chatStartError?.let { message ->
                 Text(
@@ -744,6 +860,24 @@ internal fun TutorModelPanel(
                     modifier = Modifier
                         .padding(top = 6.dp)
                         .testTag("tutor_chat_start_error"),
+                )
+            }
+            if (attachMenuOpen) {
+                MessageAttachmentDialog(
+                    onDismiss = { attachMenuOpen = false },
+                    onLaunchCamera = {
+                        attachMenuOpen = false
+                        launchSessionCamera()
+                    },
+                    onLaunchGallery = {
+                        attachMenuOpen = false
+                        sessionGalleryLauncher.launch(
+                            androidx.activity.result.PickVisualMediaRequest(
+                                ActivityResultContracts.PickVisualMedia.ImageOnly,
+                            ),
+                        )
+                    },
+                    testTagPrefix = "session",
                 )
             }
         }
@@ -906,6 +1040,7 @@ internal fun TutorModelPanel(
                         onOpenModelSettings = onOpenModelSettings,
                         onOpenVisualOriginal = onOpenVisualOriginal,
                         attachedImageResolver = attachedImageResolver,
+                        studentImageIntake = imageIntake,
                         onReportVisualIncorrect = ::reportVisualIncorrect,
                         onMove = { move ->
                             executeTutorResponse(

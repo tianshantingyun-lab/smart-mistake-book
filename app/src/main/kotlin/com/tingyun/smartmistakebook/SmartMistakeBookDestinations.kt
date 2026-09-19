@@ -335,6 +335,8 @@ internal fun SavedMistakeTutorDestination(
             // 学生文字要落进 tutor_message，写侧门控才能逐字核对模型引文（纯文字作答同理）。
             conversations = application.tutorConversationRepository,
             catalogEntries = experience.catalog,
+            // 会话里也能像大厅一样给学生消息附图（例如自己的手写过程）。
+            imageIntake = application.lobbyMessageImageIntake,
             onOpenMistakeNotebook = {
                 navController.navigate(Routes.Library) { launchSingleTop = true }
             },

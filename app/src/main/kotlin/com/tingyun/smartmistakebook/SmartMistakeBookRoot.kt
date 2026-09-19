@@ -747,6 +747,8 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     onOpenMistakeNotebook = {
                         navController.navigate(Routes.Library) { launchSingleTop = true }
                     },
+                    // 会话里也能像大厅一样给学生消息附图（例如自己的手写过程）。
+                    imageIntake = application.lobbyMessageImageIntake,
                     onOpenProfile = {
                         navController.navigate(Routes.Profile) { launchSingleTop = true }
                     },

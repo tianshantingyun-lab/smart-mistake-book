@@ -579,6 +579,77 @@ class TutorModelTaskPolicyTest {
         assertTrue(request.egressManifest == null)
     }
 
+    /**
+     * 换图必须换请求标识：同一条文本重发时若命中上一个请求，学生会看到"上一次那张图"的回复，
+     * 而这次附的图根本没被看过。
+     */
+    @Test
+    fun responseRequestIdentityChangesWhenTheAttachedImageChanges() {
+        val question = session().toTutorQuestionContext()
+        val withoutImage = tutorRespondRequestId(
+            question = question,
+            provider = provider(),
+            responseOrdinal = 1,
+            cycleOrdinal = 1,
+            turnOrdinal = 1,
+            studentMessage = "看看我写的这一步。",
+            visibleTutorContextMarkdown = null,
+            priorMessages = emptyList(),
+            attempt = 0,
+        )
+        val withImage = tutorRespondRequestId(
+            question = question,
+            provider = provider(),
+            responseOrdinal = 1,
+            cycleOrdinal = 1,
+            turnOrdinal = 1,
+            studentMessage = "看看我写的这一步。",
+            visibleTutorContextMarkdown = null,
+            priorMessages = emptyList(),
+            studentImageAssetIds = listOf("asset-aaa"),
+            attempt = 0,
+        )
+        val withOtherImage = tutorRespondRequestId(
+            question = question,
+            provider = provider(),
+            responseOrdinal = 1,
+            cycleOrdinal = 1,
+            turnOrdinal = 1,
+            studentMessage = "看看我写的这一步。",
+            visibleTutorContextMarkdown = null,
+            priorMessages = emptyList(),
+            studentImageAssetIds = listOf("asset-bbb"),
+            attempt = 0,
+        )
+
+        assertFalse(withoutImage == withImage)
+        assertFalse(withImage == withOtherImage)
+    }
+
+    @Test
+    fun responseRequestCarriesTheAttachedImageIdsInSelectionOrder() {
+        val request = buildTutorRespondRequest(
+            question = session().toTutorQuestionContext(),
+            profile = StudyProfileOverview(),
+            provider = provider(),
+            requestId = "tutor-respond:images",
+            occurredAtEpochMillis = 10,
+            responseOrdinal = 1,
+            cycleOrdinal = 1,
+            turnOrdinal = 1,
+            studentMessage = "看看我写的这一步。",
+            visibleTutorContextMarkdown = null,
+            priorMessages = emptyList(),
+            studentImageAssetIds = listOf("asset-aaa", "asset-bbb"),
+        )
+
+        val input = request.input as TutorRespondInput
+        assertEquals(listOf("asset-aaa", "asset-bbb"), input.studentImageAssetRefs)
+        // 带图即申报需要图片能力；纯文本仍不申报，文本模型照常可用。
+        assertTrue(input.requestsImageBytes)
+        assertFalse((request.input as TutorRespondInput).copy(studentImageAssetRefs = emptyList()).requestsImageBytes)
+    }
+
     @Test
     fun responseRequestIdentityChangesWhenTheStudentMessageChanges() {
         val question = session().toTutorQuestionContext()

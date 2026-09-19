@@ -64,6 +64,12 @@ internal const val TUTOR_RESPOND_VALIDATION_MESSAGE = "这条消息包含暂时�
 internal const val TUTOR_RESPOND_NETWORK_TITLE = "这条消息还没有发出"
 internal const val TUTOR_RESPOND_NETWORK_MESSAGE = "这条消息还没有发出，请重试。"
 
+/**
+ * 纯图消息的兜底正文。消息体不能为空，而学生这次只发了图片；与大厅同一句话，
+ * 学生在两处看到的是同一种措辞。
+ */
+internal const val TUTOR_RESPOND_IMAGE_ONLY_MESSAGE = "请帮我看看这些图片。"
+
 internal fun tutorRespondProviderCanExecute(
     provider: ProviderCapabilitySnapshot?,
 ): Boolean = provider != null &&
