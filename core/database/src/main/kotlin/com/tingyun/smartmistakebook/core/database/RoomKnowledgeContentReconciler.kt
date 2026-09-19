@@ -88,9 +88,8 @@ internal class RoomKnowledgeContentReconciler(private val database: StudyDatabas
         )
         val materialsRetired = retireMaterials(
             existingMaterials = existingMaterials,
-            requestedMaterialIds =
-                command.materials.mapTo(hashSetOf(), KnowledgeTeachingMaterialRecord::materialId),
-            acceptedIds = materials.acceptedIds,
+            packMaterialIds = command.materials
+                .mapTo(hashSetOf(), KnowledgeTeachingMaterialRecord::materialId),
         )
 
         return KnowledgeContentUpdateResult(
@@ -171,20 +170,18 @@ internal class RoomKnowledgeContentReconciler(private val database: StudyDatabas
     ): NodePlan {
         val existingById = existingNodes.associateBy(KnowledgeNodeEntity::knowledgeNodeId)
         val byId = nodes.associateBy(KnowledgeNodeSeedRecord::knowledgeNodeId)
-        val upserts = mutableListOf<KnowledgeNodeSeedRecord>()
-        val skippedIds = mutableSetOf<String>()
-        var inserted = 0
-        var updated = 0
+        val accepted = linkedMapOf<String, KnowledgeNodeSeedRecord>()
+        val rejected = linkedMapOf<String, String>()
+
         for (node in nodes) {
             val problem = KnowledgeBaseImportContract.problemWith(node, byId)
             if (problem != null) {
-                skipped += "node:${node.knowledgeNodeId}: $problem"
-                skippedIds += node.knowledgeNodeId
+                rejected[node.knowledgeNodeId] = problem
                 continue
             }
             val existing = existingById[node.knowledgeNodeId]
             // 只升不降：库里已人工确认过的，调和不得把它改回包里的值。
-            val desired = if (
+            accepted[node.knowledgeNodeId] = if (
                 existing != null &&
                 existing.verificationStatus == KnowledgeNodeVerificationStatus.USER_CONFIRMED.name &&
                 node.verificationStatus != KnowledgeNodeVerificationStatus.USER_CONFIRMED.name
@@ -193,12 +190,80 @@ internal class RoomKnowledgeContentReconciler(private val database: StudyDatabas
             } else {
                 node
             }
-            when {
-                existing == null -> { inserted++; upserts += desired }
-                existing != desired.toEntity() -> { updated++; upserts += desired }
+        }
+
+        // **级联**：父级写不进去（被校验拒了，或父级本身没通过），子级也写不进去——
+        // 写进去会撞 `parent_knowledge_node_id` 的外键，整批崩掉。
+        // 这是"逐对象跳过"必须闭合的影响面：单看那一行没毛病，坏在它与父级的关系上。
+        // 迭代到不动点，因为跳过一层会牵动下一层。
+        var changed = true
+        while (changed) {
+            changed = false
+            for ((id, node) in accepted.toList()) {
+                val parentId = node.parentKnowledgeNodeId ?: continue
+                if (parentId in existingById || parentId in accepted) continue
+                accepted.remove(id)
+                rejected[id] = "父级 $parentId 不在库中且本轮未被接受"
+                changed = true
             }
         }
-        return NodePlan(upserts, inserted, updated, skippedIds)
+
+        rejected.forEach { (id, reason) -> skipped += "node:$id: $reason" }
+        val upserts = mutableListOf<KnowledgeNodeSeedRecord>()
+        var inserted = 0
+        var updated = 0
+        accepted.forEach { (id, node) ->
+            val existing = existingById[id]
+            when {
+                existing == null -> { inserted++; upserts += node }
+                existing != node.toEntity() -> { updated++; upserts += node }
+            }
+        }
+        // **按父级先序写出**。`knowledge_node.parent_knowledge_node_id` 是自引用外键（RESTRICT），
+        // 而 `@Upsert` 逐行插入、逐行检查——子级排在父级前面就会撞外键、整批崩。
+        //
+        // 不假定包里 topics 数组的顺序是对的：实测当前包里有 4 个 topic 的父级排在它**后面**
+        // （`MATH·综合` 在 `MATH` 之前等），而"数组顺序"既不是包契约的一部分、也没被任何门钉住。
+        // 由写入方负责这个顺序，等于让一个排版细节决定安装能否成功。
+        return NodePlan(
+            upserts = parentFirstOrder(accepted, existingById.keys),
+            inserted = inserted,
+            updated = updated,
+            skippedIds = rejected.keys.toSet(),
+        )
+    }
+
+    /**
+     * 把节点排成"父级一定在子级之前"。
+     *
+     * 迭代发出可发出者，直到没有进展——父级要么已在库里，要么本轮已发出。契约已排除
+     * 父子成环（`validateTopicHierarchyIsAcyclic`），而父级不在集合里的节点在级联阶段
+     * 已被剔除，所以循环必然把 accepted 清空。
+     */
+    private fun parentFirstOrder(
+        accepted: Map<String, KnowledgeNodeSeedRecord>,
+        existingIds: Set<String>,
+    ): List<KnowledgeNodeSeedRecord> {
+        val emitted = mutableSetOf<String>()
+        val out = mutableListOf<KnowledgeNodeSeedRecord>()
+        val pending = accepted.keys.toMutableSet()
+        var progressed = true
+        while (pending.isNotEmpty() && progressed) {
+            progressed = false
+            for (id in pending.toList()) {
+                val parentId = accepted.getValue(id).parentKnowledgeNodeId
+                if (parentId == null || parentId in existingIds || parentId in emitted) {
+                    out += accepted.getValue(id)
+                    emitted += id
+                    pending -= id
+                    progressed = true
+                }
+            }
+        }
+        check(pending.isEmpty()) {
+            "Knowledge nodes are not a forest; ${pending.size} node(s) never became writable"
+        }
+        return out
     }
 
     /** 包里有、库里没有 / 库里没有的都要退役；`retirements` 给出 1:1 取代目标（可能为 null）。 */
@@ -327,25 +392,26 @@ internal class RoomKnowledgeContentReconciler(private val database: StudyDatabas
     }
 
     /**
-     * 两批材料要退役：**移出包的**，以及**绑定全部失效的**。
+     * 退役两类材料：**移出包的**，以及**此刻已无绑定的**。
      *
-     * 后者是影响面闭合：目标节点退役或移出包之后，材料会剩 0 条绑定，而检索/讲题参考/复习题
-     * 全都要经过绑定表——0 绑定等于不可达。留着只会让统计虚高，并让"库里有多少材料"与
-     * "运行时能用到多少"永久对不上。
+     * 后者是影响面闭合里最容易漏的一格：`replaceMaterialBindings` 会把包内材料的绑定**整体替换**，
+     * 于是"绑定目标被丢弃"或"校验没过被跳过"的材料会剩 0 条绑定，而检索/讲题参考/复习题
+     * 全都要经过绑定表——0 绑定等于不可达。不退役它就会留一条 status=ACTIVE 却谁也到不了的
+     * 行，让"库里有多少材料"与"运行时能用到多少"永久对不上。
      */
     private suspend fun retireMaterials(
         existingMaterials: List<KnowledgeTeachingMaterialEntity>,
-        requestedMaterialIds: Set<String>,
-        acceptedIds: Set<String>,
+        packMaterialIds: Set<String>,
     ): Int {
         val dao = database.knowledgeTeachingMaterialDao()
-        val standing = existingMaterials
-            .mapTo(linkedSetOf(), KnowledgeTeachingMaterialEntity::materialId)
-            .apply { removeAll(requestedMaterialIds) }
+        val inDatabase = existingMaterials.mapTo(linkedSetOf(), KnowledgeTeachingMaterialEntity::materialId)
+        val standing = inDatabase.toMutableSet().apply { removeAll(packMaterialIds) }
         var retired = standing.count { dao.retireMaterial(it) > 0 }
-        if (acceptedIds.isNotEmpty()) {
-            val stillBound = dao.readBoundMaterialIds(acceptedIds).toHashSet()
-            retired += (acceptedIds - stillBound).count { dao.retireMaterial(it) > 0 }
+
+        val stillInPack = inDatabase.intersect(packMaterialIds)
+        if (stillInPack.isNotEmpty()) {
+            val stillBound = dao.readBoundMaterialIds(stillInPack).toHashSet()
+            retired += (stillInPack - stillBound).count { dao.retireMaterial(it) > 0 }
         }
         return retired
     }

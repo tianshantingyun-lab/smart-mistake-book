@@ -437,6 +437,36 @@ def evaluate() -> list[Metric]:
                 m11.detail.append(unit[:60])
     metrics.extend((m11, m12, m13, m14))
 
+    # 16) topic 数组顺序必须"父级在前"。
+    #
+    # 加载器把 `topics` 当**平铺数组**逐个变成节点（`toNodes` = topics.flatMap { 这个 topic
+    # 的节点 + 它的 points }），而 `knowledge_node.parent_knowledge_node_id` 是自引用外键、
+    # 插入时逐行检查——子级排在父级前面就会 `FOREIGN KEY constraint failed`，**整批安装崩掉**。
+    #
+    # 实测 2026-09-19：包里有 4 个 topic 的父级排在它后面（`MATH·综合` 在 `MATH` 之前等），
+    # 于是**全新安装直接失败**（旧导入路径同样会踩，不是新机制引入的）。
+    # "数组顺序"既不是包契约的一部分、原本也没被任何门钉住，而它决定安装能否成功。
+    m16 = Metric("topic_parent_after_child", "topic 的父级排在它之后（会让安装撞外键）")
+    for subject in pack["subjects"]:
+        topics = subject["topics"]
+        position = {topic["slug"]: index for index, topic in enumerate(topics)}
+        for index, topic in enumerate(topics):
+            parent = topic.get("parentSlug")
+            if parent is None:
+                continue
+            if parent not in position:
+                m16.value += 1
+                if len(m16.detail) < 40:
+                    m16.detail.append(f"[{subject['subject']}] {topic['slug'][:40]} 的父级不存在")
+            elif position[parent] > index:
+                m16.value += 1
+                if len(m16.detail) < 40:
+                    m16.detail.append(
+                        f"[{subject['subject']}] 子 {topic['slug'][:32]}（第{index}）"
+                        f" 排在父 {parent[:32]}（第{position[parent]}）之前"
+                    )
+    metrics.append(m16)
+
     # 15) 主题名必须只承载本层信息，路径由树（parentSlug）表达。
     # 改前 445 个 topic 里有 421 个的名字重复了父名全文，于是逐层展开时同一段文字会被
     # 重复四遍——渐进式披露在数据层就不可表达。判定与转换共用一处（shorten_topic_names），
