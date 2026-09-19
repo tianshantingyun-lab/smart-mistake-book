@@ -162,6 +162,15 @@ internal class RoomKnowledgeBaseStore(
             .map(KnowledgeSourceEntity::toSeedRecord)
     }
 
+    /**
+     * `退役 id -> 存活 id`。投影据此把历史证据算到存活节点上（"合并并入"），
+     * 而历史行一字不改。今天全库为空（尚无节点被退役）。
+     */
+    suspend fun readKnowledgeNodeSuccessors(): Map<String, String> =
+        database.problemOrganizationDao()
+            .readKnowledgeNodeSuccessors()
+            .associate { it.retiredId to it.successorId }
+
     suspend fun readSubjectKnowledgeNodeRelations(
         subject: String,
         limit: Int,

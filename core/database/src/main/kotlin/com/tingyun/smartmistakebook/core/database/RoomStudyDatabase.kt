@@ -506,6 +506,9 @@ internal class RoomStudyDatabase(
     ): List<KnowledgeNodeSourceBindingSeedRecord> =
         knowledgeBase.readKnowledgeNodeSourceBindings(knowledgeNodeIds)
 
+    override suspend fun readKnowledgeNodeSuccessors(): Map<String, String> =
+        knowledgeBase.readKnowledgeNodeSuccessors()
+
     override suspend fun importKnowledgeBase(
         sources: List<KnowledgeSourceSeedRecord>,
         nodes: List<KnowledgeNodeSeedRecord>,

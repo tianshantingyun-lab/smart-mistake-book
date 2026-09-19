@@ -251,6 +251,18 @@ internal interface ProblemOrganizationDao {
     @Query("SELECT * FROM knowledge_source WHERE source_id IN (:ids)")
     suspend fun readKnowledgeSourcesByIds(ids: Set<String>): List<KnowledgeSourceEntity>
 
+    /**
+     * 已退役且指定了取代目标的节点：`退役 id -> 存活 id`。
+     *
+     * 投影用它把历史证据算到存活节点上（"合并并入"）。链式合并（`X→Y` 之后 `Y→Z`）由读取侧
+     * 做传递闭包——这里只给原始边，不折叠。
+     */
+    @Query(
+        "SELECT knowledge_node_id AS retiredId, superseded_by AS successorId " +
+            "FROM knowledge_node WHERE superseded_by IS NOT NULL",
+    )
+    suspend fun readKnowledgeNodeSuccessors(): List<KnowledgeNodeSuccessorRow>
+
     @Query(
         "SELECT * FROM knowledge_node_source_binding WHERE knowledge_node_id IN (:knowledgeNodeIds)",
     )
@@ -482,3 +494,9 @@ internal interface ProblemOrganizationDao {
         problemRevisionId: String,
     ): Flow<List<ProblemRelationEntity>>
 }
+
+/** `readKnowledgeNodeSuccessors` 的行投影：一条合并重定向的原始边。 */
+internal data class KnowledgeNodeSuccessorRow(
+    val retiredId: String,
+    val successorId: String,
+)

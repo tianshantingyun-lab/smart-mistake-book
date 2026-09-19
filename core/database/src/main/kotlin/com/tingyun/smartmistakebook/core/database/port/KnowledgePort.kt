@@ -42,6 +42,14 @@ interface KnowledgeReadPort {
         knowledgeNodeIds: Set<String>,
     ): List<KnowledgeNodeSourceBindingSeedRecord>
 
+    /**
+     * `已退役的知识点 id -> 取代它的节点 id`。投影用它把历史证据算到存活节点上。
+     *
+     * 只给原始边、不做传递闭包：链式合并（`X→Y` 之后 `Y→Z`）由领域侧的
+     * `KnowledgeNodeSuccessors` 解析，那里有防环。
+     */
+    suspend fun readKnowledgeNodeSuccessors(): Map<String, String>
+
     suspend fun readSubjectKnowledgeNodeRelations(
         subject: String,
         limit: Int,

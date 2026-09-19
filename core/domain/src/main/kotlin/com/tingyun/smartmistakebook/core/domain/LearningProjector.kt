@@ -82,6 +82,11 @@ class LearningProjector(
         events: List<IncrementalLearningEvent>,
         knownLedgerHeadSequence: Long,
         authoritativePresentationStates: Map<String, PresentationProjectionState>,
+        /**
+         * 已退役知识点的取代链。投影把历史证据按它算到当前节点上——"合并并入"由此生效，
+         * 而历史行一字未动。默认空映射＝既有行为逐位不变（见 [KnowledgeNodeSuccessors]）。
+         */
+        knowledgeNodeSuccessors: KnowledgeNodeSuccessors = KnowledgeNodeSuccessors.EMPTY,
     ): LearningProjectionResult {
         requireCompatibleSnapshot(previous)
         require(knownLedgerHeadSequence >= previous.knownLedgerHeadSequence) {
@@ -252,6 +257,7 @@ class LearningProjector(
                         ambiguous,
                         suppressDuplicateRevealMemory = presentationState.answerRevealSequence != null,
                         effectiveAtEpochMillis = effectiveAt,
+                        knowledgeNodeSuccessors = knowledgeNodeSuccessors,
                     )
                     presentationProjectionStates[event.presentationId] = presentationState.copy(
                         asOfLedgerSequence = event.eventSequence,
@@ -308,8 +314,12 @@ class LearningProjector(
                     appliedTutorExposures += event.outcomeId
                 }
                 is ChatEvidenceSubmitted -> {
-                    masteryStates[event.knowledgeNodeId] = projectChatEvidence(
-                        previous = masteryStates[event.knowledgeNodeId],
+                    // 解析到当前节点：证据仍挂在原 id 上（历史不可改写），但掌握度记在
+                    // 取代它的节点名下——与 applyAttempt 的处理同源。
+                    val knowledgeNodeId = knowledgeNodeSuccessors.resolve(event.knowledgeNodeId)
+                    masteryStates[knowledgeNodeId] = projectChatEvidence(
+                        previous = masteryStates[knowledgeNodeId],
+                        knowledgeNodeId = knowledgeNodeId,
                         event = event,
                         effectiveAtEpochMillis = effectiveAt,
                     )
@@ -381,6 +391,8 @@ class LearningProjector(
     fun replay(
         learnerId: String,
         ledger: List<LearningLedgerEvent>,
+        /** 与 [project] 同义：合并重定向。重放与增量必须用**同一份**映射，否则两条路会分叉。 */
+        knowledgeNodeSuccessors: KnowledgeNodeSuccessors = KnowledgeNodeSuccessors.EMPTY,
     ): LearningProjectionResult {
         require(learnerId.isNotBlank()) { "Learner id must not be blank" }
         val ordered = ledger.sortedBy(LearningLedgerEvent::eventSequence)
@@ -462,6 +474,7 @@ class LearningProjector(
                         ambiguous,
                         suppressDuplicateRevealMemory = presentationState.answerRevealSequence != null,
                         effectiveAtEpochMillis = effectiveAt,
+                        knowledgeNodeSuccessors = knowledgeNodeSuccessors,
                     )
                     presentationProjectionStates[event.presentationId] = presentationState.copy(
                         asOfLedgerSequence = event.eventSequence,
@@ -516,8 +529,10 @@ class LearningProjector(
                     )
                 }
                 is ChatEvidenceSubmitted -> {
-                    masteryStates[event.knowledgeNodeId] = projectChatEvidence(
-                        previous = masteryStates[event.knowledgeNodeId],
+                    val knowledgeNodeId = knowledgeNodeSuccessors.resolve(event.knowledgeNodeId)
+                    masteryStates[knowledgeNodeId] = projectChatEvidence(
+                        previous = masteryStates[knowledgeNodeId],
+                        knowledgeNodeId = knowledgeNodeId,
                         event = event,
                         effectiveAtEpochMillis = effectiveAt,
                     )
@@ -575,6 +590,8 @@ class LearningProjector(
 
     private fun projectChatEvidence(
         previous: KnowledgeMasteryState?,
+        /** **已解析过的**当前节点 id：证据可能来自一个后被合并掉的节点。 */
+        knowledgeNodeId: String,
         event: ChatEvidenceSubmitted,
         effectiveAtEpochMillis: Long,
     ): KnowledgeMasteryState {
@@ -595,7 +612,7 @@ class LearningProjector(
             else -> MasteryStatus.LEARNING
         }
         return KnowledgeMasteryState(
-            knowledgeNodeId = event.knowledgeNodeId,
+            knowledgeNodeId = knowledgeNodeId,
             masteryScore = updatedProbability,
             conservativeMasteryScore = lowerBound,
             evidenceMass = evidenceMass,
@@ -729,6 +746,11 @@ class LearningProjector(
         ambiguousAttemptIds: MutableSet<String>,
         suppressDuplicateRevealMemory: Boolean = false,
         effectiveAtEpochMillis: Long,
+        /**
+         * 合并重定向。归因里的节点可能已被合并掉——证据仍挂在原 id 上（历史不可改写），
+         * 但掌握度要记到取代它的节点名下，否则那份证据无处可去、存活节点凭空少一块。
+         */
+        knowledgeNodeSuccessors: KnowledgeNodeSuccessors = KnowledgeNodeSuccessors.EMPTY,
     ) {
         if (!suppressDuplicateRevealMemory) {
             memoryStates[attempt.practiceUnitId] = projectMemory(
@@ -755,7 +777,7 @@ class LearningProjector(
             .filter { it.certainty == EvidenceAttributionCertainty.DIRECT }
             .sortedBy(KnowledgeEvidenceAttribution::bindingId)
             .forEach { attribution ->
-                val knowledgeNodeId = attribution.knowledgeNodeId
+                val knowledgeNodeId = knowledgeNodeSuccessors.resolve(attribution.knowledgeNodeId)
                 masteryStates[knowledgeNodeId] = projectMastery(
                     previous = masteryStates[knowledgeNodeId],
                     knowledgeNodeId = knowledgeNodeId,

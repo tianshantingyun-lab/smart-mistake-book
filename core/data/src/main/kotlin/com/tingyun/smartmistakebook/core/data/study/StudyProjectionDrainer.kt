@@ -9,6 +9,7 @@ import com.tingyun.smartmistakebook.core.database.ProjectionCasConflictException
 import com.tingyun.smartmistakebook.core.database.ProjectionCommit
 import com.tingyun.smartmistakebook.core.database.ProjectionCommitMode
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
+import com.tingyun.smartmistakebook.core.domain.KnowledgeNodeSuccessors
 import com.tingyun.smartmistakebook.core.domain.LearningProjector
 import com.tingyun.smartmistakebook.core.model.Attempt
 import com.tingyun.smartmistakebook.core.model.AttemptCorrection
@@ -33,6 +34,9 @@ internal class StudyProjectionDrainer(
 
     suspend fun drain(): PersistedLearnerSnapshot? {
         var consecutiveCasConflicts = 0
+        // 合并重定向在**一次排空内是常量**，且增量投影与全量重放必须用同一份——
+        // 两条路用不同的映射会算出不同的掌握度，而重放的职责正是复现增量的结果。
+        val knowledgeNodeSuccessors = KnowledgeNodeSuccessors(database.readKnowledgeNodeSuccessors())
         repeat(MAX_PROJECTION_DRAIN_STEPS) {
             val current = database.readCurrentLearnerSnapshot(PROJECTION_NAME, learnerId)
             val batch = database.loadProjectionBatch(
@@ -57,7 +61,7 @@ internal class StudyProjectionDrainer(
 
                 ProjectionBatchStopReason.FULL_REPLAY_REQUIRED -> {
                     try {
-                        commitFullReplay(current)
+                        commitFullReplay(current, knowledgeNodeSuccessors)
                         consecutiveCasConflicts = 0
                     } catch (conflict: ProjectionCasConflictException) {
                         consecutiveCasConflicts++
@@ -82,7 +86,7 @@ internal class StudyProjectionDrainer(
                             )
                     if (requiresReplay) {
                         try {
-                            commitFullReplay(current)
+                            commitFullReplay(current, knowledgeNodeSuccessors)
                             consecutiveCasConflicts = 0
                         } catch (conflict: ProjectionCasConflictException) {
                             consecutiveCasConflicts++
@@ -96,6 +100,7 @@ internal class StudyProjectionDrainer(
                             events = batch.events.map { it.event },
                             knownLedgerHeadSequence = batch.ledgerHeadSequence,
                             authoritativePresentationStates = batch.authoritativePresentationStates,
+                            knowledgeNodeSuccessors = knowledgeNodeSuccessors,
                         )
                         check(
                             result.missingSequence == null &&
@@ -140,6 +145,7 @@ internal class StudyProjectionDrainer(
 
     private suspend fun commitFullReplay(
         current: PersistedLearnerSnapshot?,
+        knowledgeNodeSuccessors: KnowledgeNodeSuccessors,
     ): PersistedLearnerSnapshot {
         val ledger = database.loadLearningLedger(learnerId)
         if (ledger.status != LearningLedgerReadStatus.COMPLETE) {
@@ -150,6 +156,7 @@ internal class StudyProjectionDrainer(
         val result = learningProjector.replay(
             learnerId = learnerId,
             ledger = ledger.validPrefix.map { it.event },
+            knowledgeNodeSuccessors = knowledgeNodeSuccessors,
         )
         val expectedCheckpoint = current?.snapshot?.checkpoint?.lastSequence ?: 0L
         val consumed = ledger.validPrefix
