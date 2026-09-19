@@ -127,11 +127,16 @@ class GateTest(unittest.TestCase):
         #   ghost_aliases 919→0、alias_collision 0（新建指标）。两项都从此充当防回归哨兵。
         self.assertEqual(0, metrics["ghost_aliases"].value)
         self.assertEqual(0, metrics["alias_collision"].value)
-        self.assertEqual(194, metrics["latex_damage"].value)
-        self.assertEqual(80, metrics["control_chars"].value)
-        # 2026-09-19 合并 9 条同物重复/残渣节点后：boundary_excerpt 677→676
-        # （合并掉的残渣节点「规律的用途…」的边界含原文摘录，随之消失）。
-        self.assertEqual(676, metrics["boundary_excerpt"].value)
+        # 2026-09-19 文本级修复收口：latex_damage 194→0、control_chars 80→0。
+        # 修复逻辑**早就在**（textfix + build.py._repair_material_text），但那条路只在已停用的
+        # build.py 的**内存**里跑过，成品 sidecar 一条都没改——"算得出该修什么"与"真的改到
+        # 成品"之间断了。补上写回通道（`fix_material_text`：与 build.py 同一套修复、同一顺序，
+        # 带无损三查与幂等）后归零。两项从此充当防回归哨兵。
+        self.assertEqual(0, metrics["latex_damage"].value)
+        self.assertEqual(0, metrics["control_chars"].value)
+        # 2026-09-19 合并 9 条同物重复/残渣节点后：boundary_excerpt 677→676；
+        # 同日文本修复（boundaryMarkdown 里的 LaTeX 损坏/控制字符被修好）再 676→675。
+        self.assertEqual(675, metrics["boundary_excerpt"].value)
         # 只留占位写法（`（见知识清单/教材）`）的条数。旧判据是"以 `定位：` 开头"，
         # 而本包每个 boundary 都这样开头，于是该项恒等于节点总数 2573、毫无信息量。
         # 2026-09-19 合并 9 条同物重复/残渣节点后：locator_boundary 581→579
@@ -154,11 +159,12 @@ class GateTest(unittest.TestCase):
         # 缺陷类指标修复前必须非零——否则门禁不是在测真东西。
         # （starred_names 已修到 0，移出此列；上方 assertEqual(0,…) 现充当防回归哨兵。）
         # （ghost_aliases 2026-09-19 别名重建后修到 0，同上。）
+        # （latex_damage / control_chars 2026-09-19 文本修复写回成品后修到 0，同上。）
         # unbound_points 2026-09-19 改绑后回到 2（真实内容缺口），留在"必须非零"列表里。
         # duplicate_names / bad_names 已修到 0（上方专门断言），不在此"必须非零"列表
         for key in ("unbound_points", "unbound_materials", "undeclared_prereq",
-                    "boundary_excerpt", "locator_boundary", "latex_damage",
-                    "control_chars", "chapter_locator_mismatch"):
+                    "boundary_excerpt", "locator_boundary",
+                    "chapter_locator_mismatch"):
             with self.subTest(metric=key):
                 self.assertFalse(metrics[key].ok, f"{key} 修复前不该是 0")
         # 章节覆盖率与归属完整性在现行包上本来就是满的，不该被当成缺陷

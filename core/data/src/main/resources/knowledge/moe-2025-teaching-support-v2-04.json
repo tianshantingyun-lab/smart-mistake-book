@@ -39579,7 +39579,7 @@
    "reviewedAtEpochMillis": 1789739846865,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:理解",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:动能",
      "role": "PRIMARY"
     }
    ]
@@ -42479,7 +42479,7 @@
    "reviewedAtEpochMillis": 1789739846865,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:表达式-i-p2-p1或ft-mv2-mv1",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:动量定理",
      "role": "PRIMARY"
     }
    ]
@@ -42559,7 +42559,7 @@
    "reviewedAtEpochMillis": 1789739846865,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:表达式-δu-q-w",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:热力学第一定律",
      "role": "PRIMARY"
     }
    ]
@@ -42839,7 +42839,7 @@
    "reviewedAtEpochMillis": 1789739846865,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:定义-由于地球吸引而使物体受到的力叫做重力",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:重力",
      "role": "PRIMARY"
     }
    ]
@@ -42959,7 +42959,7 @@
    "reviewedAtEpochMillis": 1789739846865,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:应用-交流感应电动机",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:涡流",
      "role": "PRIMARY"
     }
    ]

@@ -3391,7 +3391,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:概念-物体运动轨迹是曲线的运动",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:曲线运动",
      "role": "PRIMARY"
     }
    ]
@@ -5131,7 +5131,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:定义-通电导线在磁场中受到的力叫安培力",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:安培力",
      "role": "PRIMARY"
     }
    ]
@@ -5151,7 +5151,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:定义-通电导线在磁场中受到的力叫安培力",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:安培力",
      "role": "PRIMARY"
     }
    ]
@@ -13471,7 +13471,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:大小-g-mg-可用弹簧测力计测量",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:重力",
      "role": "PRIMARY"
     }
    ]
@@ -22786,7 +22786,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:大小-g-mg-可用弹簧测力计测量",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:重力",
      "role": "PRIMARY"
     }
    ]
@@ -23701,7 +23701,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:大小-g-mg-可用弹簧测力计测量",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:重力",
      "role": "PRIMARY"
     }
    ]
@@ -36098,7 +36098,7 @@
    "title": "单棒加电阻的五种运动模式",
    "summaryMarkdown": "无动力棒减速至停；恒速、恒加速、恒力、恒功率驱动棒的加速度变化各不同，恒 F、恒 P 型最终分别达最大速度。",
    "applicabilityMarkdown": "单棒导轨模型的运动过程分析。",
-   "contentMarkdown": "1. 无动力型：$v\\downarrow\to F_安\\downarrow\to a\\downarrow$，最终停止。\n2. 恒 v 型：$F_安$ 不变、外力 F 恒定；恒 a 型：外力随 v 增大，一直匀加速。\n3. 恒 F 型：$a\\downarrow$ 直至 $a=0$ 达最大速度 $v_m$（类似恒定牵引力启动）。\n4. 恒 P 型：$F\\downarrow$、$a\\downarrow$，直至 $a=0$ 达 $v_m$（类似恒功率启动）。最大速度均对应 $a=0$。",
+   "contentMarkdown": "1. 无动力型：$v\\downarrow\\to F_安\\downarrow\\to a\\downarrow$，最终停止。\n2. 恒 v 型：$F_安$ 不变、外力 F 恒定；恒 a 型：外力随 v 增大，一直匀加速。\n3. 恒 F 型：$a\\downarrow$ 直至 $a=0$ 达最大速度 $v_m$（类似恒定牵引力启动）。\n4. 恒 P 型：$F\\downarrow$、$a\\downarrow$，直至 $a=0$ 达 $v_m$（类似恒功率启动）。最大速度均对应 $a=0$。",
    "boundaryMarkdown": "最大速度均对应 $a=0$（合外力为零）的状态。",
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "registry-kb-physics-methods:physics",
@@ -39508,7 +39508,7 @@
    "title": "斜面平抛的两条分解路线",
    "summaryMarkdown": "平抛与斜面结合的问题可用分解速度构建速度三角形，或分解位移构建位移三角形，两条路线按已知条件选择。",
    "applicabilityMarkdown": "物体从斜面水平抛出落回斜面，或垂直击中斜面类问题。",
-   "contentMarkdown": "1. 分解位移：$x=v_0t$、$y=rac{1}{2}gt^2$，由位移偏角等于斜面倾角 θ 建立关系求时间。\n2. 分解速度：$v_x=v_0$、$v_y=gt$，由速度方向与斜面的夹角关系建立方程。\n3. 落回斜面用位移关系简便，涉及击中方向（垂直、平行）用速度关系。",
+   "contentMarkdown": "1. 分解位移：$x=v_0t$、$y=\\frac{1}{2}gt^2$，由位移偏角等于斜面倾角 θ 建立关系求时间。\n2. 分解速度：$v_x=v_0$、$v_y=gt$，由速度方向与斜面的夹角关系建立方程。\n3. 落回斜面用位移关系简便，涉及击中方向（垂直、平行）用速度关系。",
    "boundaryMarkdown": "倾角 θ 必须转化为位移偏角或速度偏角才能进入方程，两条路线不可混用同一角。",
    "derivationKind": "REVIEWED_SYNTHESIS",
    "sourceId": "registry-kb-physics-methods:physics",

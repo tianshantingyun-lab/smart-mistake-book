@@ -5645,7 +5645,7 @@
    "reviewedAtEpochMillis": 1789739866892,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:久置的浓硝酸呈黄色-如何除去-怎样保存浓硝酸",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:硝酸",
      "role": "PRIMARY"
     }
    ]

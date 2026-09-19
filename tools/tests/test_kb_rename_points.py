@@ -51,11 +51,13 @@ class RealPackTest(unittest.TestCase):
         renames = rp.load_renames()
         self.assertEqual(0, rp.rename(pack, renames))
 
-    def test_shipped_point_count_is_2434(self):
+    def test_shipped_point_count(self):
         from kb_build import delete_points as dp
         pack = pack_io.load_json(pack_io.pack_path())
         # 2026-09-19：两批视觉转写新增 328 个方法节点、别名取证反查改绑 92 条并合并 9 条同物重复
-        self.assertEqual(2434, dp._point_count(pack))
+        # 2026-09-19 坏名分流收口：把 fix_bad_names 的定稿移植进权威表后又合并 9 条
+        # （属性条目/碎片并入主节点）→ 2434−9=2425
+        self.assertEqual(2425, dp._point_count(pack))
 
 
 if __name__ == "__main__":

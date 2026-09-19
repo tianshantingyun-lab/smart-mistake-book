@@ -63,11 +63,13 @@ class RealPackTest(unittest.TestCase):
         self.assertEqual(0, dp.delete(pack, deletes)[0])
         self.assertEqual(0, dp.delete(pack, deletes)[1], "不得清理悬挂前置")
 
-    def test_shipped_point_count_is_2434(self):
+    def test_shipped_point_count(self):
         from kb_build import pack_io
         pack = pack_io.load_json(pack_io.pack_path())
         # 2026-09-19：两批视觉转写新增 328 个方法节点、别名取证反查改绑 92 条并合并 9 条同物重复
-        self.assertEqual(2434, dp._point_count(pack))
+        # 2026-09-19 坏名分流收口：把 fix_bad_names 的定稿移植进权威表后又合并 9 条
+        # （属性条目/碎片并入主节点）→ 2434−9=2425
+        self.assertEqual(2425, dp._point_count(pack))
 
     def test_purge_table_refs_is_clean_on_shipped(self):
         """成品已删过点、外部表已清过——再 purge 必须 0（无悬空引用残留）。"""

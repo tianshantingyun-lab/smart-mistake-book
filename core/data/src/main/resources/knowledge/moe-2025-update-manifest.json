@@ -1,7 +1,7 @@
 {
  "schemaVersion": 1,
  "packId": "moe-2025-four-subjects-v1",
- "contentVersion": "6662a9069439477a",
+ "contentVersion": "ec7bf506b2b2454e",
  "retired": [
   {
    "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:dna是主要的遗传物质-x1",
@@ -518,6 +518,12 @@
    "supersededBy": null,
    "kind": "DELETE",
    "reason": "纯题干/指令节点，材料亦为残片（代理分流+主会话复核）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:久置的浓硝酸呈黄色-如何除去-怎样保存浓硝酸",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:chemistry:atomic:硝酸",
+   "kind": "MERGE",
+   "reason": "知识点的属性条目被提成独立节点（定义：/表达式：/应用：），并入主节点（fix_bad_names 定稿·2026-09-19 移植）"
   },
   {
    "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:书写盐类水解离子方程式的注意事项",
@@ -1654,6 +1660,12 @@
    "reason": "通用名词无主语"
   },
   {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:大小-g-mg-可用弹簧测力计测量",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:physics:atomic:重力",
+   "kind": "MERGE",
+   "reason": "知识点的属性条目被提成独立节点（定义：/表达式：/应用：），并入主节点（fix_bad_names 定稿·2026-09-19 移植）"
+  },
+  {
    "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:定义-一个线圈中的电流变化时-它所产生的变化的磁场在它本身激发出感应电动势的现象",
    "supersededBy": "kb:moe-2025-four-subjects-v1:physics:atomic:自感",
    "kind": "MERGE",
@@ -1666,10 +1678,28 @@
    "reason": "KEEP 分流：与既有节点同物"
   },
   {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:定义-由于地球吸引而使物体受到的力叫做重力",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:physics:atomic:重力",
+   "kind": "MERGE",
+   "reason": "知识点的属性条目被提成独立节点（定义：/表达式：/应用：），并入主节点（fix_bad_names 定稿·2026-09-19 移植）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:定义-通电导线在磁场中受到的力叫安培力",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:physics:atomic:安培力",
+   "kind": "MERGE",
+   "reason": "知识点的属性条目被提成独立节点（定义：/表达式：/应用：），并入主节点（fix_bad_names 定稿·2026-09-19 移植）"
+  },
+  {
    "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:应用-1-涡流热效应的应用-如真空冶炼炉-2-涡流磁效应的应用-如探雷器",
    "supersededBy": null,
    "kind": "DELETE",
    "reason": "整句话当名称"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:应用-交流感应电动机",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:physics:atomic:涡流",
+   "kind": "MERGE",
+   "reason": "知识点的属性条目被提成独立节点（定义：/表达式：/应用：），并入主节点（fix_bad_names 定稿·2026-09-19 移植）"
   },
   {
    "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:应用场景",
@@ -1682,6 +1712,12 @@
    "supersededBy": "kb:moe-2025-four-subjects-v1:physics:atomic:机械波",
    "kind": "MERGE",
    "reason": "跨章同名同概念"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:概念-物体运动轨迹是曲线的运动",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:physics:atomic:曲线运动",
+   "kind": "MERGE",
+   "reason": "知识点的属性条目被提成独立节点（定义：/表达式：/应用：），并入主节点（fix_bad_names 定稿·2026-09-19 移植）"
   },
   {
    "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:求解电能的思路",
@@ -1700,6 +1736,12 @@
    "supersededBy": null,
    "kind": "DELETE",
    "reason": "通用名词无主语"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:理解",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:physics:atomic:动能",
+   "kind": "MERGE",
+   "reason": "知识点的属性条目被提成独立节点（定义：/表达式：/应用：），并入主节点（原边界讲动能的瞬时性、相对性、标量性与正负，与节点「动能」是同一件事）（fix_bad_names 定稿·2026-09-19 移植）"
   },
   {
    "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:电子束衍射实验-戴维孙-g-p-汤姆孙-证实电子的波动性",
@@ -1724,6 +1766,18 @@
    "supersededBy": "kb:moe-2025-four-subjects-v1:physics:atomic:法拉第电磁感应定律",
    "kind": "MERGE",
    "reason": "残渣节点：名字是被截断的公式（E＝n），边界内容是法拉第定律"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:表达式-i-p2-p1或ft-mv2-mv1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:physics:atomic:动量定理",
+   "kind": "MERGE",
+   "reason": "知识点的属性条目被提成独立节点（定义：/表达式：/应用：），并入主节点（fix_bad_names 定稿·2026-09-19 移植）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:表达式-δu-q-w",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:physics:atomic:热力学第一定律",
+   "kind": "MERGE",
+   "reason": "知识点的属性条目被提成独立节点（定义：/表达式：/应用：），并入主节点（fix_bad_names 定稿·2026-09-19 移植）"
   },
   {
    "nodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:规律",
