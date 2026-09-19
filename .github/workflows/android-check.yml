@@ -12,6 +12,9 @@ on:
       - "build.gradle.kts"
       - "settings.gradle.kts"
       - "gradle.properties"
+      # Gate scripts themselves: without this a PR that only edits a checker
+      # would not run the workflow that executes it.
+      - "tools/**"
   push:
     branches: [main]
 
@@ -73,7 +76,7 @@ jobs:
           RELEASE_KEY_PASSWORD=ci-dry-run-pass \
           ./gradlew :app:assembleLocalFirstRelease :app:assembleStrictOfflineRelease \
             :app:bundleLocalFirstRelease :app:bundleStrictOfflineRelease --console=plain
-      - name: Release manifest gate (no debug activity, no over-broad FileProvider path)
+      - name: Release manifest gate (no debug-only component, no over-broad FileProvider path)
         run: python3 tools/ci/check_release_manifest.py
       - name: Compile macrobenchmark and baseline profile module
         run: ./gradlew :benchmark:assemble --console=plain
