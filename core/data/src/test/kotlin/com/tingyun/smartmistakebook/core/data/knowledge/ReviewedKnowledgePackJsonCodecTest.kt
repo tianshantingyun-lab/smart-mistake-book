@@ -69,12 +69,14 @@ class ReviewedKnowledgePackJsonCodecTest {
         // 2026-09-19：《解题觉醒》名师大招册视觉转写新增 149 个方法/概念节点 → 2115→2264 point、
         // 2577→2726 节点（topic 仍 462）。同日第二批（五三 B版专题/物理讲册/二轮讲义/主书，
         // 3,609 条材料）新增 179 个方法节点 → 2264→2443 point、2726→2905 节点。
-        // 2026-09-19 续：又增 6 个 topic → 468 topic + 2443 point = 2911 节点。
+        // 2026-09-19 续：节点归位新增 6 个 topic（含数学综合链）→ 468 topic；
+        // 同日别名取证反查（audit_bindings_by_alias）发现 96 条错绑嫌疑，逐条裁定后改绑 92 条、
+        // 合并 9 条同物重复 → 2443→2434 point。合计 468 + 2434 = 2902 节点。
         //
         // ⚠️ 这个数字**每次内容入库都会过期**，需要同步更新——它钉的是"当前内容规模"，
         // 不是不变量。真正的不变量是下面那条（节点 = topic + 原子点、层级完整），
         // 那几条不会随内容增长而变红。若这个数字频繁成为阻塞，应考虑改成下界断言。
-        assertEquals(2911, pack.nodes.size)
+        assertEquals(2902, pack.nodes.size)
         // 多层知识树：卷 -> 章 -> 主题 -> 子主题 -> 知识点，topic 父链必须完整落到节点层
         val topicNodes = pack.nodes.filter { it.nodeKind == "TOPIC" }
         assertTrue(topicNodes.size >= 400)

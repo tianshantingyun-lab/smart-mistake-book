@@ -387,7 +387,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:实验方法-控制变量法-保持m不变探究a与f关系-保持f不变探究a与m关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:控制变量法",
      "role": "PRIMARY"
     }
    ]
@@ -547,7 +547,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:合力做功的计算方法",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:功",
      "role": "PRIMARY"
     }
    ]
@@ -567,7 +567,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:机车启动问题",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:功率",
      "role": "PRIMARY"
     }
    ]
@@ -587,7 +587,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:时刻-表示某一瞬间-在时间轴上用点表示-是一个状态量",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:动能",
      "role": "PRIMARY"
     }
    ]
@@ -707,7 +707,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:机械能守恒定律的三种表达式",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:机械能守恒定律",
      "role": "PRIMARY"
     }
    ]
@@ -727,7 +727,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:功能关系和能量守恒定律",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:功能关系",
      "role": "PRIMARY"
     }
    ]
@@ -842,7 +842,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:速度定义-位移与发生这段位移所用时间之比-表示物体运动快慢的物理量-是过程量",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:冲量",
      "role": "PRIMARY"
     }
    ]
@@ -882,7 +882,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:机械能守恒定律的三种表达式",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:动量守恒定律",
      "role": "PRIMARY"
     }
    ]
@@ -1217,7 +1217,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:衍射-波在传播过程中可以绕过障碍物继续传播的现象叫做波的衍射",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:波的衍射",
      "role": "PRIMARY"
     }
    ]
@@ -1237,7 +1237,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:波的干涉中振动加强点和减弱点的判断方法",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:波的干涉",
      "role": "PRIMARY"
     }
    ]
@@ -1257,7 +1257,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:多普勒效应的成因分析",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:多普勒效应",
      "role": "PRIMARY"
     }
    ]
@@ -1377,7 +1377,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:特点-f-b-f-v-即f垂直于b与v决定的平面-f与v始终垂直-洛伦兹力不做功",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:洛伦兹力",
      "role": "PRIMARY"
     }
    ]
@@ -18567,7 +18567,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:从化合价的角度认识cl2的化学性质-歧化反应",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:氨的化学性质",
      "role": "PRIMARY"
     }
    ]
@@ -19207,7 +19207,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:从化合价的角度认识cl2的化学性质-歧化反应",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:铝的化学性质",
      "role": "PRIMARY"
     }
    ]
@@ -40422,7 +40422,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:反应热-焓变",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:反应热",
      "role": "PRIMARY"
     }
    ]
@@ -40982,7 +40982,7 @@
    "reviewedAtEpochMillis": 1789743755069,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:递推数列",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:数列的递推公式",
      "role": "PRIMARY"
     }
    ]
@@ -41322,7 +41322,7 @@
    "reviewedAtEpochMillis": 1789743755069,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:由线-面关系误解向量关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:空间位置关系的向量表示",
      "role": "PRIMARY"
     }
    ]

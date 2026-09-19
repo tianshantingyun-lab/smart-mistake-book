@@ -3291,7 +3291,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:平衡条件-根本条件-作用在物体上的所有共点力的合力为零-即-f_合-0",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:电桥法测电阻",
      "role": "PRIMARY"
     }
    ]
@@ -6461,7 +6461,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:物体看作质点的条件-物体的大小和形状对研究问题的影响可以忽略",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:质点",
      "role": "PRIMARY"
     }
    ]
@@ -7456,7 +7456,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:核心处理思想-运动的合成与分解-约束条件",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:运动的合成与分解",
      "role": "PRIMARY"
     }
    ]
@@ -7476,7 +7476,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:速度定义-位移与发生这段位移所用时间之比-表示物体运动快慢的物理量-是过程量",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:小船渡河模型",
      "role": "PRIMARY"
     }
    ]
@@ -9121,7 +9121,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:电压表-电流表的改装",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:电表的改装",
      "role": "PRIMARY"
     }
    ]
@@ -10126,7 +10126,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:多普勒效应的成因分析",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:多普勒效应",
      "role": "PRIMARY"
     }
    ]
@@ -10716,7 +10716,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:光的波粒二象性-长期争论后达成的共识",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:光的波粒二象性",
      "role": "PRIMARY"
     }
    ]
@@ -10836,7 +10836,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:规律的用途-利用天然放射性元素的半衰期可以估测岩石-化石和文物的年代",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:半衰期",
      "role": "PRIMARY"
     }
    ]
@@ -11271,7 +11271,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:机械能守恒定律",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:验证机械能守恒定律",
      "role": "PRIMARY"
     }
    ]
@@ -11351,7 +11351,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:物体看作质点的条件-物体的大小和形状对研究问题的影响可以忽略",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:油膜法估测油酸分子的大小",
      "role": "PRIMARY"
     }
    ]
@@ -11811,7 +11811,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:核心处理思想-运动的合成与分解-约束条件",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:运动的合成与分解",
      "role": "PRIMARY"
     }
    ]
@@ -12381,7 +12381,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:动量定理",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:冲量",
      "role": "PRIMARY"
     }
    ]
@@ -13776,7 +13776,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:滑块-木板模型的临界问题",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:小船渡河模型",
      "role": "PRIMARY"
     }
    ]
@@ -13911,7 +13911,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:速度-速度的变化量-加速度的比较",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:加速度",
      "role": "PRIMARY"
     }
    ]
@@ -15156,7 +15156,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:磁场的基本概念和性质",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:磁场的叠加",
      "role": "PRIMARY"
     }
    ]
@@ -19021,7 +19021,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:动量定理的应用-流体类模型",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:动量定理在电磁感应中的应用",
      "role": "PRIMARY"
     }
    ]
@@ -19221,7 +19221,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:分子运动速率分布图像-气体分子速率呈-中间多-两头少-的规律分布-如下图所示",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:气体分子运动的特点",
      "role": "PRIMARY"
     }
    ]
@@ -19641,7 +19641,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:光的波粒二象性-长期争论后达成的共识",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:光的波粒二象性",
      "role": "PRIMARY"
     }
    ]
@@ -20136,7 +20136,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:实验原理-条纹间距δx与光波长λ-双缝间距d及双缝与屏的距离l-有关系式为",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:用双缝干涉测量光的波长实验",
      "role": "PRIMARY"
     }
    ]
@@ -20266,7 +20266,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:电压表-电流表的改装",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:半偏法测电表内阻",
      "role": "PRIMARY"
     }
    ]
@@ -21286,7 +21286,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:速度定义-位移与发生这段位移所用时间之比-表示物体运动快慢的物理量-是过程量",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:小船渡河模型",
      "role": "PRIMARY"
     }
    ]
@@ -27501,7 +27501,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:磁场的基本概念和性质",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:磁场的叠加",
      "role": "PRIMARY"
     }
    ]
@@ -28136,7 +28136,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:动量定理的应用-流体类模型",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:动量定理在电磁感应中的应用",
      "role": "PRIMARY"
     }
    ]
@@ -30451,7 +30451,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:万有引力与航天的基本定律和概念",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:万有引力与重力的关系",
      "role": "PRIMARY"
     }
    ]
@@ -35111,7 +35111,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:速度定义-位移与发生这段位移所用时间之比-表示物体运动快慢的物理量-是过程量",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:小船渡河模型",
      "role": "PRIMARY"
     }
    ]
@@ -39536,7 +39536,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:相似三角形-动态三角形-拉密定理等方法解决临界极值问题",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:动态平衡问题",
      "role": "PRIMARY"
     }
    ]
@@ -39866,7 +39866,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:平均速度与瞬时速度的区别",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:速度",
      "role": "PRIMARY"
     }
    ]
@@ -39886,7 +39886,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:速度-速度的变化量-加速度的比较",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:加速度",
      "role": "PRIMARY"
     }
    ]
@@ -39906,7 +39906,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:应用匀变速直线运动规律解题的基本思路",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:匀变速直线运动",
      "role": "PRIMARY"
     }
    ]
@@ -40126,7 +40126,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:方向-总是竖直向下-竖直向下是和水平面垂直-不一定和接触面垂直-也不一定指向地心",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:重力",
      "role": "PRIMARY"
     }
    ]
@@ -40146,7 +40146,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:探究结果-胡克定律-x为形变量",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:弹力",
      "role": "PRIMARY"
     }
    ]
@@ -40166,7 +40166,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:静摩擦力与滑动摩擦力的比较",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:摩擦力",
      "role": "PRIMARY"
     }
    ]
@@ -40206,7 +40206,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:合成与分解法则-平行四边形法则",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:力的合成",
      "role": "PRIMARY"
     }
    ]
@@ -40226,7 +40226,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:按实际作用效果分解-最典型的是将速度分解为",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:力的分解",
      "role": "PRIMARY"
     }
    ]
@@ -40416,7 +40416,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:作用力与反作用力",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:牛顿第三定律",
      "role": "PRIMARY"
     }
    ]
@@ -40696,7 +40696,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:运动性质-匀变速曲线运动-加速度恒为重力加速度-g-大小方向不变",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:曲线运动",
      "role": "PRIMARY"
     }
    ]
@@ -40716,7 +40716,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:核心处理思想-运动的合成与分解-约束条件",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:运动的合成与分解",
      "role": "PRIMARY"
     }
    ]
@@ -40756,7 +40756,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:运动性质-匀变速曲线运动-加速度恒为重力加速度-g-大小方向不变",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:平抛运动",
      "role": "PRIMARY"
     }
    ]
@@ -41536,7 +41536,7 @@
    "reviewedAtEpochMillis": 1789736629000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:共同进化",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:协同进化与生物多样性的形成",
      "role": "PRIMARY"
     }
    ]

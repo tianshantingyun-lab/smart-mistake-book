@@ -138,7 +138,8 @@ class RealArtifactsTest(unittest.TestCase):
         kinds: dict[str, int] = {}
         for e in self.entries:
             kinds[e["kind"]] = kinds.get(e["kind"], 0) + 1
-        self.assertEqual(104, kinds.get(um.KIND_MERGE, 0))
+        # 2026-09-19：别名取证反查收口时又合并 9 条同物重复/残渣节点（point_merge.csv 104→113 行）
+        self.assertEqual(113, kinds.get(um.KIND_MERGE, 0))
         self.assertEqual(183, kinds.get(um.KIND_DELETE, 0))
 
     def test_backfilled_entries_pass_shape_check(self):
@@ -155,8 +156,8 @@ class RealArtifactsTest(unittest.TestCase):
         """
         doc = um.empty(self.pack["packId"])
         added = um.record(doc, self.entries)
-        self.assertEqual(287, len(self.entries), "回填原始条目数")
-        self.assertEqual(285, added, "去重后的并入数")
+        self.assertEqual(296, len(self.entries), "回填原始条目数（2026-09-19 合并表 104→113 行后 287→296）")
+        self.assertEqual(294, added, "去重后的并入数")
         merged = {e["nodeId"].split(":")[-1]: e["supersededBy"].split(":")[-1]
                   for e in doc["retired"] if e["kind"] == um.KIND_MERGE}
         self.assertEqual("无氧呼吸-x1", merged["无氧呼吸-x2"])

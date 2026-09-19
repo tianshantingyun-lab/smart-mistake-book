@@ -8794,7 +8794,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:重要不等式-当且仅当时取号",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:充要条件",
      "role": "PRIMARY"
     }
    ]
@@ -9209,7 +9209,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:含参一元二次不等式的解法",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:分式不等式的解法",
      "role": "PRIMARY"
     }
    ]
@@ -14539,7 +14539,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:向量共线定理",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:三垂线定理及其逆定理",
      "role": "PRIMARY"
     }
    ]
@@ -15449,7 +15449,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:平均数与中位数",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:众数、中位数与平均数",
      "role": "PRIMARY"
     }
    ]
@@ -16569,7 +16569,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:函数的对称性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:二项式系数的性质",
      "role": "PRIMARY"
     }
    ]
@@ -16739,7 +16739,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:不等式的基本性质",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:概率的基本性质",
      "role": "PRIMARY"
     }
    ]
@@ -18844,7 +18844,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:取倒数法-an-1-p-q-r是常数-可变形为",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:1的代换",
      "role": "PRIMARY"
     }
    ]
@@ -19724,7 +19724,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:函数单调性的性质",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:幂函数的性质",
      "role": "PRIMARY"
     }
    ]
@@ -23869,7 +23869,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:平面向量的线性运算",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:方差与标准差",
      "role": "PRIMARY"
     }
    ]
@@ -24139,7 +24139,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:函数的对称性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:二项式系数的性质",
      "role": "PRIMARY"
     }
    ]
@@ -38029,7 +38029,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:抽象函数的性质综合",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:二项式系数的性质",
      "role": "PRIMARY"
     }
    ]

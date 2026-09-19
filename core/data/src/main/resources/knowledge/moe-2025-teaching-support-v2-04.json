@@ -469,7 +469,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:制作简单的燃料电池",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:燃料电池",
      "role": "PRIMARY"
     }
    ]
@@ -40479,7 +40479,7 @@
    "reviewedAtEpochMillis": 1789739846865,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:原子核",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:原子核的组成-原子核是由质子和中子组成的-原子核的电荷数等于核内的质子数",
      "role": "PRIMARY"
     }
    ]
@@ -40939,7 +40939,7 @@
    "reviewedAtEpochMillis": 1789739846865,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:弹簧振子",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:弹簧振子模型",
      "role": "PRIMARY"
     }
    ]
@@ -41039,7 +41039,7 @@
    "reviewedAtEpochMillis": 1789739846865,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:路端电压",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:路端电压与外电阻的关系",
      "role": "PRIMARY"
     }
    ]
@@ -41299,7 +41299,7 @@
    "reviewedAtEpochMillis": 1789739846865,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:多普勒效应",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:多普勒效应的成因分析",
      "role": "PRIMARY"
     }
    ]
@@ -42279,7 +42279,7 @@
    "reviewedAtEpochMillis": 1789739846865,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:运动分解-核心思想",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:运动的合成与分解",
      "role": "PRIMARY"
     }
    ]
@@ -43079,7 +43079,7 @@
    "reviewedAtEpochMillis": 1789739846865,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:等效重力场的相关知识点及解释",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:等效重力场",
      "role": "PRIMARY"
     }
    ]
@@ -43139,7 +43139,7 @@
    "reviewedAtEpochMillis": 1789739846865,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:表达式-e-n-n为线圈匝数",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:法拉第电磁感应定律",
      "role": "PRIMARY"
     }
    ]
@@ -55419,7 +55419,7 @@
    "reviewedAtEpochMillis": 1789780065665,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:内切球与球的相切问题",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:棱切球（与各棱相切的球）",
      "role": "PRIMARY"
     }
    ]
@@ -60259,7 +60259,7 @@
    "reviewedAtEpochMillis": 1789780065665,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:数列中的公共项问题",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:数列的公共项问题",
      "role": "PRIMARY"
     }
    ]

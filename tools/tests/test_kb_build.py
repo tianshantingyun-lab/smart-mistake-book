@@ -115,7 +115,11 @@ class GateTest(unittest.TestCase):
         self.assertEqual(0, metrics["starred_names"].value)
         self.assertEqual(0, metrics["bad_names"].value)
         self.assertEqual(0, metrics["duplicate_names"].value)
-        self.assertEqual(0, metrics["unbound_points"].value)
+        # 2026-09-19：unbound_points 0→2。别名取证反查（audit_bindings_by_alias）发现 96 条错绑嫌疑，
+        # 逐条裁定后改绑 92 条（含 9 条同物重复的合并）——被"错绑材料假装覆盖"的两个知识点露出来了：
+        # MATH「由线、面关系误解向量关系」、CHEMISTRY「自然资源的开发利用」。它们是真内容缺口，
+        # 待后续轮次补材料，不做数字上的遮掩。
+        self.assertEqual(2, metrics["unbound_points"].value)
         self.assertEqual(892, metrics["unbound_materials"].value)
         # 2026-09-19 两批扫描件视觉转写入库（951 + 3,609 条材料）后：
         #   unbound_points 1→0（最后一个零材料点拿到材料）。
@@ -125,10 +129,14 @@ class GateTest(unittest.TestCase):
         self.assertEqual(0, metrics["alias_collision"].value)
         self.assertEqual(194, metrics["latex_damage"].value)
         self.assertEqual(80, metrics["control_chars"].value)
-        self.assertEqual(677, metrics["boundary_excerpt"].value)
+        # 2026-09-19 合并 9 条同物重复/残渣节点后：boundary_excerpt 677→676
+        # （合并掉的残渣节点「规律的用途…」的边界含原文摘录，随之消失）。
+        self.assertEqual(676, metrics["boundary_excerpt"].value)
         # 只留占位写法（`（见知识清单/教材）`）的条数。旧判据是"以 `定位：` 开头"，
         # 而本包每个 boundary 都这样开头，于是该项恒等于节点总数 2573、毫无信息量。
-        self.assertEqual(581, metrics["locator_boundary"].value)
+        # 2026-09-19 合并 9 条同物重复/残渣节点后：locator_boundary 581→579
+        # （被合并的残渣节点边界只有定位串，如「自然资源的开发利用」式的占位写法随之减少）。
+        self.assertEqual(579, metrics["locator_boundary"].value)
         # 两项必须不相交：一条边界不可能既是原文摘录、又是没写边界。
         # 旧判据下两项交集 1984、皆假 0，即"任何写法都至少中一项"，指标失去意义。
         bundled = pack_io.load_json(pack_io.pack_path())
@@ -145,10 +153,10 @@ class GateTest(unittest.TestCase):
         self.assertEqual(set(), excerpt_ids & locator_ids)
         # 缺陷类指标修复前必须非零——否则门禁不是在测真东西。
         # （starred_names 已修到 0，移出此列；上方 assertEqual(0,…) 现充当防回归哨兵。）
-        # （unbound_points 2026-09-19 也修到 0，同样移出此列。）
         # （ghost_aliases 2026-09-19 别名重建后修到 0，同上。）
+        # unbound_points 2026-09-19 改绑后回到 2（真实内容缺口），留在"必须非零"列表里。
         # duplicate_names / bad_names 已修到 0（上方专门断言），不在此"必须非零"列表
-        for key in ("unbound_materials", "undeclared_prereq",
+        for key in ("unbound_points", "unbound_materials", "undeclared_prereq",
                     "boundary_excerpt", "locator_boundary", "latex_damage",
                     "control_chars", "chapter_locator_mismatch"):
             with self.subTest(metric=key):
