@@ -96,9 +96,11 @@ def _rootfile_path(archive: zipfile.ZipFile) -> str:
     except KeyError as error:
         raise ValueError("EPUB is missing META-INF/container.xml") from error
     try:
+        # 裸 XMLParser() 即可：stdlib ElementTree 自 3.8 起默认不解析外部实体（XXE 安全），
+        # 而 `resolve_entities` 参数在 Python 3.13 被移除，显式传它反而崩（KD-18）。
         root = ElementTree.fromstring(
             container,
-            parser=ElementTree.XMLParser(resolve_entities=False),
+            parser=ElementTree.XMLParser(),
         )
     except ElementTree.ParseError as error:
         raise ValueError("EPUB container.xml is invalid") from error
@@ -121,7 +123,7 @@ def _metadata(
     try:
         package = ElementTree.fromstring(
             archive.read(rootfile_path),
-            parser=ElementTree.XMLParser(resolve_entities=False),
+            parser=ElementTree.XMLParser(),  # 见 _rootfile_path：3.13 已移除 resolve_entities
         )
     except KeyError as error:
         raise ValueError(f"EPUB rootfile does not exist: {rootfile_path}") from error
