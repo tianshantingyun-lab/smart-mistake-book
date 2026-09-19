@@ -536,7 +536,7 @@ explicitly or they never run in CI" — so the checked set stays reviewable. If 
 future finding class is decided to be acceptable rather than fixed, suppress it
 at the call site with the reason, the rule KD-12 followed.
 
-## KD-14 (open) · Deep security scans are systematically inconclusive on this host
+## KD-14 (closed 2026-09-19 · host environment boundary) · Deep security scans are systematically inconclusive on this host
 
 **Symptom.** The Mimosa pre-commit/pre-push hook has been reporting
 `scanner_enobufs` for many days (scan not completing inside the host tool
@@ -589,6 +589,41 @@ would reproduce the same gap, not fill it. Until closed, treat this entry as
 an open boundary: git-hook `scanner_enobufs` pass-throughs and any "no
 scanner conclusion" note are expected, and every release claim must cite
 this entry rather than assert security.
+
+**Closed 2026-09-19 — disposition: known host environment boundary.**
+Path (a) was attempted in full and cannot close this entry on this machine:
+the install was run manually from a user terminal with
+`MIMOSA_SEMGREP_PYTHON` pointed at the host's Python 3.13.14 (`semgrep
+install --accept-license`), and `mimosa doctor` still reports
+「Semgrep：内置规则检出样例，但 **Semgrep 进程不可用**」 plus 「PyCG：未配置」.
+The follow-up deep scan (`scan-2026-09-19T06-17-24.939Z-fd3a2dd1012d`,
+sealed `sha256:f1bffd7f…`) finished in 8 seconds and sealed **exactly the
+same `runStatus=inconclusive`** as the four rounds recorded above
+(`threatModel` partial with 0 entry points/principals/authorization
+surfaces, `pathAnalysis` N/A, `completeness=partial`) — i.e. the scanner
+process still does not see a usable Semgrep runtime, so the gap is a host
+runtime/detection boundary, not repository content. Per the user's decision
+(2026-09-19) the entry is **closed as a known environment boundary** rather
+than left open indefinitely. Standing rules that outlive the entry:
+
+- **No claim of "security audit passed" is permitted.** The defensible
+  statement remains: static phases cover every file (1022 selected = 1022
+  parsed, 0 read/parse failures), findings are 3 low with 0 high/medium,
+  the dependency surface is clean (38 packages, 0 advisories), and the
+  semantic phases (entry points / authorization surfaces / dataflow) are
+  **not covered on this host**.
+- Git-hook `scanner_enobufs` pass-throughs and any "no scanner conclusion"
+  note remain expected and must be cited, not treated as a clean pass.
+- The API summary counts and the sealed artifacts keep the KD-14
+  discrepancy rule: sealed `findings.json`/`report.md`/`seal.json` are
+  authoritative.
+
+**Reopen condition.** Any of: (i) Mimosa ships a scanner that reaches the
+full-coverage status on this host (e.g. its runtime detection is fixed, or
+Semgrep/PyCG become reachable to the scan process) — a sealed
+`runStatus=complete` supersedes this entry with its finding summary; or
+(ii) a scan on any host surfaces a high/medium finding — that becomes its
+own open KD.
 
 **Reopen condition.** A sealed run that reports `runStatus=complete` (or an
 equivalent full-coverage status) supersedes this entry with its finding
