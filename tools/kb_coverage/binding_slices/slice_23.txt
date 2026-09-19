@@ -1,0 +1,368 @@
+# 绑定作业片 23：29 条无绑定材料
+#
+# 任务：为每条材料选定它应该绑定的知识点节点（就是讲题时该材料服务的那个点）。
+# 交付（写到 tools/kb_coverage/binding_fixes/slice_23/notes.csv）：
+#   subject,material_slug,node_slug,confidence,evidence
+#   （node_slug 用下面的节点表里的 slug；确实没有合适的写 NONE；
+#     evidence 一句话说明依据；字段内不要有 ASCII 逗号）
+#
+# 硬规矩：
+#   · 宁缺勿错：不确定就 confidence=low 或写 NONE —— 错绑会让检索喂错材料
+#   · 只能从本学科节点表里选（见 tools/kb_coverage/binding_slices/nodes/nodes_<学科>.txt）
+#   · 一条材料只绑一个节点（就是它最主要服务的那个点）
+
+==============================================================================
+## BIOLOGY | bio-dominance-by-pure-cross
+来源: 《狂K重点》生物 P395-396 重难7·题型1（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 显隐性判断：纯合亲本杂交 F1 表现即为显性
+[summaryMarkdown] 一对相对性状的两纯合亲本杂交，F1 表现出来的性状为显性。
+[applicabilityMarkdown] 基因位置判断流程第一步。
+[contentMarkdown] 选具有相对性状的纯合亲本杂交得 F1：F1 表现的性状为显性；或具有相对性状的亲本杂交子代只出现一种性状，该性状为显性。
+[boundaryMarkdown] 须用纯合亲本，样本量足够。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-03-glucose-injection-sucrose-not
+来源: 生物讲义《第03讲 糖类和脂质（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 葡萄糖可静脉注射而蔗糖不行的原因
+[summaryMarkdown] 葡萄糖是单糖可直接进入细胞；蔗糖是二糖须水解为单糖才能被吸收利用。
+[applicabilityMarkdown] 糖类吸收特点的应用判断。
+[contentMarkdown] 1. 葡萄糖属于单糖，可直接进入细胞，可口服也可静脉注射。
+2. 蔗糖属于二糖，必须经消化分解为两分子单糖后才能进入细胞。
+3. 急性肠炎患者输液中加葡萄糖，为生命活动提供能量。
+[boundaryMarkdown] 二糖、多糖都不能直接静脉注射。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-08-pasteur-liebig-debate
+来源: 生物讲义《第08讲 酶和ATP（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 巴斯德与李比希关于发酵的争论
+[summaryMarkdown] 巴斯德认为发酵需要活酵母菌细胞，李比希认为只需细胞中的物质，二者的争论推动酶本质的探索。
+[applicabilityMarkdown] 酶科学史争论判断。
+[contentMarkdown] 1. 巴斯德：糖类变酒精需要酵母菌活细胞参与。
+2. 李比希：需要酵母菌细胞死亡并释放其中的物质。
+3. 争论焦点：发酵是否需要完整的活细胞。
+[boundaryMarkdown] 毕希纳用酵母菌提取液实现发酵，结束了这场争论。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-20-base-pair-rule-2-complementary-ratio
+来源: 生物讲义《第20讲 DNA的结构、复制与基因的本质（复习讲义）（全国通用）（解析版）》（registry-kb-biology-handout:biology）
+类型: METHOD_MODEL
+[title] 碱基计算规律二：互补碱基之和比例处处相等
+[summaryMarkdown] 互补碱基之和（A+T或C+G）占全部碱基的比例，在双链、任一条单链及转录的mRNA中都相等。
+[applicabilityMarkdown] 规律二应用。
+[contentMarkdown] 1. 双链中(A+T)/(全部) = 每条单链中(A+T)/(该链全部)。
+2. 也等于其转录形成的mRNA中(A+U)/(全部)（T换为U）。
+3. C+G同理。
+[boundaryMarkdown] 该规律可用于由mRNA碱基比例反推DNA的碱基组成。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-formula-glucose-accumulation
+来源: 《狂K重点》生物 P385 重难4·题型1（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 换算公式：葡萄糖积累量 = 实际合成量 − 呼吸消耗量
+[summaryMarkdown] 葡萄糖净生产（积累）量 = 光合实际葡萄糖合成量（叶绿体产生量）− 呼吸消耗葡萄糖量。
+[applicabilityMarkdown] 有机物积累计算题。
+[contentMarkdown] 葡萄糖净生产量（积累量）= 光合实际合成量 − 呼吸消耗量；比例换算按 CO2:O2:葡萄糖 = 6:6:1。
+[boundaryMarkdown] 底物为葡萄糖前提；脂肪底物换算系数不同。
+候选（机械预筛，未必对）：叶绿体（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fx-judge-synapse-signal
+来源: 生物方法类《稳态与调节阶段排查　回扣落实（七）》（registry-kb-biology-methods:biology）
+类型: CONCEPT_EXPLANATION
+[title] 易错：突触后膜的信号转换为化学信号到电信号
+[summaryMarkdown] 突触前膜发生电信号→化学信号转换，突触后膜发生化学信号→电信号转换。
+[applicabilityMarkdown] 兴奋在突触间传递的过程判断题。
+[contentMarkdown] 1. 判断：兴奋传递过程中，突触后膜上的信号转换是电信号→化学信号→电信号（×）。
+2. 提示：完整过程是突触前膜电信号→化学信号（递质释放）→突触后膜化学信号→电信号（电位变化）。
+[boundaryMarkdown] 突触小体内完成电—化学转换；递质经胞吐释放到突触间隙。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-hormone-experiment-endogenous-exclusion
+来源: 《狂K重点》生物 P409 重难12·题型2（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 活体实验需排除内源激素的干扰
+[summaryMarkdown] 活体动物自身的内分泌细胞仍会合成分泌激素，体内实验须排除内源激素对结果的影响。
+[applicabilityMarkdown] 体内实验设计订正题。
+[contentMarkdown] 活体动物本身的内分泌细胞（如胰岛 B 细胞）仍合成并分泌激素→若进行体内实验，需排除内源激素（如切除腺体、用抗体阻断受体）对结果的影响。
+[boundaryMarkdown] 离体（细胞/组织）实验可避免内源干扰。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb-pure-vs-heterozygote-identification
+来源: 生物知识清单：《第15讲 分离定律（知识清单）（全国通用）（学生版）》（registry-kb-biology-knowledge-list:biology）
+类型: METHOD_MODEL
+[title] 纯合子与杂合子的鉴定方法
+[summaryMarkdown] 植物最简便用自交法，动物常用测交法；也可用花药离体培养等（略）。
+[applicabilityMarkdown] 基因型鉴定方案设计。
+[contentMarkdown] 1. 自交法：后代出现性状分离（3:1）则为杂合子，无性状分离为纯合子；植物最简便。
+2. 测交法：与隐性纯合子杂交，后代出现隐性性状则为杂合子；动物（如牛）常用。
+3. 花粉鉴定法等特殊方法（部分植物）。
+[boundaryMarkdown] 被测个体为动物时宜用测交法。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb2-26-diabetes-types
+来源: 生物知识清单：《第26讲 体液调节（知识清单）（全国通用）（解析版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 糖尿病的两种类型与成因
+[summaryMarkdown] 1型糖尿病是胰岛素绝对缺乏，2型糖尿病与靶细胞对胰岛素敏感性降低有关。
+[applicabilityMarkdown] 分析糖尿病成因、判断胰岛素含量变化时使用。
+[contentMarkdown] 1型：胰岛B细胞受破坏或免疫损伤导致胰岛素绝对缺乏，属胰岛素依赖型；
+2型：机体组织细胞对胰岛素敏感性降低（可能与细胞膜上胰岛素受体受损有关），能量摄入过多、运动量过少、肥胖是危险因素。
+[boundaryMarkdown] 糖尿病可由信号分子分泌异常、受体异常或信号分子与受体不能正常结合引发；异常抗体引起的糖尿病属于自身免疫病。
+候选（机械预筛，未必对）：胰岛素（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-kb3-f4-s34-n04
+来源: 生物知识清单《2027届高三生物一轮复习知识清单4：分子与细胞基础》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 总结(课本P72正文最后一段
+[summaryMarkdown] 总结(课本P72正文最后一段)。
+[applicabilityMarkdown] 复习“胞吞与胞吐”考点或解答涉及“总结(课本P72正文”的题目时使用。
+[contentMarkdown] 总结(课本P72正文最后一段)。
+(1)除一些不带电荷的小分子可以自由扩散的方式进出细胞外，离子和较小的有机分子(如葡萄糖和氨基酸等)的跨膜运输必须借助于转运蛋白，这又一次体现了蛋白质是生命活动的承担者。
+(2)一种转运蛋白往往只适合转运特定的物质，因此，细胞膜上转运蛋白的种类和数量，或转运蛋白空间结构的变化，对许多物质的跨膜运输起着决定性的作用，这也是细胞膜具有选择透过性的结构基础。
+(3)像蛋白质这样的生物大分子，通过胞吞或胞吐进出细胞，其过程也需要膜上蛋白质的参与，更离不开膜上磷脂双分子层的流动性。
+[boundaryMarkdown] 一轮复习结论性要点，表述以人教版现行教材为准；具体数值可能因教材版本略有差异。
+候选（机械预筛，未必对）：氨基酸（名字出现）；蛋白质（名字出现）；自由扩散（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-photoprotection-ros-scavenging
+来源: 《狂K重点》生物 P382 重难3·题型3（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 光保护防线二（清除）：抗氧化酶系统清除活性氧
+[summaryMarkdown] 通过抗氧化酶等系统清除 ROS，避免生物膜与蛋白质被氧化。
+[applicabilityMarkdown] 植物抗强光机制归类。
+[contentMarkdown] 清除防线：抗氧化酶（如 SOD、过氧化物酶类）等系统把已生成的 ROS 清除，保护生物膜和蛋白质。
+[boundaryMarkdown] 清除的是'已生成的 ROS'，与'防止生成'的防御防线区分。
+候选（机械预筛，未必对）：蛋白质（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-serum-treatment
+来源: 《狂K重点》生物 P411-412 重难14·题型1（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: CONCEPT_EXPLANATION
+[title] 康复期血清/抗体治疗：紧急时直接输入抗体提供免疫保护
+[summaryMarkdown] 血清中含康复者抗体，直接输入可获得快速保护（被动免疫），但不能产生记忆细胞。
+[applicabilityMarkdown] 免疫治疗与疫苗区别题。
+[contentMarkdown] 1. 康复者血清含特异性抗体（针对该病原体）。
+2. 注射后机体快速获得抗体保护（被动免疫），立即生效。
+3. 局限：保护时间短、机体不会产生记忆细胞（属被动免疫）。
+[boundaryMarkdown] 与疫苗（主动免疫、产生记忆细胞）不同。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-chen-dian-fa-f67x11
+来源: 化学方法类《（重点·方法·点拨）第64讲 物质的分离与提纯- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: METHOD_MODEL
+[title] 沉淀法
+[summaryMarkdown] 沉淀法：在混合物中加入某种试剂，使其中一种以沉淀的形式分离出去的方法。
+[applicabilityMarkdown] 分析沉淀溶解平衡、判断沉淀生成或溶解时使用。
+[contentMarkdown] 沉淀法：在混合物中加入某种试剂，使其中一种以沉淀的形式分离出去的方法。使用该方法一定要注意不能引入新的杂质，如可用适量的BaCl2除去NaCl中的Na2SO4
+[boundaryMarkdown] 沉淀法：在混合物中加入某种试剂，使其中一种以沉淀的形式分离出去的方法。使用该方法一定要注意不能引入新的杂质，如可用适量的BaCl2除去NaCl中的Na2SO4
+候选（机械预筛，未必对）：混合物（名字出现）；沉淀溶解平衡（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-duo-yuan-ruo-jian-yan-f50x04
+来源: 化学方法类《（重点·方法·点拨）第47讲 盐类的水解- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 多元弱碱盐
+[summaryMarkdown] (3)多元弱碱盐：水解反应的离子方程式一步完成。
+[applicabilityMarkdown] 分析溶液酸碱性、比较粒子浓度大小与pH判断时使用。
+[contentMarkdown] (3)多元弱碱盐：水解反应的离子方程式一步完成。
+(4)阴、阳离子相互促进的水解
+①若水解程度不大，用“”表示。
+②相互促进的水解程度较大的，书写时用“=”“↑”“↓”。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：离子方程式（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-gei-rong-ye-jia-re-f54x05
+来源: 化学方法类《（重点·方法·点拨）第51讲 沉淀溶解平衡- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 给溶液加热
+[summaryMarkdown] ⑤给溶液加热，溶液的pH升高。
+[applicabilityMarkdown] 分析溶液酸碱性、比较粒子浓度大小与pH判断时使用。
+[contentMarkdown] ⑤给溶液加热，溶液的pH升高
+⑥向溶液中加入Na2CO3溶液，其中固体质量增加
+⑦向溶液中加入少量NaOH固体，Ca(OH)2固体质量不变
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：溶液的ph（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-mi-du-zhi-liang-fen-shu-f05x02
+来源: 化学方法类《（重点·方法·点拨）第02讲 物质的量浓度- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 密度1.84 g·mL-1、质量分数98%
+[summaryMarkdown] 密度1.84 g·mL-1、质量分数98%的浓H2SO4的物质的量浓度为18.4 mol·L-1。
+[applicabilityMarkdown] 解决相关化学计算问题时使用。
+[contentMarkdown] 如：密度1.84 g·mL-1、质量分数98%的浓H2SO4的物质的量浓度为18.4 mol·L-1。
+(2)物质的量浓度、溶质质量分数与溶解度的换算
+溶质质量分数与溶解度的关系：w=×100%。
+溶解度与物质的量浓度的关系：c= ；S=。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：物质的量（名字出现）；物质的量浓度（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-shi-yan-kai-shi-shi-f69x09
+来源: 化学方法类《（重点·方法·点拨）第66讲 　以物质制备为主的综合实验- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: METHOD_MODEL
+[title] 实验开始时
+[summaryMarkdown] ②实验开始时，打开K1，加热装置A、D，使A中产生的气体缓缓通入D中，发生反应CS2+3NH3NH4SCN+NH4HS(该反应比较缓慢)至CS2消失。
+[applicabilityMarkdown] 实验方案设计、评价与异常现象分析时使用。
+[contentMarkdown] ②实验开始时，打开K1，加热装置A、D，使A中产生的气体缓缓通入D中，发生反应CS2+3NH3NH4SCN+NH4HS(该反应比较缓慢)至CS2消失。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：实验方案设计（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-xi-qi-fa-f67x10
+来源: 化学方法类《（重点·方法·点拨）第64讲 物质的分离与提纯- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 洗气法
+[summaryMarkdown] 洗气法：当某气体中含有杂质气体时，可把混合气体通入某溶液中而除去，或转化成该气体，如乙烷中的乙烯可通过溴水而除去。
+[applicabilityMarkdown] 复习相关考点、解答对应试题时使用。
+[contentMarkdown] 洗气法：当某气体中含有杂质气体时，可把混合气体通入某溶液中而除去，或转化成该气体，如乙烷中的乙烯可通过溴水而除去
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-yi-zhi-f55x04
+来源: 化学方法类《（重点·方法·点拨）第52讲 沉淀溶解平衡图像的分析- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 已知：pM=-lg c(M)(M
+[summaryMarkdown] 已知：pM=-lg c(M)(M：Mg2+、Ca2+、Mn2+)，p(CO)=-lg c(CO)：曲线下方的点表示有沉淀生成。
+[applicabilityMarkdown] 分析沉淀溶解平衡、判断沉淀生成或溶解时使用。
+[contentMarkdown] 已知：pM=-lg c(M)(M：Mg2+、Ca2+、Mn2+)，p(CO)=-lg c(CO)：曲线下方的点表示有沉淀生成
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：沉淀溶解平衡（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-hj-hanbian-gainian
+来源: 化学讲义《第01讲 化学反应的热效应（举一反三讲义）（学生版）》（registry-kb-chemistry-handout:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 焓与焓变 ΔH
+[summaryMarkdown] 等压条件下反应热等于焓变，放热 ΔH<0，吸热 ΔH>0。
+[applicabilityMarkdown] 判断 ΔH 符号、由能量图写 ΔH 时使用。
+[contentMarkdown] 焓（H）是描述等压条件下反应热、与内能有关的物理量；等压反应的反应热等于焓变 ΔH，单位 kJ/mol。
+放热反应体系焓减小，ΔH<0；吸热反应 ΔH>0。
+ΔH＝生成物总焓－反应物总焓；放热反应反应物总焓大于生成物总焓。
+[boundaryMarkdown] 比较 ΔH 大小必须带正负号，吸热反应的 ΔH 总比放热反应的大。
+候选（机械预筛，未必对）：放热反应（名字出现）；吸热反应（名字出现）；反应热（名字出现）
+
+==============================================================================
+## MATH | math-divider-add-element-method
+来源: 《狂K重难点》数学 P432，重难点48·隔板法解决相同元素分组问题（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: METHOD_MODEL
+[title] 添元素隔板法：允许空组的相同元素分组
+[summaryMarkdown] 允许空组时先每组加 1 个元素凑成非空，插板后再去掉，方法数 $C_{m+n-1}^{m-1}$。
+[applicabilityMarkdown] 允许某些组分得 0 个元素的相同元素分配。
+[contentMarkdown] 允许某些组分得 0 个元素（空组）时：①人为添加 $m$ 个相同元素，使元素总数变为 $m+n$；②要求每组至少分得 1 个元素（最后每组去掉 1 个添加的元素即恢复原状）；③使用直接隔板法：将 $m+n$ 个元素分成 $m$ 组、每组至少 1 个，分组方法数为 $C_{m+n-1}^{m-1}$。
+[boundaryMarkdown] 添加的元素个数恰为组数 m；结果对应的是原问题的空组允许方案。
+候选（机械预筛，未必对）：隔板法（名字出现）
+
+==============================================================================
+## MATH | math-fx-qiexian-fangshuo-buzhou
+来源: 数学方法类《第三章　进阶篇　不等式证明方法　进阶3　切割线放缩》（registry-kb-math-methods:math）
+类型: METHOD_MODEL
+[title] 切线放缩估计零点位置的操作步骤
+[summaryMarkdown] 若 $f(x)$ 恒不低于某切线且切线单调，则可把曲线零点的界转化为切线方程对应根的比较。
+[applicabilityMarkdown] 双零点问题中单侧零点（如较大的零点 $x_2$）需要上界或下界估计时。
+[contentMarkdown] 1. 找切点并求切线 $\varphi(x)$，证明 $f(x)\ge\varphi(x)$ 在相关区间恒成立。
+2. 由 $f(x_2)=-m$ 与 $\varphi(x_2)\le f(x_2)$，解出直线方程 $\varphi(x)=-m$ 的根 $x'$（如切线 $y=x\ln 2-\ln 2$ 对应 $x'_2=1-\dfrac{m}{\ln 2}$）。
+3. 借 $\varphi$ 的单调性由函数值大小得 $x_2$ 与 $x'$ 的大小关系，完成单侧估计。
+[boundaryMarkdown] 切线必须整段位于曲线同侧，否则比较失效；切线根的显式求解依赖切线斜率非零。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-hj-s14-min-max
+来源: 数学讲义《第一章 §1.4　基本不等式.docx》（registry-kb-math-handout:math）
+类型: CONCEPT_EXPLANATION
+[title] 积定和最小、和定积最大
+[summaryMarkdown] 积为定值则和有最小值 2√P；和为定值则积有最大值 S²/4。
+[applicabilityMarkdown] 利用基本不等式求最值的方向选择。
+[contentMarkdown] 1. $xy=P$（定值，$x,y>0$）：$x+y\ge2\sqrt{P}$，当 $x=y$ 时最小。
+2. $x+y=S$（定值）：$xy\le\dfrac{S^2}{4}$，当 $x=y$ 时最大。
+[boundaryMarkdown] 两个方向都要求正数与定值前提成立。
+候选（机械预筛，未必对）：基本不等式（名字出现）；利用基本不等式求最值（名字出现）
+
+==============================================================================
+## MATH | math-inverse-construct-minus-lambda-power
+来源: 《狂K重难点》数学 P391 重难15·续表（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: METHOD_MODEL
+[title] 逆向构造：$xf'(x)-\lambda f(x)>0$ 时构造 $h(x)=\dfrac{f(x)}{x^{\lambda}}\ (x\neq 0)$
+[summaryMarkdown] 题干出现 $xf'(x)-\lambda f(x)>0$ 时，构造 $h(x)=\dfrac{f(x)}{x^{\lambda}}$，其导数分子恰为该组合。
+[applicabilityMarkdown] 条件含 $xf'(x)$ 与 $f(x)$ 组合（系数为负）的不等式问题。
+[contentMarkdown] 1. 识别题干形式 $xf'(x)-\lambda f(x)>0$。
+2. 构造 $h(x)=\dfrac{f(x)}{x^{\lambda}}$（$x\neq 0$），则 $h'(x)=\dfrac{xf'(x)-\lambda f(x)}{x^{\lambda+1}}$，在 $x>0$（或同号区间）时符号由分子决定。
+3. 目标式化为 $\dfrac{f(\cdot)}{(\cdot)^{\lambda}}$ 的比较，由单调性得出结论。
+[boundaryMarkdown] $\lambda=1$ 时即 $h(x)=\dfrac{f(x)}{x}$；须先确认 $x$ 的符号范围以保证 $x^{\lambda+1}$ 定号。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-mo-liangci-junzhi-qudeng
+来源: 数学《专题05 均值不等式培优归类（题型清单）（学生版）》（registry-kb-math-misc:math）
+类型: METHOD_MODEL
+[title] 两次使用均值的取等一致性
+[summaryMarkdown] 两次均值逐次消元时，相同字母的取等条件和数值必须一致。
+[applicabilityMarkdown] 需连续使用两次基本不等式的最值与证明题。
+[contentMarkdown] 一般情况下均值用两次，要保证相同字母“取等”条件和数值一致：两次均值逐次放缩消去中间量，最后的最值成立要求各次取等点能同时满足，取等条件不一致时结论只能放得更松，达不到最值。
+[boundaryMarkdown] 解出各次取等的方程组求公共解；无公共解时说明放缩链断裂，需换路径（如待定系数、换元）。
+候选（机械预筛，未必对）：基本不等式（名字出现）
+
+==============================================================================
+## MATH | math-normal-curve-above-axis-area-one
+来源: 《狂K重难点》数学 P437，重难点54·正态曲线的应用（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: CONCEPT_EXPLANATION
+[title] 正态曲线位于 x 轴上方且与 x 轴之间面积为 1
+[summaryMarkdown] 正态曲线在 $x$ 轴上方，与 $x$ 轴不相交，两者之间的面积恒为 1。
+[applicabilityMarkdown] 正态分布概率的归一化、由部分概率求补。
+[contentMarkdown] 正态曲线在 $x$ 轴上方，与 $x$ 轴不相交，曲线与 $x$ 轴之间的面积为 1。
+[boundaryMarkdown] 总面积为 1 即全部概率之和为 1，可用于对称性补全概率。
+候选（机械预筛，未必对）：全概率（名字出现）；正态分布（名字出现）
+
+==============================================================================
+## PHYSICS | phys-fx-f-t-graph-impulse-area
+来源: 物理方法类《第12讲 单个物体的动量定理（学生版）（模型与方法）（全国通用）》（registry-kb-physics-methods:physics）
+类型: METHOD_MODEL
+[title] F-t 图像面积表示冲量
+[summaryMarkdown] 变力的冲量可用 F-t 图线与时间轴围成的面积表示，方向不变时直接累加，方向变化分段处理。
+[applicabilityMarkdown] 求周期性、线性变化的变力冲量。
+[contentMarkdown] 1. $I=\int Fdt$，即 F-t 图线下的面积。
+2. 图线在 t 轴上方为正冲量，下方为负冲量。
+3. 结合动量定理：面积的代数和等于动量变化量。
+[boundaryMarkdown] 面积只能给出冲量大小，方向由力的方向约定确定。
+候选（机械预筛，未必对）：动量定理（名字出现）
+
+==============================================================================
+## PHYSICS | phys-hj2-qiumian-fushe-moxing
+来源: 物理讲义《第51讲 近代物理初步（复习讲义）（四川专用）》（registry-kb-physics-handout:physics）
+类型: METHOD_MODEL
+[title] 点光源的球面辐射模型
+[summaryMarkdown] 点光源以球面波均匀辐射，距光源 $R$ 处面积 $S$ 的接收器获得的光子能量份额为 $S/(4πR^2)$。
+[applicabilityMarkdown] 光子流、辐射功率类估算问题。
+[contentMarkdown] 1. 设辐射功率为 $P_0$，$Δt$ 时间内辐射的总能量 $E=P_0Δt$，均匀分布在半径为 $R$ 的球面上（球面积 $4πR^2$）。
+2. 正对光源、面积为 $S$ 的接收器接收到的能量 $E'=S·E/(4πR^2)$。
+3. 结合 $ε=hν$ 可进一步计算接收到的光子数 $N=E'/hν$。
+[boundaryMarkdown] 前提是光源各向均匀辐射；接收器正对光源（投影面积即 $S$）。
+候选（机械预筛，未必对）：球面辐射模型（名字出现）
+
+==============================================================================
+## PHYSICS | phys-kb-eddy-current-damping-drive
+来源: 物理知识清单：《专题13 电磁感应（知识清单）（全国通用）（教师版）》（registry-kb-physics-knowledge-list:physics）
+类型: CONCEPT_EXPLANATION
+[title] 涡流、电磁阻尼与电磁驱动
+[summaryMarkdown] 块状导体中磁通变化产生涡流，可利用也可减弱。
+[applicabilityMarkdown] 分析金属块在变化磁场中的现象时使用。
+[contentMarkdown] 涡流的本质是电磁感应，整块导体电阻小、电流大，发热明显；应用如真空冶炼炉、探雷器，减弱方法是用相互绝缘的硅钢片叠合铁芯。
+电磁阻尼：安培力阻碍导体相对磁场的运动；电磁驱动：磁场转动带动导体运动。
+两者都遵循楞次定律，都是阻碍相对运动。
+[boundaryMarkdown] 电磁阻尼中机械能转化为电能再转化为内能。
+候选（机械预筛，未必对）：安培力（名字出现）；电磁感应（名字出现）；楞次定律（名字出现）；电磁阻尼与电磁驱动（名字出现）
+

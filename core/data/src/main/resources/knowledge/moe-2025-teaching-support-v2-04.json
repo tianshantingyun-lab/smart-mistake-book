@@ -237,7 +237,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第35讲 反应热的测定与计算- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:反应热",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-fan-ying-zhong-de-liang-geng-duo-f38x04",
@@ -272,7 +277,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第35讲 反应热的测定与计算- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:反应热大小的比较",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-fang-fa-yi-f38x06",
@@ -287,7 +297,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第35讲 反应热的测定与计算- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:反应热大小的比较",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-wu-zhi-di-qi-ye-gu-san-tai-de-bian-hua-f38x07",
@@ -362,7 +377,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第35讲 反应热的测定与计算- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:反应热",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-zong-fan-ying-f39x01",
@@ -377,7 +397,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第36讲 化学能转化为电能——电池- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:原电池的工作原理-以zn-cu原电池为例",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-yuan-dian-chi-de-zheng-fu-ji-bu-jin-yu-f39x02",
@@ -452,7 +477,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第36讲 化学能转化为电能——电池- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:二次电池",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-ran-liao-dian-chi-f39x06",
@@ -727,7 +757,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第38讲 电解池　金属的腐蚀与防护- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:离子放电顺序与电解产物判断",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-yin-li-zi-de-fang-dian-shun-xu-f41x02",
@@ -782,7 +817,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第38讲 电解池　金属的腐蚀与防护- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:惰性电极电解的四种类型",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-an-yao-qiu-shu-xie-dian-ji-fan-ying-sh-f41x05",
@@ -837,7 +877,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第38讲 电解池　金属的腐蚀与防护- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电解饱和食盐水-氯碱工业",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-dian-du-dian-jie-jing-lian-tong-f41x08",
@@ -872,7 +917,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第38讲 电解池　金属的腐蚀与防护- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电冶金",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-dian-jie-yuan-li-ying-yong-de-si-dian-f41x10",
@@ -987,7 +1037,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第38讲 电解池　金属的腐蚀与防护- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:金属电化学腐蚀规律",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-yi-lv-cai-wei-yang-ji-f41x16",
@@ -1002,7 +1057,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第38讲 电解池　金属的腐蚀与防护- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电解原理",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-ke-chong-dian-dian-chi-you-chong-dian-f42x01",
@@ -1217,7 +1277,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第40讲 化学反应的方向和限度- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:反应热的五种计算方法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-zhu-yao-cheng-fen-wei-de-gong-ye-fei-q-f43x11",
@@ -1432,7 +1497,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第41讲 化学平衡常数的计算- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:碳中和",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-she-wei-xiang-dui-ya-li-ping-heng-chan-f44x11",
@@ -1607,7 +1677,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第42讲 反应条件对化学平衡移动的影响- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化学平衡移动方向和转化率的判断",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-ruo-an-yuan-bi-li-tong-bei-shu-di-zeng-f45x06",
@@ -1622,7 +1697,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第42讲 反应条件对化学平衡移动的影响- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化学平衡移动方向和转化率的判断",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-gou-jian-heng-wen-heng-rong-ping-heng-f45x07",
@@ -2017,7 +2097,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第43讲 化学反应速率　工业合成氨- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:控制变量法探究影响化学反应速率的因素",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-chang-ya-xia-f46x19",
@@ -2032,7 +2117,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第43讲 化学反应速率　工业合成氨- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:含量-或转化率-时间-温度-压强-图像",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-shi-ke-suo-gai-bian-de-tiao-jian-f47x01",
@@ -2067,7 +2157,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第44讲 常考化学反应速率和化学平衡图像的分析- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:v-t图像分析改变条件对化学平衡的影响",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-shi-zheng-tu-ran-jian-xiao-f47x03",
@@ -2082,7 +2177,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第44讲 常考化学反应速率和化学平衡图像的分析- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:v-t图像分析改变条件对化学平衡的影响",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-guo-zai-shi-ke-f47x04",
@@ -2097,7 +2197,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第44讲 常考化学反应速率和化学平衡图像的分析- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:v-t图像分析改变条件对化学平衡的影响",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-ci-lei-tu-xiang-yi-ban-zong-zuo-biao-b-f47x05",
@@ -2492,7 +2597,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第46讲 弱电解质的电离平衡- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:有关电离常数计算的两种类型-以弱酸hx为例",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-ci-lv-suan-yu-rong-ye-de-fan-ying-f49x11",
@@ -2607,7 +2717,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第47讲 盐类的水解- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:盐类水解离子方程式的书写",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-yan-lei-shui-jie-cheng-du-da-xiao-bi-j-f50x05",
@@ -2922,7 +3037,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第48讲 酸碱中和滴定及拓展应用- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:滴定操作",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-yang-shi-du-shu-f51x07",
@@ -2937,7 +3057,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第48讲 酸碱中和滴定及拓展应用- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:滴定操作",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-zhi-shi-ji-ji-zhong-dian-pan-duan-f51x08",
@@ -2952,7 +3077,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第48讲 酸碱中和滴定及拓展应用- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:氧化还原滴定的原理与指示剂",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-ran-shao-an-yi-ding-liu-su-tong-ru-yi-f51x09",
@@ -2967,7 +3097,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第48讲 酸碱中和滴定及拓展应用- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:滴定操作",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-dang-di-ru-zui-hou-ban-di-biao-zhun-ro-f51x10",
@@ -2982,7 +3117,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第48讲 酸碱中和滴定及拓展应用- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:酸碱中和滴定",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-jie-da-ci-lei-ti-mu-zhu-yi-san-ge-guan-f51x11",
@@ -3097,7 +3237,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第49讲 溶液中“粒子”浓度关系- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:溶液中粒子等量关系-三大守恒",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-zhi-zi-shou-heng-de-shu-xie-ji-qiao-f52x05",
@@ -3132,7 +3277,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第49讲 溶液中“粒子”浓度关系- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:溶液中粒子等量关系-三大守恒",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-zhua-liang-dian-tu-po-er-yuan-ruo-dian-f53x01",
@@ -3167,7 +3317,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第50讲 反应过程中溶液粒子浓度变化的图像分析- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:分布分数图像",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-wei-de-fen-bu-xi-shu-f53x03",
@@ -3202,7 +3357,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第50讲 反应过程中溶液粒子浓度变化的图像分析- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:水溶液中多曲线图像题的分析方法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-po-jie-dui-shu-tu-xiang-de-bu-zhou-f53x05",
@@ -3237,7 +3397,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第50讲 反应过程中溶液粒子浓度变化的图像分析- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:对数折线图四步法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-chen-dian-rong-jie-ping-heng-de-ying-x-f54x01",
@@ -3292,7 +3457,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第51讲 沉淀溶解平衡- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:沉淀溶解平衡的应用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-sheng-gao-wen-du-f54x04",
@@ -3307,7 +3477,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第51讲 沉淀溶解平衡- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:影响沉淀溶解平衡的因素",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-gei-rong-ye-jia-re-f54x05",
@@ -3322,7 +3497,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第51讲 沉淀溶解平衡- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:影响沉淀溶解平衡的因素",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-yi-zhi-rong-du-ji-rong-ye-zhong-mou-li-f54x06",
@@ -3357,7 +3537,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第51讲 沉淀溶解平衡- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:沉淀溶解平衡的应用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-tiao-jie-fa-f54x08",
@@ -3372,7 +3557,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第51讲 沉淀溶解平衡- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:调节pH分离提纯金属离子",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-tiao-jie-fa-f54x09",
@@ -3387,7 +3577,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第51讲 沉淀溶解平衡- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:调节pH分离提纯金属离子",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-yi-zhi-bu-rong-yu-shui-dan-ke-rong-f54x10",
@@ -3462,7 +3657,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第51讲 沉淀溶解平衡- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:解沉淀溶解平衡图像题的三步骤",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-shi-zai-f54x15",
@@ -3557,7 +3757,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第52讲 沉淀溶解平衡图像的分析- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:影响沉淀溶解平衡的因素",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-yi-zhi-f55x03",
@@ -3572,7 +3777,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第52讲 沉淀溶解平衡图像的分析- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:解沉淀溶解平衡图像题的三步骤",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-yi-zhi-f55x04",
@@ -3587,7 +3797,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第52讲 沉淀溶解平衡图像的分析- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:解沉淀溶解平衡图像题的三步骤",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-yi-zhi-f55x05",
@@ -3602,7 +3817,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第52讲 沉淀溶解平衡图像的分析- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:解沉淀溶解平衡图像题的三步骤",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-he-xin-fan-ying-f56x01",
@@ -3617,7 +3837,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第53讲 无机化工流程题的解题策略- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:陌生化学方程式的书写方法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-zhuo-shao-bei-shao-duan-shao-f56x02",
@@ -3632,7 +3857,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第53讲 无机化工流程题的解题策略- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:工业流程中反应条件的控制",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-chang-yong-de-kong-zhi-fan-ying-tiao-j-f56x03",
@@ -3707,7 +3937,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第53讲 无机化工流程题的解题策略- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:从溶液中获取晶体的方法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-leng-que-fa-f56x07",
@@ -3722,7 +3957,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第53讲 无机化工流程题的解题策略- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:分离提纯",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-you-ji-hua-he-wu-xi-tong-ming-ming-zho-f57x01",
@@ -3817,7 +4057,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第55讲 有机化合物的空间结构　同系物　同分异构体- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:同分异构体",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-jian-dan-you-ji-wu-tong-fen-yi-gou-ti-f58x04",
@@ -4032,7 +4277,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第56讲 烃　化石燃料- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:烃类的燃烧规律",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-hao-yang-liang-ke-gen-ju-f59x05",
@@ -4047,7 +4297,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第56讲 烃　化石燃料- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:烃类的燃烧规律",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-ben-de-tong-xi-wu-f59x06",
@@ -4162,7 +4417,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第56讲 烃　化石燃料- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:石油的综合利用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-lu-dai-ting-neng-fa-sheng-xiao-qu-fan-f60x01",
@@ -4277,7 +4537,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第57讲 卤代烃　醇　酚- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:醇的结构和性质",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-cong-guan-neng-tuan-hua-xue-jian-de-sh-f60x07",
@@ -4412,7 +4677,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第57讲 卤代烃　醇　酚- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:苯酚的化学性质",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-yi-zhi-er-lv-xi-dan-shi-yi-zhong-bo-qi-f60x14",
@@ -4447,7 +4717,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第58讲 醛、酮、羧酸、酯、酰胺- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:几种重要的醛-酮",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-yu-xin-zhi-de-xuan-zhuo-ye-fan-ying-f61x02",
@@ -4502,7 +4777,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第58讲 醛、酮、羧酸、酯、酰胺- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:乙酸",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-gao-ji-zhi-fang-suan-f61x06",
@@ -4517,7 +4797,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第58讲 醛、酮、羧酸、酯、酰胺- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:羧酸",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-hua-xue-xing-zhi-f61x07",
@@ -4712,7 +4997,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第59讲 油脂　生物大分子- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:油脂",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-cheng-tai-fan-ying-f62x07",
@@ -4727,7 +5017,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第59讲 油脂　生物大分子- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:氨基酸的结构与性质",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-dan-bai-zhi-di-jie-gou-yu-xing-zhi-f62x08",
@@ -4862,7 +5157,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第60讲 合成高分子　有机合成路线设计- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:聚合反应",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-dan-ti-te-dian-f63x02",
@@ -4877,7 +5177,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第60讲 合成高分子　有机合成路线设计- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:基本概念",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-chan-wu-te-zheng-f63x03",
@@ -4892,7 +5197,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第60讲 合成高分子　有机合成路线设计- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:有关合成高分子的易混易错点",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-gao-ju-wu-dan-ti-de-tui-duan-fang-fa-f63x04",
@@ -4947,7 +5257,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第60讲 合成高分子　有机合成路线设计- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:官能团的保护",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-an-ji-zai-yang-hua-qi-ta-ji-tuan-qian-f63x07",
@@ -5042,7 +5357,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第60讲 合成高分子　有机合成路线设计- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:限定条件下同分异构体的书写步骤",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-yi-wei-zhu-yao-yuan-liao-f63x12",
@@ -5097,7 +5417,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第61讲 有机合成与推断综合题突破- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:卤代烃的水解反应和消去反应",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-chun-qiang-ji-f64x03",
@@ -5112,7 +5437,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第61讲 有机合成与推断综合题突破- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:醇的化学性质",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-fen-qiang-ji-f64x04",
@@ -5127,7 +5457,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第61讲 有机合成与推断综合题突破- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:酚的结构和性质",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-quan-ji-yang-hua-fan-ying-yu-yin-an-ro-f64x05",
@@ -5262,7 +5597,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第62讲 化学实验基础知识和技能- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:常见仪器",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-liang-tong-he-di-ding-guan-de-du-shu-f65x02",
@@ -5357,7 +5697,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第62讲 化学实验基础知识和技能- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化学试剂的保存方法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-fang-fu-shi-f65x07",
@@ -5372,7 +5717,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第62讲 化学实验基础知识和技能- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化学试剂的保存方法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-fang-nian-jie-f65x08",
@@ -5387,7 +5737,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第62讲 化学实验基础知识和技能- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化学试剂的保存方法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-qi-ti-wu-zhi-di-rong-jie-huo-xi-shou-f65x09",
@@ -5422,7 +5777,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第62讲 化学实验基础知识和技能- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化学实验中的温度控制",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-bo-li-yi-qi-de-xi-di-f65x11",
@@ -5437,7 +5797,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第62讲 化学实验基础知识和技能- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:玻璃仪器的洗涤",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-suan-ye-sa-zai-pi-fu-shang-f65x12",
@@ -5452,7 +5817,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第62讲 化学实验基础知识和技能- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化学实验安全与事故处理",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-shi-zhi-shi-yong-shi-de-zhu-yi-shi-xia-f65x13",
@@ -5487,7 +5857,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第62讲 化学实验基础知识和技能- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:ph试纸的规范使用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-duo-yong-tu-de-qiu-xing-gan-zao-guan-f66x01",
@@ -5502,7 +5877,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第63讲 仪器的组合与创新使用- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:干燥管与洗气瓶的作用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-ke-yong-yu-ding-liang-ce-ding-qi-ti-de-f66x02",
@@ -5597,7 +5977,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第63讲 仪器的组合与创新使用- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:气体体积的测定方法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-qi-mi-xing-jian-cha-de-ji-ben-si-lu-f66x07",
@@ -5612,7 +5997,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第63讲 仪器的组合与创新使用- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:装置气密性检查",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-zhuang-zhi-xing-cheng-feng-bi-ti-xi-ca-f66x08",
@@ -5647,7 +6037,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第63讲 仪器的组合与创新使用- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:定量实验数据的采集与处理",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-tu-wei-zheng-fa-zhuang-zhi-f67x01",
@@ -5682,7 +6077,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第64讲 物质的分离与提纯- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:蒸馏",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-chang-kao-de-fen-li-ti-chun-cao-zuo-f67x03",
@@ -5717,7 +6117,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第64讲 物质的分离与提纯- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:结晶方法的选择与操作",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-li-yong-wu-zhi-di-rong-jie-du-dui-wu-z-f67x05",
@@ -5752,7 +6157,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第64讲 物质的分离与提纯- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:在实验操作②中为什么依次加入的试剂都要略微过量-实验操作④中加入盐酸的目的是什么",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-yi-fen-ying-shi-bei-ti-chun-huo-fen-li-f67x07",
@@ -5787,7 +6197,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第64讲 物质的分离与提纯- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:在实验操作②中为什么依次加入的试剂都要略微过量-实验操作④中加入盐酸的目的是什么",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-jia-re-fa-f67x09",
@@ -5802,7 +6217,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第64讲 物质的分离与提纯- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:熟练掌握溶解-过滤-蒸发等操作-认识化学方法在物质分离和提纯中的重要作用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-xi-qi-fa-f67x10",
@@ -5817,7 +6237,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第64讲 物质的分离与提纯- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:熟练掌握溶解-过滤-蒸发等操作-认识化学方法在物质分离和提纯中的重要作用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-chen-dian-fa-f67x11",
@@ -5832,7 +6257,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第64讲 物质的分离与提纯- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:熟练掌握溶解-过滤-蒸发等操作-认识化学方法在物质分离和提纯中的重要作用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-yang-hua-huan-yuan-fan-ying-fa-f67x12",
@@ -5867,7 +6297,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第64讲 物质的分离与提纯- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:调节pH分离提纯金属离子",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-yuan-li-huo-xing-zhi-tan-jiu-lei-jian-f68x02",
@@ -6062,7 +6497,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第66讲 　以物质制备为主的综合实验- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:物质制备流程与条件控制",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-cai-qu-jia-re-de-mu-f69x07",
@@ -6077,7 +6517,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第66讲 　以物质制备为主的综合实验- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化学实验中的温度控制",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-jie-da-wu-zhi-zhi-bei-zong-he-shi-yan-f69x08",
@@ -6112,7 +6557,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第66讲 　以物质制备为主的综合实验- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:物质制备流程与条件控制",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-you-ji-wu-zhi-bei-de-zhu-yi-yao-dian-f69x10",
@@ -6187,7 +6637,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第66讲 　以物质制备为主的综合实验- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:常见仪器",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-guan-zhu-you-ji-fan-ying-tiao-jian-f69x14",
@@ -6262,7 +6717,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第66讲 　以物质制备为主的综合实验- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:有机物制备实验的常用操作与仪器",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-zhi-bei-die-dan-hua-na-f69x18",
@@ -6277,7 +6737,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第66讲 　以物质制备为主的综合实验- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:物质制备流程与条件控制",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-geng-huan-yi-qi-xiang-yi-qi-zhong-jia-f69x19",
@@ -6412,7 +6877,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第67讲 以物质含量或组成测定为主的综合实验- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:量气分析法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-zhi-bei-guo-cheng-zhong-fan-ying-ti-xi-f70x07",
@@ -6487,7 +6957,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第67讲 以物质含量或组成测定为主的综合实验- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:定量测定型综合实验",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-jiang-de-dao-de-rong-ye-yong-wu-hui-lv-f70x11",
@@ -6562,7 +7037,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第68讲 以性质为主的探究类综合实验- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:沉淀的洗涤与检验",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-chen-re-guo-lv-hou-f71x03",
@@ -6577,7 +7057,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第68讲 以性质为主的探究类综合实验- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:重结晶",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-wen-du-bu-gao-yu-f71x04",
@@ -6592,7 +7077,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第68讲 以性质为主的探究类综合实验- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化学实验中的温度控制",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-jian-ya-zheng-liu-f71x05",
@@ -6607,7 +7097,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第68讲 以性质为主的探究类综合实验- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:蒸馏",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-zheng-fa-fan-ying-shi-de-qi-ti-fen-wei-f71x06",
@@ -6622,7 +7117,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第68讲 以性质为主的探究类综合实验- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:盐类水解的规律及拓展应用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-fan-ying-rong-qi-zhong-yong-bo-li-guan-f71x07",
@@ -6677,7 +7177,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第68讲 以性质为主的探究类综合实验- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:依据题目提供的新信息进行推断未知有机物的结构",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-wen-zi-biao-shu-ti-de-ge-zhong-da-ti-g-f71x10",
@@ -6692,7 +7197,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第68讲 以性质为主的探究类综合实验- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:沉淀的洗涤与检验",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-da-ti-yao-su-f71x11",
@@ -6727,7 +7237,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第68讲 以性质为主的探究类综合实验- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:现象描述答题模板",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-de-fen-dian-ji-guan-jian-ci-f71x13",
@@ -6742,7 +7257,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第68讲 以性质为主的探究类综合实验- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:现象描述答题模板",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-de-fen-dian-ji-guan-jian-ci-f71x14",
@@ -6757,7 +7277,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第68讲 以性质为主的探究类综合实验- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:现象描述答题模板",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-rong-ye-f71x15",
@@ -6812,7 +7337,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《高考化学 表格型化学实验基础题(学生版)-31页》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化学实验方案的评价",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-biao-zhun-nong-du-xi-yan-suan-di-ding-f72x02",
@@ -6907,7 +7437,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《高考化学化学与传统文化及STSE(学生版)-20页》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:食品的保护与食品袋中的干燥剂",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-hua-xue-yu-yi-yao-f73x05",
@@ -6922,7 +7457,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《高考化学化学与传统文化及STSE(学生版)-20页》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化学与医药的常考常识",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-yi-yong-bei-can-ji-f73x06",
@@ -6937,7 +7477,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《高考化学化学与传统文化及STSE(学生版)-20页》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化学与医药的常考常识",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-jiang-wen-ma-zui-f73x07",
@@ -6952,7 +7497,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《高考化学化学与传统文化及STSE(学生版)-20页》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化学与医药的常考常识",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-chang-kao-hua-xue-chang-shi-ju-li-f73x08",
@@ -6987,7 +7537,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《高考化学化学与传统文化及STSE(学生版)-20页》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:盐类水解的规律及拓展应用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-jian-yan-shu-song-lv-qi-de-guan-dao-sh-f73x10",
@@ -7022,7 +7577,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《高考化学化学与传统文化及STSE(学生版)-20页》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:干冰萤石与三类玻璃的成分",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-bo-li-xian-wei-f73x12",
@@ -7037,7 +7597,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《高考化学化学与传统文化及STSE(学生版)-20页》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:玻璃纤维的性质与用途",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-jin-xian-dai-de-cheng-jiu-f73x13",
@@ -7052,7 +7617,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《高考化学化学与传统文化及STSE(学生版)-20页》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:为化学作出贡献的科学家与重大成就",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-zao-zhi-shu-f73x14",
@@ -7067,7 +7637,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《高考化学化学与传统文化及STSE(学生版)-20页》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化学与传统文化",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-zhong-guo-gu-dai-hua-xue-de-gong-yi-ji-f73x15",
@@ -7102,7 +7677,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《高考化学化学与传统文化及STSE(学生版)-20页》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:常考经典史籍中的化学知识",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-tian-gong-kai-wu-zhong-fan-shi-hui-jin-f73x17",
@@ -7117,7 +7697,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《高考化学化学与传统文化及STSE(学生版)-20页》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化学与传统文化",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-fang-yang-hua-f74x01",
@@ -7132,7 +7717,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《高考化学化学实验基础(选择题)(学生版)-34页》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化学试剂的保存方法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-fang-shui-jie-f74x02",
@@ -7147,7 +7737,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《高考化学化学实验基础(选择题)(学生版)-34页》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:盐类水解的影响因素",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-shi-yong-yi-qi-f74x03",
@@ -7162,7 +7757,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《高考化学化学实验基础(选择题)(学生版)-34页》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:药品取用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-shi-zhi-de-shi-yong-f74x04",
@@ -7217,7 +7817,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《高考化学化学实验基础(选择题)(学生版)-34页》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:仪器的洗涤",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-guo-lv-zhuang-zhi-de-tuo-zhan-chuang-x-f74x07",
@@ -7272,7 +7877,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《高考化学化学实验基础(选择题)(学生版)-34页》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:蒸馏",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-cui-qu-yu-fan-cui-qu-f74x10",
@@ -7287,7 +7897,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《高考化学化学实验基础(选择题)(学生版)-34页》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:萃取",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-ye-ye-cui-qu-f74x11",
@@ -7302,7 +7917,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《高考化学化学实验基础(选择题)(学生版)-34页》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:萃取",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-chu-za-si-yuan-ze-he-si-zhu-yi-f74x12",
@@ -7317,7 +7937,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《高考化学化学实验基础(选择题)(学生版)-34页》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:在实验操作②中为什么依次加入的试剂都要略微过量-实验操作④中加入盐酸的目的是什么",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-entry-f74x13",
@@ -7332,7 +7957,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《高考化学化学实验基础(选择题)(学生版)-34页》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:氯的常见氧化物",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-shi-fou-zun-xun-dian-he-shou-heng-yu-z-f75x01",
@@ -7387,7 +8017,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《高考化学离子反应与离子方程式(学生版)-20页》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:焦亚硫酸钠",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-ken-ding-xing-yuan-ze-f76x01",
@@ -7402,7 +8037,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《高考化学离子检验、推断与共存(学生版)-26页》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:离子推断的基本原则",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-dian-zhong-xing-yuan-ze-f76x02",
@@ -7417,7 +8057,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《高考化学离子检验、推断与共存(学生版)-26页》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电荷守恒在离子推断中的应用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-entry-f76x03",
@@ -7432,7 +8077,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《高考化学离子检验、推断与共存(学生版)-26页》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:fe2-fe3-的检验方法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-entry-f76x04",
@@ -7447,7 +8097,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《高考化学离子检验、推断与共存(学生版)-26页》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:fe2-fe3-的检验方法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-entry-f76x05",
@@ -7462,7 +8117,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《高考化学离子检验、推断与共存(学生版)-26页》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:卤素离子的检验方法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-xi-yan-suan-he-rong-ye-jia-f76x06",
@@ -7597,7 +8257,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《高考化学离子检验、推断与共存(学生版)-26页》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:离子共存",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-si-fan-ying-f76x13",
@@ -7612,7 +8277,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《高考化学离子检验、推断与共存(学生版)-26页》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:下列溶液中-离子一定能大量共存的有____________",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-xiang-hu-cu-jin-de-shui-jie-fan-ying-f76x14",
@@ -7727,7 +8397,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《高考化学离子检验、推断与共存(学生版)-26页》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:离子推断的基本原则",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-qu-shao-liang-gai-rong-ye-jia-rong-ye-f76x24",
@@ -8042,7 +8717,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《考点01 配位键与配合物（学生版）（全国通用）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:配位键",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-zhong-xin-li-zi-f78x04",
@@ -8077,7 +8757,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《考点01 配位键与配合物（学生版）（全国通用）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:配合物",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-pei-li-zi-f78x06",
@@ -8092,7 +8777,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《考点01 配位键与配合物（学生版）（全国通用）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:配合物",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-pei-he-wu-de-sheng-cheng-shi-yan-tan-j-f78x07",
@@ -8127,7 +8817,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《考点01 配位键与配合物（学生版）（全国通用）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:配合物",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-wen-ding-xing-gai-bian-f78x09",
@@ -8302,7 +8997,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《考点03 大π键（离域π键、大派键）（学生版）（全国通用）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:大π键",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-biao-da-shi-f80x02",
@@ -8337,7 +9037,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《考点03 大π键（离域π键、大派键）（学生版）（全国通用）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:大π键",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-zhi-de-ji-suan-f80x04",
@@ -8372,7 +9077,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《考点03 大π键（离域π键、大派键）（学生版）（全国通用）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:大π键",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-tong-li-f80x06",
@@ -9387,7 +10097,12 @@
    "sourceId": "registry-kb-chemistry-textbook-preserve:chemistry",
    "sourceLocator": "人教版化学必修第二册 第七章第一节 认识有机化合物",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:甲烷",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-textbook-methane-physical",
@@ -9682,7 +10397,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P378 重难1·题型2",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:主动运输",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-cotransporter-electrochemical-gradient",
@@ -9697,7 +10417,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P378 重难1·题型2",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:主动运输的类型",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-light-driven-pump",
@@ -9932,7 +10657,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P378 重难2·题型1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:有氧呼吸",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-respiration-site-based-judgment",
@@ -9987,7 +10717,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P379 重难2·题型2",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:有氧呼吸",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-atp-synthase-proton-reflux",
@@ -10122,7 +10857,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P380 重难2·题型3",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞呼吸的影响因素及应用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-storage-low-o2-high-co2-low-temp",
@@ -10137,7 +10877,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P380 重难2·题型3",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞呼吸原理的应用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-c4-mesophyll-initial-fixation",
@@ -10192,7 +10937,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P380-381 重难3·题型1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:c4植物-cam植物等特殊代谢类型",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-cam-night-fixation-storage",
@@ -10247,7 +10997,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P380-381 重难3·题型1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:c4植物-cam植物等特殊代谢类型",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-c3-c4-cam-type-judgment",
@@ -10282,7 +11037,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P381-382 重难3·题型2",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光呼吸",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-photorespiration-consumes-energy",
@@ -10297,7 +11057,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P381-382 重难3·题型2",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光呼吸",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-photorespiration-o2-co2-dependence",
@@ -10332,7 +11097,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P381-382 重难3·题型2",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光呼吸",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-photorespiration-protective-role",
@@ -10367,7 +11137,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P382 重难3·题型3",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用的影响因素",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-photoinhibition-ros-generation",
@@ -10382,7 +11157,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P382 重难3·题型3",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光系统与电子传递链",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-photoinhibition-d1-inactivation",
@@ -10417,7 +11197,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P382 重难3·题型3",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:影响光合作用强度的环境因素",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-photoprotection-ros-scavenging",
@@ -10432,7 +11217,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P382 重难3·题型3",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:影响光合作用强度的环境因素",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-photoprotection-d1-repair",
@@ -10447,7 +11237,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P382 重难3·题型3",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:影响光合作用强度的环境因素",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-chlorophyll-increase-worsens-photoinhibition",
@@ -10462,7 +11257,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P382-383 重难3·题型3",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:影响光合作用强度的环境因素",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-rate-curve-zero-light-negative",
@@ -10617,7 +11417,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P385 重难4·题型1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:辨析真正光合速率-净光合速率和呼吸速率",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-compensation-point-respiration-increase",
@@ -10632,7 +11437,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P386 重难4·题型2",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸“关键点”的移动",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-compensation-point-photosynthesis-decrease",
@@ -10687,7 +11497,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P386-387 重难4·题型2",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:一昼夜CO2浓度变化曲线",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-diurnal-start-light-compensation-crossing",
@@ -10702,7 +11517,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P386-387 重难4·题型2",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:一昼夜CO2浓度变化曲线",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-diurnal-noon-depression-stomata",
@@ -10717,7 +11537,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P386-387 重难4·题型2",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:一昼夜CO2浓度变化曲线",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-diurnal-sunset-stop-photosynthesis",
@@ -10792,7 +11617,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P387 重难4·题型2",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:测定光合速率与呼吸速率的常用方法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-axis-confirmation-open-vs-closed",
@@ -10807,7 +11637,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P386-387 重难4·题型2",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:测定光合速率与呼吸速率的常用方法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-selfing-n-heterozygote-ratio",
@@ -10822,7 +11657,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P389 重难5·题型1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:自交和自由交配的概率计算",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-selfing-n-homozygote-ratio",
@@ -10837,7 +11677,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P389 重难5·题型1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:自交和自由交配的概率计算",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-selfing-n-phenotype-ratio",
@@ -10852,7 +11697,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P389 重难5·题型1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:自交和自由交配的概率计算",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-selfing-eliminating-recessive-heterozygote",
@@ -10867,7 +11717,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P389 重难5·题型1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:自交和自由交配的概率计算",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-selfing-eliminating-recessive-dominant-homozygote",
@@ -10882,7 +11737,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P389 重难5·题型1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:自交和自由交配的概率计算",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-random-mating-gamete-method",
@@ -11077,7 +11937,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P392 重难6·题型2",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:个体或配子致死问题的处理-规律方法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-lethal-aa-and-bb-4-2-2-1",
@@ -11092,7 +11957,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P392 重难6·题型2",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:个体或配子致死问题的处理-规律方法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-lethal-aa-or-bb-6-3-2-1",
@@ -11227,7 +12097,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P393 重难6·题型2",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:个体或配子致死问题的处理-规律方法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-sex-linked-pollen-half-lethal",
@@ -11302,7 +12177,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P395-396 重难7·题型1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:性状显隐性的判断",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-location-reciprocal-cross-consistency",
@@ -11577,7 +12457,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P399 重难8·题型1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:伴性遗传的特点及应用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-pedigree-cytoplasmic-inheritance",
@@ -11612,7 +12497,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P399 重难8·题型1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:遗传系谱图和电泳图谱分析",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-gel-electrophoresis-genotype-reading",
@@ -11647,7 +12537,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P400-401 重难8·题型1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:遗传病的检测与预防",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-consanguinity-risk-formula",
@@ -11682,7 +12577,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P401 重难8·题型1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:分离定律的概率计算-含自交与自由交配",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-replication-semiconservative",
@@ -11717,7 +12617,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P402 重难9·题型1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:DNA复制的拓展",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-replication-unwind-while-replicating",
@@ -11732,7 +12637,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P402 重难9·题型1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:dna的复制",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-replication-primer-reason",
@@ -11787,7 +12697,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P402 重难9·题型1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:DNA复制的拓展",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-replication-eukaryote-multi-origin",
@@ -11842,7 +12757,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P402 重难9·题型1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:DNA复制的拓展",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-prokaryote-transcription-translation-coupled",
@@ -11857,7 +12777,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P403 重难9·题型2",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:原核细胞和真核细胞",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-lac-operon-mechanism",
@@ -11872,7 +12797,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P403 重难9·题型2",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:基因的表达",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-mirna-repression-mechanism",
@@ -11887,7 +12817,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P403 重难9·题型2",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:基因的表达",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-circrna-sponge-mechanism",
@@ -11902,7 +12837,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P403 重难9·题型2",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:基因的表达",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-rna-interference-therapy-design",
@@ -11917,7 +12857,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P403 重难9·题型2",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:基因的表达",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-dominant-mutation-judgment",
@@ -12152,7 +13097,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P405 重难10·题型2",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:育种",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-gene-engineering-four-elements",
@@ -12207,7 +13157,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P405 重难10·题型2",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:育种",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-resting-potential-k-outflow",
@@ -12222,7 +13177,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P406 重难11·题型1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:兴奋在神经纤维上的传导",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-intracellular-fixed-anions",
@@ -12357,7 +13317,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P406 重难11·题型1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:主动运输",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-synaptic-abnormal-four-links",
@@ -12372,7 +13337,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P407 重难11·题型2",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:神经递质",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-synapse-unidirectional",
@@ -12547,7 +13517,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P409 重难12·题型2",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:生命活动调节实验的设计要点",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-hormone-experiment-variables",
@@ -12562,7 +13537,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P409 重难12·题型2",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:生命活动调节实验的设计要点",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-hormone-experiment-endogenous-exclusion",
@@ -12577,7 +13557,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P409 重难12·题型2",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:探究动植物生命活动调节实验的思路与方法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-hypothalamus-thermoregulation-center",
@@ -12692,7 +13677,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P410 重难13·题型1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:下丘脑的功能",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-hypothalamus-removal-dehydration",
@@ -12707,7 +13697,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P410 重难13·题型1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:水和无机盐平衡的调节",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-primer-specificity-single-band",
@@ -12742,7 +13737,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P418 重难19·题型1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:pcr技术",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-primer-pair-complement-dimer",
@@ -12757,7 +13757,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P418 重难19·题型1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:pcr技术",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-primer-directionality-two-primers",
@@ -12772,7 +13777,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P418 重难19·题型1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:pcr技术",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-pcr-primer-add-restriction-site",
@@ -12807,7 +13817,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P419-420 重难19·题型2",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:pcr技术",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-overlap-extension-pcr-site-mutagenesis",
@@ -12842,7 +13857,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P420-421 重难19·题型2",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:pcr技术",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-rt-pcr-principle",
@@ -12857,7 +13877,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P421 重难19·题型2",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:pcr技术",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-nested-pcr-two-rounds",
@@ -12912,7 +13937,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P424 重难19·题型3",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:基因工程",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-crispr-cas9-mechanism",
@@ -12987,7 +14017,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P428 重难20·题型1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:对照实验设计的四步模板",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-exp-control-types",
@@ -13002,7 +14037,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P428 重难20·题型1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:对照实验的分析方法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-exp-irrelevant-variables-constant",
@@ -13017,7 +14057,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P428 重难20·题型1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:对照实验设计的四步模板",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-exp-dependent-variable-measurement",
@@ -13032,7 +14077,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P428 重难20·题型1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:对照实验设计的四步模板",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-exp-principle-three-sources",
@@ -13107,7 +14157,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P428 重难20·题型2",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:坐标图类信息题的变量分析",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-info-extraction-curve",
@@ -13122,7 +14177,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P428 重难20·题型2",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:坐标图类信息题的变量分析",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-info-extraction-bar-chart",
@@ -13137,7 +14197,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P428 重难20·题型2",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:坐标图类信息题的变量分析",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-concept-question-routine",
@@ -13152,7 +14217,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P430 附录·考向3",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:长句应答题的作答方法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-long-answer-principle-based",
@@ -13167,7 +14237,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P429 附录·考向1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:长句应答题的作答方法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-long-answer-experiment-conclusion",
@@ -13322,7 +14397,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P377-378 重难1·题型1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:质壁分离",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-plasmolysis-sucrose-no-recovery",
@@ -13417,7 +14497,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P378 重难1·题型2",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:通道蛋白与载体蛋白的辨析",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-membrane-selectivity",
@@ -13532,7 +14617,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P382 重难3·题型3",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:影响光合作用强度的环境因素",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-compensation-point-shift-rule",
@@ -13707,7 +14797,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P380-381 重难3·题型1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:c4植物-cam植物等特殊代谢类型",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-cam-stomata-diurnal",
@@ -13742,7 +14837,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P380-382 重难3·题型1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:c4植物-cam植物等特殊代谢类型",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-c4-plant-yield-no-noon-rest",
@@ -13777,7 +14877,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P382 重难3·题型3",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光系统与电子传递链",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-ros-attack-membrane-protein",
@@ -13832,7 +14937,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P382-383 重难3·题型3",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:辨析真正光合速率-净光合速率和呼吸速率",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-shade-plant-adapted-photosynthetic",
@@ -13887,7 +14997,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P386-387 重难4·题型2",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:测定光合速率与呼吸速率的常用方法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-selfing-homozygote-ratio",
@@ -13902,7 +15017,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P389 重难5·题型1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:自交和自由交配的概率计算",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-free-mating-allele-frequency",
@@ -14037,7 +15157,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P378 重难2·题型1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞呼吸概念-实质和意义",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-atp-produced-site-count",
@@ -14172,7 +15297,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P410 重难13·题型1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:激素",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-growth-hormone-gh",
@@ -14367,7 +15497,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P407 重难11·题型2",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:突触",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-synaptic-transmission-steps",
@@ -14382,7 +15517,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P407 重难11·题型2",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:突触",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-excitatory-inhibitory-neurotransmitters",
@@ -14397,7 +15537,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P407 重难11·题型2",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:神经递质",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-neurotransmitter-clearance",
@@ -14412,7 +15557,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P407 重难11·题型2",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:神经递质",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-sodium-potassium-pump-first-splice",
@@ -14527,7 +15677,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P411-412 重难14·题型1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:免疫学的应用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-vaccine-principle",
@@ -14642,7 +15797,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P429 重难16·题型1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:种群数量的变化",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-k-value-max-rate",
@@ -14657,7 +15817,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P429 重难16·题型1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:种群数量的变化",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-k-value-utilization",
@@ -14732,7 +15897,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P430 重难17·题型1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:能量流动",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-energy-transfer-efficiency",
@@ -14767,7 +15937,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P430 重难17·题型1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:能量流动",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-co2-exchange-ecosystem",
@@ -14962,7 +16137,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P429 重难16·题型1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:种群的数量特征",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-biodiversity-three-levels",
@@ -14997,7 +16177,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-biology:biology",
    "sourceLocator": "《狂K重点》生物 P430 重难17·题型1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:生物多样性",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb-cell-theory-founders",
@@ -15092,7 +16277,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第01讲 走近细胞（知识清单）（全国通用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:归纳法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb-life-system-levels-order",
@@ -15427,7 +16617,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第01讲 走近细胞（知识清单）（全国通用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:使用高倍显微镜观察细胞",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb-microscope-image-shift-rule",
@@ -15582,7 +16777,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第02讲 细胞中的元素和化合物（知识清单）（全国通用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:组成细胞的元素",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb-element-and-compound-weight-judgment",
@@ -15777,7 +16977,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第02讲 细胞中的元素和化合物（知识清单）（全国通用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的无机盐",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb-fehling-reagent-reducing-sugar",
@@ -15792,7 +16997,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第02讲 细胞中的元素和化合物（知识清单）（全国通用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:实验-检测生物组织中的糖类-脂肪和蛋白质",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb-sudan-iii-fat-detection",
@@ -15847,7 +17057,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第02讲 细胞中的元素和化合物（知识清单）（全国通用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:实验-检测生物组织中的糖类-脂肪和蛋白质",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb-sugar-classification-overview",
@@ -15882,7 +17097,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第03讲 糖类和脂质（知识清单）（全国通用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的糖类",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb-disaccharide-types-distribution",
@@ -15917,7 +17137,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第03讲 糖类和脂质（知识清单）（全国通用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的糖类",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb-sugar-not-all-reducing-energy",
@@ -15932,7 +17157,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第03讲 糖类和脂质（知识清单）（全国通用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的糖类",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb-lipid-elements-and-solubility",
@@ -16027,7 +17257,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第03讲 糖类和脂质（知识清单）（全国通用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的脂质",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb-fat-not-biomacromolecule",
@@ -17182,7 +18417,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第07讲 物质运输（知识清单）（全国通用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:渗透作用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb-animal-cell-water-balance",
@@ -17397,7 +18637,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第07讲 物质运输（知识清单）（全国通用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:通道蛋白与载体蛋白的辨析",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb-membrane-transport-factors-curves",
@@ -17592,7 +18837,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第08讲 酶和ATP（知识清单）（全国通用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:酶的两种抑制机理",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb-enzyme-specificity-experiment",
@@ -17767,7 +19017,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第08讲 酶和ATP（知识清单）（全国通用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:酶的本质",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb-yeast-respiration-mode-experiment",
@@ -17802,7 +19057,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第09讲 细胞呼吸（知识清单）（全国通用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:对照实验的分析方法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb-cell-respiration-concept-essence",
@@ -18557,7 +19817,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第11讲 细胞代谢综合分析（知识清单）（全国通用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:影响光合作用强度的环境因素",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb-day-photosynthesis-curve-analysis",
@@ -18632,7 +19897,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第11讲 细胞代谢综合分析（知识清单）（全国通用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:同位素标记法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb-cell-size-limitation-reasons",
@@ -18647,7 +19917,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第12讲 细胞的增殖（知识清单）（全国通用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞不能无限长大的原因",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb-cell-division-concept-and-ways",
@@ -19462,7 +20737,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第15讲 分离定律（知识清单）（全国通用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:人工异花传粉的操作流程",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb-genetics-basic-terms",
@@ -19617,7 +20897,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第15讲 分离定律（知识清单）（全国通用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:纯合子与杂合子的判断",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb-genotype-inference-forward-reverse",
@@ -19692,7 +20977,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第15讲 分离定律（知识清单）（全国通用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:自交和自由交配的概率计算",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb-dominance-relative-forms",
@@ -19907,7 +21197,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第16讲 自由组合定律（知识清单）（全国通用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:育种",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb-multigene-gamete-and-combination-calc",
@@ -21482,7 +22777,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第22讲 生物的变异（知识清单）（全国通用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:染色体变异-x1",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb-low-temperature-chromosome-induction-experiment",
@@ -21677,7 +22977,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第23讲 生物的进化（知识清单）（全国通用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:自然选择",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb-population-gene-pool-gene-frequency",
@@ -22052,7 +23357,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第24讲 内环境与稳态（知识清单）（全国通用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:组织水肿的成因",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb-ph-stability-simulation-experiment",
@@ -22207,7 +23517,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第25讲 神经调节（知识清单）（全国通用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:神经调节的结构基础",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb-reflex-concept-and-types",
@@ -22782,7 +24097,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第02讲 细胞中的元素和化合物（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的元素",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb2-02-fresh-dry-weight-max",
@@ -22937,7 +24257,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第02讲 细胞中的元素和化合物（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:实验-检测生物组织中的糖类-脂肪和蛋白质",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb2-02-fat-detection",
@@ -22992,7 +24317,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第02讲 细胞中的元素和化合物（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:实验-检测生物组织中的糖类-脂肪和蛋白质",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb2-02-three-unique-organic-test",
@@ -23007,7 +24337,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第02讲 细胞中的元素和化合物（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:实验-检测生物组织中的糖类-脂肪和蛋白质",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb2-03-sugar-classification",
@@ -23022,7 +24357,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第03讲 糖类和脂质（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的糖类",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb2-03-disaccharide-hydrolysis",
@@ -23057,7 +24397,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第03讲 糖类和脂质（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的糖类",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb2-03-non-reducing-sugars",
@@ -23072,7 +24417,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第03讲 糖类和脂质（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的糖类",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb2-03-lipid-classification",
@@ -23227,7 +24577,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第03讲 糖类和脂质（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:几丁质",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb2-04-amino-acid-structure",
@@ -23442,7 +24797,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第04讲 蛋白质和核酸（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:RNA的结构、种类与功能",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb2-04-biomacromolecule-carbon-chain",
@@ -23917,7 +25277,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第06讲 细胞器和生物膜系统（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:囊泡运输与蛋白质分选",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb2-06-biomembrane-system",
@@ -24052,7 +25417,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第07讲 物质运输（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:质壁分离",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb2-07-plasmolysis-experiment",
@@ -24307,7 +25677,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第08讲 酶和ATP（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:影响酶促反应的因素分析",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb2-08-substrate-enzyme-concentration-curve",
@@ -24342,7 +25717,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第08讲 酶和ATP（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:酶的两种抑制机理",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb2-08-specificity-experiment",
@@ -24737,7 +26117,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第10讲 光合作用（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:捕获光能的色素和结构",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb2-10-pigment-bands",
@@ -24772,7 +26157,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第10讲 光合作用（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:捕获光能的色素和结构",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb2-10-chlorophyll-synthesis-factors",
@@ -24927,7 +26317,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第10讲 光合作用（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:影响光合作用强度的环境因素",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb2-10-external-factors-photosynthesis",
@@ -25062,7 +26457,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第11讲 细胞代谢综合分析（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:影响光合作用强度的环境因素",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb2-11-c4-plants",
@@ -25157,7 +26557,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第11讲 细胞代谢综合分析（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合产物的运输与转化",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb2-15-pea-advantages",
@@ -25312,7 +26717,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第15讲 分离定律（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:纯合子与杂合子的判断",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb2-15-simulation-experiment",
@@ -25367,7 +26777,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第15讲 分离定律（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:分离定律的概率计算-含自交与自由交配",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb2-15-lethal-phenocopy",
@@ -25602,7 +27017,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第16讲 自由组合定律（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:育种",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb2-16-linkage-crossing-over",
@@ -26077,7 +27497,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第22讲 生物的变异（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:染色体变异-x1",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb2-22-genome-ploidy-concepts",
@@ -26372,7 +27797,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第26讲 体液调节（知识清单）（全国通用）（解析版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:激素",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb2-26-hormone-research-methods",
@@ -26487,7 +27917,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第26讲 体液调节（知识清单）（全国通用）（解析版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:胰岛素",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb2-26-insulin-glucagon",
@@ -26622,7 +28057,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第26讲 体液调节（知识清单）（全国通用）（解析版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:胰岛素",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb2-27-humoral-vs-neural",
@@ -26717,7 +28157,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第27讲 体液调节与神经调节的关系（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:水和无机盐平衡的调节",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb2-27-hypothalamus-functions",
@@ -26732,7 +28177,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第27讲 体液调节与神经调节的关系（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:下丘脑在稳态调节中的作用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb2-27-winter-urine",
@@ -26747,7 +28197,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第27讲 体液调节与神经调节的关系（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:水和无机盐平衡的调节",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb2-27-sweat-adh-exercise",
@@ -26762,7 +28217,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第27讲 体液调节与神经调节的关系（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:水和无机盐平衡的调节",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb2-28-immune-system-components",
@@ -26897,7 +28357,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第28讲 免疫调节（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:体液免疫",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb2-28-cellular-immunity",
@@ -26992,7 +28457,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第28讲 免疫调节（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:免疫系统的组成和功能",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb2-29-allergy",
@@ -27047,7 +28517,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第29讲 免疫失调和免疫学的应用（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:自身免疫病与免疫缺陷病",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb2-29-hiv-aids",
@@ -27062,7 +28537,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第29讲 免疫失调和免疫学的应用（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:艾滋病（HIV）",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb2-29-vaccine-principle",
@@ -27097,7 +28577,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第29讲 免疫失调和免疫学的应用（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:疫苗",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb2-29-organ-transplant-hla",
@@ -27112,7 +28597,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第29讲 免疫失调和免疫学的应用（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:免疫学的应用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb2-29-immunology-applications",
@@ -27207,7 +28697,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第30讲 动物生命活动调节的综合分析（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:兴奋在神经纤维上的传导",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb2-30-neurotransmitter-caution",
@@ -27302,7 +28797,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第31讲 植物生命活动调节（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:植物生长素及其生理作用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb2-31-plant-hormone-definition",
@@ -27597,7 +29097,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第32讲 种群（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:种群数量的变化",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb2-32-k-value-application",
@@ -27652,7 +29157,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第32讲 种群（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:密度制约因素与非密度制约因素",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb2-32-k-determinants",
@@ -27707,7 +29217,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第32讲 种群（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:血细胞计数板",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb2-33-community-species-composition",
@@ -27842,7 +29357,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第33讲 群落（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:研究土壤中小动物类群的丰富度",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb2-33-community-types",
@@ -27877,7 +29397,12 @@
    "sourceId": "registry-kb-biology-knowledge-list:biology",
    "sourceLocator": "生物知识清单：《第33讲 群落（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:群落的演替",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-kb2-33-succession-nature",
@@ -28552,7 +30077,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第01讲 走近细胞（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:原核细胞",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-01-prokaryote-structure",
@@ -28787,7 +30317,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第01讲 走近细胞（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:使用高倍显微镜观察细胞",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-01-cell-count-calc",
@@ -28982,7 +30517,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第02讲 细胞中的元素和化合物（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的元素",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-02-main-basic-core-element",
@@ -28997,7 +30537,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第02讲 细胞中的元素和化合物（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的元素",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-02-fresh-dry-weight-order",
@@ -29012,7 +30557,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第02讲 细胞中的元素和化合物（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的元素",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-02-compound-categories",
@@ -29067,7 +30617,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第02讲 细胞中的元素和化合物（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的水",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-02-free-bound-water",
@@ -29102,7 +30657,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第02讲 细胞中的元素和化合物（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的水",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-02-inorganic-salt-form",
@@ -29297,7 +30857,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第02讲 细胞中的元素和化合物（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:实验-检测生物组织中的糖类-脂肪和蛋白质",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-02-reducing-sugar-list",
@@ -29312,7 +30877,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第02讲 细胞中的元素和化合物（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的糖类",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-02-felin-reagent-fresh",
@@ -29327,7 +30897,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第02讲 细胞中的元素和化合物（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:实验-检测生物组织中的糖类-脂肪和蛋白质",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-02-fat-test",
@@ -29382,7 +30957,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第02讲 细胞中的元素和化合物（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:常见实验试剂与颜色变化",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-02-three-unique-in-tests",
@@ -29497,7 +31077,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第02讲 细胞中的元素和化合物（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:组成细胞的元素",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-02-mg-chlorophyll-not-carotene",
@@ -29512,7 +31097,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第02讲 细胞中的元素和化合物（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:捕获光能的色素和结构",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-02-water-as-solvent-reason",
@@ -29607,7 +31197,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第03讲 糖类和脂质（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的糖类",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-03-disaccharide-composition",
@@ -29642,7 +31237,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第03讲 糖类和脂质（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的糖类",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-03-glucose-fuel",
@@ -29657,7 +31257,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第03讲 糖类和脂质（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的糖类",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-03-polysaccharide-functions",
@@ -29672,7 +31277,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第03讲 糖类和脂质（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的糖类",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-03-chitin-uses",
@@ -29687,7 +31297,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第03讲 糖类和脂质（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:几丁质",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-03-sugar-by-function",
@@ -29742,7 +31357,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第03讲 糖类和脂质（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的糖类",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-03-lipid-elements-traits",
@@ -29977,7 +31597,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第03讲 糖类和脂质（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:实验-检测生物组织中的糖类-脂肪和蛋白质",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-03-soybean-elements-mistake",
@@ -30032,7 +31657,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第03讲 糖类和脂质（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞中的糖类",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-03-seed-germination-stages",
@@ -30207,7 +31837,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第04讲 蛋白质和核酸（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:蛋白质相关计算题",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-04-protein-formation-levels",
@@ -30362,7 +31997,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第04讲 蛋白质和核酸（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:蛋白质",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-04-protein-mistakes",
@@ -30397,7 +32037,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第04讲 蛋白质和核酸（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:蛋白质的盐析变性与水解的辨析",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-04-peptide-bond-formula",
@@ -30992,7 +32637,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第05讲 细胞膜和细胞核（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞膜成分和结构的探究历程",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-05-membrane-component-identification",
@@ -31167,7 +32817,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第05讲 细胞膜和细胞核（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:生物模型的类型",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-05-nuclear-pore-complex",
@@ -31182,7 +32837,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第05讲 细胞膜和细胞核（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞核的结构和功能",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-05-membrane-nucleus-mistakes",
@@ -31917,7 +33577,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第07讲 物质运输（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:渗透作用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-07-solute-can-pass",
@@ -31932,7 +33597,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第07讲 物质运输（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:渗透作用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-07-sucrase-in-osmometer",
@@ -31947,7 +33617,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第07讲 物质运输（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:渗透作用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-07-osmotic-pressure-molality",
@@ -32462,7 +34137,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第08讲 酶和ATP（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:与酶有关的曲线分析",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-08-enzyme-reusability",
@@ -32477,7 +34157,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第08讲 酶和ATP（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:酶的作用和本质",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-08-high-efficiency-experiment",
@@ -32612,7 +34297,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第08讲 酶和ATP（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:酶的特性",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-08-temperature-ph-activity-curve",
@@ -32647,7 +34337,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第08讲 酶和ATP（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:酶的作用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-08-enzyme-concentration-curves",
@@ -32662,7 +34357,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第08讲 酶和ATP（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:影响酶促反应的因素分析",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-08-experiment-principles",
@@ -32697,7 +34397,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第08讲 酶和ATP（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:对照实验的分析方法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-08-atp-structure",
@@ -32752,7 +34457,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第08讲 酶和ATP（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:atp的结构与作用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-08-carrier-phosphorylation",
@@ -32787,7 +34497,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第08讲 酶和ATP（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:atp的合成和利用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-08-atp-sources-organisms",
@@ -33042,7 +34757,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第09讲 细胞呼吸（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:有氧呼吸的过程分析",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-09-atp-synthase-proton-gradient",
@@ -33157,7 +34877,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第09讲 细胞呼吸（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞呼吸原理的应用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-09-seed-germination-respiration",
@@ -33312,7 +35037,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第09讲 细胞呼吸（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞呼吸的影响因素及应用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-10-pigment-extraction-principle",
@@ -33327,7 +35057,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第10讲 光合作用（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:捕获光能的色素和结构",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-10-pigment-separation-principle",
@@ -33342,7 +35077,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第10讲 光合作用（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:捕获光能的色素和结构",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-10-pigment-bands-order",
@@ -33357,7 +35097,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第10讲 光合作用（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:捕获光能的色素和结构",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-10-pigment-experiment-abnormal",
@@ -33392,7 +35137,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第10讲 光合作用（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:捕获光能的色素和结构",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-10-algae-distribution-light",
@@ -33407,7 +35157,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第10讲 光合作用（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:色素",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-10-engelmann-experiment",
@@ -33742,7 +35497,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第10讲 光合作用（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:影响光合作用强度的环境因素",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-10-magnesium-chlorosis",
@@ -33757,7 +35517,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第10讲 光合作用（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:捕获光能的色素和结构",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-10-multiple-factors-limiting",
@@ -33892,7 +35657,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第11讲 细胞代谢综合分析（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:H和ATP的来源与去向",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-11-atp-source-destination",
@@ -34047,7 +35817,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第11讲 细胞代谢综合分析（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:光合作用与细胞呼吸“关键点”的移动",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-11-summer-co2-curve",
@@ -34062,7 +35837,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第11讲 细胞代谢综合分析（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:一昼夜CO2浓度变化曲线",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-11-closed-container-curve",
@@ -35397,7 +37177,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第15讲 分离定律（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:人工异花传粉的操作流程",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-15-trait-concepts",
@@ -35432,7 +37217,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第15讲 分离定律（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:基因",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-15-genotype-phenotype",
@@ -35827,7 +37617,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第16讲 自由组合定律（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:两对相对性状杂交实验过程",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-16-splitting-method",
@@ -35942,7 +37737,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第16讲 自由组合定律（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:自由组合定律中的特殊分离比问题分析",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-16-lethal-ratio-analysis",
@@ -35977,7 +37777,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第16讲 自由组合定律（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:连锁互换问题的配子分析",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-16-mendel-success-reasons",
@@ -36692,7 +38497,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第19讲 DNA是主要的遗传物质（复习讲义）（全国通用）（解析版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:噬菌体侵染细菌实验",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-19-phage-abnormal-results",
@@ -36887,7 +38697,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第20讲 DNA的结构、复制与基因的本质（复习讲义）（全国通用）（解析版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:dna的双螺旋结构",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-20-base-pair-rules",
@@ -37022,7 +38837,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第20讲 DNA的结构、复制与基因的本质（复习讲义）（全国通用）（解析版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:DNA复制的拓展",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-20-replication-calculation",
@@ -37077,7 +38897,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第21讲 基因的表达、基因与性状的关系（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:RNA的结构、种类与功能",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-21-transcription-process",
@@ -37912,7 +39737,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第23讲 生物的进化（复习讲义）（全国通用）（解析版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:自然选择",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-23-modern-theory-development",
@@ -38047,7 +39877,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第23讲 生物的进化（复习讲义）（全国通用）（解析版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:隔离在物种形成中的作用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-23-speciation-models",
@@ -38382,7 +40217,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第24讲  内环境与稳态（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:酸碱平衡",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-24-internal-environment-function",
@@ -38497,7 +40337,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第24讲  内环境与稳态（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:内环境的稳态",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-24-ph-simulation-experiment",
@@ -38672,7 +40517,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第32讲 种群（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:种群的数量特征",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-32-age-structure-types",
@@ -38727,7 +40577,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第32讲 种群（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:种群数量的变化",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-32-s-shaped-curve",
@@ -38742,7 +40597,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第32讲 种群（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:种群数量的变化",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-32-lambda-curve-analysis",
@@ -38817,7 +40677,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第32讲 种群（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:密度制约因素与非密度制约因素",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-32-population-research-application",
@@ -38872,7 +40737,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第33讲 群落（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:群落的结构",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-33-predation-parasitism-competition",
@@ -38887,7 +40757,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第33讲 群落（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:群落的结构",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-fj-33-predation-vs-parasitism-detail",
@@ -38982,7 +40857,12 @@
    "sourceId": "registry-kb-biology-handout:biology",
    "sourceLocator": "生物讲义《第33讲 群落（复习讲义）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:研究土壤中小动物类群的丰富度",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "ext-mat-20fbdf1375-001",

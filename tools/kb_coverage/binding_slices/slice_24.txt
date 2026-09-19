@@ -1,0 +1,372 @@
+# 绑定作业片 24：29 条无绑定材料
+#
+# 任务：为每条材料选定它应该绑定的知识点节点（就是讲题时该材料服务的那个点）。
+# 交付（写到 tools/kb_coverage/binding_fixes/slice_24/notes.csv）：
+#   subject,material_slug,node_slug,confidence,evidence
+#   （node_slug 用下面的节点表里的 slug；确实没有合适的写 NONE；
+#     evidence 一句话说明依据；字段内不要有 ASCII 逗号）
+#
+# 硬规矩：
+#   · 宁缺勿错：不确定就 confidence=low 或写 NONE —— 错绑会让检索喂错材料
+#   · 只能从本学科节点表里选（见 tools/kb_coverage/binding_slices/nodes/nodes_<学科>.txt）
+#   · 一条材料只绑一个节点（就是它最主要服务的那个点）
+
+==============================================================================
+## BIOLOGY | bio-ecology-protection-measures
+来源: 《狂K重点》生物 P430 重难17·题型1（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 生态保护措施：就地保护（保护区）、易地保护、建立种子基因库
+[summaryMarkdown] 生物多样性保护主要手段：就地保护（建设自然保护区）、易地保护（迁地）、建立种子库/基因库、人工繁育。
+[applicabilityMarkdown] 生态保护措施判断题。
+[contentMarkdown] 1. 就地保护：建立自然保护区——最有效的措施。
+2. 易地保护：移入动物园、濒危动植物繁育中心。
+3. 其他：种子种质资源库、基因库；科学利用、法规。
+[boundaryMarkdown] 就地保护优先，其次才是易地保护。
+候选（机械预筛，未必对）：生物多样性（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fj-03-lactose-in-milk
+来源: 生物讲义《第03讲 糖类和脂质（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 乳糖在人和动物乳汁中含量丰富
+[summaryMarkdown] 乳糖由一分子半乳糖和一分子葡萄糖组成，在人和动物的乳汁中含量丰富。
+[applicabilityMarkdown] 二糖分布判断。
+[contentMarkdown] 1. 乳糖是动物二糖，由半乳糖和葡萄糖脱水缩合而成。
+2. 分布在人和动物的乳汁中，含量丰富。
+3. 为幼体提供能量。
+[boundaryMarkdown] 乳糖是还原糖，可被乳糖酶水解为半乳糖和葡萄糖。
+候选（机械预筛，未必对）：脱水缩合（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fj-09-electron-transport-chain
+来源: 生物讲义《第09讲 细胞呼吸（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 电子传递链与化学渗透假说
+[summaryMarkdown] [H]释放的电子经内膜蛋白质传递给O2，建立的H+浓度梯度驱动ATP合酶合成ATP。
+[applicabilityMarkdown] 有氧呼吸第三阶段机制（新情境）。
+[contentMarkdown] 1. [H]在酶催化下释放电子和H+，电子被内膜上特殊蛋白质捕获传递，最终与O2和H+结合生成水。
+2. 传递电子的蛋白质把H+泵到膜间隙，建立跨膜H+浓度梯度。
+3. H+经ATP合酶通道流回基质，推动ATP合成；H+浓度差越大ATP合成越多。
+[boundaryMarkdown] 化学渗透假说（米切尔）同样解释叶绿体类囊体合成ATP的机制。
+候选（机械预筛，未必对）：蛋白质（名字出现）；叶绿体（名字出现）；有氧呼吸（名字出现）；类囊体（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fj-20-chargaff-rule-base-equality
+来源: 生物讲义《第20讲 DNA的结构、复制与基因的本质（复习讲义）（全国通用）（解析版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 查哥夫的碱基等量关系发现
+[summaryMarkdown] 查哥夫测定DNA分子组成，发现不同物种四种碱基含量不同，但A=T、C=G总是相等。
+[applicabilityMarkdown] 模型构建证据。
+[contentMarkdown] 1. 不同物种的DNA中四种碱基的含量不同（体现特异性）。
+2. 同一DNA中A和T含量相等、C和G含量相等。
+3. 这为碱基互补配对提供了定量依据。
+[boundaryMarkdown] 查哥夫法则即碱基互补配对的化学计量基础。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fx-age-structure-three-types
+来源: 生物方法类《2026届新疆高三生物三轮复习种群、群落、生态系统·完整知识点问答》（registry-kb-biology-methods:biology）
+类型: CONCEPT_EXPLANATION
+[title] 年龄组成的三种类型与预测
+[summaryMarkdown] 增长型幼年个体多、密度将增大；稳定型各年龄期比例适中、密度相对稳定；衰退型老年个体多、密度将减小。
+[applicabilityMarkdown] 由年龄锥形图预测种群趋势的题目。
+[contentMarkdown] 1. 增长型：幼年个体多、老年个体少，种群密度增大。
+2. 稳定型：各年龄期个体比例适中，种群密度保持相对稳定。
+3. 衰退型：幼年个体少、老年个体多，种群密度减小。
+[boundaryMarkdown] 预测的是未来趋势而非当下数量；人工干预（如性引诱剂）可通过改变年龄结构或性别比例控制种群。
+候选（机械预筛，未必对）：种群密度（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fx-k-value-fluctuation
+来源: 生物方法类《2026届新疆高三生物三轮复习种群、群落、生态系统·完整知识点问答》（registry-kb-biology-methods:biology）
+类型: CONCEPT_EXPLANATION
+[title] K值不是固定不变的
+[summaryMarkdown] K值是环境条件不受破坏时能维持的种群最大数量，环境改善K值增大、环境恶化K值减小。
+[applicabilityMarkdown] K值影响因素的题目。
+[contentMarkdown] 1. 定义：环境条件不受破坏的情况下，一定空间所能维持的种群最大数量。
+2. 环境条件（食物、空间、天敌等）改变会使K值改变。
+3. 同一物种在不同环境的K值不同；同种生物在不同环境K值可相差很大。
+[boundaryMarkdown] K值不是常数；保护大熊猫需扩大栖息地以提高K值，而不是在固定环境内追求最大个体数。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-hormone-experiment-variables
+来源: 《狂K重点》生物 P409 重难12·题型2（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 激素实验无关变量相同且适宜，多次重复
+[summaryMarkdown] 各组动物的数量、年龄、性别、生理状态、饲养条件相同且适宜，并多次重复。
+[applicabilityMarkdown] 实验设计规范。
+[contentMarkdown] 无关变量：各组实验动物的数量、年龄、性别、生理状态、饲养条件等相同且适宜；进行多次重复实验保证结果可靠。
+[boundaryMarkdown] 饥饿处理等特殊操作以题干为准。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb-sodium-potassium-pump-function
+来源: 生物知识清单：《第07讲 物质运输（知识清单）（全国通用）（学生版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 钠钾泵与离子通道的运输机制
+[summaryMarkdown] 钠钾泵逆浓度梯度运出Na+、运入K+并水解ATP供能；离子通道顺浓度梯度转运不耗能。
+[applicabilityMarkdown] 分析神经细胞离子运输机制。
+[contentMarkdown] 1. 离子通道：顺离子浓度梯度的被动运输，通道开放时离子才能流动（如K+经K+通道外流）。
+2. 钠钾泵：逆浓度梯度转运，Na+运出、K+运入，同时具有ATP水解酶活性，水解ATP供能。
+3. 载体分单一运输载体和协同运输载体（同向、反向协同）。
+[boundaryMarkdown] 静息电位与动作电位的离子流动依赖上述两类蛋白。
+候选（机械预筛，未必对）：被动运输（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-kb2-26-secretin-discovery
+来源: 生物知识清单：《第26讲 体液调节（知识清单）（全国通用）（解析版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 促胰液素的发现史
+[summaryMarkdown] 斯他林和贝利斯发现小肠黏膜在盐酸刺激下分泌促胰液素，促胰液素是人们发现的第一种激素。
+[applicabilityMarkdown] 分析促胰液素发现实验、理解激素概念来源时使用。
+[contentMarkdown] 沃泰默认为胰液分泌受神经调节控制；斯他林和贝利斯把小肠黏膜加稀盐酸研磨后注入同一条狗的静脉，引起胰液分泌，证明存在化学物质——促胰液素；
+促胰液素由小肠黏膜分泌，作用于胰腺，促进胰液（胰腺外分泌）的分泌。
+[boundaryMarkdown] 斯他林和贝利斯实验的巧妙之处在于研磨彻底排除了神经调节的干扰；若排除稀盐酸和小肠黏膜成分干扰，可增设稀盐酸静脉注射组和小肠黏膜提取液静脉注射组对照。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb3-f4-s55-n01
+来源: 生物知识清单《2027届高三生物一轮复习知识清单4：分子与细胞基础》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 运用模型解释细胞不能无限
+[summaryMarkdown] (1)不同大小模型模拟细胞大小。
+[applicabilityMarkdown] 复习“运用模型解释细胞不能无限”考点或解答涉及“运用模型解释细胞不能”的题目时使用。
+[contentMarkdown] 原理。
+(1)不同大小模型模拟细胞大小。
+(2)葡萄糖在不同大小模型中扩散速率相同。
+[boundaryMarkdown] 一轮复习结论性要点，表述以人教版现行教材为准；具体数值可能因教材版本略有差异。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-photorespiration-consumes-energy
+来源: 《狂K重点》生物 P381-382 重难3·题型2（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: CONCEPT_EXPLANATION
+[title] 光呼吸消耗 ATP 和 NADPH 并释放 CO2、不产生糖
+[summaryMarkdown] 光呼吸途径（C5+O2→C3+C2→乙醇酸途径）消耗 ATP 和 NADPH、释放 CO2，不生成糖类。
+[applicabilityMarkdown] 光呼吸对光合影响的定量判断。
+[contentMarkdown] C5 与 O2 结合生成 C3 与 C2（乙醇酸），C2 经转化释放 CO2；过程消耗 ATP 和 NADPH，不产生糖类——净效果是有机物损失。
+[boundaryMarkdown] 场所涉及叶绿体、过氧化物酶体、线粒体；与有氧呼吸（产 ATP）本质不同。
+候选（机械预筛，未必对）：线粒体（名字出现）；叶绿体（名字出现）；有氧呼吸（名字出现）；光呼吸（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-sex-linked-pollen-all-lethal
+来源: 《狂K重点》生物 P393 重难6·题型2（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 含 X^A 的花粉全部致死 → 子代无雄株
+[summaryMarkdown] 伴 X 基因的雄配子（花粉）全部致死时，后代只有雌株。
+[applicabilityMarkdown] 伴性配子致死判断。
+[contentMarkdown] 含 X^A 基因的花粉全部致死→后代只能由不含 X^A 的花粉参与受精→子代无雄株（或雄性全为某表现型，按 X^A/X^a 决定）。
+[boundaryMarkdown] 花粉致死只影响雄配子侧。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-chen-dian-yong-yi-chun-xi-di-f71x02
+来源: 化学方法类《（重点·方法·点拨）第68讲 以性质为主的探究类综合实验- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 沉淀用乙醇洗涤
+[summaryMarkdown] 沉淀用乙醇洗涤：a.减小固体的溶解度；b.除去固体表面吸附的杂质；c.乙醇挥发带走水分，使固体快速干燥。
+[applicabilityMarkdown] 分析沉淀溶解平衡、判断沉淀生成或溶解时使用。
+[contentMarkdown] 沉淀用乙醇洗涤：a.减小固体的溶解度；b.除去固体表面吸附的杂质；c.乙醇挥发带走水分，使固体快速干燥
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：沉淀溶解平衡（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-entry-f09x09
+来源: 化学方法类《（重点·方法·点拨）第06讲 离子共存、离子检验与推断- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] Mg2+
+[summaryMarkdown] Mg2+：NaOH溶液；开始产生 色沉淀，NaOH溶液过量沉淀。
+[applicabilityMarkdown] 分析沉淀溶解平衡、判断沉淀生成或溶解时使用。
+[contentMarkdown] Mg2+：NaOH溶液；开始产生 色沉淀，NaOH溶液过量沉淀
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：沉淀溶解平衡（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-gu-ti-ye-ti-f28x02
+来源: 化学方法类《（重点·方法·点拨）第25讲 常见气体的实验室制备、净化和收集- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 固体+液体
+[summaryMarkdown] (2)固体+液体(或液体+液体)气体。
+[applicabilityMarkdown] 实验方案设计、评价与异常现象分析时使用。
+[contentMarkdown] (2)固体+液体(或液体+液体)气体
+制备气体：Cl2、C2H4等。
+(3)固体+液体(不加热)―→气体
+制备气体：选择合适的药品和装置能制取中学化学中常见的气体。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：实验方案设计（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-na-jian-tuo-liu-fa-f23x08
+来源: 化学方法类《（重点·方法·点拨）第20讲 硫酸、酸雨及防治- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 钠碱脱硫法
+[summaryMarkdown] (3)钠碱脱硫法。
+[applicabilityMarkdown] 复习相关考点、解答对应试题时使用。
+[contentMarkdown] (3)钠碱脱硫法
+钠碱脱硫法是用NaOH/Na2CO3吸收烟气中的SO2，得到Na2SO3和NaHSO3，用化学方程式表示其原理。
+①SO2和NaOH反应生成Na2SO3：2NaOH+SO2=Na2SO3+H2O；
+②SO2和Na2CO3反应生成Na2SO3：Na2CO3+SO2=Na2SO3+CO2；
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-shi-yan-xiao-jie-f38x11
+来源: 化学方法类《（重点·方法·点拨）第35讲 反应热的测定与计算- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 实验小结
+[summaryMarkdown] 实验小结：猜想成立，不能直接测反应A的焓变。
+[applicabilityMarkdown] 实验方案设计、评价与异常现象分析时使用。
+[contentMarkdown] 实验小结：猜想成立，不能直接测反应A的焓变。
+教师指导：鉴于以上问题，特别是气体生成带来的干扰，需要设计出实验过程中无气体生成的实验方案。
+[boundaryMarkdown] 实验小结：猜想成立，不能直接测反应A的焓变。
+候选（机械预筛，未必对）：实验方案设计（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-xiang-guan-gai-nian-f10x02
+来源: 化学方法类《（重点·方法·点拨）第07讲 氧化还原反应的概念和规律- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 相关概念
+[summaryMarkdown] 2．相关概念。
+[applicabilityMarkdown] 分析氧化还原反应、比较氧化性还原性强弱与电子转移数目时使用。
+[contentMarkdown] 2．相关概念
+概括为“升失氧、降得还，剂性一致、其他相反”。
+(1)氧化性是指得电子的性质(或能力)；还原性是指失电子的性质(或能力)。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：电子转移（名字出现）；氧化还原反应（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-yi-zhi-f55x05
+来源: 化学方法类《（重点·方法·点拨）第52讲 沉淀溶解平衡图像的分析- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 已知：pM=-lg c(M)(M
+[summaryMarkdown] 已知：pM=-lg c(M)(M：Mg2+、Ca2+、Mn2+)，p(CO)=-lg c(CO)：曲线上任意一点，坐标数值越大，其对应的离子浓度越小。
+[applicabilityMarkdown] 分析溶液酸碱性、比较粒子浓度大小与pH判断时使用。
+[contentMarkdown] 已知：pM=-lg c(M)(M：Mg2+、Ca2+、Mn2+)，p(CO)=-lg c(CO)：曲线上任意一点，坐标数值越大，其对应的离子浓度越小
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-hj-jian-jixing
+来源: 化学讲义《第03讲 分子结构与性质、化学键（举一反三讲义）（学生版）》（registry-kb-chemistry-handout:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 极性键与非极性键
+[summaryMarkdown] 不同种元素原子间形成极性键，同种元素原子间形成非极性键。
+[applicabilityMarkdown] 判断键的极性、分析分子内电荷分布时使用。
+[contentMarkdown] 极性键：不同种元素原子间，共用电子对发生偏移，电荷分布不均匀。
+非极性键：同种元素原子间，电子对不偏移，成键原子呈电中性，如 H-H、O=O。
+[boundaryMarkdown] 键的极性强弱与成键原子电负性差值有关。
+候选（机械预筛，未必对）：电负性（名字出现）
+
+==============================================================================
+## MATH | math-divider-direct-method
+来源: 《狂K重难点》数学 P432，重难点48·隔板法解决相同元素分组问题（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: METHOD_MODEL
+[title] 直接隔板法：n 个相同元素分 m 组每组至少 1 个
+[summaryMarkdown] n 个相同元素排成一排形成 n−1 个空隙，插 m−1 块隔板，方法数 $C_{n-1}^{m-1}$。
+[applicabilityMarkdown] 每组非空（至少 1 个）的相同元素分组分配。
+[contentMarkdown] 每组至少分得 1 个元素时：①将 $n$ 个相同元素排成一排，形成 $n-1$ 个空隙；②在这些空隙中插入 $m-1$ 块隔板，将元素分成 $m$ 组；③不同的插板方案对应不同的分组方法，分组方法数为 $C_{n-1}^{m-1}$。
+[boundaryMarkdown] 每空至多插一块板才保证每组非空；组是有区别的。
+候选（机械预筛，未必对）：隔板法（名字出现）
+
+==============================================================================
+## MATH | math-fx-qiexianchang-gongshi
+来源: 数学方法类《第33讲：直线与圆、圆与圆的位置关系（知识梳理+题型总结）》（registry-kb-math-methods:math）
+类型: CONCEPT_EXPLANATION
+[title] 切线长公式
+[summaryMarkdown] 圆外一点 $M$ 的切线长 $=\sqrt{|MO|^2-r^2}$（$O$ 为圆心，$r$ 为半径），由勾股定理直接得出。
+[applicabilityMarkdown] 求切线长、由切线长反求参数或判断点与圆位置时。
+[contentMarkdown] 1. 公式：切线长 $l=\sqrt{|MO|^2-r^2}$，其中 $|MO|$ 为点 $M$ 到圆心距离。
+2. 推导：切线垂直过切点半径，$\triangle MOP$ 为直角三角形，勾股定理得 $l^2=|MO|^2-r^2$。
+3. 前提：$|MO|>r$（点在圆外）时切线长才有意义。
+[boundaryMarkdown] 切线长是两条切线共用的长度；点在圆上时切线长为 0，点在圆内时无切线。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-hj-s14-three-conds
+来源: 数学讲义《第一章 §1.4　基本不等式.docx》（registry-kb-math-handout:math）
+类型: CONCEPT_EXPLANATION
+[title] 一正二定三相等
+[summaryMarkdown] 用基本不等式求最值须满足三项为正、和或积为定值、等号能够取到。
+[applicabilityMarkdown] 检验用基本不等式得到的最值是否有效。
+[contentMarkdown] 一正：各项均为正值；二定：不等式一侧凑出定值；三相等：存在使等号成立的变量取值。三者缺一不可。
+[boundaryMarkdown] 等号取不到（如区间端点限制、方程无解）时最值不成立，需改用单调性或对勾函数。
+候选（机械预筛，未必对）：对勾函数（名字出现）；基本不等式（名字出现）
+
+==============================================================================
+## MATH | math-inverse-construct-plus-lambda-power
+来源: 《狂K重难点》数学 P391 重难15·续表（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: METHOD_MODEL
+[title] 逆向构造：$xf'(x)+\lambda f(x)>0$ 时构造 $h(x)=x^{\lambda}f(x)$
+[summaryMarkdown] 题干出现 $xf'(x)+\lambda f(x)>0$ 时，构造幂函数乘积 $h(x)=x^{\lambda}f(x)$，其导数分子恰为该组合。
+[applicabilityMarkdown] 条件含 $xf'(x)$ 与 $f(x)$ 组合（系数为正）的不等式问题。
+[contentMarkdown] 1. 识别题干形式 $xf'(x)+\lambda f(x)>0$。
+2. 构造 $h(x)=x^{\lambda}f(x)$，则 $h'(x)=x^{\lambda-1}[xf'(x)+\lambda f(x)]$，在 $x>0$（或同号区间）时符号由括号决定。
+3. 目标式化为 $(\cdot)^{\lambda}f(\cdot)$ 的比较，由单调性得出结论。
+[boundaryMarkdown] $\lambda=1$ 时即 $h(x)=xf(x)$；$x^{\lambda-1}$ 的符号依赖 $x$ 的取值范围（$x>0$ 时恒正），须先确认定义域。
+候选（机械预筛，未必对）：幂函数（名字出现）
+
+==============================================================================
+## MATH | math-mo-omega-qiujie-wutujing
+来源: 数学《专题02 三角函数图象与性质（题型清单）（原卷版）》（registry-kb-math-misc:math）
+类型: METHOD_MODEL
+[title] 求 $\omega$ 的五条途径
+[summaryMarkdown] 周期公式、单调性恒成立、单调区间包含、零点距离、对称轴距离。
+[applicabilityMarkdown] 由各类条件求 $\omega$（或其范围）。
+[contentMarkdown] 1. 已知周期 $T$：由 $T=\dfrac{2\pi}{\omega}$（$\omega>0$）直接解。
+2. 已知单调性：在 $[a,b]$ 上单调递增等价于 $2k\pi-\dfrac\pi2\le\omega x+\varphi\le2k\pi+\dfrac\pi2$ 在 $[a,b]$ 上恒成立，据此解 $\omega$ 的不等式组。
+3. 已知单调区间包含关系：由增区间通式解出 $x$ 范围后令 $[a,b]\subseteq[\dots]$ 列不等式组。
+4. 利用零点：相邻零点满足 $\omega(x_2-x_1)=(k_2-k_1)\pi$，相邻时 $\omega=\dfrac{\pi}{x_2-x_1}$。；5. 利用对称轴：相邻对称轴间距为半周期，$\omega=\dfrac{\pi}{x_2-x_1}$。
+[boundaryMarkdown] “单调区间为 $[a,b]$”与“在 $[a,b]$ 上单调”是两个不同条件，前者更强；零点、对称轴的“相邻”决定 $k_2-k_1=1$。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-partial-uniform-grouping-formula
+来源: 《狂K重难点》数学 P433，重难点49·不同元素分组分配问题（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: CONCEPT_EXPLANATION
+[title] 部分平均分组公式：恰有 i 组人数相等时除以 A(i,i)
+[summaryMarkdown] 分组人数中恰有 i 个相等时，连乘结果除以 $A_i^i$。
+[applicabilityMarkdown] 人数部分相等的分组计数（如 9 本书分成 2,2,5）。
+[contentMarkdown] 将 $n$ 个元素按 $m_1,m_2,\cdots,m_k$ 分成 $k$ 组，$m_1+m_2+\cdots+m_k=n$ 且 $m_1,m_2,\cdots,m_k$ 中有且仅有 $i$ 个数相等，分组方法数为 $\frac{C_n^{m_1}C_{n-m_1}^{m_2}C_{n-m_1-m_2}^{m_3}\cdots C_{m_k}^{m_k}}{A_i^i}$。
+[boundaryMarkdown] 只对相等的那些组除 $A_i^i$；多组各自相等时要逐批处理。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-fx-live-knot-dead-knot
+来源: 物理方法类《第3讲 三大性质力及力的合成与分解（学生版）》（registry-kb-physics-methods:physics）
+类型: METHOD_MODEL
+[title] “活结”与“死结”模型
+[summaryMarkdown] 死结把绳分成两段独立绳、两侧弹力不一定相等；活结是同一根绳跨过光滑滑轮或挂钩、两侧弹力一定等大。
+[applicabilityMarkdown] 绳结类平衡问题的张力分析。
+[contentMarkdown] 1. 死结：不可沿绳移动，两侧绳成为独立两段，弹力不一定相等。
+2. 活结：可沿绳移动（绳跨滑轮或挂光滑挂钩），实为一根绳，两段弹力大小相等。
+3. 活结两段绳的合力方向沿两段夹角的平分线。
+[boundaryMarkdown] 先辨结型，再决定“两侧张力相等”是否可用。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-hj2-shangbiaomian-guanghua-xiaoche-zhuangban
+来源: 物理讲义《第24讲 动量守恒中的力学综合问题（复习讲义）（四川专用）》（registry-kb-physics-handout:physics）
+类型: CONCEPT_EXPLANATION
+[title] 上表面光滑的小车与挡板碰撞模型
+[summaryMarkdown] 小车上表面光滑时物块在水平方向不受力、速度不变，碰撞只发生在小车与挡板之间。
+[applicabilityMarkdown] “小车＋物块＋挡板”类问题的分段处理。
+[contentMarkdown] 1. 小车上表面光滑：物块与小车间无摩擦，物块水平方向不受力，相对地面做匀速运动；小车撞挡板前后动量变化只涉及小车（及粘合物）。
+2. 碰撞时间极短，物块速度不变；碰后小车（新质量）再与物块通过摩擦（若有）相互作用时用动量守恒或动力学分析。
+3. 分段列式：碰撞前小车匀加速、碰撞瞬间动量守恒（只含碰撞双方）、碰后整体再分析。
+[boundaryMarkdown] 上表面光滑意味着碰后物块不会随之改变速度，除非有摩擦或挡板阻挡。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-kb-explosion-recoil-motion
+来源: 物理知识清单：《专题08 动量（知识清单）（全国通用）（教师版）》（registry-kb-physics-knowledge-list:physics）
+类型: CONCEPT_EXPLANATION
+[title] 爆炸与反冲
+[summaryMarkdown] 爆炸和反冲中内力远大于外力，系统动量守恒，机械能增加。
+[applicabilityMarkdown] 分析炮弹发射、火箭喷气等问题时使用。
+[contentMarkdown] 爆炸：作用时间极短、位移可忽略，内力远大于外力，动量守恒而动能因化学能释放而增加。
+反冲：一部分向某方向运动，另一部分向相反方向运动，系统总机械能增加。
+火箭获得的速度与喷气速度和质量比有关。
+[boundaryMarkdown] 已知相对速度时需先转换为对地速度再列方程。
+候选（机械预筛，未必对）：无
+

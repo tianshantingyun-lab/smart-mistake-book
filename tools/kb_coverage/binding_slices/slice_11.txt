@@ -1,0 +1,374 @@
+# 绑定作业片 11：30 条无绑定材料
+#
+# 任务：为每条材料选定它应该绑定的知识点节点（就是讲题时该材料服务的那个点）。
+# 交付（写到 tools/kb_coverage/binding_fixes/slice_11/notes.csv）：
+#   subject,material_slug,node_slug,confidence,evidence
+#   （node_slug 用下面的节点表里的 slug；确实没有合适的写 NONE；
+#     evidence 一句话说明依据；字段内不要有 ASCII 逗号）
+#
+# 硬规矩：
+#   · 宁缺勿错：不确定就 confidence=low 或写 NONE —— 错绑会让检索喂错材料
+#   · 只能从本学科节点表里选（见 tools/kb_coverage/binding_slices/nodes/nodes_<学科>.txt）
+#   · 一条材料只绑一个节点（就是它最主要服务的那个点）
+
+==============================================================================
+## BIOLOGY | bio-chlorophyll-increase-worsens-photoinhibition
+来源: 《狂K重点》生物 P382-383 重难3·题型3（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 提高叶绿素含量会增强光能吸收、加剧光抑制
+[summaryMarkdown] 判断'某措施是否减缓光抑制'时，凡增强光能吸收的措施（如提高叶绿素含量）都会加剧光抑制。
+[applicabilityMarkdown] 光保护措施的多选判断题。
+[contentMarkdown] 叶绿素含量↑→光能吸收↑→光能过剩更严重→光抑制加剧；减缓光抑制的措施应落在'减少吸收/增强耗散/清除ROS/加速修复'。
+[boundaryMarkdown] 弱光环境中提高叶绿素是适应，强光下则有害——看情境。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-02-free-water-four-functions
+来源: 生物讲义《第02讲 细胞中的元素和化合物（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 自由水的四大功能
+[summaryMarkdown] 自由水是良好溶剂、参与生化反应、提供液体环境、运送营养和代谢废物。
+[applicabilityMarkdown] 自由水功能识记。
+[contentMarkdown] 1. 细胞内良好的溶剂。
+2. 参与细胞内的生化反应（如光合、呼吸、水解）。
+3. 为细胞提供液体环境。
+4. 运送营养物质和代谢废物。
+[boundaryMarkdown] 结合水是细胞结构的重要组成部分，无上述代谢功能。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-07-osmosis-concentration-meaning
+来源: 生物讲义《第07讲 物质运输（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 渗透装置中的浓度指物质的量浓度
+[summaryMarkdown] 渗透作用的溶液浓度指物质的量浓度而非质量分数，决定水分子净移动方向。
+[applicabilityMarkdown] 渗透浓度概念判断。
+[contentMarkdown] 1. 渗透平衡取决于单位体积内溶质微粒数目（物质的量浓度）。
+2. 质量分数相同的不同溶质溶液，摩尔质量小的微粒数多、浓度高。
+3. 如10%葡萄糖比10%蔗糖的物质的量浓度大。
+[boundaryMarkdown] 判断渗透方向先把质量分数换算为物质的量浓度。
+候选（机械预筛，未必对）：渗透作用（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fj-11-summer-co2-curve
+来源: 生物讲义《第11讲 细胞代谢综合分析（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 夏季一天中CO2浓度变化曲线各点含义
+[summaryMarkdown] 夏季自然环境中CO2曲线的d、h点为光补偿点，f点为午休，h点有机物积累最多。
+[applicabilityMarkdown] 夏季CO2曲线分析。
+[contentMarkdown] 1. b点：凌晨温度降低呼吸减弱；c点：微弱光照开始光合。
+2. d点：光合速率等于呼吸速率（光补偿点）；dh段光合大于呼吸，积累有机物。
+3. f点：温度过高兴起光合午休；h点：下午补偿点，一天中有机物积累最多。
+4. 制造有机物时段为ci段，消耗为aj段。
+[boundaryMarkdown] 一昼夜有机物积累量=Ⅱ−(Ⅰ+Ⅲ)（净积累为两补偿点间面积减去其余部分）。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-33-competition-examples
+来源: 生物讲义《第33讲 群落（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 种间竞争的实例与本质
+[summaryMarkdown] 种间竞争是两种或更多生物共同利用同样的有限资源和空间而产生的相互排斥现象。
+[applicabilityMarkdown] 竞争实例判断。
+[contentMarkdown] 1. 实例：同一草原的非洲狮和斑鬣狗、牛与羊、农作物与杂草。
+2. 本质：共同利用有限资源（食物、空间）而相互排斥。
+3. 数量关系呈现“你死我活”的同步性变化。
+[boundaryMarkdown] 取食同种植物但部位不同（人吃玉米粒、牛吃秸秆）不构成种间竞争。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fx-homo-hetero-identify
+来源: 生物方法类《第五单元 专题突破5 基因分离定律拓展题型突破》（registry-kb-biology-methods:biology）
+类型: METHOD_MODEL
+[title] 纯合子与杂合子的鉴定方法
+[summaryMarkdown] 动物常用测交法鉴定，植物四种方法均可但自交法最简便，鉴别显隐性可用杂交法和自交法。
+[applicabilityMarkdown] 纯合杂合鉴定方案设计的经典方法题。
+[contentMarkdown] 1. 鉴别一只动物是否为纯合子：用测交法（与隐性纯合子杂交，后代无性状分离为纯合）。
+2. 鉴别一株植物是否为纯合子：测交、自交、杂交均可，自交法最简便（后代出现性状分离则为杂合子）。
+3. 鉴别一对相对性状的显隐性：用杂交法和自交法（可能用于植物）。
+4. 提高优良品种纯度：连续自交并淘汰性状分离个体；检验待测个体基因型：测交法。
+[boundaryMarkdown] 测交后代1:1为杂合子、全为显性为纯合显性；自交需保证该植物是自花传粉且材料足够。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fx-semipermeable-strictness
+来源: 生物方法类《2026届高三生物三轮复习人教版高中生物必修一教材插图体现的隐藏知识点》（registry-kb-biology-methods:biology）
+类型: CONCEPT_EXPLANATION
+[title] 半透膜通透性决定能否形成液面差
+[summaryMarkdown] 若半透膜允许溶质分子通过，则两侧浓度最终相等，不能形成稳定的液面高度差。
+[applicabilityMarkdown] 半透膜特性判断题。
+[contentMarkdown] 1. 理想半透膜只允许水分子通过，溶质不能通过，可维持液面差。
+2. 若溶质能通过（非理想半透膜），溶质扩散直至两侧浓度相等，液面差消失。
+3. 体现半透膜选择性在渗透现象中的关键作用。
+[boundaryMarkdown] 只要两侧存在浓度差且膜不允许溶质通过，就能形成液面差；溶质可通过则不能。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb-essential-element-solution-culture
+来源: 生物知识清单：《第02讲 细胞中的元素和化合物（知识清单）（全国通用）（学生版）》（registry-kb-biology-knowledge-list:biology）
+类型: METHOD_MODEL
+[title] 用溶液培养法（缺素培养）验证必需元素
+[summaryMarkdown] 用完全培养液与缺元素X培养液对照培养植物，依据生长状况及补充后是否恢复判断X是否必需。
+[applicabilityMarkdown] 设计或分析元素必需性实验。
+[contentMarkdown] 1. 对照组：植物＋完全培养液，正常生长。
+2. 实验组：植物＋只缺元素X的完全培养液。
+3. 判断：实验组生长不正常、补充X后恢复正常，则X是必需元素；若实验组正常生长，则X为非必需元素。
+[boundaryMarkdown] 需控制其他变量相同，只缺X一种元素。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb2-08-inhibitors
+来源: 生物知识清单：《第08讲 酶和ATP（知识清单）（全国通用）（教师版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 竞争性抑制剂与非竞争性抑制剂
+[summaryMarkdown] 竞争性抑制剂与底物竞争活性部位，可通过增加底物浓度消除；非竞争性抑制剂使酶构象改变，不可消除。
+[applicabilityMarkdown] 分析抑制剂对酶促反应速率曲线的影响时使用。
+[contentMarkdown] 竞争性抑制剂与底物结构类似，与底物竞争酶的活性部位，随底物浓度增加其抑制作用可消除；
+非竞争性抑制剂与酶的其他位点结合，引起酶构象改变导致酶无法与底物结合或无法生成产物，抑制作用不可通过增加底物消除。
+[boundaryMarkdown] 两类抑制剂都使酶促反应速率下降，但曲线特征不同。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb2-33-soil-animal-survey
+来源: 生物知识清单：《第33讲 群落（知识清单）（全国通用）（教师版）》（registry-kb-biology-knowledge-list:biology）
+类型: METHOD_MODEL
+[title] 调查土壤中小动物类群的丰富度
+[summaryMarkdown] 用取样器取样法采集土壤小动物，用记名计算法或目测估计法统计丰富度。
+[applicabilityMarkdown] 设计土壤动物丰富度调查实验时使用。
+[contentMarkdown] 方法：用取样器取样法进行采集、调查；采集常用诱虫器（利用土壤动物避光、趋湿、避高温的习性）或吸虫器；
+统计：物种相对数量统计方法有记名计算法和目测估计法；用体积分数70%的酒精杀死并保存小动物。
+[boundaryMarkdown] 土壤小动物身体微小、活动能力强，不适用样方法或标记重捕法；吸虫器中纱布的作用是防止小动物被吸走。
+候选（机械预筛，未必对）：样方法（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-mo-enzyme-007
+来源: 生物《默写小纸条08 酶和ATP（知识清单）（全国通用）（教师版）》（registry-kb-biology-misc:biology）
+类型: CONCEPT_EXPLANATION
+[title] 对于动物、人、真菌和大多数细菌来说
+[summaryMarkdown] 对于动物、人、真菌和大多数细菌来说，产生ATP的生理过程是呼吸作用。
+[applicabilityMarkdown] 用于“酶和ATP”的课前背默检查与选择题、填空题作答。
+[contentMarkdown] 1. 对于动物、人、真菌和大多数细菌来说，产生ATP的生理过程是呼吸作用；
+2. 对于绿色植物来说，产生ATP的生理过程是呼吸作用和光合作用。
+3. 以下细胞产生ATP的场所： ①夜晚12点的叶肉细胞：细胞质基质、线粒体②光照下的叶肉细胞：细胞质基质、线粒体、叶绿体③蛔虫体细胞：细胞质基质
+4. ATP在细胞中含量少，转化迅速，含量处于动态平衡。
+[boundaryMarkdown] 该条为背默核心结论，具体数值与反应式书写以教材原文为准。
+候选（机械预筛，未必对）：线粒体（名字出现）；叶绿体（名字出现）；光合作用（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-respiratory-abnormal-fat-substrate
+来源: 《狂K重点》生物 P378 重难2·题型1（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: CONCEPT_EXPLANATION
+[title] 脂肪底物呼吸：耗 O2 多、产 CO2 少（呼吸商<1）
+[summaryMarkdown] 脂肪含碳氢比高，同质量氧化耗 O2 多于葡萄糖且产 CO2 少，故呼吸商（CO2/O2）小于 1。
+[applicabilityMarkdown] 底物判断类题。
+[contentMarkdown] 脂肪呼吸商（RQ=CO2/O2）≈0.7（低于葡萄糖的 1.0）：O2 消耗量＞CO2 释放量→推测呼吸底物含脂肪（如脂肪种子萌发）。
+[boundaryMarkdown] RQ 值是混底物时综合表现。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-an-shui-tuo-liu-fa-f23x07
+来源: 化学方法类《（重点·方法·点拨）第20讲 硫酸、酸雨及防治- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 氨水脱硫法
+[summaryMarkdown] (2)氨水脱硫法。
+[applicabilityMarkdown] 复习相关考点、解答对应试题时使用。
+[contentMarkdown] (2)氨水脱硫法
+该脱硫法采用喷雾吸收法，雾化的氨水与烟气中的SO2直接接触吸收SO2，用化学方程式表示其原理。
+①SO2转化为(NH4)2SO3：2NH3+SO2+H2O=(NH4)2SO3；
+②(NH4)2SO3转化为(NH4)2SO4：2(NH4)2SO3+O2=2(NH4)2SO4。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-di-er-lei-f71x09
+来源: 化学方法类《（重点·方法·点拨）第68讲 以性质为主的探究类综合实验- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 第二类
+[summaryMarkdown] 第二类：能类比迁移的陌生物质；虽然平时接触不多，但其某种组成成分、结构成分(如离子、原子团、官能团等)必然学过，则可以考虑与其结构相似的物质的性质，进而推断其具体组成。
+[applicabilityMarkdown] 有机推断、官能团性质判断与方程式书写时使用。
+[contentMarkdown] 第二类：能类比迁移的陌生物质；虽然平时接触不多，但其某种组成成分、结构成分(如离子、原子团、官能团等)必然学过，则可以考虑与其结构相似的物质的性质，进而推断其具体组成
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-fang-fu-shi-f65x07
+来源: 化学方法类《（重点·方法·点拨）第62讲 化学实验基础知识和技能- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 防腐蚀
+[summaryMarkdown] 防腐蚀：①腐蚀橡胶的物质用玻璃塞或塑料塞；②腐蚀玻璃的物质用塑料容器；①浓HNO3、酸性KMnO4溶液、氯水、溴水等腐蚀橡胶；②氢氟酸保存在塑料瓶中。
+[applicabilityMarkdown] 电极反应式书写与电化学装置分析时使用。
+[contentMarkdown] 防腐蚀：①腐蚀橡胶的物质用玻璃塞或塑料塞；②腐蚀玻璃的物质用塑料容器；①浓HNO3、酸性KMnO4溶液、氯水、溴水等腐蚀橡胶；②氢氟酸保存在塑料瓶中
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：电极反应式（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-jiang-wen-ma-zui-f73x07
+来源: 化学方法类《高考化学化学与传统文化及STSE(学生版)-20页》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 降温麻醉
+[summaryMarkdown] (6)降温麻醉：氯乙烷气雾剂，原因：氯乙烷气化时，吸收大量的热量，在损伤处起到降温麻醉，快速镇痛的作用。
+[applicabilityMarkdown] 热化学方程式书写与反应热计算、比较时使用。
+[contentMarkdown] (6)降温麻醉：氯乙烷气雾剂，原因：氯乙烷气化时，吸收大量的热量，在损伤处起到降温麻醉，快速镇痛的作用。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：热化学方程式（名字出现）；反应热（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-ran-shao-an-yi-ding-liu-su-tong-ru-yi-f51x09
+来源: 化学方法类《（重点·方法·点拨）第48讲 酸碱中和滴定及拓展应用- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 燃烧：按一定流速通入，一段时间后
+[summaryMarkdown] ②燃烧：按一定流速通入，一段时间后，加热并使样品燃烧。
+[applicabilityMarkdown] 热化学方程式书写与反应热计算、比较时使用。
+[contentMarkdown] ②燃烧：按一定流速通入，一段时间后，加热并使样品燃烧。
+③滴定：当F内溶液浅蓝色消退时(发生反应：)，立即用碱性标准溶液滴定至浅蓝色复现。随不断进入F，滴定过程中溶液颜色“消退-变蓝”不断变换，直至终点。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：热化学方程式（名字出现）；反应热（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-tie-ding-biao-mian-du-tong-f72x01
+来源: 化学方法类《高考化学 表格型化学实验基础题(学生版)-31页》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] A．铁钉表面镀铜
+[summaryMarkdown] A．铁钉表面镀铜：B．配制银氨溶液；C．验证氧化性：Cl2>Br2>I2；D．检验1-溴丙烷的消去反应产物丙烯。
+[applicabilityMarkdown] 离子或物质检验、实验现象描述与推断题作答时使用。
+[contentMarkdown] A．铁钉表面镀铜：B．配制银氨溶液；C．验证氧化性：Cl2>Br2>I2；D．检验1-溴丙烷的消去反应产物丙烯
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：物质检验（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-yi-ban-shuo-lai-f54x03
+来源: 化学方法类《（重点·方法·点拨）第51讲 沉淀溶解平衡- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 一般说来
+[summaryMarkdown] (4)一般说来，溶解度小的沉淀转化成溶解度更小的沉淀容易实现，但溶解度小的沉淀转化成溶解度稍大的沉淀在一定条件下也能实现。
+[applicabilityMarkdown] 分析沉淀溶解平衡、判断沉淀生成或溶解时使用。
+[contentMarkdown] (4)一般说来，溶解度小的沉淀转化成溶解度更小的沉淀容易实现，但溶解度小的沉淀转化成溶解度稍大的沉淀在一定条件下也能实现。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：沉淀溶解平衡（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-zhu-yao-xing-zhi-f13x03
+来源: 化学方法类《（重点·方法·点拨）第10讲 碳酸钠和碳酸氢钠　碱金属- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 主要性质
+[summaryMarkdown] 主要性质：与Ca(OH)2；溶液反应；Ca2++CO=CaCO3↓；Ca(OH)2少量：Ca2++2OH-+2HCO=CaCO3↓+2H2O+CO；Ca(OH)2过量：Ca2+。
+[applicabilityMarkdown] 复习“碱金属氢化物的性质及应用”相关考点、解答对应试题时使用。
+[contentMarkdown] 主要性质：与Ca(OH)2；溶液反应；Ca2++CO=CaCO3↓；Ca(OH)2少量：Ca2++2OH-+2HCO=CaCO3↓+2H2O+CO；Ca(OH)2过量：Ca2++OH-+HCO=CaCO3↓+H2O
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：金属氢化物（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-hj2-yiqi-jiare-fenlei
+来源: 化学讲义《题型01 常用仪器的使用、药品保存和实验安全（学生版）》（registry-kb-chemistry-handout:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 常用仪器的加热方式分类
+[summaryMarkdown] 试管、蒸发皿、坩埚、燃烧匙可直接加热；烧杯、烧瓶、锥形瓶须垫石棉网加热；量筒、容量瓶等不能加热。
+[applicabilityMarkdown] 仪器选择与使用正误判断。
+[contentMarkdown] 可直接加热：试管、蒸发皿、坩埚、燃烧匙。
+垫石棉网加热：烧杯、圆底烧瓶、蒸馏烧瓶、锥形瓶。
+不能加热：量筒、容量瓶、集气瓶、滴定管、漏斗等计量或专用仪器。
+[boundaryMarkdown] 量筒不可加热也不可作反应容器或配液容器。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-fangshuo-x-xiao-yu-tan
+来源: 《狂K重难点》数学 书页P393，重难点17（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: CONCEPT_EXPLANATION
+[title] 三角放缩 x < tan x（0<x<π/2）
+[summaryMarkdown] 当 $0<x<\frac{\pi}{2}$ 时，$x<\tan x$。
+[applicabilityMarkdown] 正切与一次式比较的放缩证明题。
+[contentMarkdown] 当 $0<x<\frac{\pi}{2}$ 时，$x<\tan x$。
+[boundaryMarkdown] 仅在 $\left(0,\frac{\pi}{2}\right)$ 内成立；是严格不等式，等号取不到。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-hj-gongli-dingli-dingyi
+来源: 数学讲义《1.4命题与充要条件（讲义）（学生版）》（registry-kb-math-handout:math）
+类型: CONCEPT_EXPLANATION
+[title] 公理、定理与定义
+[summaryMarkdown] 公理不需证明，定理已被证明，定义刻画对象内涵。
+[applicabilityMarkdown] 区分推理依据的类型。
+[contentMarkdown] 公理是公认的真命题，不需证明可直接作推理依据；定理是已证明为真的命题；定义是用已知对象解释刻画新对象的陈述。
+[boundaryMarkdown] 定理必须经证明才能使用。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-hj-shulie-fenzu-qiughe
+来源: 数学讲义《6.3数列求和（讲义）（学生版）》（registry-kb-math-handout:math）
+类型: METHOD_MODEL
+[title] 分组求和法
+[summaryMarkdown] 通项由几个可求和数列相加减构成时，分别求和再合并。
+[applicabilityMarkdown] $a_n=q^n+n$、含 $(-1)^n$ 的数列求和。
+[contentMarkdown] 若通项可写成若干个等差、等比（或可求和）数列之和的形式，则对每部分分别求和后相加减；含 $(-1)^n$ 时按奇偶项分组。
+[boundaryMarkdown] 分组后各部分分别适用相应求和公式。
+候选（机械预筛，未必对）：数列求和（名字出现）
+
+==============================================================================
+## MATH | math-mo-demogen-gongshi
+来源: 数学《高考数学二级结论篇（核心知识背记手册）（默写版）》（registry-kb-math-misc:math）
+类型: CONCEPT_EXPLANATION
+[title] 德摩根公式（集合与事件）
+[summaryMarkdown] $\overline{A\cup B}=\bar A\cap\bar B$，$\overline{A\cap B}=\bar A\cup\bar B$。
+[applicabilityMarkdown] 集合（事件）运算的化简与否定。
+[contentMarkdown] 德摩根公式：$\overline{A\cup B}=\overline{A}\cap\overline{B}$，$\overline{A\cap B}=\overline{A}\cup\overline{B}$。对事件同样成立：$P(\overline{A\cup B})$ 等按补事件展开。
+[boundaryMarkdown] “并的补＝补的交，交的补＝补的并”；否定“至少一个”用“都不”，否定“同时”用“至少一个不”。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-mo-xian-shi-huaqie-sanlei
+来源: 数学《专题01 三角函数概念及公式应用（题型清单）（学生版）》（registry-kb-math-misc:math）
+类型: METHOD_MODEL
+[title] 弦式化切的三类结构
+[summaryMarkdown] 一次分式、二次分式与“1 的代换”三类齐次弦式均可化为切函数。
+[applicabilityMarkdown] 化简齐次三角分式、给值求值。
+[contentMarkdown] 1. 一次齐次：$\dfrac{k\sin\alpha+t\cos\alpha}{m\sin\alpha+n\cos\alpha}=\dfrac{k\tan\alpha+t}{m\tan\alpha+n}$。
+2. 二次齐次：$\dfrac{k\sin^2\alpha+t\sin\alpha\cos\alpha+p\cos^2\alpha}{m\sin^2\alpha+n\sin\alpha\cos\alpha+q\cos^2\alpha}=\dfrac{k\tan^2\alpha+t\tan\alpha+p}{m\tan^2\alpha+n\tan\alpha+1}$。
+3. “1 的代换”：$k\sin^2\alpha+t\sin\alpha\cos\alpha+p\cos^2\alpha$ 分母补 $(\sin^2\alpha+\cos^2\alpha)$ 后化切。
+[boundaryMarkdown] 齐次是化切前提，非齐次先配“1”的代换；化切后注意 $\tan\alpha$ 不存在（$\alpha=k\pi+\frac\pi2$）的特例。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-charles-law
+来源: 《狂K重难点》物理 书页P465，重难点35（气体实验定律和热力学定律的综合应用）（registry-lixiangshu-2027-bikuti-kuangk-physics:physics）
+类型: CONCEPT_EXPLANATION
+[title] 查理定律（等容变化）
+[summaryMarkdown] 一定质量气体体积不变时，压强与热力学温度成正比：$\frac{p_1}{T_1}=\frac{p_2}{T_2}$。
+[applicabilityMarkdown] 体积不变的理想气体状态变化。
+[contentMarkdown] 查理定律：$\frac{p_1}{T_1}=\frac{p_2}{T_2}$（体积不变）。
+[boundaryMarkdown] 温度必须用热力学温度（K）；$p$-$T$ 图像为过原点的直线。
+候选（机械预筛，未必对）：定义-在任何温度-任何压强下都遵从气体实验定律的气体（名字出现）
+
+==============================================================================
+## PHYSICS | phys-hj-127-pendulum-length-measure
+来源: 物理讲义《第40讲 实验8用单摆测量重力加速度-（讲义）（学生版）》（registry-kb-physics-handout:physics）
+类型: CONCEPT_EXPLANATION
+[title] 单摆摆长的测量
+[summaryMarkdown] 正确确定摆长
+[applicabilityMarkdown] 单摆实验操作
+[contentMarkdown] 摆长等于摆线长度与小球半径之和 $l=l′+r$；线长用毫米刻度尺在自然下垂时测量，球半径由游标卡尺测直径后取一半。
+[boundaryMarkdown] 不能把直径当半径。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-hj3-heat-engine-efficiency
+来源: 物理讲义《第48讲 热力学定律与能量守恒定律（复习讲义）（安徽专用）（学生版）》（registry-kb-physics-handout:physics）
+类型: CONCEPT_EXPLANATION
+[title] 热机与热机效率
+[summaryMarkdown] 热机从高温热源吸热 $Q_1$ 做功 $W$ 并放热 $Q_2$，$\eta=\frac{W}{Q_1}<100\%$。
+[applicabilityMarkdown] 理解热机的能量关系与效率。
+[contentMarkdown] 热机把内能转化为机械能：从高温热源吸热 $Q_1$，做功 $W$，向低温热源放热 $Q_2$，满足 $Q_1=W+Q_2$；工作需要两个热源。
+热机效率 $\eta=\frac{W}{Q_1}$，热机效率不可能达到 100%。
+[boundaryMarkdown] 热机必须有高温、低温两个热源，这是第二定律的体现。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-pingpao-zhuang-ji-yuan-hu
+来源: 《狂K重难点》物理 书页P415，重难点9（registry-lixiangshu-2027-bikuti-kuangk-physics:physics）
+类型: CONCEPT_EXPLANATION
+[title] 平抛撞击圆弧轨道的位移关系
+[summaryMarkdown] 平抛撞击圆弧轨道某一位置时，用 $h=\frac{1}{2}gt^2$ 与 $R\pm\sqrt{R^2-h^2}=v_0t$（位移关系）联立求解。
+[applicabilityMarkdown] 小球平抛撞击半球面、圆弧轨道内壁等情形。
+[contentMarkdown] 解题关键：$h=\frac{1}{2}gt^2$，$R\pm\sqrt{R^2-h^2}=v_0t$（位移关系，水平距离由圆的几何勾股关系表示）。
+[boundaryMarkdown] 根号前取加号还是减号由撞击位置在圆心的上方或下方决定。
+候选（机械预筛，未必对）：无
+

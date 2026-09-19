@@ -1,0 +1,371 @@
+# 绑定作业片 25：29 条无绑定材料
+#
+# 任务：为每条材料选定它应该绑定的知识点节点（就是讲题时该材料服务的那个点）。
+# 交付（写到 tools/kb_coverage/binding_fixes/slice_25/notes.csv）：
+#   subject,material_slug,node_slug,confidence,evidence
+#   （node_slug 用下面的节点表里的 slug；确实没有合适的写 NONE；
+#     evidence 一句话说明依据；字段内不要有 ASCII 逗号）
+#
+# 硬规矩：
+#   · 宁缺勿错：不确定就 confidence=low 或写 NONE —— 错绑会让检索喂错材料
+#   · 只能从本学科节点表里选（见 tools/kb_coverage/binding_slices/nodes/nodes_<学科>.txt）
+#   · 一条材料只绑一个节点（就是它最主要服务的那个点）
+
+==============================================================================
+## BIOLOGY | bio-energy-assimilation-issue
+来源: 《狂K重点》生物 P430 重难17·题型1（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: CONCEPT_EXPLANATION
+[title] 同化量与摄入量：同化 = 摄食 − 粪便（粪便能量不属于本营养级）
+[summaryMarkdown] 动物摄入的食物能量减去粪便中未消化吸收的能量，才是真正同化（吸收）的能量。
+[applicabilityMarkdown] 能量计算题（陷阱：粪便属上一营养级）。
+[contentMarkdown] 1. 某营养级摄入量 = 同化量 + 粪便能量。
+2. 同化量 = 摄入能量 − 排粪能量（粪便有未消化食物残渣，属于上一营养级）。
+3. 计算蛋白质/热值题常用'“摄入量”'区分。
+[boundaryMarkdown] '粪便能量'计入上一营养级（被上一营养级的同化量的一部分）。
+候选（机械预筛，未必对）：蛋白质（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fj-03-maltose-in-germinating-grain
+来源: 生物讲义《第03讲 糖类和脂质（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 麦芽糖在发芽谷粒中较多
+[summaryMarkdown] 麦芽糖由两分子葡萄糖脱水缩合而成，在发芽的谷粒中含量较多。
+[applicabilityMarkdown] 二糖分布判断。
+[contentMarkdown] 1. 麦芽糖是植物二糖，由两分子葡萄糖组成。
+2. 发芽的谷粒中淀粉水解产生大量麦芽糖。
+3. 可水解为葡萄糖供生命活动利用。
+[boundaryMarkdown] 麦芽糖是还原糖，可用斐林试剂检测。
+候选（机械预筛，未必对）：脱水缩合（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fj-09-sealed-container-co2
+来源: 生物讲义《第09讲 细胞呼吸（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 密闭容器中CO2生成速率下降的原因
+[summaryMarkdown] 种子密闭储存时O2减少、CO2积累，逐渐抑制细胞呼吸使CO2生成速率降低。
+[applicabilityMarkdown] 呼吸速率变化分析。
+[contentMarkdown] 1. 种子进行细胞呼吸消耗O2释放CO2。
+2. 密闭容器中O2浓度逐渐减少，CO2浓度逐渐增加。
+3. 低氧和高CO2都抑制呼吸，故CO2生成速率逐渐降低。
+[boundaryMarkdown] 这是自我抑制现象，可用于指导低氧储粮。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-20-dna-strand-ends
+来源: 生物讲义《第20讲 DNA的结构、复制与基因的本质（复习讲义）（全国通用）（解析版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] DNA单链的两个末端与走向
+[summaryMarkdown] DNA单链一端有游离磷酸基团（5′-端），另一端有羟基（3′-端），两条链走向相反。
+[applicabilityMarkdown] 结构细节判断。
+[contentMarkdown] 1. 每条单链一端有游离磷酸基团，称5′-端。
+2. 另一端有羟基（-OH），称3′-端。
+3. 两条单链走向相反：一条从5′到3′，另一条从3′到5′。
+[boundaryMarkdown] 5′-端是磷酸基团末端而非羟基末端。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fx-assimilation-fates
+来源: 生物方法类《2026届新疆高三生物三轮复习种群、群落、生态系统·完整知识点问答》（registry-kb-biology-methods:biology）
+类型: CONCEPT_EXPLANATION
+[title] 某一营养级同化量的去向
+[summaryMarkdown] 同化量＝摄入量－粪便量，其去向包括呼吸散失、流向下一营养级、流向分解者和未被利用。
+[applicabilityMarkdown] 能量流动计算的经典模型题。
+[contentMarkdown] 1. 同化量＝摄入量－粪便量（粪便中的能量属于上一营养级同化量）。
+2. 去向一：自身呼吸作用以热能形式散失。
+3. 去向二：流向下一营养级（被被捕食者同化）。
+4. 去向三：流向分解者（遗体、残骸）；去向四：未被利用（储存在有机体中）。
+[boundaryMarkdown] 粪便能量归上一营养级是易错点；计算某营养级获能总量要按同化量相加。
+候选（机械预筛，未必对）：能量流动（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fx-lactobacillus-characters
+来源: 生物方法类《2026届高三复习：微生物培养发酵工程高考题解题技巧和高考题目类型》（registry-kb-biology-methods:biology）
+类型: CONCEPT_EXPLANATION
+[title] 乳酸菌的代谢特点
+[summaryMarkdown] 乳酸菌是厌氧原核生物，在无氧条件下将葡萄糖分解为乳酸。
+[applicabilityMarkdown] 泡菜制作、酸奶发酵类题目。
+[contentMarkdown] 1. 原核生物，异养厌氧型。
+2. 无氧条件下乳酸发酵：葡萄糖→乳酸，泡菜制作依赖此原理。
+3. 泡菜发酵常温即可进行；乳酸菌培养需要无氧环境与适宜温度。
+[boundaryMarkdown] 泡菜亚硝酸盐含量先升高后降低，食用应选发酵足够时间的产品；乳酸菌产生的乳酸和H2O2也可能有抑菌作用。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-hypothalamus-circadian-rhythm
+来源: 《狂K重点》生物 P410 重难13·题型1（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: CONCEPT_EXPLANATION
+[title] 下丘脑控制生物节律
+[summaryMarkdown] 下丘脑（视交叉上核区域）是生物节律的控制中心。
+[applicabilityMarkdown] 下丘脑功能综合。
+[contentMarkdown] 下丘脑控制生物节律（昼夜节律等）；光周期信息经视网膜—下丘脑通路调节节律。
+[boundaryMarkdown] 节律紊乱类情境题按'下丘脑控制节律'作答。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb-sterol-types-functions
+来源: 生物知识清单：《第03讲 糖类和脂质（知识清单）（全国通用）（学生版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 固醇的分类及功能（胆固醇、性激素、维生素D）
+[summaryMarkdown] 胆固醇构成动物细胞膜并参与脂质运输；性激素促进生殖器官发育；维生素D促进钙磷吸收。
+[applicabilityMarkdown] 判断固醇各成员功能。
+[contentMarkdown] 1. 胆固醇：构成动物细胞膜的重要成分，参与人体血液中脂质的运输。
+2. 性激素：促进人和动物生殖器官的发育和生殖细胞的形成。
+3. 维生素D：促进人和动物肠道对钙和磷的吸收。
+[boundaryMarkdown] 固醇元素组成为C、H、O。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb2-27-aldosterone
+来源: 生物知识清单：《第27讲 体液调节与神经调节的关系（知识清单）（全国通用）（教师版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 醛固酮与血钠血钾平衡
+[summaryMarkdown] 醛固酮由肾上腺皮质分泌，促进肾小管和集合管吸钠泌钾，维持血钠和血钾平衡。
+[applicabilityMarkdown] 分析血钠血钾调节、解释肾上腺切除后血钠变化时使用。
+[contentMarkdown] 醛固酮由肾上腺皮质产生、分泌；
+作用：促进肾小管和集合管对Na+的重吸收和对K+的分泌（吸钠泌钾），维持钠钾平衡。
+[boundaryMarkdown] 血钾升高时通过醛固酮调节肾脏排出更多钾离子；摘除肾上腺后血钠降低，饮生理盐水可补充钠离子。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb3-f4-s55-n03
+来源: 生物知识清单《2027届高三生物一轮复习知识清单4：分子与细胞基础》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 运用模型解释细胞·2
+[summaryMarkdown] 葡萄糖扩散深度(mm)：0.5。
+[applicabilityMarkdown] 复习“运用模型解释细胞不能无限”考点或解答涉及“运用模型解释细胞·2”的题目时使用。
+[contentMarkdown] 模型边长(mm)：2；表面积(mm2)：24；体积(mm3)：8；葡萄糖扩散深度(mm)：0.5；表面积/体积(相对表面积)：3。
+含葡萄糖的体积/“细胞”体积：7/8。
+[boundaryMarkdown] 一轮复习结论性要点，表述以人教版现行教材为准；具体数值可能因教材版本略有差异。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-photosynthetic-dawn-reading
+来源: 《狂K重点》生物 P382-383 重难3·题型3（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 光响应曲线读法：光强为 0 起点、补偿点、饱和点、平台值依次判读
+[summaryMarkdown] 光响应曲线判读步骤：起点（光强=0 值）→与横轴交点（补偿点）→斜率下降段→平台（饱和点）。
+[applicabilityMarkdown] 光响应曲线定量读图。
+[contentMarkdown] 1. 光强=0：纵轴值为呼吸速率（或真光合=0）。
+2. 与横轴交点：光补偿点（净光合=0）。
+3. 曲线弯曲减缓段：光饱和点附近。
+4. 平台值：最大净光合（对应光饱和点后的纵轴值）。
+[boundaryMarkdown] 先看纵轴语义（净/真光合）再逐点判读。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-storage-low-o2-high-co2-low-temp
+来源: 《狂K重点》生物 P380 重难2·题型3（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 果蔬粮食保鲜手段：低 O2、高 CO2、零上低温
+[summaryMarkdown] 通过低 O2/高 CO2 抑制呼吸、零上低温降低酶活性，减少有机物消耗。
+[applicabilityMarkdown] 贮存/保鲜措施解释题。
+[contentMarkdown] 1. 低 O2、适当高 CO2（充 N2）：抑制有氧呼吸并避免无氧呼吸过强。
+2. 零上低温：降低酶活性、减少消耗，但不能结冻（冻害破坏细胞结构）。
+3. 目的统一：在保持细胞活性的前提下把呼吸消耗降到最低。
+[boundaryMarkdown] 温度过低致冻害、O2 过低致酒精毒害，均为'过度'反例。
+候选（机械预筛，未必对）：有氧呼吸（名字出现）；无氧呼吸（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-chen-re-guo-lv-hou-f71x03
+来源: 化学方法类《（重点·方法·点拨）第68讲 以性质为主的探究类综合实验- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] “趁热过滤”后
+[summaryMarkdown] “趁热过滤”后，有时先向滤液中加入少量水，加热至沸腾，然后再“冷却结晶”：稀释溶液，防止降温过程中杂质析出，提高产品的纯度。
+[applicabilityMarkdown] 热化学方程式书写与反应热计算、比较时使用。
+[contentMarkdown] “趁热过滤”后，有时先向滤液中加入少量水，加热至沸腾，然后再“冷却结晶”：稀释溶液，防止降温过程中杂质析出，提高产品的纯度
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：热化学方程式（名字出现）；反应热（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-entry-f09x10
+来源: 化学方法类《（重点·方法·点拨）第06讲 离子共存、离子检验与推断- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] Fe2+
+[summaryMarkdown] Fe2+：NaOH溶液；先产生 色沉淀，迅速变为灰绿色，最后变为 色。
+[applicabilityMarkdown] 分析沉淀溶解平衡、判断沉淀生成或溶解时使用。
+[contentMarkdown] Fe2+：NaOH溶液；先产生 色沉淀，迅速变为灰绿色，最后变为 色
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：沉淀溶解平衡（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-guang-fan-shi-zhi-zhi-neng-du-chu-zhen-f65x14
+来源: 化学方法类《（重点·方法·点拨）第62讲 化学实验基础知识和技能- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: METHOD_MODEL
+[title] 广泛pH试纸只能读出整数
+[summaryMarkdown] (3)广泛pH试纸只能读出整数，比较粗略。
+[applicabilityMarkdown] 分析溶液酸碱性、比较粒子浓度大小与pH判断时使用。
+[contentMarkdown] (3)广泛pH试纸只能读出整数，比较粗略。
+(4)不能用pH试纸测定具有漂白性、强氧化性试剂的pH。
+[boundaryMarkdown] (4)不能用pH试纸测定具有漂白性、强氧化性试剂的pH。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-pai-kong-qi-fa-f28x08
+来源: 化学方法类《（重点·方法·点拨）第25讲 常见气体的实验室制备、净化和收集- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 排空气法
+[summaryMarkdown] 排空气法：向上排空气法；密度大于空气且不与空气中的成分反应；Cl2、SO2、NO2、CO2。
+[applicabilityMarkdown] 复习相关考点、解答对应试题时使用。
+[contentMarkdown] 排空气法：向上排空气法；密度大于空气且不与空气中的成分反应；Cl2、SO2、NO2、CO2
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-shi-yang-chu-shi-zhi-liang-wei-f01x05
+来源: 化学方法类《第二章 第8讲 化学计算的常用方法（学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 试样初始质量为m0
+[summaryMarkdown] 试样初始质量为m0，失重后试样质量为m1，温度由T1升高到T2的过程，失重质量Δm=m0-m1，失重质量百分数为×100%。
+[applicabilityMarkdown] 复习“(选择题1~11题，每小题6分，共66分)”相关考点、解答对应试题时使用。
+[contentMarkdown] 试样初始质量为m0，失重后试样质量为m1，温度由T1升高到T2的过程，失重质量Δm=m0-m1，失重质量百分数为×100%。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-xiang-yuan-li-f53x06
+来源: 化学方法类《（重点·方法·点拨）第50讲 反应过程中溶液粒子浓度变化的图像分析- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 想原理
+[summaryMarkdown] (3)想原理：涉及电离平衡常数，写出平衡常数表达式，在识图像、想原理的基础上，将图像与原理结合起来思考。
+[applicabilityMarkdown] 判断平衡状态、分析平衡移动方向与相关计算时使用。
+[contentMarkdown] (3)想原理：涉及电离平衡常数，写出平衡常数表达式，在识图像、想原理的基础上，将图像与原理结合起来思考。
+(4)用公式：运用对数计算公式分析。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：平衡常数-x1（名字出现）；电离平衡常数（名字出现）；电离平衡（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-yin-ji-f41x07
+来源: 化学方法类《（重点·方法·点拨）第38讲 电解池　金属的腐蚀与防护- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 阴极：2H2O+2e-=H2↑+
+[summaryMarkdown] 阴极：2H2O+2e-=H2↑+2OH-(还原反应)。
+[applicabilityMarkdown] 分析氧化还原反应、比较氧化性还原性强弱与电子转移数目时使用。
+[contentMarkdown] 阴极：2H2O+2e-=H2↑+2OH-(还原反应)。
+总反应化学方程式：2NaCl+2H2O2NaOH+H2↑+Cl2↑。
+总反应离子方程式：2Cl-+2H2O2OH-+H2↑+Cl2↑。
+注意　电解所用的食盐要精制。
+[boundaryMarkdown] 注意　电解所用的食盐要精制。
+候选（机械预筛，未必对）：离子方程式（名字出现）；电子转移（名字出现）；氧化还原反应（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-hj-jianya-zhengfa-cuiqu
+来源: 化学讲义《第05讲 工业流程题解题策略（举一反三讲义，8大题型）（学生版）》（registry-kb-chemistry-handout:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 减压蒸发与萃取、反萃取
+[summaryMarkdown] 减压蒸发降低温度防分解；反萃取使被萃物返回水相，有机相再生循环。
+[applicabilityMarkdown] 解释减压蒸发原因、描述萃取反萃取流程时使用。
+[contentMarkdown] 减压蒸发：降低蒸发温度，防止物质分解（如 H2O2、浓硝酸、NH4HCO3）或失去结晶水。
+萃取：利用物质在互不相溶的溶剂中溶解度不同转移溶质，如 CCl4 萃取溴水中的 Br2。
+反萃取：用反萃取剂破坏有机相中被萃组分的结构，使其生成易溶于水的化合物或沉淀而返回水相；反萃后的有机相（再生有机相）可循环使用。
+[boundaryMarkdown] 洗涤后的有机相含萃合物少，可返回萃取工序。
+候选（机械预筛，未必对）：化合物（名字出现）
+
+==============================================================================
+## MATH | math-divider-preallocation-method
+来源: 《狂K重难点》数学 P432，重难点48·隔板法解决相同元素分组问题（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: METHOD_MODEL
+[title] 限制条件隔板法：某组至少分得 k 个（k≥2）
+[summaryMarkdown] 先给该组预分配 k−1 个，剩余元素按每组至少 1 个插板，方法数 $C_{n-k}^{m-1}$。
+[applicabilityMarkdown] 某一组（或某几组）至少分得指定数量元素的相同元素分组。
+[contentMarkdown] ①若某一组至少分得 $k$ 个元素（$k\geq2$），先给该组预分配 $k-1$ 个元素（剩下分配时至少再给该组 1 个即满足条件），此时剩余元素为 $n-(k-1)=n-k+1$ 个；②问题转化为将 $n-k+1$ 个相同元素分成 $m$ 组、每组至少 1 个；③用直接隔板法，分组方法数为 $C_{n-k}^{m-1}$。
+[boundaryMarkdown] 多组各有下限时应逐组预分配后再套直接隔板法；注意剩余元素个数须不小于组数。
+候选（机械预筛，未必对）：隔板法（名字出现）
+
+==============================================================================
+## MATH | math-fx-sanjiao-bianhuan-nixiang
+来源: 数学方法类《第20讲：函数 y=Asin(ωx+φ) 的图象与性质及三角函数模型的应用（知识梳理+题型总结）》（registry-kb-math-methods:math）
+类型: METHOD_MODEL
+[title] 图象变换的逆向求解与特殊点验证
+[summaryMarkdown] 已知变换前后解析式可逆向拆解变换步骤；用跟踪特殊点坐标的方法验证变换是否正确。
+[applicabilityMarkdown] 由目标函数与原函数求变换过程、检验变换类选择题时。
+[contentMarkdown] 1. 逆向拆解：对比振幅（纵坐标伸缩倍数）、相位（$\omega x+\varphi$ 中 $\varphi$ 与 $\omega$ 决定平移方向与量）、周期（横坐标伸缩倍数），倒序写出变换步骤。
+2. 特殊点验证：跟踪原函数特殊点（如 $(0,0)$、$\left(\dfrac{\pi}{2},1\right)$）逐级变换后的坐标，代入目标函数检验。
+3. 验证时先平移横坐标、再做周期伸缩，横坐标的变化要逐步计算，不能一次合并。
+[boundaryMarkdown] 特殊点必须真正在图象上且逐级计算；若验证不符，优先检查平移方向符号与伸缩倍数。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-hj-s36-construct-xfx
+来源: 数学讲义《第三章 §3.6　函数中的构造问题.docx》（registry-kb-math-handout:math）
+类型: METHOD_MODEL
+[title] xf'(x)±nf(x) 型的构造
+[summaryMarkdown] 出现 n f(x)+x f'(x) 构造 F(x)=x^n f(x)，出现 x f'(x)−n f(x) 构造 F(x)=f(x)/x^n。
+[applicabilityMarkdown] 由导数不等式结构构造可导函数比较大小、解不等式。
+[contentMarkdown] 1. $f(x)+x f'(x)>0$ 型：构造 $F(x)=x f(x)$，$F'(x)=f(x)+xf'(x)$。
+2. $x f'(x)-n f(x)$ 型：构造 $F(x)=\dfrac{f(x)}{x^n}$，其导数分子为 $xf'(x)-nf(x)$。
+3. 由 $F$ 的单调性（结合奇偶性）比较 $x f(x)$ 型值的大小。
+[boundaryMarkdown] 构造后必须利用已知条件判定 F 的单调性与奇偶性。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-inverse-construct-product-rule
+来源: 《狂K重难点》数学 P391 重难15·续表（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: METHOD_MODEL
+[title] 逆向构造：$f'(x)g(x)+f(x)g'(x)>0$ 时构造 $h(x)=f(x)g(x)$
+[summaryMarkdown] 题干出现乘积求导形式 $f'(x)g(x)+f(x)g'(x)>0$ 时，构造乘积函数 $h(x)=f(x)g(x)$，其导数即该形式。
+[applicabilityMarkdown] 条件形如 $f'(x)g(x)+f(x)g'(x)>0$（乘法求导结构）的不等式问题。
+[contentMarkdown] 1. 识别题干形式 $f'(x)g(x)+f(x)g'(x)>0$。
+2. 构造 $h(x)=f(x)g(x)$，则 $h'(x)=f'(x)g(x)+f(x)g'(x)>0$，$h(x)$ 单调递增。
+3. 将目标式化为 $f(\cdot)g(\cdot)$ 的比较，由单调性得出结论。
+[boundaryMarkdown] $g(x)$ 由题干结构确定（如 $x$、$\mathrm{e}^x$、$\sin x$ 等）；条件须在相关定义域内恒成立。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-mo-qiedianxian-fangcheng
+来源: 数学《高考数学二级结论篇（核心知识背记手册）（默写版）》（registry-kb-math-misc:math）
+类型: CONCEPT_EXPLANATION
+[title] 切点弦方程
+[summaryMarkdown] 由圆外点引两切线，切点弦方程与切线公式同形（$x_0x+y_0y=r^2$ 等）。
+[applicabilityMarkdown] 圆锥曲线切点弦的快速求解。
+[contentMarkdown] 平面内一点引曲线的两条切线，两切点所在直线的方程叫切点弦方程。1. 圆 $x^2+y^2=r^2$ 外一点 $P(x_0,y_0)$：切点弦为 $x_0x+y_0y=r^2$；2. 椭圆：$\dfrac{x_0x}{a^2}+\dfrac{y_0y}{b^2}=1$；3. 双曲线：$\dfrac{x_0x}{a^2}-\dfrac{y_0y}{b^2}=1$；4. 抛物线 $y^2=2px$：$yy_0=p(x+x_0)$。
+[boundaryMarkdown] 点须在曲线外（或上）；该方程给出的是“两切点连线”，不是切线本身。
+候选（机械预筛，未必对）：直线的方程（名字出现）；双曲线（名字出现）；抛物线（名字出现）
+
+==============================================================================
+## MATH | math-period-mobius-fraction-iteration
+来源: 《狂K重难点》数学 P378 重难4·1(2)（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: CONCEPT_EXPLANATION
+[title] 分式变换周期式：$f(x+a)=\dfrac{1-f(x)}{1+f(x)}\ (f(x)\neq -1)\Rightarrow T=2a$
+[summaryMarkdown] 函数值经 $u\mapsto\dfrac{1-u}{1+u}$ 变换迭代两次还原，故周期为 $2a$。
+[applicabilityMarkdown] 函数方程含 $\dfrac{1-f(x)}{1+f(x)}$ 型分式变换时判定周期。
+[contentMarkdown] 1. 记 $g(u)=\dfrac{1-u}{1+u}$，验证 $g(g(u))=u$。
+2. 于是 $f(x+2a)=g(g(f(x)))=f(x)$，周期 $T=2a$。
+[boundaryMarkdown] 前提 $f(x)\neq -1$；所得为一个周期，不一定是最小正周期。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-fx-live-rod-dead-rod
+来源: 物理方法类《第3讲 三大性质力及力的合成与分解（学生版）》（registry-kb-physics-methods:physics）
+类型: METHOD_MODEL
+[title] “活杆”与“死杆”模型
+[summaryMarkdown] 用光滑转轴或铰链连接的活杆平衡时弹力沿杆；被固定的死杆弹力方向不一定沿杆。
+[applicabilityMarkdown] 杆件弹力方向的判断。
+[contentMarkdown] 1. 活杆：光滑转轴（铰链）连接且平衡时，杆受弹力一定沿杆，否则会引起杆转动。
+2. 死杆：杆固定不动时，弹力方向由平衡或运动状态确定，可与杆成任意角度。
+[boundaryMarkdown] 不能默认“杆的弹力沿杆”，只有铰链活杆才成立。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-hj2-sijie-huojie-moxing
+来源: 物理讲义《第3讲 三大性质力及力的合成与分解》（registry-kb-physics-handout:physics）
+类型: CONCEPT_EXPLANATION
+[title] “死结”与“活结”模型
+[summaryMarkdown] 死结把绳分成两段独立绳，两侧弹力不一定相等；活结可沿绳滑动，两侧张力相等。
+[applicabilityMarkdown] 绳结、滑轮绕绳问题中张力的判断。
+[contentMarkdown] 1. “死结”特点：结不可沿绳移动，把绳分成两段相互独立的绳，两段张力大小不一定相等。
+2. “活结”特点：结（或跨过光滑滑轮的绳）可沿绳移动，两侧绳中张力大小相等。
+[boundaryMarkdown] 跨过光滑滑轮或杆的同一根绳两侧张力相等；打结固定处两侧张力一般不等。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-kb-hall-effect-voltage
+来源: 物理知识清单：《专题12 磁场（知识清单）（全国通用）（教师版）》（registry-kb-physics-knowledge-list:physics）
+类型: CONCEPT_EXPLANATION
+[title] 霍尔效应
+[summaryMarkdown] 载流子在磁场中偏转形成稳定霍尔电压，可测磁感应强度。
+[applicabilityMarkdown] 分析霍尔元件类问题时使用。
+[contentMarkdown] 当电场力与洛伦兹力平衡时电压稳定：$q\frac{U}{d}=qvB$，结合 $I=nqvS$ 得 $U=\frac{BI}{nqd}$（比例系数为霍尔系数）。
+电势高低由载流子电性与磁场方向按左手定则判断。
+[boundaryMarkdown] 导体厚度 d 越小、载流子浓度越小，霍尔效应越显著。
+候选（机械预筛，未必对）：洛伦兹力（名字出现）；霍尔元件（名字出现）；磁感应强度（名字出现）
+

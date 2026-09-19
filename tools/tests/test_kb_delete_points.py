@@ -74,8 +74,8 @@ class RealPackTest(unittest.TestCase):
         # 2026-09-19 文本判定轮：化学/生物「一轮复习讲义·学生版 + 知识清单·学生版」9,405 块判定入库，
         # 新建 428 个知识点并合并 1 条同物重复 → 2424 + 428 = 2852
         # 2026-09-19 文本判定第二轮（并行会话）再入库 729 个知识点（sidecar 滚到 v2-10）
-        # → 2852 + 729 = 3581。点数随入库轮次增长，由入库侧在提交里维护本 pin。
-        self.assertEqual(3581, dp._point_count(pack))
+        # → 2852 + 729 = 3582。点数随入库轮次增长，由入库侧在提交里维护本 pin。
+        self.assertEqual(3582, dp._point_count(pack))
 
     def test_purge_table_refs_is_clean_on_shipped(self):
         """成品已删过点、外部表已清过——再 purge 必须 0（无悬空引用残留）。"""

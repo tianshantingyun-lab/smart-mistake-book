@@ -1,0 +1,31 @@
+subject,material_slug,node_slug,confidence,evidence
+BIOLOGY,bio-diurnal-noon-depression-stomata,一昼夜CO2浓度变化曲线,medium,材料讲一昼夜曲线正午凹陷（光合午休）的成因是气孔关闭致CO2不足；与该节点边界「光合午休由高温导致气孔关闭CO2供应不足引起」及同系列一昼夜曲线材料一致
+BIOLOGY,bio-fj-03-fructose-galactose-distribution,细胞中的糖类,high,材料讲果糖与半乳糖的分布及其组成蔗糖与乳糖；同库单糖种类与分布类材料均绑「细胞中的糖类」
+BIOLOGY,bio-fj-08-four-control-types,对照实验的分析方法,high,材料讲空白对照、自身对照、条件对照与相互对照四类区分；节点别名含「四类对照实验的区分」且同主题材料已绑此节点
+BIOLOGY,bio-fj-19-griffith-converts-partial,肺炎链球菌转化实验,medium,材料讲格里菲思体内转化实验中只有少部分R型菌被转化的细节与「全部转化」的错误说法；属该实验的过程与转化机制
+BIOLOGY,bio-fj-33-vertical-layering-animals-reason,群落的结构,high,材料讲动物垂直分层由植物分层提供的食物与栖息空间决定；属群落的垂直结构（节点材料含「群落的垂直结构」「水生植物分层」）
+BIOLOGY,bio-fx-judge-hormone-transport,激素调节的特点,high,材料讲激素随体液运输到全身而非定向运输且只作用于靶细胞；同主题「激素分泌与运输的三个易错点」材料已绑该节点
+BIOLOGY,bio-homologous-recombination-cloning,基因工程,high,材料讲同源重组法（15-20 bp同源臂与Exnase II体外重组）构建载体的步骤与优点；同讲「无缝克隆（同源重组）法构建表达载体」已绑该节点
+BIOLOGY,bio-kb-pea-artificial-hybrid-operation,人工异花传粉的操作流程,high,材料讲花蕾期去雄、套袋、人工授粉、再套袋四步操作与单性花不需去雄；与节点同名同主题
+BIOLOGY,bio-kb2-22-translocation-vs-crossing-over,染色体变异-x1,medium,材料辨析易位（非同源染色体之间且光镜可见）与交叉互换（同源染色体非姐妹染色单体间属基因重组）；同主题「易位与互换的区别」材料已绑该节点
+BIOLOGY,bio-kb3-f4-s34-n02,胞吞,medium,材料给出胞吞与胞吐的实例；同源同批次材料（胞吞与胞吐的概念）已绑该节点且其边界含两种方式的区分
+BIOLOGY,bio-photoprotection-d1-repair,影响光合作用强度的环境因素,medium,材料讲光保护防线三即D1蛋白修复替换恢复PSII活性；该节点已收录「光抑制与光保护机制」（含D1蛋白周转）等同主题材料
+BIOLOGY,bio-selfing-n-homozygote-ratio,自交和自由交配的概率计算,medium,材料讲连续自交n代纯合子比例公式与显隐性纯合各占一半；该节点已收录连续自交（杂合子1/2的n次方）类计算材料
+CHEMISTRY,chem-fx-chen-dian-de-sheng-cheng-f54x07,沉淀溶解平衡的应用,high,材料讲沉淀的生成（生成溶解能力小的难溶电解质及方法与实例）；同主题「沉淀的生成与溶解方法」材料均绑该节点
+CHEMISTRY,chem-fx-duo-yong-tu-de-qiu-xing-gan-zao-guan-f66x01,干燥管与洗气瓶的作用,high,材料讲球形干燥管按装置位置不同分别起干燥与检验、吸收尾气与隔绝空气的作用；与节点已收录「干燥管在装置不同位置的作用」同主题
+CHEMISTRY,chem-fx-gao-ji-zhi-fang-suan-f61x06,羧酸,medium,材料讲高级脂肪酸的组成（RCOOH）与饱和高级脂肪酸固态、油酸不饱和液态；属羧酸的组成与分类且该节点已收录「羧酸的组成与羧基」
+CHEMISTRY,chem-fx-liu-de-han-yang-suan-gen-you-hen-duo-f75x03,焦亚硫酸钠,medium,材料围绕由NaHSO3过饱和溶液结晶脱水制Na2S2O5的工艺与方程式正误判断；该节点已收录焦亚硫酸钠的制备与性质
+CHEMISTRY,chem-fx-shi-yan-f76x22,离子推断的基本原则,low,材料给出两份溶液实验现象（烧碱加热放出气体224 mL与BaCl2得固体2.33 g）用于推断所含离子；属离子推断题的实验数据片段
+CHEMISTRY,chem-fx-wen-zi-biao-shu-ti-de-ge-zhong-da-ti-g-f71x10,沉淀的洗涤与检验,medium,材料给出沉淀洗涤是否完全的检验答题模板与取样加试剂加现象加结论四个得分点；该节点主题即沉淀洗涤与沉淀完全的检验
+CHEMISTRY,chem-fx-yi-yong-bei-can-ji-f73x06,化学与医药的常考常识,high,材料讲医用钡餐剂BaSO4与BaCO3的对比、补钙补锌及补血剂硫酸亚铁；该节点现有材料正覆盖钡餐与补血剂
+CHEMISTRY,chem-hj-fenli-guan-dongguan-shi-yong,常见仪器,medium,材料讲漏斗、分液漏斗、冷凝管、球形干燥管与洗气瓶的用途与使用要点；属常用仪器的结构与用途（节点已收录冷凝管选用与干燥管气流方向）
+MATH,math-bian-qici-zhengxian-huaweijiao,边角互化,high,材料讲边的齐次等式或分式用正弦定理化边为角；同源「三角形中边角互化的总思路」及同主题材料均绑该节点
+MATH,math-fx-qiangjiao-buchang-changfangti,求解几何体外接球的半径的思路,medium,材料讲墙角模型与对棱相等模型补形为长方体求外接球；该节点边界思路二即补成长方体且已收录「外接球模型一：墙角模型」
+MATH,math-hj-s103-poly-product,三项展开式的通项,medium,材料讲多个多项式积按各因式取项的指数组合分类求和；与该节点边界「同一指定项由多组次数组合共同产生须把各组贡献相加」一致
+MATH,math-hj-zuhe-gainian-shu,组合,high,材料讲组合的定义与组合数公式及只取不排；该节点已收录「组合与组合数的概念及公式」等同主题材料
+MATH,math-mo-kexi-zhongzhi,柯西中值定理,high,材料讲柯西中值定理的条件与结论；与节点同名同主题
+MATH,math-nonoriented-assignment-multiply-permutation,分组分配问题,medium,材料讲不定向分配需乘接受者的全排列；同库「不同元素先分组后分配、不定向分配需乘A_m^m」材料已绑该节点
+PHYSICS,phys-fx-eddy-current-damping-drive,涡流,medium,材料讲涡流大小与电磁阻尼、电磁驱动均源于阻碍相对运动；同名「涡流、电磁阻尼与电磁驱动」材料在该节点已收录多篇
+PHYSICS,phys-hj2-luoxuan-ceweiqi-caozuo-xijie,必备实验仪器的原理及使用,medium,材料讲螺旋测微器的操作细节（粗调转微调听喀喀声）与读数及零误差修正；同源讲义「螺旋测微器的原理与读数」材料均绑该节点
+PHYSICS,phys-kb-center-of-gravity,重心,high,材料讲重心是重力的等效作用点、位置由形状与质量分布决定及悬挂法确定；该节点材料均讲重心含义与确定方法
+PHYSICS,phys-wave-speed-by-medium,波速,high,材料讲机械波波速由介质决定、跨介质时频率不变而波速波长改变；该节点已收录「波速及其决定因素」

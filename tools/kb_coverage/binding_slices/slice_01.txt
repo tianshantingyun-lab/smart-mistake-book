@@ -1,0 +1,378 @@
+# 绑定作业片 01：30 条无绑定材料
+#
+# 任务：为每条材料选定它应该绑定的知识点节点（就是讲题时该材料服务的那个点）。
+# 交付（写到 tools/kb_coverage/binding_fixes/slice_01/notes.csv）：
+#   subject,material_slug,node_slug,confidence,evidence
+#   （node_slug 用下面的节点表里的 slug；确实没有合适的写 NONE；
+#     evidence 一句话说明依据；字段内不要有 ASCII 逗号）
+#
+# 硬规矩：
+#   · 宁缺勿错：不确定就 confidence=low 或写 NONE —— 错绑会让检索喂错材料
+#   · 只能从本学科节点表里选（见 tools/kb_coverage/binding_slices/nodes/nodes_<学科>.txt）
+#   · 一条材料只绑一个节点（就是它最主要服务的那个点）
+
+==============================================================================
+## BIOLOGY | bio-adrenal-cortex-glucocorticoid
+来源: 《狂K重点》生物 P410 重难13·题型1（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: CONCEPT_EXPLANATION
+[title] 肾上腺皮质分泌糖皮质激素（皮质醇）：促进糖元分解、调糖
+[summaryMarkdown] 糖皮质激素由肾上腺皮质分泌，促进糖异生、抑制糖利用，升高血糖，属应激激素。
+[applicabilityMarkdown] 血糖调节激素补充。
+[contentMarkdown] 糖皮质激素（皮质醇）作用：促进蛋白质/脂肪分解转化为糖（糖异生）→升高血糖；与肾上腺素协同（应激状态）。
+[boundaryMarkdown] 与胰岛素拮抗、与胰高血糖素协同升高血糖。
+候选（机械预筛，未必对）：蛋白质（名字出现）；胰岛素（名字出现）；胰高血糖素（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-exp-independent-variable-manipulation
+来源: 《狂K重点》生物 P428 重难20·题型1（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 自变量处理：促进自变量、确保唯一
+[summaryMarkdown] 实验设计要主动施加/改变自变量，并确保自变量唯一。
+[applicabilityMarkdown] 实验方案设计核心。
+[contentMarkdown] 1. 促进自变量：按实验目的主动施加处理（不同浓度、不同时间等）。
+2. 确保自变量唯一：各组间只允许自变量不同。
+[boundaryMarkdown] 自变量不唯一则因果推断失效。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-04-peptide-chain-ends
+来源: 生物讲义《第04讲 蛋白质和核酸（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 肽链上游离氨基和羧基的确定
+[summaryMarkdown] 一条肽链至少含一个游离氨基和一个游离羧基，位于肽链两端，其余在R基上。
+[applicabilityMarkdown] 氨基羧基数目的判断。
+[contentMarkdown] 1. 一条肽链上至少有一个游离氨基和一个游离羧基，分别位于肽链两端。
+2. 其余的氨基或羧基在R基上。
+[boundaryMarkdown] 若R基含氨基或羧基，总数需加上R基中的数目。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-10-light-saturation-point
+来源: 生物讲义《第10讲 光合作用（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 光饱和点的含义与限制因素
+[summaryMarkdown] 光饱和点是光合速率不再随光照强度增加而增加时的光照强度，此后限制因素转为CO2、温度等。
+[applicabilityMarkdown] 饱和点概念判断。
+[contentMarkdown] 1. 定义：光合速率达到最大时的最低光照强度。
+2. 超过饱和点后，限制因素不再是光照，而是CO2浓度、温度等。
+3. 阴生植物光饱和点低于阳生植物。
+[boundaryMarkdown] 温室生产在饱和点前增强光照才有效。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-24-artificial-uterus-conditions
+来源: 生物讲义《第24讲  内环境与稳态（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] “人造子宫”必须具备的条件
+[summaryMarkdown] 人造子宫需装模拟羊水成分的液体并提供机器胎盘完成物质交换，以保持内环境稳定。
+[applicabilityMarkdown] 内环境稳定的应用情境。
+[contentMarkdown] 1. “羊水”模拟自然子宫羊水的成分和含量，含营养物质和生长因子。
+2. 必须具备适宜的温度和酸碱度。
+3. “羊水”需定时更新，保持相对稳定。
+4. 外部配置机器胎盘，与脐带相通进行物质交换。
+[boundaryMarkdown] 该情境考查内环境稳态的成分、理化性质要求。
+候选（机械预筛，未必对）：内环境（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fx-double-enzyme-cloning
+来源: 生物方法类《2026届高三生物三轮复习PCR引物设计全解析》（registry-kb-biology-methods:biology）
+类型: METHOD_MODEL
+[title] 双酶切构建重组载体的目的
+[summaryMarkdown] 用两种不同限制酶分别切割目的基因和质粒，可防止自身环化并避免反向连接。
+[applicabilityMarkdown] 载体构建中限制酶选择的题目。
+[contentMarkdown] 1. 单酶切时目的基因两端、质粒切口黏性末端相同，易自身环化，也可反向插入。
+2. 双酶切产生两种不同的黏性末端（或平末端组合），目的基因只能以正确方向插入质粒。
+3. 选择酶切位点要保证不破坏目的基因、不损伤质粒必需元件（标记基因、复制原点等）。
+[boundaryMarkdown] 平末端连接效率低且无方向性，一般需补平或加接头后再连；连接由DNA连接酶催化而非DNA聚合酶。
+候选（机械预筛，未必对）：限制酶（名字出现）；dna连接酶（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fx-nucleo-cytoplasmic-sterility
+来源: 生物方法类《第五单元 专题突破5 基因分离定律拓展题型突破》（registry-kb-biology-methods:biology）
+类型: CONCEPT_EXPLANATION
+[title] 核质互作雄性不育与三系配套
+[summaryMarkdown] 只有细胞质基因为S且核基因型为rr时才雄性不育，配合保持系和恢复系实现三系配套制种。
+[applicabilityMarkdown] 杂交水稻育性遗传、三系法育种的大题。
+[contentMarkdown] 1. 核质互作不育：由核基因和细胞质基因共同控制，S（rr）为雄性不育，其余基因型均可育。
+2. 保持系N（rr）：与不育系杂交后代仍为S（rr），可保持不育性并繁殖不育系种子。
+3. 恢复系N（RR）或S（RR）：与不育系杂交产生可育的S（Rr）杂交种，恢复系给F2带来育性分离。
+4. 不育系在杂交中作母本，省去人工去雄。
+[boundaryMarkdown] 三系配套中不育系S（rr）×保持系N（rr）→S（rr）；不育系×恢复系→S（Rr）全可育；短日照或低温使某些不育系恢复育性，说明表现型是基因型与环境共同作用的结果。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-info-extraction-table
+来源: 《狂K重点》生物 P428 重难20·题型2（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 表格信息：看表头，从行列对比找自变量、因变量与差异
+[summaryMarkdown] 表格题先看表头与'注'，再按行、列对比找变量与差异。
+[applicabilityMarkdown] 表格类分析题。
+[contentMarkdown] 1. 先看表头（行列代表什么）与注释。
+2. 从行、列分别对比：行间/列间的不同即自变量，数值差异即因变量变化。
+3. 注意'＋/−'等符号含义按注释解读。
+[boundaryMarkdown] 忽略注释是表格题最常见失分点。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb2-02-feilin-bisuoshiji-diff
+来源: 生物知识清单：《第02讲 细胞中的元素和化合物（知识清单）（全国通用）（教师版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 斐林试剂与双缩脲试剂的“一同三不同”
+[summaryMarkdown] 两试剂成分相同但铜离子浓度、使用方法和原理不同。
+[applicabilityMarkdown] 比较两种试剂、分析试剂混用错误时使用。
+[contentMarkdown] 一同：都含NaOH和CuSO4，且NaOH浓度都是0.1克每毫升；
+三不同：CuSO4浓度不同（斐林0.05克每毫升、双缩脲0.01克每毫升），使用方法不同（斐林等量混匀立即使用，双缩脲先A后B），原理不同（斐林实质是新配氢氧化铜，双缩脲实质是碱性环境中的铜离子）。
+[boundaryMarkdown] 斐林试剂乙液与双缩脲试剂B液因浓度不同不可混用替代。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb2-29-autoimmune-disease
+来源: 生物知识清单：《第29讲 免疫失调和免疫学的应用（知识清单）（全国通用）（教师版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 自身免疫病的成因与实例
+[summaryMarkdown] 免疫系统对自身成分发生反应并损伤组织器官即自身免疫病，如类风湿关节炎、系统性红斑狼疮。
+[applicabilityMarkdown] 归类自身免疫病、判断治疗方法时使用。
+[contentMarkdown] 概念：在某些特殊情况下，免疫系统对自身成分发生反应，对组织和器官造成损伤并出现症状；
+实例：风湿性心脏病、类风湿关节炎、系统性红斑狼疮；治疗：目前缺乏根治手段，可用免疫抑制药物、血浆置换等，自体造血干细胞移植是有前景的方法。
+[boundaryMarkdown] 治疗自身免疫病的药物（如类风湿性关节炎药物）可能会抑制免疫系统的功能。
+候选（机械预筛，未必对）：干细胞（名字出现）；免疫系统（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-kb3-f5-s5-1-n09
+来源: 生物知识清单《2027届高三生物一轮复习知识清单5：细胞的能量供应和利用》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 能够催化淀粉水解的酶
+[summaryMarkdown] 能够催化淀粉水解的酶是淀粉酶，能够催化唾液淀粉酶水解的酶是蛋白酶。
+[applicabilityMarkdown] 复习“降低化学反应活化能的酶”考点或解答涉及“能够催化淀粉水解的酶”的题目时使用。
+[contentMarkdown] 能够催化淀粉水解的酶是淀粉酶，能够催化唾液淀粉酶水解的酶是蛋白酶。
+[boundaryMarkdown] 一轮复习结论性要点，表述以人教版现行教材为准；具体数值可能因教材版本略有差异。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-prokaryote-transcription-translation-coupled
+来源: 《狂K重点》生物 P403 重难9·题型2（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: CONCEPT_EXPLANATION
+[title] 原核生物无核膜，转录与翻译耦联进行
+[summaryMarkdown] 原核细胞转录出 mRNA 的同时核糖体即可结合翻译；真核转录在核内、翻译在细胞质。
+[applicabilityMarkdown] 表达时空调控判断。
+[contentMarkdown] 原核细胞没有核膜包被的细胞核，DNA 转录出 mRNA 的同时核糖体即可结合翻译——转录与翻译耦联；真核细胞核内转录加工后经核孔出核翻译。
+[boundaryMarkdown] 多聚核糖体在原核可结合尚未转录完的 mRNA。
+候选（机械预筛，未必对）：原核细胞（名字出现）；真核细胞（名字出现）；核糖体（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-ag-acidity-parameter
+来源: 《狂K重点》化学 书页P383，重难点14 考向2 对数图像分析（registry-lixiangshu-2027-bikuti-kuangk-chemistry:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 酸度参数AG：lg[c(H+)/c(OH-)]
+[summaryMarkdown] AG=lg[c(H+)/c(OH-)]，AG越大酸性越强，中性时AG=0。
+[applicabilityMarkdown] 以AG为坐标的溶液酸碱性图像分析。
+[contentMarkdown] AG=lg[c(H+)/c(OH-)]：AG>0呈酸性，AG=0呈中性（c(H+)=c(OH-)），AG<0呈碱性。
+AG越大，c(H+)/c(OH-)越大，酸性越强。
+[boundaryMarkdown] 任何温度下中性时AG=0（不依赖Kw的具体值），这是与pH=7的区别。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-chun-qiang-ji-f64x03
+来源: 化学方法类《（重点·方法·点拨）第61讲 有机合成与推断综合题突破- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 醇羟基
+[summaryMarkdown] 醇羟基：(1)与活泼金属(Na)反应放出H2；(2)催化氧化：在铜或银催化下被氧化成醛基或酮羰基；(3)与羧酸发生酯化反应生成酯。
+[applicabilityMarkdown] 分析氧化还原反应、比较氧化性还原性强弱与电子转移数目时使用。
+[contentMarkdown] 醇羟基：(1)与活泼金属(Na)反应放出H2；(2)催化氧化：在铜或银催化下被氧化成醛基或酮羰基；(3)与羧酸发生酯化反应生成酯
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：电子转移（名字出现）；氧化还原反应（名字出现）；酯化反应（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-entry-f76x03
+来源: 化学方法类《高考化学离子检验、推断与共存(学生版)-26页》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] Fe2+
+[summaryMarkdown] Fe2+：K3[Fe(CN)6] (铁氰化钾)溶液；产生蓝色沉淀。
+[applicabilityMarkdown] 判断离子能否大量共存、书写不能共存的原因时使用。
+[contentMarkdown] Fe2+：K3[Fe(CN)6] (铁氰化钾)溶液；产生蓝色沉淀
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-hua-xue-yu-yi-yao-f73x05
+来源: 化学方法类《高考化学化学与传统文化及STSE(学生版)-20页》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 化学与医药
+[summaryMarkdown] 6．化学与医药。
+[applicabilityMarkdown] 分析氧化还原反应、比较氧化性还原性强弱与电子转移数目时使用。
+[contentMarkdown] 6．化学与医药
+(1)抗酸药物：治疗胃酸(主要成分为盐酸)分泌过多的常用药物有：氢氧化铝(胃舒平)，小苏打(NaHCO3)等，NaOH、Na2CO3由于碱性较强，不能作抗酸药物。
+(2)医用酒精：体积分数为75%乙醇溶液，皮肤外用消毒剂(使蛋白质变性，非氧化还原反应)。
+[boundaryMarkdown] (1)抗酸药物：治疗胃酸(主要成分为盐酸)分泌过多的常用药物有：氢氧化铝(胃舒平)，小苏打(NaHCO3)等，NaOH、Na2CO3由于碱性较强，不能作抗酸药物。
+候选（机械预筛，未必对）：电子转移（名字出现）；氧化还原反应（名字出现）；蛋白质（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-pin-hong-rong-ye-f12x12
+来源: 化学方法类《（重点·方法·点拨）第09讲 钠及其氧化物- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 品红溶液
+[summaryMarkdown] 品红溶液：Na2O2的强氧化性使之褪色。
+[applicabilityMarkdown] 分析氧化还原反应、比较氧化性还原性强弱与电子转移数目时使用。
+[contentMarkdown] 品红溶液：Na2O2的强氧化性使之褪色
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：电子转移（名字出现）；氧化还原反应（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-shui-ni-chang-he-ye-jin-chang-chang-yo-f07x15
+来源: 化学方法类《（重点·方法·点拨）第04讲 元素与物质的分类- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 水泥厂和冶金厂常用高压直流电除去大量烟尘
+[summaryMarkdown] ⑦水泥厂和冶金厂常用高压直流电除去大量烟尘，减少对空气的污染。
+[applicabilityMarkdown] 判断分散系类型与胶体性质时使用。
+[contentMarkdown] ⑦水泥厂和冶金厂常用高压直流电除去大量烟尘，减少对空气的污染
+胶体知识“6”提醒
+(1)胶体区别于其他分散系的本质特征是胶体粒子的直径在1～100 nm(即10-9～10-7m)之间，而不是丁达尔效应。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：分散系（名字出现）；丁达尔效应（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-xing-fen-zi-f33x03
+来源: 化学方法类《（重点·方法·点拨）第30讲 分子的性质　配合物与超分子- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] ABn(n≥2)型分子
+[summaryMarkdown] (3)ABn(n≥2)型分子。
+[applicabilityMarkdown] 比较键角、判断分子构型与中心原子杂化方式时使用。
+[contentMarkdown] (3)ABn(n≥2)型分子
+①根据分子结构判断
+若分子是对称的，则为非极性分子，否则是极性分子。
+②利用孤电子对判断；若中心原子A中无孤电子对，则为非极性分子；若有孤电子对，则为极性分子。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-yu-re-shui-yu-you-yu-sha-yu-deng-you-d-f65x10
+来源: 化学方法类《（重点·方法·点拨）第62讲 化学实验基础知识和技能- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 浴热(水浴、油浴、沙浴等)；优点
+[summaryMarkdown] 浴热(水浴、油浴、沙浴等)；优点：：①需严格控制温度(如硝基苯的制备)；②需反应混合液静置(如银镜反应)；③蒸馏沸点差较小的混合液。
+[applicabilityMarkdown] 物质分离提纯方案选择与操作要点判断时使用。
+[contentMarkdown] 浴热(水浴、油浴、沙浴等)；优点：：①需严格控制温度(如硝基苯的制备)；②需反应混合液静置(如银镜反应)；③蒸馏沸点差较小的混合液
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：分离提纯（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-hj-suanjian-zhishiji-bianse
+来源: 化学讲义《第02讲 水的电离和溶液的酸碱性（举一反三讲义，11大题型）（学生版）》（registry-kb-chemistry-handout:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 常见酸碱指示剂的变色范围
+[summaryMarkdown] 石蕊、酚酞、甲基橙的变色范围与颜色变化。
+[applicabilityMarkdown] 选择指示剂、描述滴定终点颜色时使用。
+[contentMarkdown] 石蕊：<5.0 红色，5.0～8.0 紫色，>8.0 蓝色。
+酚酞：<8.2 无色，8.2～10.0 浅红色，>10.0 红色。
+甲基橙：<3.1 红色，3.1～4.4 橙色，>4.4 黄色。
+指示剂只能测定 pH 范围，不能测准确值。
+[boundaryMarkdown] 强酸滴定弱碱选甲基橙，强碱滴定弱酸选酚酞。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-fangshuo-1bijin2-xiaoyu-nj1
+来源: 《狂K重难点》数学 书页P409，重难点29（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: CONCEPT_EXPLANATION
+[title] 放缩结论：1/n² < 1/[n(n−1)]（n≥2）
+[summaryMarkdown] $\frac{1}{n^2}<\frac{1}{n(n-1)}=\frac{1}{n-1}-\frac{1}{n}\ (n\geqslant2)$。
+[applicabilityMarkdown] 证明 $\sum\frac{1}{n^2}$ 型上界估计。
+[contentMarkdown] $\frac{1}{n^2}<\frac{1}{n(n-1)}=\frac{1}{n-1}-\frac{1}{n}\ (n\geqslant2)$。
+[boundaryMarkdown] 仅对 $n\geqslant2$ 成立，首项单独处理。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-fx-yuan-xian-chuizhi-guoxin
+来源: 数学方法类《第32讲：圆的方程（知识梳理+题型总结）》（registry-kb-math-methods:math）
+类型: CONCEPT_EXPLANATION
+[title] 弦的垂直平分线过圆心
+[summaryMarkdown] 圆的任意弦的垂直平分线过圆心；反之圆心在弦的垂直平分线上，可用于由弦（或对称性）确定圆心。
+[applicabilityMarkdown] 由圆的对称条件、弦的位置反求圆心或方程时。
+[contentMarkdown] 1. 性质：圆心与弦中点的连线垂直于弦（垂径定理的向量表述），即弦的中垂线过圆心。
+2. 应用：已知圆过两点（一条弦），圆心在该弦的中垂线上；结合另一条件（圆心在直线上、与轴相切）联立求圆心。
+3. 判定：直线平分弦 $\iff$ 直线过圆心或垂直于弦（垂径定理逆用需两个条件同时）。
+[boundaryMarkdown] “平分弦”的逆定理要求被平分的弦不是直径；由对称性定圆心时对称轴必过圆心。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-hj-s65-sum-merge
+来源: 数学讲义《第六章 §6.5　数列求和(一).docx》（registry-kb-math-handout:math）
+类型: METHOD_MODEL
+[title] 并项求和法
+[summaryMarkdown] (−1)ⁿf(n) 型或相邻两项和为定值的数列，两项一组并项后转化为等差或常数求和。
+[applicabilityMarkdown] 摆动符号数列求和。
+[contentMarkdown] 1. $a_n=(-1)^nf(n)$：两两分组 $(a_1+a_2)+(a_3+a_4)+\cdots$，组内符号相消。
+2. $a_k+a_{k+1}$ 为定值时按组求和，注意 n 的奇偶影响尾项。
+[boundaryMarkdown] 分组后剩余单尾项单独处理。
+候选（机械预筛，未必对）：数列求和（名字出现）
+
+==============================================================================
+## MATH | math-jiao-zhengxian-qici-huaweibian
+来源: 《狂K重难点》数学 书页P400，重难点22（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: METHOD_MODEL
+[title] 角的正弦齐次等式或分式化角为边
+[summaryMarkdown] 角的正弦齐次式用 $\sin A=\frac{a}{2R}$ 化角为边，再消去 $2R$。
+[applicabilityMarkdown] 条件是角的正弦齐次等式或分式的解三角形题。
+[contentMarkdown] 角的正弦齐次等式或分式：利用正弦定理（如 $\sin A=\frac{a}{2R}$）化角为边，再消去 $2R$，得到边之间的关系。
+[boundaryMarkdown] 齐次性是化归前提；含 $\sin A\sin B$ 型乘积项化成 $ab/(4R^2)$ 后需约去 $4R^2$。
+候选（机械预筛，未必对）：正弦定理（名字出现）
+
+==============================================================================
+## MATH | math-mo-sipingfanghe-dingli
+来源: 数学《专题12 以相关公式、定义、定理、模型为命题背景（附加）（全国通用）（学生版）（会一题通一类系列）》（registry-kb-math-misc:math）
+类型: CONCEPT_EXPLANATION
+[title] 四平方和定理（拉格朗日）
+[summaryMarkdown] 每个正整数都能表示为四个整数的平方和。
+[applicabilityMarkdown] 数论背景的阅读理解与新定义题。
+[contentMarkdown] 四平方和定理（拉格朗日定理）：每个正整数都可以表示为四个整数的平方和，即对任意 $n\in N^*$，存在整数 $a,b,c,d$ 使 $n=a^2+b^2+c^2+d^2$。
+[boundaryMarkdown] 表示不唯一；作为背景常以“新定义计数”方式考查，按定理存在性逐条验证即可。
+候选（机械预筛，未必对）：四平方和定理（名字出现）
+
+==============================================================================
+## MATH | math-sphere-section-track-completeness
+来源: 《狂K重难点》数学 P417，重难点35·空间动态问题（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: METHOD_MODEL
+[title] 球面截线轨迹长：先验证轨迹是否完整落在平面图形内
+[summaryMarkdown] 求球面与平面交线长前，先判断轨迹是否全部在给定平面图形内，再取圆周或圆弧。
+[applicabilityMarkdown] 球面与正方体、棱锥表面相交求交线长。
+[contentMarkdown] 1. 求出截面圆的圆心与半径。
+2. 判断点（交线）是否全部落在给定的平面图形内。
+3. 完整时取整个圆周长 $2\pi r$；不完整时取对应的圆弧部分。
+[boundaryMarkdown] 忘记验证轨迹完整性是此类题的常见失分点；题目常设轨迹只落在图形一部分内。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-hj-008-math-analysis-extremum
+来源: 物理讲义《第10讲 动态平衡和临界极值问题-（讲义）（学生版）》（registry-kb-physics-handout:physics）
+类型: METHOD_MODEL
+[title] 数学分析法求极值
+[summaryMarkdown] 由平衡条件写出函数关系求极值
+[applicabilityMarkdown] 力的关系可写成二次或三角函数
+[contentMarkdown] 根据平衡条件写出物理量间的函数关系或画出函数图像，用二次函数、公式、三角函数等方法求极值。
+[boundaryMarkdown] 需要明确的解析表达式。
+候选（机械预筛，未必对）：平衡条件-根本条件-作用在物体上的所有共点力的合力为零-即-f_合-0（名字出现）
+
+==============================================================================
+## PHYSICS | phys-hj3-bridge-method
+来源: 物理讲义《第37讲 创新思维测量电阻常用的5种方法及定值电阻的妙用（复习讲义）（安徽专用）（学生版）》（registry-kb-physics-handout:physics）
+类型: METHOD_MODEL
+[title] 电桥法测电阻
+[summaryMarkdown] 调电阻箱使灵敏电流计示数为零，电桥平衡时 $\frac{R_1}{R_2}=\frac{R_3}{R_x}$。
+[applicabilityMarkdown] 精确测量电阻（如几十千欧）。
+[contentMarkdown] 当 $I_G=0$ 时 $U_{AB}=0$，则 $U_{R1}=U_{R3}$、$U_{R2}=U_{Rx}$，由欧姆定律得电桥平衡条件 $\frac{R_1}{R_2}=\frac{R_3}{R_x}$，从而求出 $R_x$。
+实验操作：调节电阻箱 $R_3$ 使灵敏电流计示数为 0。
+[boundaryMarkdown] 电桥平衡对电源电动势稳定性和检流计灵敏度有要求；操作时先粗调后细调。
+候选（机械预筛，未必对）：平衡条件-根本条件-作用在物体上的所有共点力的合力为零-即-f_合-0（名字出现）；电桥法测电阻（名字出现）；欧姆定律（名字出现）；电动势（名字出现）
+
+==============================================================================
+## PHYSICS | phys-mo-l01-motion-description-b-3
+来源: 物理《第01讲 运动的描述 - 必备基础知识》（registry-kb-physics-misc:physics）
+类型: CONCEPT_EXPLANATION
+[title] 位移和路程
+[summaryMarkdown] 位移是由初位置指向末位置的有向线段，路程是轨迹长度。
+[applicabilityMarkdown] 区分位移与路程、判断两者大小关系时使用。
+[contentMarkdown] 位移：由初位置指向末位置的有向线段；大小等于初、末位置的直线距离，方向由初位置指向末位置。
+路程：物体实际运动轨迹的长度，是标量。
+联系：单向直线运动中位移的大小等于路程；其他情况下位移的大小小于路程。
+[boundaryMarkdown] 位移与路程的大小关系取决于运动路径，直线运动中也可能位移小于路程（往返）。
+候选（机械预筛，未必对）：无
+

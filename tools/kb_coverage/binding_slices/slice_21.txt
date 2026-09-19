@@ -1,0 +1,384 @@
+# 绑定作业片 21：30 条无绑定材料
+#
+# 任务：为每条材料选定它应该绑定的知识点节点（就是讲题时该材料服务的那个点）。
+# 交付（写到 tools/kb_coverage/binding_fixes/slice_21/notes.csv）：
+#   subject,material_slug,node_slug,confidence,evidence
+#   （node_slug 用下面的节点表里的 slug；确实没有合适的写 NONE；
+#     evidence 一句话说明依据；字段内不要有 ASCII 逗号）
+#
+# 硬规矩：
+#   · 宁缺勿错：不确定就 confidence=low 或写 NONE —— 错绑会让检索喂错材料
+#   · 只能从本学科节点表里选（见 tools/kb_coverage/binding_slices/nodes/nodes_<学科>.txt）
+#   · 一条材料只绑一个节点（就是它最主要服务的那个点）
+
+==============================================================================
+## BIOLOGY | bio-diurnal-noon-depression-stomata
+来源: 《狂K重点》生物 P386-387 重难4·题型2（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 一昼夜曲线：正午凹陷（光合午休）由气孔关闭 CO2 不足所致
+[summaryMarkdown] 正午曲线出现凹陷（净光合下降）是气孔部分关闭、CO2 摄入减少所致（气孔限制）。
+[applicabilityMarkdown] 午休现象成因题。
+[contentMarkdown] 正午温度高、蒸腾强→气孔部分关闭→CO2 进入减少→净光合下降，出现'午休'凹陷；此时胞间 CO2 低、气孔限制是主因。
+[boundaryMarkdown] 与光抑制（光系统损伤）机理不同；午休段光照仍充足。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-03-fructose-galactose-distribution
+来源: 生物讲义《第03讲 糖类和脂质（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 果糖与半乳糖的分布
+[summaryMarkdown] 果糖主要分布在植物细胞，半乳糖主要分布在动物细胞，二者都是六碳单糖。
+[applicabilityMarkdown] 单糖分布判断。
+[contentMarkdown] 1. 果糖（C6H12O6）：植物细胞中常见的六碳糖。
+2. 半乳糖（C6H12O6）：动物细胞中常见的六碳糖。
+3. 二者是组成二糖（蔗糖、乳糖）的成分。
+[boundaryMarkdown] 葡萄糖是动植物细胞共有的六碳糖。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-08-four-control-types
+来源: 生物讲义《第08讲 酶和ATP（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 四种对照实验类型
+[summaryMarkdown] 对照类型分空白对照、自身对照、条件对照和相互对照。
+[applicabilityMarkdown] 对照类型识别。
+[contentMarkdown] 1. 空白对照：对照组不作处理，如注射生理盐水组。
+2. 自身对照：同一对象先后对照，如质壁分离与复原。
+3. 条件对照：给对照组施加非假设的处理，如饲喂甲状腺激素抑制剂组。
+4. 相互对照：不单设对照组，各组互为对照，如温度pH梯度实验。
+[boundaryMarkdown] 酵母菌呼吸方式探究属相互对照（对比实验），有氧无氧组都是实验组。
+候选（机械预筛，未必对）：质壁分离（名字出现）；甲状腺激素（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fj-19-griffith-converts-partial
+来源: 生物讲义《第19讲 DNA是主要的遗传物质（复习讲义）（全国通用）（解析版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 体内转化中只有部分R型细菌发生转化
+[summaryMarkdown] 格里菲思实验中发生转化的只是少部分R型细菌，大部分R型菌未被转化。
+[applicabilityMarkdown] 转化效率判断。
+[contentMarkdown] 1. 加热致死的S型细菌中只有部分DNA片段进入R型菌。
+2. 只有少数R型细菌被转化为S型细菌。
+3. 小鼠体内同时存在R型和S型细菌。
+[boundaryMarkdown] “R型细菌全部转化为S型”的说法错误。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-33-vertical-layering-animals-reason
+来源: 生物讲义《第33讲 群落（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 动物垂直分层的原因：食物与栖息空间
+[summaryMarkdown] 动物的分层分布与其食物和栖息空间有关，植物的分层现象决定了动物的分层现象。
+[applicabilityMarkdown] 分层原因分析。
+[contentMarkdown] 1. 动物直接或间接以植物为食，植物分层提供不同的食物条件。
+2. 植物分层为动物提供不同的栖息空间。
+3. 例：森林中鸟类分层与觅食层次有关。
+[boundaryMarkdown] 生态位不同使多种动物能共存于同一群落。
+候选（机械预筛，未必对）：生态位（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fx-judge-hormone-transport
+来源: 生物方法类《稳态与调节阶段排查　回扣落实（七）》（registry-kb-biology-methods:biology）
+类型: CONCEPT_EXPLANATION
+[title] 易错：激素随体液运输到全身而非定向运输
+[summaryMarkdown] 激素随体液运往全身各处，并非定向运输，只作用于靶器官、靶细胞。
+[applicabilityMarkdown] 激素运输方式判断题。
+[contentMarkdown] 1. 判断：促甲状腺激素定向运输到甲状腺（×）。
+2. 提示：激素通过体液运输到全身，选择性作用于带相应受体的靶细胞。
+3. TSH只作用于甲状腺，因甲状腺细胞有TSH受体。
+[boundaryMarkdown] 运输是不定向的，作用是定向的；靶细胞的范围由受体分布决定。
+候选（机械预筛，未必对）：甲状腺激素（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-homologous-recombination-cloning
+来源: 《狂K重点》生物 P424 重难19·题型3（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 同源重组法：15-20 bp 同源序列 + Exnase II 酶 37℃ 30 分钟体外重组
+[summaryMarkdown] 线性化载体与插入片段两末端各带 15~20 bp 同源序列，按比例混合后在 Exnase II 催化下 37℃ 反应 30 分钟完成体外重组、环化。
+[applicabilityMarkdown] 载体构建新方法比较题。
+[contentMarkdown] 1. 过程：①载体线性化（酶切或反向 PCR）；②获得插入片段：在扩增其上下游引物 5' 端添加与线性化载体对应末端相同的同源序列，使片段两端与载体两端各带 15~20 bp 同源序列；③重组反应：将线性化载体和插入片段按一定比例混合，在 Exnase II 催化下 37℃ 反应 30 分钟，实现两系线性 DNA 在体外的重组、环化；④转化感受态细胞。
+2. 优点：①不受限制酶切位点限制，可实现任意位点的精确插入；②重组效率高（阳性克隆率可达 90% 以上）；③可实现多片段同时组装，适用于复杂载体的构建；④无缝连接，不会引入额外的碱基序列。
+[boundaryMarkdown] 同源序列需加在引物 5' 端；该方法使目的基因片段连接进入载体（基因敲入/替换、点突变引入等广泛应用）。
+候选（机械预筛，未必对）：限制酶（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-kb-pea-artificial-hybrid-operation
+来源: 生物知识清单：《第15讲 分离定律（知识清单）（全国通用）（学生版）》（registry-kb-biology-knowledge-list:biology）
+类型: METHOD_MODEL
+[title] 人工异花授粉（杂交）的操作要点
+[summaryMarkdown] 在花蕾期对母本去雄后套袋，雌蕊成熟时人工授粉，授粉后再套袋。
+[applicabilityMarkdown] 杂交实验操作与纠错。
+[contentMarkdown] 1. 去雄：除去母本未成熟花的全部雄蕊，时间在花蕾期（花蕊成熟前），目的是防止自花传粉；处理对象是母本。
+2. 套袋：避免外来花粉干扰。
+3. 人工授粉：雌蕊成熟时将父本花粉撒在去雄花的柱头上。
+4. 再套袋：保证种子是人工授粉所结；5. 单性花（如玉米）不需要去雄。
+[boundaryMarkdown] 去雄对象是母本，不是父本。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb2-22-translocation-vs-crossing-over
+来源: 生物知识清单：《第22讲 生物的变异（知识清单）（全国通用）（教师版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 易位与交叉互换的辨析
+[summaryMarkdown] 易位发生在非同源染色体之间，属染色体结构变异，光镜可见；互换发生在同源染色体非姐妹染色单体之间，属基因重组。
+[applicabilityMarkdown] 区分易位与交叉互换类问题时使用。
+[contentMarkdown] 位置：易位发生于非同源染色体之间，互换发生于同源染色体的非姐妹染色单体之间；
+原理：易位属于染色体结构变异，互换属于基因重组；观察：易位可在光学显微镜下观察到，互换在光学显微镜下观察不到。
+[boundaryMarkdown] 染色体变异可在光镜下观察到，基因突变和基因重组一般观察不到。
+候选（机械预筛，未必对）：同源染色体（名字出现）；基因突变（名字出现）；基因重组（名字出现）；染色体变异-x1（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-kb3-f4-s34-n02
+来源: 生物知识清单《2027届高三生物一轮复习知识清单4：分子与细胞基础》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 胞吞与胞吐
+[summaryMarkdown] (1)胞吞：变形虫摄食、吞噬细胞吞噬细菌等。
+[applicabilityMarkdown] 复习“胞吞与胞吐”考点或解答涉及“胞吞与胞吐”的题目时使用。
+[contentMarkdown] 实例。
+(1)胞吞：变形虫摄食、吞噬细胞吞噬细菌等。
+(2)胞吐：乳腺细胞合成蛋白质、内分泌腺分泌细胞合成蛋白质类激素、消化腺细胞分泌消化酶的过程。
+[boundaryMarkdown] 一轮复习结论性要点，表述以人教版现行教材为准；具体数值可能因教材版本略有差异。
+候选（机械预筛，未必对）：蛋白质（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-photoprotection-d1-repair
+来源: 《狂K重点》生物 P382 重难3·题型3（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 光保护防线三（修复）：D1 蛋白修复替换恢复 PSII 活性
+[summaryMarkdown] 对 PSII 的 D1 蛋白进行修复替换，恢复光系统活性，是光保护的最后防线。
+[applicabilityMarkdown] 植物抗强光机制归类。
+[contentMarkdown] 修复防线：失活的 D1 蛋白被降解并替换新合成 D1→PSII 活性恢复。
+[boundaryMarkdown] 修复需要基因表达与蛋白周转，有速度上限；持续强光下修复赶不上损伤即出现光抑制。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-selfing-n-homozygote-ratio
+来源: 《狂K重点》生物 P389 重难5·题型1（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 连续自交 n 代：纯合子 1−(1/2)^n，显性纯=隐性纯=[1−(1/2)^n]×1/2
+[summaryMarkdown] n 代后纯合子合计 1−(1/2)^n，其中显性纯合与隐性纯合各占一半。
+[applicabilityMarkdown] 连续自交多代求基因型比例。
+[contentMarkdown] 纯合子比例 = 1−(1/2)^n；显性纯合子比例 = 隐性纯合子比例 = [1−(1/2)^n]×1/2（对称分配）。
+[boundaryMarkdown] 与杂合子公式配套使用。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-chen-dian-de-sheng-cheng-f54x07
+来源: 化学方法类《（重点·方法·点拨）第51讲 沉淀溶解平衡- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 沉淀的生成
+[summaryMarkdown] 1．沉淀的生成。
+[applicabilityMarkdown] 分析沉淀溶解平衡、判断沉淀生成或溶解时使用。
+[contentMarkdown] 1．沉淀的生成
+(1)生成溶解能力小的难溶电解质，越小越好。
+(2)方法与实例
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：电解质（名字出现）；沉淀溶解平衡（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-duo-yong-tu-de-qiu-xing-gan-zao-guan-f66x01
+来源: 化学方法类《（重点·方法·点拨）第63讲 仪器的组合与创新使用- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 多用途的球形干燥管
+[summaryMarkdown] 2．多用途的球形干燥管。
+[applicabilityMarkdown] 离子或物质检验、实验现象描述与推断题作答时使用。
+[contentMarkdown] 2．多用途的球形干燥管
+位置不同，作用不同
+(1)在整套实验装置的中间横放——干燥、吸收及检验装置
+①干燥管内装有固体干燥剂，可用于干燥气体。无机实验中常用的固体干燥剂有
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：物质检验（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-gao-ji-zhi-fang-suan-f61x06
+来源: 化学方法类《（重点·方法·点拨）第58讲 醛、酮、羧酸、酯、酰胺- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 高级脂肪酸
+[summaryMarkdown] 高级脂肪酸：RCOOH(R为碳原子数较多的烃基)；饱和高级脂肪酸，常温呈固态；油酸：C17H33COOH，不饱和高级脂肪酸，常温呈液态。
+[applicabilityMarkdown] 有机推断、官能团性质判断与方程式书写时使用。
+[contentMarkdown] 高级脂肪酸：RCOOH(R为碳原子数较多的烃基)；饱和高级脂肪酸，常温呈固态；油酸：C17H33COOH，不饱和高级脂肪酸，常温呈液态
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-liu-de-han-yang-suan-gen-you-hen-duo-f75x03
+来源: 化学方法类《高考化学离子反应与离子方程式(学生版)-20页》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 硫的含氧酸根有很多
+[summaryMarkdown] 13．硫的含氧酸根有很多，如SO、S2O、S2O、S2O等，其中S2O可看作SO中的一个O原子被S原子取代后的产物，S2O内部含过氧键；焦亚硫酸钠(Na2S2O5)在医药、橡胶。
+[applicabilityMarkdown] 复习相关考点、解答对应试题时使用。
+[contentMarkdown] 13．硫的含氧酸根有很多，如SO、S2O、S2O、S2O等，其中S2O可看作SO中的一个O原子被S原子取代后的产物，S2O内部含过氧键；焦亚硫酸钠(Na2S2O5)在医药、橡胶、印染、食品等方面应用广泛，生产Na2S2O5通常是由NaHSO3过饱和溶液经结晶脱水制得。利用烟道气中的SO2生产Na2S2O5的工艺为
+上述过程中涉及或拓展的方程式中，错误的是
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：焦亚硫酸钠（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-shi-yan-f76x22
+来源: 化学方法类《高考化学离子检验、推断与共存(学生版)-26页》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 实验1
+[summaryMarkdown] 实验1：第一份加入足量的烧碱浓溶液并加热，产生的气体在标准状况下为224 mL。
+[applicabilityMarkdown] 判断离子能否大量共存、书写不能共存的原因时使用。
+[contentMarkdown] 实验1：第一份加入足量的烧碱浓溶液并加热，产生的气体在标准状况下为224 mL。
+实验2：第二份先加入足量的盐酸，无现象，再加入足量的BaCl2溶液，得固体2.33 g。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-wen-zi-biao-shu-ti-de-ge-zhong-da-ti-g-f71x10
+来源: 化学方法类《（重点·方法·点拨）第68讲 以性质为主的探究类综合实验- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 文字表述题的各种答题规范
+[summaryMarkdown] 3．文字表述题的各种答题规范。
+[applicabilityMarkdown] 离子或物质检验、实验现象描述与推断题作答时使用。
+[contentMarkdown] 3．文字表述题的各种答题规范
+(1)沉淀洗涤是否完全的检验答题模板
+取少许最后一次洗涤液，滴入少量……溶液(试剂)，若……(现象)，表示已经洗涤完全。
+解答此类题目要注意四个得分点：取样+试剂+现象+结论。
+[boundaryMarkdown] 解答此类题目要注意四个得分点：取样+试剂+现象+结论。
+候选（机械预筛，未必对）：物质检验（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-yi-yong-bei-can-ji-f73x06
+来源: 化学方法类《高考化学化学与传统文化及STSE(学生版)-20页》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 医用钡餐剂
+[summaryMarkdown] (3)医用钡餐剂(BaSO4)，用作胃肠道疾病的造影剂(BaSO4既不溶于水，也不溶于稀酸)。
+[applicabilityMarkdown] 复习“知识梳理∙智能提升”相关考点、解答对应试题时使用。
+[contentMarkdown] (3)医用钡餐剂(BaSO4)，用作胃肠道疾病的造影剂(BaSO4既不溶于水，也不溶于稀酸)。BaCO3不能用作造影剂(BaCO3能溶于胃酸，生成Ba2+有毒)。BaSO4也称为重晶石，BaCO3也称为毒重石。
+(4)补钙、补锌：补钙(锌)药物葡萄糖酸钙(锌)可由葡萄糖酸与碳酸钙(锌)合成。
+(5)补血剂：主要成分为硫酸亚铁，治疗缺铁性贫血。硫酸亚铁片和维生素C同时服用能增强治疗效果。
+[boundaryMarkdown] (3)医用钡餐剂(BaSO4)，用作胃肠道疾病的造影剂(BaSO4既不溶于水，也不溶于稀酸)。BaCO3不能用作造影剂(BaCO3能溶于胃酸，生成Ba2+有毒)。BaSO4也称为重晶石，BaCO3也称为毒重石。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-hj-fenli-guan-dongguan-shi-yong
+来源: 化学讲义《第01讲 化学实验的常用仪器和基本操作（复习讲义）（四川专用）（学生版）》（registry-kb-chemistry-handout:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 漏斗、分液漏斗、冷凝管与干燥管的使用要点
+[summaryMarkdown] 分液下层从下口放、上层从上口倒出；冷凝水逆流；干燥管大口进小口出。
+[applicabilityMarkdown] 组装气体净化、分离装置时使用。
+[contentMarkdown] 普通漏斗：过滤时滤纸紧贴漏斗内壁不留气泡，滤纸低于漏斗边缘、液体低于滤纸边缘；倒扣可作防倒吸装置。
+分液漏斗：使用前查漏；分液时下层液体从下口放出、上层从上口倒出；放液前打开上口玻璃塞。
+冷凝管：直形用于蒸馏冷凝，球形用于回流冷凝（不能用于蒸馏）；冷却水逆流（下进上出）。
+球形干燥管：只能盛固体干燥剂（碱石灰、无水氯化钙、P2O5），气体大口进小口出；横放在装置中间可干燥或检验，放在最后可吸收尾气并防空气中干扰。
+洗气瓶：气体长进短出，盛液体干燥剂或净化剂。
+[boundaryMarkdown] 恒压分液漏斗可平衡气压使液体顺利滴下。
+候选（机械预筛，未必对）：防倒吸装置（名字出现）
+
+==============================================================================
+## MATH | math-bian-qici-zhengxian-huaweijiao
+来源: 《狂K重难点》数学 书页P400，重难点22（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: METHOD_MODEL
+[title] 边的齐次等式或分式化边为角
+[summaryMarkdown] 边的齐次式用正弦定理 $a=2R\sin A$ 化边为角，再消去 $2R$。
+[applicabilityMarkdown] 条件是边的齐次等式或分式的解三角形题。
+[contentMarkdown] 边的齐次等式或分式：利用正弦定理（如 $a=2R\sin A$）化边为角，再消去 $2R$。如 $b(1+\cos A)=\sqrt{3}a\sin B\Rightarrow\sin B(1+\cos A)=\sqrt{3}\sin A\sin B$；$\frac{a}{b}=\frac{\sin A}{\cos B}\Rightarrow\frac{\sin A}{\sin B}=\frac{\sin A}{\cos B}$。
+[boundaryMarkdown] 只有当等式两边关于边齐次（次数相同）时才能整体化为角。
+候选（机械预筛，未必对）：正弦定理（名字出现）
+
+==============================================================================
+## MATH | math-fx-qiangjiao-buchang-changfangti
+来源: 数学方法类《答题模板17　球体的外接球、内切球、棱切球解题技巧 12 类核心题型》（registry-kb-math-methods:math）
+类型: METHOD_MODEL
+[title] 墙角模型与对棱相等模型的补形法
+[summaryMarkdown] 三条棱两两垂直（墙角）或三组对棱分别相等的四面体，可补形为长方体，外接球直径 $2R=\sqrt{a^2+b^2+c^2}$。
+[applicabilityMarkdown] 直三棱锥（三棱两两垂直）、对棱相等四面体的外接球（表面积、体积）问题。
+[contentMarkdown] 1. 墙角模型：三棱锥三条侧棱两两垂直，长度 $a,b,c$，补成长方体后体对角线即外接球直径，$2R=\sqrt{a^2+b^2+c^2}$。
+2. 对棱相等模型：四面体三组对棱分别相等（$AD=BC=x$，$AB=CD=y$，$AC=BD=z$ 型），补形为长宽高 $x,y,z$ 型长方体（四面体顶点为长方体互不相邻的四顶点），$2R=\sqrt{x^2+y^2+z^2}$。
+3. 求出 $R$ 后按 $S=4\pi R^2$、$V=\dfrac{4}{3}\pi R^3$ 计算表面积体积。
+[boundaryMarkdown] 对棱相等补形时棱与长方体棱的对应关系不能错；补形只是辅助，结论仍需满足题设长度。
+候选（机械预筛，未必对）：对棱相等四面体的外接球（名字出现）
+
+==============================================================================
+## MATH | math-hj-s103-poly-product
+来源: 数学讲义《第十章 §10.3　二项式定理.docx》（registry-kb-math-handout:math）
+类型: METHOD_MODEL
+[title] 多个多项式积的展开取项
+[summaryMarkdown] 几个多项式乘积展开中某项系数，按各因式中取项的组合方式分类求和。
+[applicabilityMarkdown] 求多项式乘积展开式中特定项的系数。
+[contentMarkdown] 目标项按各因式贡献的指数组合分类，每类系数为对应选取方式的组合数乘积，求和即得。
+[boundaryMarkdown] 分类要不重不漏，常用树状或表格枚举组合方式。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-hj-zuhe-gainian-shu
+来源: 数学讲义《第2节　排列与组合》（registry-kb-math-handout:math）
+类型: CONCEPT_EXPLANATION
+[title] 组合与组合数
+[summaryMarkdown] 只取不排，记 $C_n^m=\frac{A_n^m}{A_m^m}$。
+[applicabilityMarkdown] 无序选取问题。
+[contentMarkdown] 从 $n$ 个不同元素中取出 $m$（$m\le n$）个组成一组叫组合；组合数 $C_n^m=\frac{n!}{m!(n-m)!}$；组合只与选出的元素有关，与顺序无关。
+[boundaryMarkdown] 与顺序无关用组合。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-mo-kexi-zhongzhi
+来源: 数学《专题12 以相关公式、定义、定理、模型为命题背景（附加）（全国通用）（学生版）（会一题通一类系列）》（registry-kb-math-misc:math）
+类型: CONCEPT_EXPLANATION
+[title] 柯西中值定理（背景了解）
+[summaryMarkdown] $\frac{f(b)-f(a)}{g(b)-g(a)}=\frac{f'(\xi)}{g'(\xi)}$。
+[applicabilityMarkdown] 以高等数学结论为背景的导数题。
+[contentMarkdown] 柯西中值定理：设 $f(x)$、$g(x)$ 在 $[a,b]$ 上连续，在 $(a,b)$ 内可导且 $g'(x)\ne0$，则存在 $\xi\in(a,b)$，使 $\dfrac{f(b)-f(a)}{g(b)-g(a)}=\dfrac{f'(\xi)}{g'(\xi)}$。
+[boundaryMarkdown] $g(b)\ne g(a)$ 由 $g'\ne0$ 保证；背景性结论，判断命题真假时可用其思想但需按初等方法落实。
+候选（机械预筛，未必对）：柯西中值定理（名字出现）
+
+==============================================================================
+## MATH | math-nonoriented-assignment-multiply-permutation
+来源: 《狂K重难点》数学 P433，重难点49·不同元素分组分配问题（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: METHOD_MODEL
+[title] 不定向分配需乘以接受者的全排列
+[summaryMarkdown] 分好组的元素分给不确定的 m 个人时，需再乘人的全排列。
+[applicabilityMarkdown] 分组分配问题的分配环节。
+[contentMarkdown] 将分好组的元素分配给不确定的 $m$ 个人时，需要考虑顺序，即需要乘 $A_m^m$。
+[boundaryMarkdown] 定向分配（指定哪组给谁）不乘排列；先分组、后分配是总原则。
+候选（机械预筛，未必对）：分组分配问题（名字出现）
+
+==============================================================================
+## PHYSICS | phys-fx-eddy-current-damping-drive
+来源: 物理方法类《专题24 法拉第电磁感应定律的理解及应用（学生版）》（registry-kb-physics-methods:physics）
+类型: METHOD_MODEL
+[title] 涡流、电磁阻尼与电磁驱动
+[summaryMarkdown] 变化磁场在导体中产生涡流；导体在磁场中运动受安培力阻碍其运动为电磁阻尼；磁场相对导体转动使导体随转即电磁驱动。
+[applicabilityMarkdown] 电磁炉、阻尼摆、感应电动机原理题。
+[contentMarkdown] 1. 涡流大小：磁场变化越快、导体截面积越大、电阻率越小，涡流越大。
+2. 电磁阻尼：安培力总是阻碍导体相对磁场的运动。
+3. 电磁驱动：导体转速小于磁场转速，靠感应电流受安培力被带动。
+[boundaryMarkdown] 阻尼与驱动均源于“阻碍相对运动”这一楞次定律本质。
+候选（机械预筛，未必对）：电阻率（名字出现）；安培力（名字出现）；楞次定律（名字出现）；电磁阻尼与电磁驱动（名字出现）
+
+==============================================================================
+## PHYSICS | phys-hj2-luoxuan-ceweiqi-caozuo-xijie
+来源: 物理讲义《第34讲 电学实验基础（复习讲义）（四川专用）》（registry-kb-physics-handout:physics）
+类型: METHOD_MODEL
+[title] 螺旋测微器的操作细节与读数规范
+[summaryMarkdown] 先粗调至螺杆接近物体，再改用微调旋钮听到“喀喀”声停止，锁紧后读数。
+[applicabilityMarkdown] 螺旋测微器的规范操作。
+[contentMarkdown] 1. 操作：被测物夹在测微螺杆与测砧之间→旋转粗调旋钮→接近物体时改用微调旋钮→听到“喀喀”声停止→拨动锁紧装置→读数。
+2. 读数：测量值（mm）＝固定刻度读数（注意半毫米刻度线是否露出）＋可动刻度读数（估读一位）×0.01。
+3. 使用前记录零误差，测量值需要扣除（或加上）零误差。
+[boundaryMarkdown] 听到棘轮“喀喀”声即停止，继续旋转粗调会损坏螺纹或压坏物体。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-kb-center-of-gravity
+来源: 物理知识清单：《专题02 相互作用（知识清单）（全国通用）（教师版）》（registry-kb-physics-knowledge-list:physics）
+类型: CONCEPT_EXPLANATION
+[title] 重心及其确定方法
+[summaryMarkdown] 重心是重力的等效作用点，位置由形状和质量分布决定。
+[applicabilityMarkdown] 分析重力作用点、求不规则薄板重心时使用。
+[contentMarkdown] 重心是物体各部分所受重力的等效作用点，位置由几何形状和质量分布共同决定，不一定在物体上。
+不规则薄板的重心可用悬挂法确定。
+[boundaryMarkdown] 重心可以在物体外部（如圆环）。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-wave-speed-by-medium
+来源: 《狂K重难点》物理 书页P432，重难点20（registry-lixiangshu-2027-bikuti-kuangk-physics:physics）
+类型: CONCEPT_EXPLANATION
+[title] 波速由介质决定
+[summaryMarkdown] 机械波的波速由介质决定，同一均匀介质中波速不变，进入不同介质后波速改变。
+[applicabilityMarkdown] 波跨界面、跨介质传播及分段介质传播问题的基本判断。
+[contentMarkdown] 波速由介质决定：同一均匀介质中波速保持不变；波由一种介质进入另一种介质时，频率不变、波速改变，波长随 $v = λf$ 相应改变。
+[boundaryMarkdown] 频率由波源决定，跨界面传播时不变的量是频率，变化的是波速和波长。
+候选（机械预筛，未必对）：机械波（名字出现）
+

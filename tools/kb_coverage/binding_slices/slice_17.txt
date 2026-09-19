@@ -1,0 +1,377 @@
+# 绑定作业片 17：30 条无绑定材料
+#
+# 任务：为每条材料选定它应该绑定的知识点节点（就是讲题时该材料服务的那个点）。
+# 交付（写到 tools/kb_coverage/binding_fixes/slice_17/notes.csv）：
+#   subject,material_slug,node_slug,confidence,evidence
+#   （node_slug 用下面的节点表里的 slug；确实没有合适的写 NONE；
+#     evidence 一句话说明依据；字段内不要有 ASCII 逗号）
+#
+# 硬规矩：
+#   · 宁缺勿错：不确定就 confidence=low 或写 NONE —— 错绑会让检索喂错材料
+#   · 只能从本学科节点表里选（见 tools/kb_coverage/binding_slices/nodes/nodes_<学科>.txt）
+#   · 一条材料只绑一个节点（就是它最主要服务的那个点）
+
+==============================================================================
+## BIOLOGY | bio-concept-question-routine
+来源: 《狂K重点》生物 P430 附录·考向3（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 概念原理类答题：抓内涵、外延与关键词句
+[summaryMarkdown] 概念题抓住概念的内涵（本质特征）、外延（适用范围）与关键词句，结合题目情境作答。
+[applicabilityMarkdown] 概念辨析与原理阐述题。
+[contentMarkdown] 1. 抓住概念的内涵：本质特征是什么。
+2. 明确外延：概念适用于哪些对象/情形。
+3. 紧扣关键词句，结合题目情境归纳作答，避免套话。
+[boundaryMarkdown] 概念描述错一字（如'半透膜'vs'全透膜'）即错。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-02-reducing-sugar-test
+来源: 生物讲义《第02讲 细胞中的元素和化合物（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: METHOD_MODEL
+[title] 还原糖的检测原理与操作
+[summaryMarkdown] 还原糖与斐林试剂水浴加热生成砖红色沉淀，需选浅色富含还原糖的材料。
+[applicabilityMarkdown] 检测类实验操作与现象判断。
+[contentMarkdown] 1. 原理：还原糖 + 斐林试剂，50～65℃水浴加热，生成砖红色Cu2O沉淀。
+2. 取材：还原糖含量高且颜色浅的植物组织（如梨汁），以免颜色干扰。
+3. 步骤：制浆、过滤、取液，甲乙液等量混匀现配现用，水浴加热观察。
+[boundaryMarkdown] 结论只能说明含还原糖，无法确定是哪一种还原糖；不加热无砖红色沉淀。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-08-atp-vs-glucose-energy
+来源: 生物讲义《第08讲 酶和ATP（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] ATP与葡萄糖的能源特点比较
+[summaryMarkdown] ATP含活跃化学能是直接能源，葡萄糖含稳定化学能须转化为ATP才能被利用。
+[applicabilityMarkdown] 能源物质比较。
+[contentMarkdown] 1. ATP含有的化学能较少但活跃，可直接用于生命活动。
+2. 葡萄糖所含化学能稳定，是主要能源物质，须转化为ATP中活跃化学能才能被细胞利用。
+[boundaryMarkdown] 生物体所需的能量不都来自ATP，如转录时CTP、GTP、UTP也可供能。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-16-linkage-crossing-over
+来源: 生物讲义《第16讲 自由组合定律（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 连锁与互换的配子分析
+[summaryMarkdown] 互换发生在四分体时期非姐妹染色单体间，测交比例直接反映配子比例可验证连锁。
+[applicabilityMarkdown] 连锁互换新情境。
+[contentMarkdown] 1. 互换后基因数目不变，仅位置改变；每个发生互换的精原细胞产生一半重组、一半非重组配子。
+2. 若10%的精原细胞发生互换，重组率为5%。
+3. 连锁互换的判断用测交：测交后代表型比例即配子比例。
+[boundaryMarkdown] Yyrr×yyRr后代1:1:1:1不能证明自由组合，连锁时也可出现。
+候选（机械预筛，未必对）：四分体（名字出现）；连锁与互换（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fj-33-primary-succession-stages
+来源: 生物讲义《第33讲 群落（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 裸岩上初生演替的阶段顺序
+[summaryMarkdown] 裸岩上的初生演替依次经历地衣、苔藓、草本植物、灌木和乔木五个阶段。
+[applicabilityMarkdown] 演替阶段顺序。
+[contentMarkdown] 1. 地衣阶段：地衣分泌有机酸加速岩石风化，形成土壤。
+2. 苔藓阶段：苔藓利用土壤生长，土壤进一步积累。
+3. 草本植物阶段→灌木阶段。
+4. 乔木阶段：乔木获得阳光能力更强，最终占据优势成为树林。；5. 各阶段的优势取代不是取而代之。
+[boundaryMarkdown] 弃耕农田的次生演替从一年生杂草开始，不需经历地衣和苔藓阶段。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fx-judge-aba-ga-ratio
+来源: 生物方法类《稳态与调节阶段排查　回扣落实（七）》（registry-kb-biology-methods:biology）
+类型: CONCEPT_EXPLANATION
+[title] 易错：ABA与赤霉素比例高有利于形成雌花
+[summaryMarkdown] 黄瓜茎端脱落酸与赤霉素的比例较高时有利于形成雌花，比例低有利于形成雄花。
+[applicabilityMarkdown] 激素比例影响性别分化的判断题。
+[contentMarkdown] 1. 判断：黄瓜茎端的脱落酸与赤霉素的比例较高，有利于形成雄花（×）。
+2. 提示：ABA/GA比例高有利于雌花分化；赤霉素（GA）比例高促进雄花分化。
+3. 植物性别分化由多种激素比例共同调控。
+[boundaryMarkdown] 激素调节中还涉及乙烯的作用；性别分化体现多种激素的共同调控而非单一激素决定。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fx-trisome-gamete-labeling
+来源: 生物方法类《第28讲　染色体变异与育种》（registry-kb-biology-methods:biology）
+类型: METHOD_MODEL
+[title] 三体产生配子的标号分析法
+[summaryMarkdown] 分析三体（2n+1）配子时把三条同源染色体分别编号，穷举三种分离组合再合并比例。
+[applicabilityMarkdown] 三体、四体减数分裂配子比例的计算题。
+[contentMarkdown] 1. 以AAa为例记为A1A2a，三种分离方式：A1与A2a、A1a与A2、A2a与A1。
+2. 每种组合概率相等，合并同类项得配子AA:Aa:a＝1:2:1（即n与n+1两类各占一半）。
+3. 染色体随机分配时，n型配子与n+1型配子各占1/2。
+[boundaryMarkdown] XXY个体三条性染色体任意两条联会概率相等时，配子X:Y:XY:XX＝2:1:2:1，方法同理。
+候选（机械预筛，未必对）：同源染色体（名字出现）；减数分裂（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-kb-lens-length-magnification
+来源: 生物知识清单：《第01讲 走近细胞（知识清单）（全国通用）（学生版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 目镜与物镜的长短和放大倍数关系
+[summaryMarkdown] 物镜越长放大倍数越大、离装片越近；目镜越长放大倍数越小。
+[applicabilityMarkdown] 判断镜头选择与放大倍数关系。
+[contentMarkdown] 1. 目镜无螺纹（直接放在镜筒上），物镜有螺纹（拧在转换器上）。
+2. 物镜越长，放大倍数越大，距盖玻片距离越近。
+3. 目镜越长，放大倍数越小。
+[boundaryMarkdown] 放大倍数指长度或宽度的放大，不是面积或体积。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb2-11-photosynthate-transport
+来源: 生物知识清单：《第11讲 细胞代谢综合分析（知识清单）（全国通用）（教师版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 光合产物的运输形式
+[summaryMarkdown] 磷酸丙糖是光合作用最先产生的糖，也是光合产物运出叶绿体的主要形式。
+[applicabilityMarkdown] 分析光合产物输出与蔗糖合成问题时使用。
+[contentMarkdown] 磷酸丙糖可在叶绿体中形成淀粉暂时储存，也可通过叶绿体膜上的磷酸转运器运出叶绿体，在细胞质基质中合成蔗糖；
+蔗糖可临时储存于液泡内，或经韧皮部装载长距离运输到其他部位。
+[boundaryMarkdown] 叶绿体内储存的是淀粉，运输到其他器官的主要是蔗糖。
+候选（机械预筛，未必对）：叶绿体（名字出现）；光合作用（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-kb3-f4-s28-n04
+来源: 生物知识清单《2027届高三生物一轮复习知识清单4：分子与细胞基础》（registry-kb-biology-knowledge-list:biology）
+类型: METHOD_MODEL
+[title] 探究·实践（一）
+[summaryMarkdown] 探究·实践：尝试制作真核细胞的三维结构模型。
+[applicabilityMarkdown] 实验设计、操作或结果分析中涉及该要点时使用。
+[contentMarkdown] 探究·实践：尝试制作真核细胞的三维结构模型。
+(1)目的要求。
+①尝试制作真核细胞的三维结构模型。
+②体验建构模型的过程。
+[boundaryMarkdown] 适用于教材原型实验与操作类题型；实验细节以人教版现行教材为准。
+候选（机械预筛，未必对）：真核细胞（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-peroxisome
+来源: 《狂K重点》生物 P381 重难3（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: CONCEPT_EXPLANATION
+[title] 过氧化物酶体：参与光呼吸与分解过氧化氢
+[summaryMarkdown] 过氧化物酶体在光呼吸中转化乙醇酸（叶片）；含过氧化氢酶分解 H2O2，保护细胞。
+[applicabilityMarkdown] 酶/细胞器综合题。
+[contentMarkdown] 1. 含过氧化氢酶（2H2O2→2H2O+O2）。
+2. 参与光呼吸（C2→转化，C3/氨基酸）。
+3. 与叶绿体/线粒体因光呼吸协同。
+[boundaryMarkdown] 过氧化物酶体与溶酶体不同（后者为水解）。
+候选（机械预筛，未必对）：氨基酸（名字出现）；线粒体（名字出现）；叶绿体（名字出现）；溶酶体（名字出现）；光呼吸（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-selfing-eliminating-recessive-dominant-homozygote
+来源: 《狂K重点》生物 P389 重难5·题型1（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 连续自交淘汰隐性个体：n 代后显性纯合 = 2/(2^n+1)
+[summaryMarkdown] 淘汰隐性连续自交模型中显性纯合子比例 = 2/(2^n+1)，隐性纯合为 0。
+[applicabilityMarkdown] 淘汰隐性模型求基因型比例。
+[contentMarkdown] n 代后显性纯合子 = 2/(2^n+1)；隐性纯合子已被每代淘汰为 0。
+[boundaryMarkdown] 与杂合子公式 (2^n−1)/(2^n+1) 分母相同，两者相加 + 隐性 0 = 1。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-chan-wu-te-zheng-f63x03
+来源: 化学方法类《（重点·方法·点拨）第60讲 合成高分子　有机合成路线设计- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 产物特征
+[summaryMarkdown] 产物特征：高聚物与单体具有相同的组成，生成物一般为线型结构；生成高聚物和小分子，高聚物与单体有不同的组成。
+[applicabilityMarkdown] 复习相关考点、解答对应试题时使用。
+[contentMarkdown] 产物特征：高聚物与单体具有相同的组成，生成物一般为线型结构；生成高聚物和小分子，高聚物与单体有不同的组成
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-dian-ye-jin-f41x09
+来源: 化学方法类《（重点·方法·点拨）第38讲 电解池　金属的腐蚀与防护- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 电冶金
+[summaryMarkdown] 3．电冶金。
+[applicabilityMarkdown] 分析氧化还原反应、比较氧化性还原性强弱与电子转移数目时使用。
+[contentMarkdown] 3．电冶金
+利用电解熔融盐或氧化物的方法来冶炼活泼金属Na、Ca、Mg、Al等。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：电子转移（名字出现）；氧化还原反应（名字出现）；电冶金（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-fen-qiang-ji-f63x06
+来源: 化学方法类《（重点·方法·点拨）第60讲 合成高分子　有机合成路线设计- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 酚羟基
+[summaryMarkdown] (2)酚羟基：在氧化其他基团前可以用NaOH溶液或CH3I保护。
+[applicabilityMarkdown] 分析氧化还原反应、比较氧化性还原性强弱与电子转移数目时使用。
+[contentMarkdown] (2)酚羟基：在氧化其他基团前可以用NaOH溶液或CH3I保护。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：电子转移（名字出现）；氧化还原反应（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-leng-que-fa-f56x07
+来源: 化学方法类《（重点·方法·点拨）第53讲 无机化工流程题的解题策略- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 冷却法
+[summaryMarkdown] (6)冷却法：利用气体液化的特点分离气体，如合成氨工业采用冷却法分离平衡混合气体中的氨气。
+[applicabilityMarkdown] 判断平衡状态、分析平衡移动方向与相关计算时使用。
+[contentMarkdown] (6)冷却法：利用气体液化的特点分离气体，如合成氨工业采用冷却法分离平衡混合气体中的氨气。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-se-qi-wei-f22x03
+来源: 化学方法类《（重点·方法·点拨）第19讲 硫及其氧化物- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 色、 气味
+[summaryMarkdown] 色、 气味的：比空气的；溶于水，通常状况下，1体积的水溶解约 体积的SO2。
+[applicabilityMarkdown] 复习相关考点、解答对应试题时使用。
+[contentMarkdown] 色、 气味的：比空气的；溶于水，通常状况下，1体积的水溶解约 体积的SO2
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-tuo-pan-tian-ping-f05x05
+来源: 化学方法类《（重点·方法·点拨）第02讲 物质的量浓度- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 托盘天平
+[summaryMarkdown] 托盘天平：(1)使用前调零(2)药品不能直接放在托盘上(3)左物右码，先大后小(4)读数至小数点后1位。
+[applicabilityMarkdown] 解决相关化学计算问题时使用。
+[contentMarkdown] 托盘天平：(1)使用前调零(2)药品不能直接放在托盘上(3)左物右码，先大后小(4)读数至小数点后1位
+[boundaryMarkdown] 托盘天平：(1)使用前调零(2)药品不能直接放在托盘上(3)左物右码，先大后小(4)读数至小数点后1位
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-yi-lv-hua-yin-wei-li-f54x14
+来源: 化学方法类《（重点·方法·点拨）第51讲 沉淀溶解平衡- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 以氯化银为例
+[summaryMarkdown] ①以氯化银为例，在该沉淀溶解平衡图像上，曲线上任意一点都达到了沉淀溶解平衡状态，此时Qc=Ksp。
+[applicabilityMarkdown] 判断平衡状态、分析平衡移动方向与相关计算时使用。
+[contentMarkdown] ①以氯化银为例，在该沉淀溶解平衡图像上，曲线上任意一点都达到了沉淀溶解平衡状态，此时Qc=Ksp。在温度不变时，无论改变哪种离子的浓度，另一种离子的浓度只能在曲线上变化，不会出现在曲线以外。
+②曲线上方区域的点均为过饱和溶液，此时Qc>Ksp。
+③曲线下方区域的点均为不饱和溶液，此时Qc<Ksp。
+（3）抓住Ksp的特点，结合选项分析判断
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：沉淀溶解平衡（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-zu-he-fa-f03x07
+来源: 化学方法类《第01讲 有机化合物的结构特点与研究方法（学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 组合法
+[summaryMarkdown] 组合法：的苯环上的一氯代物的种类：—C4H9有4种，苯环上的取代基有3个氢原子能被Cl原子取代，故苯环上的一氯代物有3×4=12种。
+[applicabilityMarkdown] 有机推断、官能团性质判断与方程式书写时使用。
+[contentMarkdown] 组合法：的苯环上的一氯代物的种类：—C4H9有4种，苯环上的取代基有3个氢原子能被Cl原子取代，故苯环上的一氯代物有3×4=12种。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-reflux-condenser-points
+来源: 《狂K重点》化学 书页P407，重难点19 考向2 有机物制备（registry-lixiangshu-2027-bikuti-kuangk-chemistry:chemistry）
+类型: METHOD_MODEL
+[title] 球形冷凝管与沸石的使用要点
+[summaryMarkdown] 冷凝管冷凝水『下进上出』；忘加沸石须停止加热、冷却后补加。
+[applicabilityMarkdown] 有机物制备的回流与加热操作。
+[contentMarkdown] 球形冷凝管用于冷凝回流，冷凝水『下进上出』（逆流充分冷凝）。
+沸石（碎瓷片）防止液体暴沸；若忘加沸石，必须先停止加热，待溶液冷却后再补加，切勿向热液中直接投入。
+[boundaryMarkdown] 补加沸石时机是常考细节：热液中投入沸石会引起暴沸冲料。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-fx-hechaji-guanxi
+来源: 数学方法类《第16讲：同角三角函数的基本关系与诱导公式（知识梳理+解题总结）》（registry-kb-math-methods:math）
+类型: CONCEPT_EXPLANATION
+[title] $\sin\alpha\pm\cos\alpha$ 与 $\sin\alpha\cos\alpha$ 的互推关系
+[summaryMarkdown] 记 $s=\sin\alpha$，$c=\cos\alpha$，则 $(s+c)^2=1+2sc$，$(s-c)^2=1-2sc$，和差平方和恒为 2，平方差为积的 4 倍。
+[applicabilityMarkdown] 已知 $\sin\alpha\pm\cos\alpha$（或积）求其余两个量，或化简相关组合式时。
+[contentMarkdown] 1. $(\sin\alpha+\cos\alpha)^2=1+2\sin\alpha\cos\alpha$；$(\sin\alpha-\cos\alpha)^2=1-2\sin\alpha\cos\alpha$。
+2. 和与差的平方和恒为 $2$：$(s+c)^2+(s-c)^2=2$。
+3. 和与差的平方差为积的 4 倍：$(s+c)^2-(s-c)^2=4\sin\alpha\cos\alpha$。
+4. 已知“和”或“差”可平方求积；已知积开方求和（差）时符号由象限与大小关系确定；已知和与差可直接解方程组得 $s$、$c$。
+[boundaryMarkdown] 由 $(s+c)^2=1+2sc\ge 0$ 知 $sc\ge-\dfrac{1}{2}$、$sc\le\dfrac{1}{2}$，取值范围要检验；开方符号必须结合象限判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-hj-pailie-gainian-shu
+来源: 数学讲义《第2节　排列与组合》（registry-kb-math-handout:math）
+类型: CONCEPT_EXPLANATION
+[title] 排列与排列数
+[summaryMarkdown] 从 n 个不同元素取出 m 个的排法数，记 $A_n^m$。
+[applicabilityMarkdown] 有序选取问题。
+[contentMarkdown] 从 $n$ 个不同元素中取出 $m$（$m\le n$）个并按一定顺序排成一列，叫从 $n$ 个元素取出 $m$ 个的一个排列；所有排列的个数叫排列数 $A_n^m=n(n-1)\cdots(n-m+1)$。
+[boundaryMarkdown] 与顺序有关用排列。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-hj-zhankaishi-tedian
+来源: 数学讲义《第3节　二项式定理》（registry-kb-math-handout:math）
+类型: CONCEPT_EXPLANATION
+[title] 二项展开式的形式特点
+[summaryMarkdown] 共 $n+1$ 项，各项次数和为 n，a 降幂 b 升幂。
+[applicabilityMarkdown] 检查展开式是否正确。
+[contentMarkdown] $(a+b)^n$ 展开式特点：①项数为 $n+1$；②各项中 $a$ 与 $b$ 的指数和均为 $n$；③$\ a$ 按降幂、$b$ 按升幂排列；④二项式系数从两端向中间先增后减。
+[boundaryMarkdown] 用于快速检验通项设置。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-mo-huchi-vs-duili-shijian
+来源: 数学《教考衔接十六 教材中的易混易错杜绝再错学案》（registry-kb-math-misc:math）
+类型: CONCEPT_EXPLANATION
+[title] 互斥事件与对立事件
+[summaryMarkdown] 互斥是不同时发生；对立是有且仅有一个发生，对立是特殊的互斥。
+[applicabilityMarkdown] 事件关系的判断与概率计算。
+[contentMarkdown] 互斥事件：事件 $A$ 和 $B$ 在一次试验中不会同时发生（$P(AB)=0$）；对立事件：$A$ 与 $B$ 有且仅有一个发生（$AB=\varnothing$ 且 $A\cup B=\Omega$）。对立事件是互斥事件的特殊情形；对立必互斥，互斥未必对立。
+[boundaryMarkdown] 求 $P(A\cup B)=P(A)+P(B)$ 要求互斥；用 $1-P(\bar A)$ 求概率要求对立；注意需在同一个样本空间中判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-mo-zhongxianchang-dingli
+来源: 数学《高考数学二级结论篇（核心知识背记手册）（默写版）》（registry-kb-math-misc:math）
+类型: CONCEPT_EXPLANATION
+[title] 中线长定理
+[summaryMarkdown] $m_a=\frac12\sqrt{2b^2+2c^2-a^2}$。
+[applicabilityMarkdown] 由三边求中线长、含中线的方程。
+[contentMarkdown] 中线长定理：$AD$ 为 $ ria\angle ABC$ 边 $BC$ 上的中线（$BC=a$，$CA=b$，$AB=c$），则中线长 $m_a=\dfrac12\sqrt{2b^2+2c^2-a^2}$。它可由中线向量式 $\overrightarrow{AD}=\dfrac12(\overrightarrow{AB}+\overrightarrow{AC})$ 两边平方得到。
+[boundaryMarkdown] 只对“中线”适用；角平分线长公式形式不同，勿混用。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-fx-analogy-method-physics
+来源: 物理方法类《突破一  选择题九大快解技法》（registry-kb-physics-methods:physics）
+类型: METHOD_MODEL
+[title] 类比分析法
+[summaryMarkdown] 对比两类对象的相同相似之处，由已知属性推断未知属性，适用于背景新颖的题目。
+[applicabilityMarkdown] 新情境信息题。
+[contentMarkdown] 1. 找出类比对象与对应物理量（如平抛与带电粒子偏转、单摆与 LC 电路）。
+2. 迁移规律得出结论。
+[boundaryMarkdown] 类比结论须核对对应量与条件是否完全一致。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-hj2-anan-fufu-huoyong-cezu
+来源: 物理讲义《第17讲 测量电阻的八种实验方法（模型与方法）（全国通用）》（registry-kb-physics-handout:physics）
+类型: METHOD_MODEL
+[title] 安安法与伏伏法测电阻
+[summaryMarkdown] 内阻已知的电流表可当小量程电压表用，内阻已知的电压表可当大量程电流表用，实现无电压表（或无电流表）测电阻。
+[applicabilityMarkdown] 缺少电压表或电流表时灵活测电阻。
+[contentMarkdown] 1. 安安法：两电流表串联（或并联），已知内阻的电流表读数乘内阻充当电压，可求另一支路的电阻。
+2. 伏伏法：电压表与待测电阻并联再串联已知定值电阻，由分压关系求电流，测出待测电阻；内阻已知的电压表可直接读出自身电流。
+[boundaryMarkdown] 使用前提是电表内阻已知（或可推），电表读数同时充当两种角色。
+候选（机械预筛，未必对）：伏伏法测电阻（名字出现）
+
+==============================================================================
+## PHYSICS | phys-hj3-wavelength-in-two-waves
+来源: 物理讲义《第44讲 机械波（复习讲义）（福建专用）（学生版）》（registry-kb-physics-handout:physics）
+类型: CONCEPT_EXPLANATION
+[title] 波长在横波与纵波中的确定
+[summaryMarkdown] 横波中相邻波峰（或波谷）间距等于波长；纵波中相邻密部（或疏部）中央间距等于波长。
+[applicabilityMarkdown] 在两类波中确定波长。
+[contentMarkdown] 横波：两个相邻波峰（或波谷）间的距离等于一个波长。
+纵波：两个相邻密部（或疏部）中央间的距离等于一个波长。
+波速公式 $v=\frac{\lambda}{T}=\lambda f$ 中各量由同一波列确定。
+[boundaryMarkdown] 波形图上完整正弦（余弦）曲线的长度也等于一个波长。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-tian-ti-gong-xian-zui-jin-zui-yuan
+来源: 《狂K重难点》物理 书页P420，重难点13（registry-lixiangshu-2027-bikuti-kuangk-physics:physics）
+类型: CONCEPT_EXPLANATION
+[title] 天体共线时相距最近与最远（冲日）
+[summaryMarkdown] 行星、地球与太阳共线且位于太阳同侧时相距最近（冲日现象）；位于异侧时相距最远。
+[applicabilityMarkdown] 围绕同一中心天体且轨道共面的两星体间距离最值问题。
+[contentMarkdown] 围绕同一中心天体且轨道共面运行的两个星体间相距'最近'或'最远'的问题：1. 行星、地球与太阳三者共线且行星和地球位于太阳的同侧时，行星和地球间相距'最近'（也称为'某星冲日'现象）；2. 三者共线且位于太阳的异侧时，行星和地球间相距'最远'。
+[boundaryMarkdown] 两星体须围绕同一中心天体运行且轨道共面。
+候选（机械预筛，未必对）：无
+

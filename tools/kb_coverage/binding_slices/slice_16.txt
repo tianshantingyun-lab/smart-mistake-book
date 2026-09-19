@@ -1,0 +1,376 @@
+# 绑定作业片 16：30 条无绑定材料
+#
+# 任务：为每条材料选定它应该绑定的知识点节点（就是讲题时该材料服务的那个点）。
+# 交付（写到 tools/kb_coverage/binding_fixes/slice_16/notes.csv）：
+#   subject,material_slug,node_slug,confidence,evidence
+#   （node_slug 用下面的节点表里的 slug；确实没有合适的写 NONE；
+#     evidence 一句话说明依据；字段内不要有 ASCII 逗号）
+#
+# 硬规矩：
+#   · 宁缺勿错：不确定就 confidence=low 或写 NONE —— 错绑会让检索喂错材料
+#   · 只能从本学科节点表里选（见 tools/kb_coverage/binding_slices/nodes/nodes_<学科>.txt）
+#   · 一条材料只绑一个节点（就是它最主要服务的那个点）
+
+==============================================================================
+## BIOLOGY | bio-complete-dominance
+来源: 《狂K重点》生物 P389 重难5（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: CONCEPT_EXPLANATION
+[title] 完全显性：杂合子表现出显性性状
+[summaryMarkdown] 完全显性中杂合子（Aa）表现出显性性状（显性基因完全掩盖隐性基因）；只有隐性纯合才表现隐性。
+[applicabilityMarkdown] 孟德尔定律与表现型比例基础。
+[contentMarkdown] 1. Aa 个体：表现与 AA 相同（显性）；aa 表现隐性。
+2. 自交 3:1（AA:Aa:aa = 1:2:1 基因型；表现型 3:1）。
+3. '一显一隐'一对性状杂交。
+[boundaryMarkdown] 不完全显性/共显性情况下表现比为 1:2:1。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-02-reducing-sugar-list
+来源: 生物讲义《第02讲 细胞中的元素和化合物（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 还原糖与非还原糖的划分
+[summaryMarkdown] 葡萄糖、果糖、半乳糖、麦芽糖、乳糖等为还原糖；蔗糖和所有多糖无还原性。
+[applicabilityMarkdown] 还原糖范围的判断。
+[contentMarkdown] 1. 常见还原糖：葡萄糖、果糖、半乳糖、麦芽糖、乳糖等，可用斐林试剂检测。
+2. 非还原糖：蔗糖及所有多糖（淀粉、糖原、纤维素等）不能与斐林试剂反应。
+[boundaryMarkdown] 蔗糖水解后可得葡萄糖和果糖，才能与斐林试剂反应。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-08-atp-production-consumption-sites
+来源: 生物讲义《第08讲 酶和ATP（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] ATP产生与消耗的场所汇总
+[summaryMarkdown] ATP产生于细胞质基质、线粒体、叶绿体；消耗于细胞膜、核糖体、细胞核等多种场所。
+[applicabilityMarkdown] ATP场所对应判断。
+[contentMarkdown] 1. 产生：细胞质基质（呼吸第一阶段）、线粒体（有氧呼吸二、三阶段）、叶绿体（光反应）。
+2. 消耗：细胞膜（主动运输、胞吞胞吐）、核糖体（翻译）、细胞核（复制转录）、叶绿体基质（暗反应）等。
+3. 线粒体、叶绿体也消耗ATP（自身DNA复制、转录、蛋白质合成）。
+[boundaryMarkdown] 高尔基体不能合成ATP；唾液淀粉酶水解淀粉不需要ATP。
+候选（机械预筛，未必对）：蛋白质（名字出现）；线粒体（名字出现）；叶绿体（名字出现）；核糖体（名字出现）；高尔基体（名字出现）；主动运输（名字出现）；有氧呼吸（名字出现）；光反应（名字出现）；暗反应（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fj-16-additive-gene-effect
+来源: 生物讲义《第16讲 自由组合定律（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 基因数量累加效应
+[summaryMarkdown] 显性基因个数影响性状表现强度，AaBb自交后代按显性基因数呈1:4:6:4:1。
+[applicabilityMarkdown] 累加效应判断。
+[contentMarkdown] 1. A与B作用效果相同，显性基因越多效果越强。
+2. AaBb自交：按显性基因个数分5类，比例1:4:6:4:1。
+3. AaBb测交：1:2:1（显性基因1个与2个）。
+[boundaryMarkdown] 此类性状多为数量性状，如小麦籽粒红色深浅。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-33-predation-parasitism-competition
+来源: 生物讲义《第33讲 群落（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 捕食、寄生与种间竞争
+[summaryMarkdown] 捕食是以后者为食，寄生是对宿主有害但宿主结构完整，竞争是共同利用有限资源。
+[applicabilityMarkdown] 三种种间关系辨析。
+[contentMarkdown] 1. 捕食：一种生物以另一种生物为食，数量呈“先增加者先减少、后增加者后减少”的不同步变化，如狼与兔。
+2. 寄生：从宿主的体液、组织或已消化的物质中获取营养，对宿主有害，如蛔虫与人、蚊子与人。
+3. 种间竞争：两种或更多种生物共同利用同样的有限资源和空间而产生的相互排斥，如非洲狮与斑鬣狗、牛与羊。
+4. 捕食者不会将被捕食者全部捕获；寄生不会立即导致宿主死亡。
+[boundaryMarkdown] 同种生物之间的争斗是种内竞争；取食部位不同不构成竞争（人吃玉米粒、牛吃秸秆）。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fx-j-curve-growth
+来源: 生物方法类《2026届新疆高三生物三轮复习种群、群落、生态系统·完整知识点问答》（registry-kb-biology-methods:biology）
+类型: CONCEPT_EXPLANATION
+[title] J型增长的条件与特点
+[summaryMarkdown] 在食物充足、空间充裕、无天敌竞争等理想条件下，种群以指数形式增长且增长率不变。
+[applicabilityMarkdown] J型与S型曲线比较题的基础。
+[contentMarkdown] 1. 条件（理想条件）：食物充足、空间充裕、无天敌、无竞争、气候适宜。
+2. 特点：种群数量以指数形式增长；增长率不变、增长速率逐渐增大；无环境容纳量K值。
+3. 数学模型：Nt＝N0×λ的t次方（λ大于1且恒定）。
+[boundaryMarkdown] J型增长是一种理想模型，实验室或外来物种入侵初期可近似出现；λ＝1时种群稳定。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fx-transcription-coupled-repair
+来源: 生物方法类《微专题13：DNA损伤的修复机制与基因表达调控》（registry-kb-biology-methods:biology）
+类型: CONCEPT_EXPLANATION
+[title] 转录偶联修复（Mfd招募修复系统）
+[summaryMarkdown] DNA损伤较大时，修复因子Mfd识别并结合滞留的RNA聚合酶，招募修复因子和DNA聚合酶等进行修复。
+[applicabilityMarkdown] 转录与修复偶联的新情境题。
+[contentMarkdown] 1. 损伤较小时：RNA聚合酶经过损伤位点，腺嘌呤核糖核苷酸会不依赖模板掺入mRNA，导致转录产物异常。
+2. 损伤较大时：RNA聚合酶滞留在损伤位点，修复因子Mfd识别并结合它。
+3. Mfd招募多种修复因子、DNA聚合酶等完成修复，转录恢复。
+[boundaryMarkdown] 该机制优先修复正在转录的基因，体现代谢活跃部位优先修复的特点。
+候选（机械预筛，未必对）：核苷酸（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-kb-intermittent-illumination-method
+来源: 生物知识清单：《第11讲 细胞代谢综合分析（知识清单）（全国通用）（学生版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 间隔光照法提高光能利用率
+[summaryMarkdown] 光反应快于暗反应，光暗交替照射可让暗反应及时利用光反应积累的ATP和NADPH，制造更多有机物。
+[applicabilityMarkdown] 提高产量措施分析。
+[contentMarkdown] 1. 一般情况下光反应速率比暗反应快，持续光照时ATP和NADPH不能被及时利用，暗反应限制光合速率。
+2. 光照、黑暗交替进行，黑暗间隔期可利用光反应积累的产物继续暗反应。
+3. 结论：光照强度和光照总时间不变时，光暗交替制造有机物相对更多。
+[boundaryMarkdown] 适用于以光反应产物积累为限制的情形。
+候选（机械预筛，未必对）：光反应（名字出现）；暗反应（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-kb2-11-intermittent-light
+来源: 生物知识清单：《第11讲 细胞代谢综合分析（知识清单）（全国通用）（教师版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 间隔光照提高光能利用率
+[summaryMarkdown] 在光照总时间不变时，光照与黑暗交替进行比持续光照制造的有机物更多。
+[applicabilityMarkdown] 解释补光方案设计、分析光能利用率时使用。
+[contentMarkdown] 一般情况下光反应速率快于暗反应，持续光照时ATP和NADPH不能被及时利用，暗反应限制光合速率；
+光照黑暗交替进行时，黑暗间隔期可利用光照期积累的光反应产物继续进行暗反应，故制造的有机物相对更多。
+[boundaryMarkdown] 前提是光照强度和光照总时间相同。
+候选（机械预筛，未必对）：光反应（名字出现）；暗反应（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-kb3-f4-s28-n03
+来源: 生物知识清单《2027届高三生物一轮复习知识清单4：分子与细胞基础》（registry-kb-biology-knowledge-list:biology）
+类型: METHOD_MODEL
+[title] 建构模型
+[summaryMarkdown] 实例：沃森和克里克制作的著名的DNA双螺旋结构模型就是物理模型，它形象而概括地反映了DNA分子结构的共同特征。
+[applicabilityMarkdown] 实验设计、操作或结果分析中涉及该要点时使用。
+[contentMarkdown] 实例：沃森和克里克制作的著名的DNA双螺旋结构模型就是物理模型，它形象而概括地反映了DNA分子结构的共同特征。
+[boundaryMarkdown] 适用于教材原型实验与操作类题型；实验细节以人教版现行教材为准。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-pedigree-y-linked
+来源: 《狂K重点》生物 P399 重难8·题型1（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 只有男性患病且代代父传子 → 伴 Y（限雄）遗传
+[summaryMarkdown] 患者全为男性且每代父传子连续出现，致病基因位于 Y 染色体。
+[applicabilityMarkdown] 系谱定位。
+[contentMarkdown] 患者只有男性且每代父传子（男性患者的父亲和儿子均患病）→伴 Y 染色体遗传。
+[boundaryMarkdown] 女性不可能患该类病。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-s-shaped-growth
+来源: 《狂K重点》生物 P429 重难16·题型1（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: CONCEPT_EXPLANATION
+[title] S 形增长：环境阻力使种群增长呈 ‘S’ 形，K 值是环境容纳量
+[summaryMarkdown] 种群在有环境阻力的自然条件下，增长初期速率增大、之后受资源限制逐渐减小，最终在环境容纳量 K 值附近波动，呈 S 型。
+[applicabilityMarkdown] 种群增长类型判断。
+[contentMarkdown] 1. 条件：自然环境（有环境阻力）。
+2. 特点：增长速率先大后小（增长曲线先上凸后趋平），数量接近 K 值后相对稳定。
+3. K 值：特定环境所能维持的最大种群数量（环境容纳量），随资源、空间等变化。
+[boundaryMarkdown] K 值不是固定常数，随环境条件变化。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-cai-qu-jia-re-de-mu-f69x07
+来源: 化学方法类《（重点·方法·点拨）第66讲 　以物质制备为主的综合实验- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 采取加热的目
+[summaryMarkdown] ②采取加热的目的：加快反应速率或使平衡移动，加速溶解等。
+[applicabilityMarkdown] 判断平衡状态、分析平衡移动方向与相关计算时使用。
+[contentMarkdown] ②采取加热的目的：加快反应速率或使平衡移动，加速溶解等。
+③常考的温度控制方式
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-dian-jie-gui-lv-f41x01
+来源: 化学方法类《（重点·方法·点拨）第38讲 电解池　金属的腐蚀与防护- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: METHOD_MODEL
+[title] 电解规律
+[summaryMarkdown] 3.电解规律。
+[applicabilityMarkdown] 电极反应式书写与电化学装置分析时使用。
+[contentMarkdown] 3.电解规律
+(1)阳极放电规律
+①活性电极(除Au、Pt以外的金属材料作电极)，电极材料失电子，生成金属阳离子。
+②惰性电极(Pt、Au、石墨)，要依据阴离子的放电顺序加以判断。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：金属材料（名字出现）；电极反应式（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-fen-bie-yong-biao-shi-he-f35x12
+来源: 化学方法类《（重点·方法·点拨）第32讲 晶胞结构分析与计算- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 分别用、表示H2PO和K+
+[summaryMarkdown] 14．分别用、表示H2PO和K+，KH2PO4晶体的四方晶胞如图(a)所示，图(b)、图(c)分别显示的是H2PO、K+在晶胞xz面、yz面上的位置。
+[applicabilityMarkdown] 晶体结构分析与晶胞计算时使用。
+[contentMarkdown] 14．分别用、表示H2PO和K+，KH2PO4晶体的四方晶胞如图(a)所示，图(b)、图(c)分别显示的是H2PO、K+在晶胞xz面、yz面上的位置
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-ken-ding-xing-yuan-ze-f76x01
+来源: 化学方法类《高考化学离子检验、推断与共存(学生版)-26页》（registry-kb-chemistry-methods:chemistry）
+类型: METHOD_MODEL
+[title] 肯定性原则
+[summaryMarkdown] (1)肯定性原则，根据实验现象，推出溶液中肯定存在或肯定不存在的离子，如本题，根据②，推出原溶液中含有I-、NO3-；。
+[applicabilityMarkdown] 判断离子能否大量共存、书写不能共存的原因时使用。
+[contentMarkdown] (1)肯定性原则，根据实验现象，推出溶液中肯定存在或肯定不存在的离子，如本题，根据②，推出原溶液中含有I-、NO3-；
+(2)互斥性原则：在肯定某些离子的同时，结合离子共存规律，否定一些离子的存在，如本题，推出含有I-，因为Fe3+具有强氧化性，能将I-氧化，因此Fe3+不存在；
+(3)进出性原则，通常是在实验过程中使用，是指在实验过程中反应生成的离子或引入的离子对后续实验的干扰；
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：离子共存（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-se-an-tong-lai-yuan-yu-tian-ran-zhi-wu-f36x10
+来源: 化学方法类《（重点·方法·点拨）第33讲 　物质结构与性质综合题突破- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 色胺酮来源于天然植物中药板蓝根
+[summaryMarkdown] (1)色胺酮来源于天然植物中药板蓝根，是板蓝根抗菌、抗病毒活性成分之一。
+[applicabilityMarkdown] 分析物质结构、判断化学键类型与配合物成键情况时使用。
+[contentMarkdown] (1)色胺酮来源于天然植物中药板蓝根，是板蓝根抗菌、抗病毒活性成分之一。以甲醇为溶剂，Co2+可与色胺酮分子配位结合，形成对DNA具有切割作用的色胺酮钴配合物(合成过程如图所示)。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：配合物（名字出现）；化学键（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-tu-jie-liang-qi-de-du-shu-fang-fa-f51x06
+来源: 化学方法类《（重点·方法·点拨）第48讲 酸碱中和滴定及拓展应用- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: METHOD_MODEL
+[title] 图解量器的读数方法
+[summaryMarkdown] 2．图解量器的读数方法。
+[applicabilityMarkdown] 复习相关考点、解答对应试题时使用。
+[contentMarkdown] 2．图解量器的读数方法
+(1)平视读数(如图1)：用量筒、移液管或滴定管量取一定体积的液体，读取液体体积时，视线应与凹液面最低点保持水平，视线与刻度的交点即为读数(即凹液面定视线，视线定读数)。
+(2)俯视读数(如图2)：当用量筒测量液体的体积时，由于俯视视线向下倾斜，寻找切点的位置在凹液面的上侧，读数高于正确的刻度线位置，即读数偏大。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-yi-lv-hua-dian-f21x11
+来源: 化学方法类《（重点·方法·点拨）第18讲 卤族元素　溴、碘单质的提取- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 一氯化碘
+[summaryMarkdown] 10．一氯化碘(ICl)、三氯化碘(ICl3)是卤素互化物，它们的性质与卤素单质相似。
+[applicabilityMarkdown] 复习相关考点、解答对应试题时使用。
+[contentMarkdown] 10．一氯化碘(ICl)、三氯化碘(ICl3)是卤素互化物，它们的性质与卤素单质相似。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-zong-fan-ying-f39x01
+来源: 化学方法类《（重点·方法·点拨）第36讲 化学能转化为电能——电池- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 总反应
+[summaryMarkdown] 总反应：Zn+Cu2+=Cu+Zn2+。
+[applicabilityMarkdown] 复习相关考点、解答对应试题时使用。
+[contentMarkdown] 总反应：Zn+Cu2+=Cu+Zn2+。
+(3)盐桥的组成和作用
+①盐桥中装有含KCl饱和溶液的琼脂凝胶。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-precipitate-washing-procedure
+来源: 《狂K重点》化学 书页P357，重难点5 锦囊3 产品分离提纯问题（registry-lixiangshu-2027-bikuti-kuangk-chemistry:chemistry）
+类型: METHOD_MODEL
+[title] 沉淀（滤渣）洗涤的标准操作
+[summaryMarkdown] 沿器壁加蒸馏水浸没沉淀，待水自然流下，重复操作2~3次。
+[applicabilityMarkdown] 过滤后对滤渣的洗涤。
+[contentMarkdown] 向过滤器（漏斗）中加入蒸馏水至浸没沉淀，待水自然流下后再次加入，重复操作2~3次。
+[boundaryMarkdown] 用玻璃棒引流防止冲坏滤纸；不能用玻璃棒搅拌。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-fx-hechahua-ji-jihua-he
+来源: 数学方法类《第18讲：三角恒等变换（知识梳理+题型总结）》（registry-kb-math-methods:math）
+类型: CONCEPT_EXPLANATION
+[title] 和差化积与积化和差
+[summaryMarkdown] 两组公式由和差角公式令 $\alpha+\beta= h\beta$、$\alpha-\beta=\varphi$ 联立消元导出，不要求记忆但需了解推导思路。
+[applicabilityMarkdown] 化简三角函数乘积或和差结构、处理对称结构求值时。
+[contentMarkdown] 1. 积化和差：如 $\sin\alpha\cos\beta=\dfrac{1}{2}[\sin(\alpha+\beta)+\sin(\alpha-\beta)]$，$\cos\alpha\cos\beta=\dfrac{1}{2}[\cos(\alpha+\beta)+\cos(\alpha-\beta)]$，$\sin\alpha\sin\beta=-\dfrac{1}{2}[\cos(\alpha+\beta)-\cos(\alpha-\beta)]$。
+2. 和差化积：把 $\sin\theta\pm\sin\varphi$、$\cos\theta\pm\cos\varphi$ 化为 $2$ 乘“半和角函数乘半差角函数”的形式。
+3. 推导思路：令两角和与差公式中 $\alpha+\beta$、$\alpha-\beta$ 为目标两角，联立消元即得。
+[boundaryMarkdown] 这组公式不要求记忆，考试可直接由和差角公式现场推导；注意 $\sin\alpha\sin\beta$ 的积化和差中间是减号且带负号。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-hj-liangdian-fenbu
+来源: 数学讲义《第8节　二项分布、超几何分布与正态分布》（registry-kb-math-handout:math）
+类型: CONCEPT_EXPLANATION
+[title] 两点分布
+[summaryMarkdown] $n=1$ 的二项分布，$E(X)=p$，$D(X)=p(1-p)$。
+[applicabilityMarkdown] 判断两点分布并求数字特征。
+[contentMarkdown] 取值为 0 与 1 的分布叫两点分布，是 $n=1$ 时的二项分布；若 $P(X=1)=p$，则 $E(X)=p$，$D(X)=p(1-p)$。
+[boundaryMarkdown] 只取两个值且概率和为 1。
+候选（机械预筛，未必对）：二项分布（名字出现）
+
+==============================================================================
+## MATH | math-hj-yimian-yijiao-buyi-cuo
+来源: 数学讲义《第3节　空间点、直线、平面之间的位置关系》（registry-kb-math-handout:math）
+类型: METHOD_MODEL
+[title] 异面角易错：内角可能是补角
+[summaryMarkdown] 解三角形所得内角可能是异面角的补角。
+[applicabilityMarkdown] 平移法求异面角。
+[contentMarkdown] 把异面直线所成角归结为某三角形内角时，该内角可能等于异面角，也可能等于其补角；求出钝角时应取其补角。
+[boundaryMarkdown] 最终角必须落在 $(0,\frac{\pi}{2}]$。
+候选（机械预筛，未必对）：异面直线所成角（名字出现）
+
+==============================================================================
+## MATH | math-mo-hechahuaji-jihuahecha
+来源: 数学《高考数学二级结论篇（核心知识背记手册）（默写版）》（registry-kb-math-misc:math）
+类型: CONCEPT_EXPLANATION
+[title] 和差化积与积化和差
+[summaryMarkdown] 四组公式实现“和差↔积”的双向转化。
+[applicabilityMarkdown] 三角恒等变换、周期与对称分析。
+[contentMarkdown] 和差化积：$\sin x+\sin y=2\sin\dfrac{x+y}{2}\cos\dfrac{x-y}{2}$；$\sin x-\sin y=2\cos\dfrac{x+y}{2}\sin\dfrac{x-y}{2}$；$\cos x+\cos y=2\cos\dfrac{x+y}{2}\cos\dfrac{x-y}{2}$；$\cos x-\cos y=-2\sin\dfrac{x+y}{2}\sin\dfrac{x-y}{2}$。积化和差：$\sin x\cos y=\dfrac12[\sin(x+y)+\sin(x-y)]$ 等（其余三式按诱导对称写出）。
+[boundaryMarkdown] 口诀“正和正弦中、余和余弦中、余差负正弦中”；使用前提是同角同名结构的匹配。
+候选（机械预筛，未必对）：三角恒等变换（名字出现）
+
+==============================================================================
+## MATH | math-mo-zhongguo-shengyu-dingli
+来源: 数学《专题12 以相关公式、定义、定理、模型为命题背景（附加）（全国通用）（学生版）（会一题通一类系列）》（registry-kb-math-misc:math）
+类型: CONCEPT_EXPLANATION
+[title] 中国剩余定理（孙子定理）
+[summaryMarkdown] 模两两互素的同余方程组在模 $M=\prod m_i$ 下有唯一解。
+[applicabilityMarkdown] 以中国剩余定理为背景的数论阅读题。
+[contentMarkdown] 孙子定理（中国剩余定理）：设 $m_1,m_2,\dots,m_k$ 两两互素，$M=m_1m_2\cdots m_k$，则同余方程组 $x\equiv a_i\pmod{m_i}$（$i=1,\dots,k$）在模 $M$ 意义下有唯一解。
+[boundaryMarkdown] “两两互素”是唯一性前提；求解按逐步代入或构造法，高考背景题只需理解结论与验证。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-f-x-mian-ji-gong
+来源: 《狂K重难点》物理 书页P421，重难点14（registry-lixiangshu-2027-bikuti-kuangk-physics:physics）
+类型: CONCEPT_EXPLANATION
+[title] F-x图线与x轴围成面积表示功
+[summaryMarkdown] F-x图线与x轴所围面积表示力F做的功，如线性变化 $W=\frac{1}{2}F_0x_0$，分段力 $W=F_1x_1-F_2(x_2-x_1)$。
+[applicabilityMarkdown] 力随位移变化的图像类求功问题。
+[contentMarkdown] F-x图线与x轴所围面积表示力 $F$ 做的功：线性减小时 $W=\frac{1}{2}F_0x_0$（三角形面积）；分段含反向力时 $W=F_1x_1-F_2(x_2-x_1)$。
+[boundaryMarkdown] x轴下方的面积记负功。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-hj-195-geomagnetic-field
+来源: 物理讲义《第53讲 磁场及其对电流的作用-（讲义）（学生版）》（registry-kb-physics-handout:physics）
+类型: CONCEPT_EXPLANATION
+[title] 地磁场
+[summaryMarkdown] 地磁场的分布特点
+[applicabilityMarkdown] 地磁场问题
+[contentMarkdown] 地磁的 N 极在地理南极附近、S 极在地理北极附近；赤道平面上高度相等的各点磁感应强度相等且方向水平向北；磁场在南半球有竖直向上的分量，在北半球有竖直向下的分量。
+[boundaryMarkdown] 磁偏角通常忽略。
+候选（机械预筛，未必对）：磁感应强度（名字出现）
+
+==============================================================================
+## PHYSICS | phys-hj3-phi-x-image-points
+来源: 物理讲义《第35讲 电场中的功能关系及图像问题（复习讲义）（湖南专用）（学生版）》（registry-kb-physics-handout:physics）
+类型: CONCEPT_EXPLANATION
+[title] φ-x 图像分析的要点
+[summaryMarkdown] 斜率绝对值等于场强；电势趋于无穷处存在点电荷；沿电场线方向电势降低。
+[applicabilityMarkdown] 解读电场中的 $\varphi\text{-}x$ 图像。
+[contentMarkdown] 1.电势沿电场线方向逐渐降低，电势降低的方向就是电场方向；$\varphi\text{-}x$ 图像斜率的绝对值表示电场强度 $E$。
+2.$\varphi\text{-}x$ 图像中出现无穷大趋势的位置存在点电荷：正电荷附近电势趋于正无穷大，负电荷附近趋于负无穷大。
+3.由 $v\text{-}t$ 图像链条：斜率 $k\to a\to F\to E$；由 $v\to E_k\to W\to E_p\to\varphi$ 逐级分析。
+[boundaryMarkdown] 图像的正负号与坐标正方向的约定必须先明确。
+候选（机械预筛，未必对）：电场线（名字出现）；电场强度（名字出现）
+
+==============================================================================
+## PHYSICS | phys-sheng-moxing-zui-gao-dian
+来源: 《狂K重难点》物理 书页P417，重难点11（registry-lixiangshu-2027-bikuti-kuangk-physics:physics）
+类型: CONCEPT_EXPLANATION
+[title] 绳（内轨道）模型最高点特征
+[summaryMarkdown] 绳模型为单向约束，最高点 $mg+F_N=\frac{mv^2}{r}$，临界 $F_N=0$、$v_{\min}=\sqrt{gr}$，过最高点条件 $v\ge\sqrt{gr}$。
+[applicabilityMarkdown] 轻绳、圆轨道内侧等最高点无支撑的竖直圆周运动。
+[contentMarkdown] 受力特征：单项约束（重力、弹力），弹力方向向下或等于零；力学特征 $mg+F_N=\frac{mv^2}{r}$；临界特征 $F_N=0$，$v_{\min}=\sqrt{gr}$；过最高点条件 $v\ge\sqrt{gr}$。
+[boundaryMarkdown] 弹力只能是拉力或压力（指向圆心），不能提供支持。
+候选（机械预筛，未必对）：圆周运动（名字出现）
+

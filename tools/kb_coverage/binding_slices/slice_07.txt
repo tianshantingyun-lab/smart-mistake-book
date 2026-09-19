@@ -1,0 +1,372 @@
+# 绑定作业片 07：30 条无绑定材料
+#
+# 任务：为每条材料选定它应该绑定的知识点节点（就是讲题时该材料服务的那个点）。
+# 交付（写到 tools/kb_coverage/binding_fixes/slice_07/notes.csv）：
+#   subject,material_slug,node_slug,confidence,evidence
+#   （node_slug 用下面的节点表里的 slug；确实没有合适的写 NONE；
+#     evidence 一句话说明依据；字段内不要有 ASCII 逗号）
+#
+# 硬规矩：
+#   · 宁缺勿错：不确定就 confidence=low 或写 NONE —— 错绑会让检索喂错材料
+#   · 只能从本学科节点表里选（见 tools/kb_coverage/binding_slices/nodes/nodes_<学科>.txt）
+#   · 一条材料只绑一个节点（就是它最主要服务的那个点）
+
+==============================================================================
+## BIOLOGY | bio-c4-pepc-affinity
+来源: 《狂K重点》生物 P380-381 重难3·题型1（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: CONCEPT_EXPLANATION
+[title] PEPC 对 CO2 亲和力高的意义：低 CO2 下仍可高效固定
+[summaryMarkdown] PEPC 对 CO2 的亲和力远高于 Rubisco，使 C4 叶肉细胞即使在低 CO2 环境中也能固定 CO2。
+[applicabilityMarkdown] C4 适应性机制题。
+[contentMarkdown] PEPC（磷酸烯醇式丙酮酸羧化酶）对 CO2 亲和力高，利用的是碳酸氢根（HCO3−），因此胞外 CO2 浓度低时叶肉细胞仍能高效固定 CO2，为维管束鞘提供 CO2 源。
+[boundaryMarkdown] 亲和力差异是 C4 植物高光合效率的分子基础。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-01-virus-ecological-role
+来源: 生物讲义《第01讲 走近细胞（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 病毒营寄生生活，属于消费者
+[summaryMarkdown] 病毒营寄生生活，在生态系统的组成成分中属于消费者，但不参与生命系统结构层次。
+[applicabilityMarkdown] 病毒的生态地位判断。
+[contentMarkdown] 1. 病毒必须寄生在活细胞中，属异养，生态系统中为消费者。
+2. 病毒无细胞结构，不属于生命系统的任何结构层次。
+[boundaryMarkdown] “病毒是分解者”“病毒是最基本的生命系统”均错误。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-05-monolayer-area-2x
+来源: 生物讲义《第05讲 细胞膜和细胞核（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 磷脂单分子层面积为表面积2倍的推论
+[summaryMarkdown] 将红细胞膜脂质铺展成单分子层，面积恰为红细胞表面积的2倍，推知磷脂排列为连续两层。
+[applicabilityMarkdown] 经典推理实验。
+[contentMarkdown] 1. 用丙酮提取人红细胞膜脂质，铺展在空气-水界面成单分子层。
+2. 测得单层分子面积是红细胞表面积的2倍。
+3. 推论：细胞膜中磷脂分子必然排列为连续的两层。
+[boundaryMarkdown] 选用哺乳动物成熟红细胞是因为其无细胞器膜和核膜干扰。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-10-scattered-light-adaptation
+来源: 生物讲义《第10讲 光合作用（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 遮光条件下叶片叶绿素a/b降低的适应意义
+[summaryMarkdown] 遮光条件下蓝紫光为主的散光占比增加，叶片叶绿素a/b降低，增强弱光下吸光能力。
+[applicabilityMarkdown] 弱光适应分析。
+[contentMarkdown] 1. 遮光条件下散光中蓝紫光比例增加。
+2. 预测叶片中叶绿素a/b降低。
+3. 使弱光下的吸光能力增强，提高捕光能力。
+4. 是对弱光环境的适应（如树冠下层叶片）。
+[boundaryMarkdown] 叶绿素b在蓝紫光部分的吸收光谱带比叶绿素a宽。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-32-j-curve-math-model
+来源: 生物讲义《第32讲 种群（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: METHOD_MODEL
+[title] J形增长的数学模型Nt=N0·λ^t
+[summaryMarkdown] J形增长的数学模型为Nt=N0·λ^t，N0为起始数量，λ为该种群数量是一年前数量的倍数。
+[applicabilityMarkdown] 模型参数含义。
+[contentMarkdown] 1. N0：种群的起始数量。
+2. t：时间（年）。
+3. λ：该种群数量是一年前种群数量的倍数。
+4. λ>1且恒定时呈J形增长；增长率=(λ-1)×100%。
+[boundaryMarkdown] λ>1增长、λ=1稳定、λ<1下降。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fx-exp-single-variable
+来源: 生物方法类《微专题4：实验专题讲座》（registry-kb-biology-methods:biology）
+类型: METHOD_MODEL
+[title] 实验设计之单一变量原则
+[summaryMarkdown] 除自变量外，实验组与对照组的无关变量必须保持相同且适宜，以保证变量唯一。
+[applicabilityMarkdown] 审查实验方案、书写实验步骤、评价变量控制的题目。
+[contentMarkdown] 1. 无关变量相同且适宜：生物材料（大小、生理状况、年龄、性别）、器具（型号、洁净度）、试剂（用量、浓度、使用方法）和条件（保温或冷却、光照或黑暗、搅拌、振荡）均保持一致。
+2. 单一变量原则与等量原则目的统一，只是强调的侧重点不同。
+3. 违反单一变量会使结果无法归因于自变量。
+[boundaryMarkdown] 自变量不同、其余因素都相同才构成有效对照；材料数量相等并随机分组属于落实等量原则。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fx-primer-mutation-rounds
+来源: 生物方法类《微专题15：RT－PCR、反向PCR与PCR定点诱变技术》（registry-kb-biology-methods:biology）
+类型: METHOD_MODEL
+[title] 引物引入突变位点的扩增时机与轮数
+[summaryMarkdown] 两引物均从内部扩增且其一含突变位点时至少第3次扩增获得双链等长突变片段；一侧翼一内部时第2次即可。
+[applicabilityMarkdown] 判断第几轮获得完整突变片段的题目。
+[contentMarkdown] 1. 两引物均在基因内部扩增：前两轮产物两端不等长，至少第3次扩增才得到双链等长的突变DNA片段。
+2. 一个引物从内部、另一个从侧翼扩增：第2次扩增即可获得双链等长片段。
+3. 获得时机由引物结合位置决定，与突变位点无关。
+[boundaryMarkdown] 只要引物之一从侧翼扩增，产物一端即可固定，缩短获得完整片段的轮数。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb-competitive-noncompetitive-inhibitors
+来源: 生物知识清单：《第08讲 酶和ATP（知识清单）（全国通用）（学生版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 竞争性抑制剂与非竞争性抑制剂
+[summaryMarkdown] 竞争性抑制剂与底物竞争活性部位，加大底物浓度可消除抑制；非竞争性抑制剂改变酶构象，不可消除。
+[applicabilityMarkdown] 抑制剂对酶促反应的影响分析。
+[contentMarkdown] 1. 竞争性抑制剂：与底物结构类似，竞争酶的活性部位，使酶促反应被抑制；随底物浓度增加抑制作用可消除。
+2. 非竞争性抑制剂：与酶的其他部位结合，引起酶构象改变，使酶无法与底物结合或无法生成产物；抑制作用不可随底物浓度增加而消除。
+[boundaryMarkdown] 两类抑制剂都不改变酶的最适温度等性质（不破坏酶本身）。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb2-03-sugar-classification
+来源: 生物知识清单：《第03讲 糖类和脂质（知识清单）（全国通用）（教师版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 糖类的分类与代表物质
+[summaryMarkdown] 糖类由C、H、O构成，分为单糖、二糖、多糖，葡萄糖是细胞生命活动的主要能源物质。
+[applicabilityMarkdown] 归类具体糖种、判断糖类元素组成时使用。
+[contentMarkdown] 单糖：不能水解，可直接吸收，如核糖、脱氧核糖、葡萄糖、果糖、半乳糖；
+二糖：由两分子单糖脱水缩合而成，如蔗糖、麦芽糖、乳糖；
+多糖：水解后生成许多单糖，如淀粉、纤维素、糖原、几丁质。
+[boundaryMarkdown] 糖类分子一般由C、H、O构成，但几丁质的基本单位是N-乙酰葡糖胺，还含N。
+候选（机械预筛，未必对）：脱水缩合（名字出现）；几丁质（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-kb2-32-counting-formula
+来源: 生物知识清单：《第32讲 种群（知识清单）（全国通用）（教师版）》（registry-kb-biology-knowledge-list:biology）
+类型: METHOD_MODEL
+[title] 血细胞计数板的计数与换算公式
+[summaryMarkdown] 根据计数板规格用中方格细胞数换算出1mL培养液中酵母细胞总数。
+[applicabilityMarkdown] 计算酵母菌种群密度时使用。
+[contentMarkdown] 计数室容积为0.1立方毫米；16×25型计数板：1mL细胞个数＝100个小方格细胞总数÷100×400×10000×稀释倍数；
+25×16型计数板：1mL细胞个数＝80个小方格细胞总数÷80×400×10000×稀释倍数。
+[boundaryMarkdown] 以每个小方格含4至5个酵母细胞为宜，过密需稀释。
+候选（机械预筛，未必对）：种群密度（名字出现）；血细胞计数板（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-mirna-repression-mechanism
+来源: 《狂K重点》生物 P403 重难9·题型2（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: CONCEPT_EXPLANATION
+[title] miRNA 与靶 mRNA 部分互补结合，抑制翻译或促进降解
+[summaryMarkdown] miRNA 与靶 mRNA 部分互补结合后抑制翻译或使 mRNA 降解，蛋白合成量下降。
+[applicabilityMarkdown] 非编码 RNA 调控分析。
+[contentMarkdown] 1. miRNA 与靶 mRNA 部分序列互补配对。
+2. 结合后：抑制翻译，或使 mRNA 降解。
+3. 实验判读：miRNA 过表达→靶蛋白减少且 mRNA 减少→促降解；mRNA 不变→抑制翻译。
+[boundaryMarkdown] 与 siRNA（完全互补切割）机制不同。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-replication-unwind-while-replicating
+来源: 《狂K重点》生物 P402 重难9·题型1（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: CONCEPT_EXPLANATION
+[title] 边解旋边复制减少碱基暴露、降低突变概率
+[summaryMarkdown] 解旋与复制同时进行，减少单链碱基暴露时间，增加遗传稳定性。
+[applicabilityMarkdown] 复制稳定性解释。
+[contentMarkdown] 边解旋边复制→减少碱基暴露的时间→减少基因突变的概率→增加遗传的稳定性。
+[boundaryMarkdown] 解旋酶打开双链，模板链不被降解。
+候选（机械预筛，未必对）：基因突变（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-distribution-fraction-definition
+来源: 《狂K重点》化学 书页P385，重难点14 考向3 分布分数图像分析（registry-lixiangshu-2027-bikuti-kuangk-chemistry:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 分布分数（分布系数）δ的定义
+[summaryMarkdown] δ为某组分平衡浓度占该元素各种形态总浓度之比。
+[applicabilityMarkdown] 分布分数图像的分析。
+[contentMarkdown] 如二元弱酸H2A溶液中，δ(X)=c(X)/[c(H2A)+c(HA-)+c(A2-)]，X为H2A、HA-或A2-。
+各δ之和恒等于1；δ曲线交点处两形态浓度相等。
+[boundaryMarkdown] 加入酸或碱改变pH时δ变化，但总浓度不变；电荷守恒中勿漏加入的其他阳离子（如Na+）。
+候选（机械预筛，未必对）：分布分数图像（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-de-fen-dian-ji-guan-jian-ci-f71x12
+来源: 化学方法类《（重点·方法·点拨）第68讲 以性质为主的探究类综合实验- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 得分点及关键词
+[summaryMarkdown] 得分点及关键词：溶液中：颜色由……变成……，液面上升或下降(形成液面差)，溶液变浑浊，生成(产生)……沉淀，溶液发生倒吸，产生大量气泡(或有气体从溶液中逸出)，有液体溢出等。
+[applicabilityMarkdown] 分析沉淀溶解平衡、判断沉淀生成或溶解时使用。
+[contentMarkdown] 得分点及关键词：溶液中：颜色由……变成……，液面上升或下降(形成液面差)，溶液变浑浊，生成(产生)……沉淀，溶液发生倒吸，产生大量气泡(或有气体从溶液中逸出)，有液体溢出等
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：沉淀溶解平衡（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-fang-an-f14x09
+来源: 化学方法类《（重点·方法·点拨）第11讲 侯氏制碱法与Na2CO3含量的测定- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 方案I
+[summaryMarkdown] 方案I：样品经加热后测定剩余固体质量，并计算Na2CO3的质量分数。
+[applicabilityMarkdown] 解决相关化学计算问题时使用。
+[contentMarkdown] 方案I：样品经加热后测定剩余固体质量，并计算Na2CO3的质量分数。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-jian-jie-ce-liang-fa-f66x06
+来源: 化学方法类《（重点·方法·点拨）第63讲 仪器的组合与创新使用- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 间接测量法
+[summaryMarkdown] (2)间接测量法。
+[applicabilityMarkdown] 实验方案设计、评价与异常现象分析时使用。
+[contentMarkdown] (2)间接测量法。如F装置是通过测量气体排出的液体体积来确定气体体积。
+装置的气密性检查
+装置的气密性检查必须在放入药品之前进行。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：实验方案设计（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-qi-ti-chu-le-liang-qu-wai-f70x10
+来源: 化学方法类《（重点·方法·点拨）第67讲 以物质含量或组成测定为主的综合实验- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: METHOD_MODEL
+[title] 气体除了量取外
+[summaryMarkdown] ③气体除了量取外，还可以称量。
+[applicabilityMarkdown] 实验方案设计、评价与异常现象分析时使用。
+[contentMarkdown] ③气体除了量取外，还可以称量。称气体的质量时一般有两种方法：一种方法是称反应装置在放出气体前后的质量减小值；另一种方法是称吸收装置前后的质量增大值。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：实验方案设计（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-tian-gong-kai-wu-zhong-fan-shi-hui-jin-f73x17
+来源: 化学方法类《高考化学化学与传统文化及STSE(学生版)-20页》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 《天工开物》中“凡石灰经火焚炼为用”里的“石
+[summaryMarkdown] (3)《天工开物》中“凡石灰经火焚炼为用”里的“石灰”指的是CaCO3；“凡研硝不以铁碾入石臼，相激火生，则祸不可测”说明KNO3研磨易分解。
+[applicabilityMarkdown] 复习“知识梳理∙智能提升”相关考点、解答对应试题时使用。
+[contentMarkdown] (3)《天工开物》中“凡石灰经火焚炼为用”里的“石灰”指的是CaCO3；“凡研硝不以铁碾入石臼，相激火生，则祸不可测”说明KNO3研磨易分解。
+(4)《梦溪笔谈·器用》中“古人以剂钢为刃，柔铁为茎干，不尔则多断折”里的“剂钢”是铁的合金。
+(5)《开宝本草》记载硝石：“所在山泽，冬月地上有霜，扫取以水淋汁，后乃煎炼而成”涉及物质的溶解、蒸发、结晶。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-yang-shi-du-shu-f51x07
+来源: 化学方法类《（重点·方法·点拨）第48讲 酸碱中和滴定及拓展应用- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 仰视读数
+[summaryMarkdown] (3)仰视读数(如图3)：读数时，视线向上倾斜，寻找切点的位置在液面的下侧，滴定管刻度标法与量筒不同，仰视滴定管读数偏大。
+[applicabilityMarkdown] 复习相关考点、解答对应试题时使用。
+[contentMarkdown] (3)仰视读数(如图3)：读数时，视线向上倾斜，寻找切点的位置在液面的下侧，滴定管刻度标法与量筒不同，仰视滴定管读数偏大。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-zhi-bei-die-dan-hua-na-f69x18
+来源: 化学方法类《（重点·方法·点拨）第66讲 　以物质制备为主的综合实验- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 制备叠氮化钠
+[summaryMarkdown] (1)制备叠氮化钠：连接好装置后，打开A中分液漏斗活塞，向圆底烧瓶中滴加浓硝酸，充分反应。
+[applicabilityMarkdown] 实验方案设计、评价与异常现象分析时使用。
+[contentMarkdown] (1)制备叠氮化钠：连接好装置后，打开A中分液漏斗活塞，向圆底烧瓶中滴加浓硝酸，充分反应。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：实验方案设计（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-hj2-han-pandu-feiweiyi
+来源: 化学讲义《第04讲 化学反应的方向、化学反应的调控（复习讲义）（安徽专用）（学生版）》（registry-kb-chemistry-handout:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 焓判据与熵判据的局限性
+[summaryMarkdown] 多数放热反应能自发进行，但吸热反应也能自发，焓变不是判断方向的唯一因素；熵增有利于自发。
+[applicabilityMarkdown] 反应方向的综合判断。
+[contentMarkdown] 焓判据：多数能自发进行的化学反应是放热反应；有些吸热反应也能自发进行，如NH4HCO3(s)+CH3COOH(aq)=CO2(g)+CH3COONH4(aq)+H2O，ΔH=+37.30 kJ/mol。
+结论：焓变是与反应能否自发有关的因素，但不是决定反应能否自发进行的唯一因素。
+熵判据：产生气体的反应、气体物质的量增大的反应，ΔS通常为正值，熵增大越有利于自发进行。
+综合判据：ΔG=ΔH-TΔS<0时反应能自发进行。
+[boundaryMarkdown] 自发性只判断方向，不能确定反应是否发生及速率。
+候选（机械预筛，未必对）：物质的量（名字出现）；放热反应（名字出现）；吸热反应（名字出现）
+
+==============================================================================
+## MATH | math-fangshuo-dengbi-jiegou-qiuhes
+来源: 《狂K重难点》数学 书页P409，重难点29（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: CONCEPT_EXPLANATION
+[title] 放缩成等比结构：1/(qⁿ+m) < 1/qⁿ
+[summaryMarkdown] $\frac{1}{q^n+m}<\frac{1}{q^n}\ (q>1,m>0)$。
+[applicabilityMarkdown] 分母含常数项的指数分式放缩成等比数列求和。
+[contentMarkdown] 放缩成等比结构求和：$\frac{1}{q^n+m}<\frac{1}{q^n}\ (q>1,m>0)$。
+[boundaryMarkdown] 放缩后成标准等比数列，直接用求和公式。
+候选（机械预筛，未必对）：等比数列（名字出现）；数列求和（名字出现）
+
+==============================================================================
+## MATH | math-hj-dabian-duidajiao
+来源: 数学讲义《5.1正弦定理（讲义）（学生版）》（registry-kb-math-handout:math）
+类型: CONCEPT_EXPLANATION
+[title] 大边对大角
+[summaryMarkdown] $a>b\Leftrightarrow A>B\Leftrightarrow\sin A>\sin B$。
+[applicabilityMarkdown] 由边定角、由角定边、判断解的个数。
+[contentMarkdown] 在三角形中：$a>b\Leftrightarrow A>B\Leftrightarrow\sin A>\sin B\Leftrightarrow\cos A<\cos B$；大边对大角，大角对大边。
+[boundaryMarkdown] 仅在同一三角形内成立。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-hj-s92-weighted-variance
+来源: 数学讲义《第九章 §9.2　用样本估计总体.docx》（registry-kb-math-handout:math）
+类型: CONCEPT_EXPLANATION
+[title] 加权平均与总体方差的加权式
+[summaryMarkdown] 频数不同的数据用加权式计算总体方差：S²=Σfᵢ(Yᵢ−ȳ)²/N。
+[applicabilityMarkdown] 由频率分布或频数表计算总体方差。
+[contentMarkdown] 1. 加权平均：$\bar{Y}=\dfrac{1}{N}\sum f_iY_i$。
+2. 加权方差：$S^2=\dfrac{1}{N}\sum f_i(Y_i-\bar{Y})^2$。
+[boundaryMarkdown] 频率分布直方图中以组中值近似各组数据后同法计算。
+候选（机械预筛，未必对）：频率分布直方图（名字出现）
+
+==============================================================================
+## MATH | math-luobida-shiyong-bianjie
+来源: 《狂K重难点》数学 书页P394，重难点19（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: CONCEPT_EXPLANATION
+[title] 洛必达法则在高中使用边界
+[summaryMarkdown] 洛必达法则选择、填空题可直接用，解答题中使用可能扣分。
+[applicabilityMarkdown] 高中解题中选择洛必达求极限的场合。
+[contentMarkdown] 在高中阶段，可以利用洛必达法则计算 $\frac{0}{0}$ 型或 $\frac{\infty}{\infty}$ 型的函数的极限，从而帮助解题；该方法在选择题或填空题中可直接使用，在解答题中使用可能会扣分。
+[boundaryMarkdown] 解答题如需使用，应先用单调性等常规方法论证极限行为。
+候选（机械预筛，未必对）：洛必达法则（名字出现）
+
+==============================================================================
+## MATH | math-mo-tuolemi-dingli
+来源: 数学《专题12 以相关公式、定义、定理、模型为命题背景（附加）（全国通用）（学生版）（会一题通一类系列）》（registry-kb-math-misc:math）
+类型: CONCEPT_EXPLANATION
+[title] 托勒密定理
+[summaryMarkdown] 圆内接四边形对角线之积等于两组对边乘积之和；一般四边形为不等式。
+[applicabilityMarkdown] 以托勒密定理为背景的平面几何问题。
+[contentMarkdown] 托勒密定理：若四边形 $ABCD$ 内接于圆，则 $AC\cdot BD=AB\cdot CD+AD\cdot BC$。对一般四边形有托勒密不等式：$AC\cdot BD\le AB\cdot CD+AD\cdot BC$，等号成立当且仅当四点共圆。
+[boundaryMarkdown] 使用前确认四点的顺序与对角线对应；不等式方向在“交叉乘积”意义下书写。
+候选（机械预筛，未必对）：托勒密定理（名字出现）
+
+==============================================================================
+## PHYSICS | phys-ao-xing-qiao-chao-zhong
+来源: 《狂K重难点》物理 书页P418，重难点11（registry-lixiangshu-2027-bikuti-kuangk-physics:physics）
+类型: CONCEPT_EXPLANATION
+[title] 凹形桥模型（超重）
+[summaryMarkdown] 凹形桥最低点 $F_N-mg=\frac{mv^2}{r}$，支持力 $F_N=mg+\frac{mv^2}{r}>mg$，处于超重状态。
+[applicabilityMarkdown] 车辆过凹形桥（凹面）最低点的压力问题。
+[contentMarkdown] 凹形桥模型：$F_{凹}=F_N-mg=\frac{mv^2}{r}$，$F_N=mg+\frac{mv^2}{r}>mg$。
+[boundaryMarkdown] 在最低点位置；速度越大对桥面压力越大。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-hj-039-weightlessness-phenomenon
+来源: 物理讲义《第15讲 牛顿第二定律的基本应用-（讲义）（学生版）》（registry-kb-physics-handout:physics）
+类型: CONCEPT_EXPLANATION
+[title] 失重
+[summaryMarkdown] 物体具有竖直向下加速度分量的状态
+[applicabilityMarkdown] 电梯、竖直减速问题
+[contentMarkdown] 物体加速度有竖直向下分量时处于失重，视重 $F=mg-ma$ 小于重力，重力本身不变。
+[boundaryMarkdown] 向下加速度分量决定失重程度。
+候选（机械预筛，未必对）：加速度（名字出现）
+
+==============================================================================
+## PHYSICS | phys-hj3-fu-fu-method
+来源: 物理讲义《第37讲 创新思维测量电阻常用的5种方法及定值电阻的妙用（复习讲义）（安徽专用）（学生版）》（registry-kb-physics-handout:physics）
+类型: METHOD_MODEL
+[title] 伏伏法测电阻
+[summaryMarkdown] 用两只电压表测电阻：已知内阻的电压表可当电流表使用，由 $I=\frac{U_1}{r_1}$ 求电流。
+[applicabilityMarkdown] 缺少合适电流表时测量电阻。
+[contentMarkdown] 两只电压表读数为 $U_1、U_2$，已知 $V_1$ 内阻 $r_1$，则通过待测电阻的电流 $I=\frac{U_1}{r_1}$，结合 $U_2=U_1+U_x$ 类关系求 $R_x$；反之若 $R_x$ 已知也可求 $r_1$。
+应用技巧：缺少合适的电流表时，可将已知内阻的电压表当作电流表使用。
+[boundaryMarkdown] 电压表读数与内阻必须配套使用；并联结构不同时关系式要重新推导。
+候选（机械预筛，未必对）：伏伏法测电阻（名字出现）
+
+==============================================================================
+## PHYSICS | phys-ohmmeter-fault-reading
+来源: 《狂K重难点》物理 书页P440，重难点24考法1（registry-lixiangshu-2027-bikuti-kuangk-physics:physics）
+类型: CONCEPT_EXPLANATION
+[title] 电阻表（欧姆挡）排查故障的示数判读
+[summaryMarkdown] 电阻表测量值很大（指针几乎无偏转）表示该处断路；测量值很小（接近满偏）或为零表示该处短路。
+[applicabilityMarkdown] 断开电源后用欧姆挡检测元件与导线通断。
+[contentMarkdown] 1. 当测量值很大（指针几乎无偏转）时，表示该处断路；2. 当测量值很小（指针接近满偏）或为零时，表示该处短路。
+[boundaryMarkdown] 测量前必须断开电源；欧姆表每次换挡后要重新调零。
+候选（机械预筛，未必对）：无
+

@@ -1,0 +1,31 @@
+subject,material_slug,node_slug,confidence,evidence
+BIOLOGY,bio-consanguinity-multiplier,分离定律的概率计算-含自交与自由交配,medium,材料是同书同页同重难「隐性病随机婚配风险＝携带率×1/4」的互补片段；即近亲与随机婚配风险倍数计算
+BIOLOGY,bio-fj-02-water-properties,细胞中的水,medium,材料讲水分子的极性 氢键与比热容三个特性；该节点别名即含「水的特点」与「细胞中水的特性与存在形式」
+BIOLOGY,bio-fj-08-enzyme-concentration-curves,影响酶促反应的因素分析,high,材料讲酶浓度与底物浓度对反应速率曲线的影响及平台期限制因素；知识库同题材料「底物浓度和酶浓度对酶促反应速率的影响」即绑此节点
+BIOLOGY,bio-fj-16-recombination-type-ratio,两对相对性状杂交实验过程,medium,材料讲F2亲本类型与重组类型比例随亲本组合变化；知识库两篇「重组类型比例与测交的辨析」材料即绑此节点
+BIOLOGY,bio-fj-33-secondary-succession-examples,群落的演替,medium,材料列举火灾草原 过量砍伐森林 弃耕农田等次生演替实例；与节点内「初生演替与次生演替的判断」同类
+BIOLOGY,bio-fx-judge-adh-release,水和无机盐平衡的调节,medium,材料辨析抗利尿激素的分泌部位与释放部位并涉及其促进肾小管集合管重吸收水；同系列易错材料「血钠升高时醛固酮分泌减少」亦归此节点
+BIOLOGY,bio-fx-variable-add-subtract,对照实验设计的四步模板,high,材料讲自变量处理的加法与减法及回补实验；知识库「加法原理与减法原理在实验中的运用」即绑此节点
+BIOLOGY,bio-kb-monosaccharide-types-distribution,细胞中的糖类,high,材料讲核糖 脱氧核糖 葡萄糖 果糖 半乳糖的种类分布与功能；知识库同类单糖材料均绑此节点
+BIOLOGY,bio-kb2-15-continuous-selfing-formula,分离定律的概率计算-含自交与自由交配,high,材料给杂合子连续自交n代的杂合子与纯合子比例公式；知识库主题最相近的材料即绑此节点
+BIOLOGY,bio-kb3-f4-s28-n05,物理模型的构建方法,medium,材料为探究·实践片段（选取材料用具与建立模型）；同系列相邻片段「探究·实践（三）」已按此节点处理
+BIOLOGY,bio-photoinhibition-3-links,影响光合作用强度的环境因素,medium,材料讲光抑制三步链（光能过剩到ROS生成到D1失活）；该节点已收录「光抑制与光保护机制」等光抑制材料
+BIOLOGY,bio-selfing-eliminating-recessive-heterozygote,自交和自由交配的概率计算,medium,材料讲连续自交并逐代淘汰隐性个体后的杂合子比例递推；该节点别名即含「杂合子连续自交与逐代淘汰的计算」
+CHEMISTRY,chem-fx-chang-jian-shi-ji-f28x05,气体制备,medium,材料列浓硫酸 无水氯化钙 碱石灰与灼热Cu CuO Mg等净化干燥试剂；同讲其它片段绑气体制备且该节点别名含「气体净化与干燥试剂的选择」
+CHEMISTRY,chem-fx-dian-zhong-xing-yuan-ze-f76x02,电荷守恒在离子推断中的应用,medium,材料讲电中性原则并用其确定隐含离子；同讲其它推断题材料与该节点「离子推断的四项原则」材料均归此节点
+CHEMISTRY,chem-fx-fen-qiang-ji-f64x04,酚的结构和性质,medium,材料讲酚羟基的弱酸性 遇FeCl3显紫色 与浓溴水取代三点性质；同讲其它官能团卡片（醇羟基）亦归对应的类节点
+CHEMISTRY,chem-fx-li-yong-lv-hui-f17x12,含铝物质的制备和转化,medium,材料是以铝灰（Al与Al2O3与AlN等）制备铝鞣剂的工艺流程；该节点专收含铝物质的制备与转化路径
+CHEMISTRY,chem-fx-sheng-gao-wen-du-f54x04,影响沉淀溶解平衡的因素,high,材料为沉淀溶解平衡移动的判断（升温 加碳酸钠 加NaOH 加CaO）；同讲材料「沉淀溶解平衡的影响因素」即绑此节点
+CHEMISTRY,chem-fx-wei-rong-wu-f08x21,离子方程式,high,材料讲微溶物写不写离子形式及固体间反应不写离子方程式；该节点别名即含「微溶物在离子方程式中的处理」
+CHEMISTRY,chem-fx-yi-suan-wu-se-you-qiang-f61x05,乙酸,high,材料讲乙酸的组成与无色有刺激性气味 与水互溶 有酸性；节点名即乙酸且已收录「羧酸与乙酸的化学性质」
+CHEMISTRY,chem-fx-zui-jian-shi-f02x05,有机物分子分子式的确定,medium,材料解释最简式（实验式）的含义与最简式量；同讲相邻片段（分子式）即绑此节点且该节点含「直接法与实验式法确定分子式」
+CHEMISTRY,chem-stop-heating-before-gas,气体制备,medium,材料讲实验结束时先停止加热后停通气至冷却防氧化倒吸；知识库同结论材料「有气体参与的制备实验的操作顺序与要求」（先撤灯再停气）即绑此节点
+MATH,math-fx-pingfenxian-dengmianji-fa,角平分线定理,high,材料用等面积法求角平分线长并给出公式；知识库同公式材料「用面积法求角平分线段长」即绑此节点
+MATH,math-hj-pingxing-sibianxing-faze,平面向量的线性运算,high,材料讲共起点两向量和差对应平行四边形两条对角线；知识库「向量加法的三角形法则与平行四边形法则」即绑此节点
+MATH,math-hj-zhengxingleixing-gainian,函数y-asin-ωx-φ-的图象,high,材料讲y=Asin(ωx+φ)中振幅 周期 频率 相位与初相的含义及平移；该节点别名即含「y=Asin(ωx+φ)中各参数的几何意义」
+MATH,math-mo-jieda-qianhouwen-guanlian,导数压轴题的解题流程,low,材料讲多问解答题前后问的关联并仅以导数压轴举例；只能勉强归入导数压轴解题流程
+MATH,math-mo-zhuyuan-fa,主元法,high,材料讲变换主元把式子整理为关于主元的函数并求最值；与节点同名同主题
+PHYSICS,phys-fx-arch-bridge-model,对超重和失重的理解应当注意的问题,high,材料即拱形桥与凹形桥模型（拱桥顶失重 凹桥底超重 腾空临界）；该短语即为此节点的别名
+PHYSICS,phys-hj2-dianli-yu-dianlineng,电离态与电离能,high,材料讲电离到n为无穷的电离态与基态氢13.6eV电离能；该节点已收录同名材料
+PHYSICS,phys-hj3-wiring-diagram-rules,实验实物图连线的原则与滑动变阻器接法,high,材料讲实物图连线先串后并 接线到柱 注意量程正负及限流分压电路接法；知识库同第32讲材料「实物图连线与变阻器接法」即绑此节点
+PHYSICS,phys-tp-energy-quantum-hnu,能量子,high,材料讲普朗克能量子假说ε等于hν与普朗克常量；该节点已收录「能量子与普朗克常量」

@@ -1,0 +1,382 @@
+# 绑定作业片 06：30 条无绑定材料
+#
+# 任务：为每条材料选定它应该绑定的知识点节点（就是讲题时该材料服务的那个点）。
+# 交付（写到 tools/kb_coverage/binding_fixes/slice_06/notes.csv）：
+#   subject,material_slug,node_slug,confidence,evidence
+#   （node_slug 用下面的节点表里的 slug；确实没有合适的写 NONE；
+#     evidence 一句话说明依据；字段内不要有 ASCII 逗号）
+#
+# 硬规矩：
+#   · 宁缺勿错：不确定就 confidence=low 或写 NONE —— 错绑会让检索喂错材料
+#   · 只能从本学科节点表里选（见 tools/kb_coverage/binding_slices/nodes/nodes_<学科>.txt）
+#   · 一条材料只绑一个节点（就是它最主要服务的那个点）
+
+==============================================================================
+## BIOLOGY | bio-c3-plants-pertinent
+来源: 《狂K重点》生物 P380-382 重难3·题型1（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: CONCEPT_EXPLANATION
+[title] C3 植物：CO2 直接由 C5 固定、无 CO2 泵、光呼吸明显
+[summaryMarkdown] C3 植物（水稻小麦等）CO2 直接与 C5 结合被 Rubisco 固定；高温强光下光呼吸增强、CO2 净同化下降。
+[applicabilityMarkdown] C3 与 C4 比较。
+[contentMarkdown] C3 植物：叶肉细胞直接进行 Rubisco 固定的 C3 途径（无 PEPC 初次固定）；高温强光下气孔关闭→光呼吸增强→产量下降（有'午休'现象）。
+[boundaryMarkdown] C3 途径不代表'缺少 CO2 泵'就低效，只是适应性差。
+候选（机械预筛，未必对）：光呼吸（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fj-01-slide-move
+来源: 生物讲义《第01讲 走近细胞（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: METHOD_MODEL
+[title] 装片移动规律：物像偏哪往哪移
+[summaryMarkdown] 物像偏向视野哪个方向，装片就向同方向移动，才能将其移至视野中央。
+[applicabilityMarkdown] 显微镜操作类题目。
+[contentMarkdown] 1. 装片与物像移动方向相反，物像偏哪方向，装片就向哪方向移动（“同向移动”）。
+2. 如物像偏左上方，装片应向左上方移动。
+3. 观察目标应先在低倍镜下移至视野中央，再换高倍镜。
+[boundaryMarkdown] 换高倍镜后不能提升镜筒，也不可再动粗准焦螺旋。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-05-model-types
+来源: 生物讲义《第05讲 细胞膜和细胞核（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 生物模型的三种类型
+[summaryMarkdown] 模型分物理模型（实物图片）、概念模型（文字符号）和数学模型（公式曲线表格）。
+[applicabilityMarkdown] 模型类型识别。
+[contentMarkdown] 1. 物理模型：以实物或图片直观表达，如细胞亚显微结构模式图、DNA双螺旋模型、流动镶嵌模型。
+2. 概念模型：用文字或符号突出特征和联系，如血糖平衡、体温调节图解。
+3. 数学模型：描述系统性质的数学形式，如方程式、曲线、表格。
+[boundaryMarkdown] 照片不属于物理模型，手工绘制的结构模式图属于物理模型。
+候选（机械预筛，未必对）：体温调节（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fj-10-pigment-separation-principle
+来源: 生物讲义《第10讲 光合作用（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: METHOD_MODEL
+[title] 绿叶中色素的分离原理与步骤
+[summaryMarkdown] 色素在层析液中溶解度不同，溶解度高者随层析液在滤纸上扩散快，从而分离。
+[applicabilityMarkdown] 色素分离实验步骤考查。
+[contentMarkdown] 1. 原理：纸层析法，依据色素在层析液中的溶解度差异分离。
+2. 滤纸条剪去两角保证色素带整齐；滤液细线干燥后重复画1-2次积累色素。
+3. 分离时滤液细线不能触及层析液，防止色素溶解到层析液中。
+[boundaryMarkdown] 分离依据是溶解度差异，不是吸收光谱差异。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-32-j-curve-conditions
+来源: 生物讲义《第32讲 种群（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] J形增长的理想条件与实例
+[summaryMarkdown] 食物空间充裕、气候适宜、无敌害等理想条件下种群呈J形增长，如外来物种入侵初期。
+[applicabilityMarkdown] J形条件与实例。
+[contentMarkdown] 1. 条件：食物和空间条件充裕、气候适宜、没有敌害等。
+2. 种群数量每年以一定倍数增长，第二年是第一年的λ倍。
+3. 实例：实验室理想条件下的细菌繁殖、外来物种入侵初期（欧亚蔊菜入侵人工草坪初期）。
+[boundaryMarkdown] 自然环境中很少长期维持J形增长，最终受环境阻力转为S形。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fx-exp-parallel-repetition
+来源: 生物方法类《微专题4：实验专题讲座》（registry-kb-biology-methods:biology）
+类型: METHOD_MODEL
+[title] 实验设计之平行重复原则
+[summaryMarkdown] 为避免偶然性，实验须重复足够次数并取平均值，以保证结果准确性。
+[applicabilityMarkdown] 解释为何用多只实验动物、多片叶子、多次测定的题目。
+[contentMarkdown] 1. 每组材料要有足够数量（如每组多只小鼠、测定多个叶片），取平均值减小误差。
+2. 分组时选择性别、年龄、体重、生理状况相似的材料并随机均分。
+3. 重复可排除个体差异和偶然因素对结果的影响。
+[boundaryMarkdown] 重复是对同一处理的重复，不是随意增加处理组数；重复原则与随机分组配合使用。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fx-primer-design-principles
+来源: 生物方法类《2026届高三生物三轮复习PCR引物设计全解析》（registry-kb-biology-methods:biology）
+类型: METHOD_MODEL
+[title] 引物设计的核心原则
+[summaryMarkdown] 引物设计需兼顾长度、GC含量、二级结构、3′端严格配对、5′端可修饰和Tm值相近六项原则。
+[applicabilityMarkdown] 判断引物设计合理性的选择题与设计题。
+[contentMarkdown] 1. 长度18-30个碱基，过短特异性差、过长结合效率低且易成二级结构；GC含量40%-60%，过高易自身折叠、过低结合力不足，避免连续重复碱基。
+2. 引物自身及上下游引物间避免互补序列，防止发夹结构与引物二聚体（互补碱基不超过3个）。
+3. 3′端必须严格互补配对、不可修饰，且避免连续3个以上G或C；5′端不参与延伸，可添加酶切位点、启动子序列、荧光标记等。
+4. 上下游引物Tm值差值不超过2摄氏度，保证同一退火温度下两条引物均高效结合。
+[boundaryMarkdown] 引物参数不合理会导致非特异性扩增、无产物或杂带；设计后需逐一校验参数。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb-comparative-experiment-concept
+来源: 生物知识清单：《第09讲 细胞呼吸（知识清单）（全国通用）（学生版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 对比实验（相互对照）的概念
+[summaryMarkdown] 对比实验是设置两个或以上实验组，通过结果比较探究某因素影响的实验方法。
+[applicabilityMarkdown] 判断实验方法类型。
+[contentMarkdown] 1. 定义：设置两个或两个以上的实验组，通过对结果的比较分析来探究某种因素对实验对象的影响。
+2. 特点：两组都是实验组，相互对照，结果事先未知。
+3. 实例：探究酵母菌细胞呼吸方式、鲁宾和卡门的实验、赫尔希和蔡斯的噬菌体实验、探究温度（pH）对酶活性的影响。
+[boundaryMarkdown] 与空白对照实验区分：无单独对照组。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb2-03-polysaccharide-function
+来源: 生物知识清单：《第03讲 糖类和脂质（知识清单）（全国通用）（教师版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 淀粉、纤维素、糖原的分布与功能
+[summaryMarkdown] 淀粉是植物储能物质，纤维素构成植物细胞壁，糖原是人和动物的储能物质。
+[applicabilityMarkdown] 判断多糖功能与分布、比较储能物质时使用。
+[contentMarkdown] 淀粉：植物细胞中重要的储能物质；
+纤维素：构成植物细胞壁的结构物质，不供能；
+糖原：人和动物细胞中重要的储能物质，肝糖原可调节血糖含量，肌糖原可为肌肉供能。
+[boundaryMarkdown] 三者基本单位都是葡萄糖，但葡萄糖的数量、连接方式不同，因此化学性质差异很大。
+候选（机械预筛，未必对）：细胞壁（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-kb2-31-apical-dominance
+来源: 生物知识清单：《第31讲 植物生命活动调节（知识清单）（全国通用）（教师版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 顶端优势的成因与应用
+[summaryMarkdown] 顶芽产生的生长素向下运输在侧芽积累，高浓度抑制侧芽生长；摘除顶芽可解除。
+[applicabilityMarkdown] 解释果树修剪、棉花打顶等现象时使用。
+[contentMarkdown] 现象：顶芽优先生长，侧芽受到抑制，离顶芽越近的侧芽受抑制越强；
+原因：顶芽产生的生长素向下运输，侧芽附近生长素浓度高，发育受到抑制；解除方法：摘除顶芽。
+[boundaryMarkdown] 顶端优势的产生与重力无关；应用：果树整形修剪、茶树摘心、棉花打顶以增加分枝。
+候选（机械预筛，未必对）：生长素（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-long-answer-principle-based
+来源: 《狂K重点》生物 P429 附录·考向1（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 长句表达·依据原理类：推导起点→分析原因→得出结果，恰当用逻辑词
+[summaryMarkdown] 解释'为什么'类长句按'推导起点—分析原因（推理）—得出结果（结论）'组织，使用'因为/因此/由于/导致'等逻辑词，体现因果逻辑。
+[applicabilityMarkdown] '请从……角度解释原因'类长句作答。
+[contentMarkdown] 1. 写出推导起点（题给条件/现象）。
+2. 进行原因分析（用所学原理逐步推理）。
+3. 得出结果（回到设问对象）。
+4. 恰当使用逻辑词（因为、由于、导致、因此），答案要体现因果逻辑链。
+[boundaryMarkdown] 每个因果链只解释一层主题，不堆砌无关知识。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-replication-bubble-graph-reading
+来源: 《狂K重点》生物 P402 重难9·题型1（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 复制泡图判读：未复制片段（a）变短、延伸子链（b/c）变长
+[summaryMarkdown] 两个复制叉之间未复制片段随复制进行逐渐变短，正在延伸的子链逐渐变长；两复制叉处子链序列不同。
+[applicabilityMarkdown] 复制泡示意图题。
+[contentMarkdown] a 表示两个复制叉之间未复制的 DNA 片段，随复制进行逐渐变短；b、c 表示正在延伸的子链，长度逐渐变长；两个复制叉处碱基序列不同（各自按其模板互补合成）。
+[boundaryMarkdown] 双复制叉效率高于单复制叉。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-distillation-operation-points
+来源: 《狂K重点》化学 书页P404，重难点19 锦囊妙计 蒸馏和分液（registry-lixiangshu-2027-bikuti-kuangk-chemistry:chemistry）
+类型: METHOD_MODEL
+[title] 蒸馏操作要点
+[summaryMarkdown] 分离沸点差大的互溶液体：温度计水银球在支管口，冷凝水下进上出，加碎瓷片防暴沸。
+[applicabilityMarkdown] 液态互溶混合物的分离。
+[contentMarkdown] 适用条件：液态混合物中各成分的沸点相差较大。
+操作要点：温度计水银球位于蒸馏烧瓶支管口处（测蒸气温度）；冷凝水从下口进、上口出（逆流冷凝）；加入碎瓷片（沸石）防止暴沸。
+[boundaryMarkdown] 温度计测的是蒸气温度而非液体温度；不能蒸干。
+候选（机械预筛，未必对）：混合物（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-dao-dian-dao-re-xing-f34x05
+来源: 化学方法类《（重点·方法·点拨）第31讲 物质的聚集状态　常见晶体类型- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 导电、导热性
+[summaryMarkdown] 导电、导热性：一般不导电，溶于水后有的导电；一般不具有导电性，个别为半导体；电和热的良导体；晶体不导电，水溶液或熔融态导电。
+[applicabilityMarkdown] 晶体结构分析与晶胞计算时使用。
+[contentMarkdown] 导电、导热性：一般不导电，溶于水后有的导电；一般不具有导电性，个别为半导体；电和热的良导体；晶体不导电，水溶液或熔融态导电
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-fan-ying-zhong-f38x05
+来源: 化学方法类《（重点·方法·点拨）第35讲 反应热的测定与计算- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 反应④中
+[summaryMarkdown] 反应④中，C完全燃烧，放热更多，|ΔH3|<|ΔH4|，但ΔH3<0，ΔH4<0，故ΔH3>ΔH4。
+[applicabilityMarkdown] 热化学方程式书写与反应热计算、比较时使用。
+[contentMarkdown] 反应④中，C完全燃烧，放热更多，|ΔH3|<|ΔH4|，但ΔH3<0，ΔH4<0，故ΔH3>ΔH4。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：热化学方程式（名字出现）；反应热（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-jia-zai-shi-f46x17
+来源: 化学方法类《（重点·方法·点拨）第43讲 化学反应速率　工业合成氨- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 甲：在500 ℃时，10 mol
+[summaryMarkdown] 甲：在500 ℃时，10 mol SO2和10 mol O2反应。
+[applicabilityMarkdown] 复习相关考点、解答对应试题时使用。
+[contentMarkdown] 甲：在500 ℃时，10 mol SO2和10 mol O2反应
+乙：在500 ℃时，用V2O5作催化剂，10 mol SO2和10 mol O2反应
+丙：在450 ℃时，8 mol SO2和5 mol O2反应
+丁：在500 ℃时，8 mol SO2和5 mol O2反应
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：催化剂（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-qi-ta-chang-jian-tie-yan-f16x05
+来源: 化学方法类《（重点·方法·点拨）第13讲 铁及其化合物的转化关系- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 其他常见铁盐
+[summaryMarkdown] 2.其他常见铁盐。
+[applicabilityMarkdown] 分析氧化还原反应、比较氧化性还原性强弱与电子转移数目时使用。
+[contentMarkdown] 2.其他常见铁盐
+(1)绿矾(FeSO4·7H2O)：一种重要的还原剂，可用作补血剂及植物的补铁剂。
+(2)铁铵矾[NH4Fe(SO4)2·12H2O]：无色晶体，易溶于水，常用作化学分析试剂、药物和织物媒染剂。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：还原剂（名字出现）；电子转移（名字出现）；氧化还原反应（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-ti-dai-fa-f03x06
+来源: 化学方法类《第01讲 有机化合物的结构特点与研究方法（学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 替代法
+[summaryMarkdown] (2)替代法。
+[applicabilityMarkdown] 书写与判断同分异构体、同系物时使用。
+[contentMarkdown] (2)替代法
+如二氯苯(C6H4Cl2)有3种同分异构体，则四氯苯(C6H2Cl4)也有3种同分异构体(将H替代Cl)。
+(3)等效氢法
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：同系物（名字出现）；同分异构体（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-yang-hua-xing-f22x06
+来源: 化学方法类《（重点·方法·点拨）第19讲 硫及其氧化物- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 氧化型
+[summaryMarkdown] 氧化型：将有机色质内部“生色团”破坏掉；HClO、NaClO、Ca(ClO)2、Na2O2、H2O2、O3等；不可逆、持久；无选择性。
+[applicabilityMarkdown] 分析氧化还原反应、比较氧化性还原性强弱与电子转移数目时使用。
+[contentMarkdown] 氧化型：将有机色质内部“生色团”破坏掉；HClO、NaClO、Ca(ClO)2、Na2O2、H2O2、O3等；不可逆、持久；无选择性
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：电子转移（名字出现）；氧化还原反应（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-zheng-fa-jie-jing-f56x06
+来源: 化学方法类《（重点·方法·点拨）第53讲 无机化工流程题的解题策略- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 蒸发结晶
+[summaryMarkdown] (3)蒸发结晶：提取溶解度随温度变化不大的溶质，如从溶液中提取NaCl。
+[applicabilityMarkdown] 分析溶液酸碱性、比较粒子浓度大小与pH判断时使用。
+[contentMarkdown] (3)蒸发结晶：提取溶解度随温度变化不大的溶质，如从溶液中提取NaCl。
+(4)冷却结晶：提取溶解度随温度变化较大的溶质、易水解的溶质或结晶水合物，如KNO3、FeCl3、CuCl2、CuSO4·5H2O、FeSO4·7H2O等。
+(5)蒸馏或分馏：分离沸点不同且互溶的液体混合物，如分离乙醇和甘油。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：混合物（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-hj2-dianjie-fangdian-shunxu-wanban
+来源: 化学讲义《第03讲 电解池、金属的腐蚀与防护（学生版）》（registry-kb-chemistry-handout:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 完整的阴阳极放电顺序表
+[summaryMarkdown] 阴极按Ag+>Fe3+>Cu2+>H+>Fe2+>Zn2+>Al3+…放电，阳极活性电极优先，惰性电极按S2->I->Br->Cl->OH->含氧酸根>F-。
+[applicabilityMarkdown] 电解产物判断的完整排序依据。
+[contentMarkdown] 阴极（得电子）：Ag+>Fe3+>Cu2+>H+（酸）>Fe2+>Zn2+>H+（水）>Al3+>Mg2+>Na+>Ca2+>K+。
+阳极（失电子）：活性电极（金属本身）>S2->I->Br->Cl->OH->含氧酸根离子>F-。
+金属活动性顺序中银以前的金属（含银）作电极时电极本身参与反应，称活性电极（Zn、Fe、Cu、Ag等）。
+[boundaryMarkdown] Fe2+在H+（酸）与Zn2+之间放电，注意与金属活动性顺序的区别。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-fangshuo-dengbi-fenmu-jian-hao-bukao
+来源: 《狂K重难点》数学 书页P409，重难点29（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: CONCEPT_EXPLANATION
+[title] 等比放缩的适用限制：分母为 qⁿ−m 时慎用
+[summaryMarkdown] 当分母为 $q^n-m\ (m>0)$ 时，一般不考虑等比放缩。
+[applicabilityMarkdown] 判断能否使用等比放缩。
+[contentMarkdown] 注意：当分母为 $q^n-m$，$m>0$ 时，一般不考虑等比放缩。
+[boundaryMarkdown] 因为 $\frac{1}{q^n-m}>\frac{1}{q^n}$ 方向不符（是缩小分母），需要改用其他放缩。
+候选（机械预筛，未必对）：等比放缩（名字出现）
+
+==============================================================================
+## MATH | math-hj-buxing-fa-lengzhui
+来源: 数学讲义《第七章 §7.5　空间直线、平面的垂直》（registry-kb-math-handout:math）
+类型: METHOD_MODEL
+[title] 补形法：补台成锥处理台体问题
+[summaryMarkdown] 把棱台（圆台）补成棱锥（圆锥）后利用相似与体积比求解。
+[applicabilityMarkdown] 台体中的线面角、体积问题。
+[contentMarkdown] 处理台体问题时，延长侧棱把台体补成锥体：①利用上下底面相似比 $\frac{PA_1}{PA}$ 求小锥与大锥的体积比（立方关系）；②把台体中的线面角转化为补形后锥体中的角。
+[boundaryMarkdown] 补形后用 $V_{台}=V_{大锥}-V_{小锥}$。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-hj-s92-percentile
+来源: 数学讲义《第九章 §9.2　用样本估计总体.docx》（registry-kb-math-handout:math）
+类型: CONCEPT_EXPLANATION
+[title] 第p百分位数
+[summaryMarkdown] 第p百分位数使至少 p% 的数据不大于它；n 个数据按位置 i=p%×n 取值或取相邻平均。
+[applicabilityMarkdown] 求一组数据的第p百分位数。
+[contentMarkdown] 计算步骤：排序，求 $i=n\times p\%$；若 $i$ 不是整数，取第 $\lceil i\rceil$ 项；若为整数，取第 $i$ 项与第 $i+1$ 项的平均数。
+[boundaryMarkdown] 中位数即第50百分位数。
+候选（机械预筛，未必对）：百分位数（名字出现）
+
+==============================================================================
+## MATH | math-luobida-faze
+来源: 《狂K重难点》数学 书页P394，重难点19（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: CONCEPT_EXPLANATION
+[title] 洛必达法则（0/0 型与 ∞/∞ 型）
+[summaryMarkdown] 两类未定式极限可转化为导数比的极限。
+[applicabilityMarkdown] 计算 $\frac{0}{0}$ 型或 $\frac{\infty}{\infty}$ 型极限。
+[contentMarkdown] 若函数 $f(x)$ 和 $g(x)$ 均可导且 $g'(x)\neq0$：(1) 当 $\lim\limits_{x\to a}f(x)$ 和 $\lim\limits_{x\to a}g(x)$ 都等于 0 或都趋近于 $\infty$ 时，$\lim\limits_{x\to a}\frac{f(x)}{g(x)}=\lim\limits_{x\to a}\frac{f'(x)}{g'(x)}$；(2) 对 $x\to\infty$ 同理成立。
+[boundaryMarkdown] 属拓展知识；每次使用前需确认仍是未定式，否则会出错。
+候选（机械预筛，未必对）：洛必达法则（名字出现）
+
+==============================================================================
+## MATH | math-mo-tonggou-zhiduikuajie
+来源: 数学《培优点20：同构函数（知识梳理+题型突破训练）（学生版）》（registry-kb-math-misc:math）
+类型: METHOD_MODEL
+[title] 指对跨阶同构型
+[summaryMarkdown] 指数与对数跨阶共存时，用对数恒等式指对互化统一为积型、商型或和差型母函数。
+[applicabilityMarkdown] 含参恒成立、指对混合不等式与最值问题。
+[contentMarkdown] 1. 定义：题干同时出现指数与对数形成“指数—直线—对数”三阶结构，需同构化为二阶结构。2. 核心：利用对数恒等式（如 $e^{\ln x}=x$、$\ln e^x=x$）实现指对互化，统一为同一母函数。3. 三大母函数方向：积型（$e^x\ln x$ 类，令 $g(x)=x\ln x$ 型构造）、商型（$\frac{e^x}{x}$ 或 $\frac{\ln x}{x}$ 类）、和差型（$e^x\pm\ln x$ 类）。
+[boundaryMarkdown] 母函数须“单调性、最值易求”；优先“少变形、易构造”的方向，避免过度变形增加计算量。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-anti-reflection-coating
+来源: 《狂K重难点》物理 书页P468，重难点37（光的干涉、衍射）（registry-lixiangshu-2027-bikuti-kuangk-physics:physics）
+类型: CONCEPT_EXPLANATION
+[title] 增透膜厚度为透射光在膜中波长的四分之一
+[summaryMarkdown] 增透膜厚度取透射光在膜中波长的1/4，使前后两面反射光路程差为膜中波长的一半，反射光叠加减弱、透射光增强。
+[applicabilityMarkdown] 镜头增透膜等膜的厚度设计。
+[contentMarkdown] 增透膜的厚度为透射光在薄膜中波长的 $\frac{1}{4}$，使薄膜前后两面的反射光的路程差为薄膜中波长的一半。
+故反射光叠加后减弱，透射光的强度增强。
+[boundaryMarkdown] 增透只对特定波长（如绿光）效果最佳；与增反膜（厚度取半波长）区分。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-hj-038-overweight-phenomenon
+来源: 物理讲义《第15讲 牛顿第二定律的基本应用-（讲义）（学生版）》（registry-kb-physics-handout:physics）
+类型: CONCEPT_EXPLANATION
+[title] 超重
+[summaryMarkdown] 物体具有竖直向上加速度分量的状态
+[applicabilityMarkdown] 电梯、竖直加速问题
+[contentMarkdown] 物体加速度有竖直向上分量时处于超重，视重 $F=mg+ma$ 大于重力，但物体所受重力本身不变。
+[boundaryMarkdown] 加速度只需有向上分量，不必竖直。
+候选（机械预筛，未必对）：加速度（名字出现）
+
+==============================================================================
+## PHYSICS | phys-hj3-four-transmission-devices
+来源: 物理讲义《第16讲 圆周运动（复习讲义）（黑吉辽蒙专用）（学生版）》（registry-kb-physics-handout:physics）
+类型: CONCEPT_EXPLANATION
+[title] 四种传动方式及特点
+[summaryMarkdown] 同轴 $\omega$ 相同；皮带、齿轮、摩擦传动边缘线速度大小相等。
+[applicabilityMarkdown] 比较四种传动装置的运动学关系。
+[contentMarkdown] 同轴转动：各点角速度、周期、频率相同，线速度与半径成正比。
+皮带（或链条）传动（不打滑）：两轮边缘线速度大小相等，角速度与半径成反比，周期与半径成正比；两轮同向转动。
+齿轮传动：啮合点线速度相等，角速度与半径（齿数）成反比，周期与半径（齿数）成正比；两轮转向相反。
+摩擦传动：两轮靠摩擦传动且不打滑时边缘线速度相等，角速度与半径成反比。
+[boundaryMarkdown] 处理传动问题的关键是先确定相同的量（线速度或角速度），再求其他量的比例关系。
+候选（机械预筛，未必对）：线速度（名字出现）；角速度（名字出现）
+
+==============================================================================
+## PHYSICS | phys-mo-l25-momentum-consv-b-4
+来源: 物理《第25讲 动量守恒定律及其应用-必备基础知识》（registry-kb-physics-misc:physics）
+类型: CONCEPT_EXPLANATION
+[title] 反冲
+[summaryMarkdown] 一部分物体向前运动时剩余部分向后反冲，遵从动量守恒。
+[applicabilityMarkdown] 发射炮弹、火箭类反冲问题。
+[contentMarkdown] 定义：静止物体的一部分以一定速度离开物体向前运动时，剩余部分向后运动的现象。
+特点：系统内力远大于外力，遵从动量守恒定律。
+反冲过程机械能增加（内能或化学能转化而来）。
+[boundaryMarkdown] “爆炸机械能增加、反冲机械能减少”的说法不成立，两者机械能一般都增加。
+候选（机械预筛，未必对）：动量守恒定律（名字出现）
+

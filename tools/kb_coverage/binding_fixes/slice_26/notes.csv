@@ -1,0 +1,30 @@
+subject,material_slug,node_slug,confidence,evidence
+BIOLOGY,bio-energy-ecological-pyramid,能量流动,high,材料讲能量沿营养级单向流动逐级递减故能量金字塔正立；属能量流动的特征
+BIOLOGY,bio-fj-03-pentose-sugars,细胞中的糖类,medium,材料辨核糖与脱氧核糖两种五碳糖的归属（RNA与ATP、DNA）及动植物共有；属糖类种类内容
+BIOLOGY,bio-fj-09-storage-conditions,细胞呼吸原理的应用,high,材料讲果蔬低温低氧保湿、种子干燥低温储存及无氧时呼吸不为零；是细胞呼吸原理在储藏中的应用
+BIOLOGY,bio-fj-20-semidiscontinuous-replication,DNA复制的拓展,medium,材料讲前导链连续与后随链不连续的复制延伸细节并延伸出端粒缩短；属DNA复制的拓展
+BIOLOGY,bio-fx-autoclave-notes,无菌技术,high,材料讲高压蒸汽灭菌锅排气冷空气、压力降零后开盖、对称旋紧螺栓等操作要点；属无菌技术中的灭菌操作
+BIOLOGY,bio-fx-mcq-basic-three-steps,基础类选择题的选项设置陷阱,medium,材料给出基础知识型选择题的定位、辨析、验证三步解法；其细节辨析环节即选项陷阱识别
+BIOLOGY,bio-hypothalamus-removal-dehydration,水和无机盐平衡的调节,medium,材料讲下丘脑合成的抗利尿激素减少致肾小管集合管重吸收水减少而脱水；是水盐平衡调节链条
+BIOLOGY,bio-kb-sugar-not-all-reducing-energy,细胞中的糖类,high,材料辨蔗糖淀粉纤维素为非还原糖且核糖脱氧核糖纤维素不供能；属糖类种类与功能辨析
+BIOLOGY,bio-kb2-27-hypothalamus-functions,下丘脑在稳态调节中的作用,high,材料逐条讲下丘脑感受渗透压、分泌激素、作为调节中枢、传导兴奋四大功能；与节点同名同义
+BIOLOGY,bio-kb3-f4-s55-n04,细胞不能无限长大的原因,high,材料用扩散深度与表面积体积比及含葡萄糖体积占比的模型数据解释细胞不能无限长大
+BIOLOGY,bio-plasmolysis-automatic-recovery-substances,质壁分离,high,材料讲KNO3尿素乙二醇等高渗但溶质可吸收的溶液使细胞先质壁分离后自动复原
+BIOLOGY,bio-synapse-structure,突触,high,材料讲突触前膜、突触间隙、突触后膜三部分结构及突触小泡含神经递质
+CHEMISTRY,chem-fx-cheng-tai-fan-ying-f62x07,氨基酸的结构与性质,medium,材料讲两个氨基酸经氨基与羧基缩合脱水形成肽键的成肽反应；属氨基酸的性质
+CHEMISTRY,chem-fx-entry-f09x12,卤素离子的检验方法,high,材料讲Cl- Br- I-用AgNO3溶液和稀HNO3生成白淡黄黄三种不同颜色银盐沉淀的检验
+CHEMISTRY,chem-fx-guo-zai-shi-ke-f47x04,v-t图像分析改变条件对化学平衡的影响,high,材料要求在t6时刻移出部分氨的图中画出t6至t7反应速率的变化曲线
+CHEMISTRY,chem-fx-pai-shui-fa-f28x07,气体制备,medium,材料讲排水法适用于难溶于水或微溶且不与水反应的气体（O2 H2 NO CO）；属气体制备的收集环节
+CHEMISTRY,chem-fx-shi-ying-dui-xiang-f04x05,看-气体-是否处于-标准状况-0-101kpa,high,材料讲气体摩尔体积只适用于气体并辨析NO2 HF SO3在标准状况下不是气体等易错点
+CHEMISTRY,chem-fx-xie-ming-cheng-f02x02,含官能团的链状有机物命名,high,材料讲把支链作取代基并写在某醇某醛某酸前面、用阿拉伯数字标明官能团位置
+CHEMISTRY,chem-fx-yong-jiao-dian-f53x04,水溶液中多曲线图像题的分析方法,medium,材料讲用两粒子浓度曲线交点求电离常数K并配合物料守恒替换分析粒子浓度图像
+CHEMISTRY,chem-hj-jiaoli-daidian-jingshui,胶体的性质及应用,high,材料讲胶粒带电而胶体电中性、同种电荷互斥维持介稳性及明矾水解生成胶体吸附净水
+MATH,math-ellipse-e-and-b-over-a,椭圆的离心率,high,材料讲椭圆中离心率与b/a的互化公式并提示双曲线根号内为加号勿混
+MATH,math-fx-sanjiao-huajian-shunxu-yuanze,三角函数式的化简与证明,high,材料讲三角式化简先切化弦再降幂后统一角与函数名的操作顺序原则
+MATH,math-hj-s410-relative-direction,解三角形的实际应用,medium,材料讲由方位角之差判断两点相对方向并换参照点重画角度；属解三角形测量类实际应用
+MATH,math-inverse-construct-quotient-rule,导数构造法解函数不等式,high,材料针对商的求导结构逆向构造商函数h(x)=f(x)/g(x)并借单调性解函数不等式
+MATH,math-mo-qiegua-moxing-shuangbanjing,双外心模型求外接球,medium,材料讲两互相垂直平面截球的公共弦即双半径单交线并用R²=r²+d²联立求外接球半径
+MATH,math-period-opposite-next-term,半周期推导周期,high,材料讲函数值反号式f(x+a)=-f(x)迭代一次得周期T=2a；正是半周期推导周期
+PHYSICS,phys-fx-multimeter-ohm-range-usage,多用电表欧姆挡的原理与使用,high,材料讲欧姆挡测电阻步骤、换挡重新调零、读数乘倍率与指针中值附近较准
+PHYSICS,phys-hj2-xiangtong-jinshuqiu-dianhe-chongxin-fenbu,库仑定律,high,材料讲两靠近带电金属球电荷重新分布致同种电荷F偏小异种电荷F偏大；属库仑定律的适用条件
+PHYSICS,phys-kb-liquid-crystal-property,液晶,high,材料讲液晶兼具流动性、光学各向异性并对温度压力电场等外界条件敏感

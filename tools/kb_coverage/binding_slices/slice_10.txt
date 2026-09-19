@@ -1,0 +1,373 @@
+# 绑定作业片 10：30 条无绑定材料
+#
+# 任务：为每条材料选定它应该绑定的知识点节点（就是讲题时该材料服务的那个点）。
+# 交付（写到 tools/kb_coverage/binding_fixes/slice_10/notes.csv）：
+#   subject,material_slug,node_slug,confidence,evidence
+#   （node_slug 用下面的节点表里的 slug；确实没有合适的写 NONE；
+#     evidence 一句话说明依据；字段内不要有 ASCII 逗号）
+#
+# 硬规矩：
+#   · 宁缺勿错：不确定就 confidence=low 或写 NONE —— 错绑会让检索喂错材料
+#   · 只能从本学科节点表里选（见 tools/kb_coverage/binding_slices/nodes/nodes_<学科>.txt）
+#   · 一条材料只绑一个节点（就是它最主要服务的那个点）
+
+==============================================================================
+## BIOLOGY | bio-channels-vs-carriers
+来源: 《狂K重点》生物 P378 重难1·题型2（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: CONCEPT_EXPLANATION
+[title] 通道蛋白不与被运物质结合、载体蛋白需与被运物质结合（构象变化）
+[summaryMarkdown] 通道蛋白形成通道让物质通过、不与被转运物结合；载体蛋白在结合后构象改变再释放，需要结合过程。
+[applicabilityMarkdown] 运输蛋白机制比较题。
+[contentMarkdown] 1. 通道蛋白：贯穿膜的亲水通道，物质顺浓度梯度通过，不与物质结合（如离子通道、水通道蛋白）。
+2. 载体蛋白（转运蛋白）：与被转运物质结合→构象改变→物质到达另一侧后释放。
+3. 载体蛋白可协助扩散也可主动运输；通道蛋白只协助扩散。
+[boundaryMarkdown] '是否与物质结合'是区分核心。
+候选（机械预筛，未必对）：协助扩散（名字出现）；主动运输（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fj-02-felin-vs-bisuowei
+来源: 生物讲义《第02讲 细胞中的元素和化合物（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 斐林试剂与双缩脲试剂的对比
+[summaryMarkdown] 两试剂成分相同但CuSO4浓度不同，斐林需现混现用水浴加热，双缩脲先后加不加热。
+[applicabilityMarkdown] 试剂鉴别类判断题。
+[contentMarkdown] 1. 成分相同：NaOH均为0.1 g/mL；CuSO4不同：斐林乙液0.05 g/mL，双缩脲B液0.01 g/mL。
+2. 添加顺序：斐林甲乙等量混匀立即用；双缩脲先A液后B液。
+3. 条件与现象：斐林50～65℃水浴呈砖红色；双缩脲不加热呈紫色。
+[boundaryMarkdown] 斐林乙液稀释5倍即成双缩脲B液；两者不能直接互换使用。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-07-carrier-number-effect
+来源: 生物讲义《第07讲 物质运输（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 载体数量对运输速率的限制
+[summaryMarkdown] 在协助扩散和主动运输中，载体数量越多速率越大，载体饱和后速率达到上限。
+[applicabilityMarkdown] 运输影响因素之二。
+[contentMarkdown] 1. 其他条件适宜时，载体数量越多运输速率越大。
+2. 载体全部参与运输后速率达到最大值。
+3. 自由扩散不受载体数量影响。
+[boundaryMarkdown] 载体数量由基因表达决定，可通过增加载体提高运输效率。
+候选（机械预筛，未必对）：自由扩散（名字出现）；协助扩散（名字出现）；主动运输（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fj-11-nadh-nadph-difference
+来源: 生物讲义《第11讲 细胞代谢综合分析（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] NADH与NADPH的来源与去路区别
+[summaryMarkdown] NADH来自呼吸一、二阶段用于第三阶段还原O2；NADPH来自光反应用于暗反应还原C3。
+[applicabilityMarkdown] 还原氢区分判断。
+[contentMarkdown] 1. NADH（还原型辅酶Ⅰ）：来源为有氧呼吸第一、二阶段，去路为第三阶段还原O2生成水并释放大量能量。
+2. NADPH（还原型辅酶Ⅱ）：来源为光反应中水的光解，去路为暗反应还原C3。
+[boundaryMarkdown] 二者不是同一物质，功能场所完全不同。
+候选（机械预筛，未必对）：有氧呼吸（名字出现）；光反应（名字出现）；暗反应（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fj-32-s-shaped-curve
+来源: 生物讲义《第32讲 种群（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 种群增长的S形曲线与K值
+[summaryMarkdown] 资源和空间有限时种群呈S形增长，K值是环境容纳量，K/2时增长速率最大。
+[applicabilityMarkdown] S形曲线与K值分析。
+[contentMarkdown] 1. 成因：资源空间有限，种内竞争加剧，天敌增加，出生率降低、死亡率增加。
+2. K值（环境容纳量）：在环境条件不受破坏的情况下，一定空间中所能维持的种群最大数量。
+3. 增长速率先增后减：0→K/2逐渐增大，K/2时最大，K/2→K逐渐减小，K时为零。
+4. 种群数量在K值附近上下波动，偏离时通过负反馈调节回到K值。
+[boundaryMarkdown] K值不是种群数量的最大值，瞬时最大值可超过K但时间很短；K值随环境改变而变化。
+候选（机械预筛，未必对）：反馈调节（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fx-greenhouse-effect
+来源: 生物方法类《2026届新疆高三生物三轮复习种群、群落、生态系统·完整知识点问答》（registry-kb-biology-methods:biology）
+类型: CONCEPT_EXPLANATION
+[title] 温室效应的成因、危害与缓解
+[summaryMarkdown] 温室效应由化石燃料大量燃烧和植被破坏引起，可通过减少排放与增加碳汇缓解。
+[applicabilityMarkdown] 碳循环失衡应用题。
+[contentMarkdown] 1. 原因：化石燃料大量燃烧使CO2排放增加；森林砍伐使CO2吸收减少。
+2. 危害：全球变暖、冰川融化、海平面上升、极端气候增加。
+3. 缓解措施：减少化石燃料燃烧、开发新能源；植树造林增加碳汇；保护森林资源。
+[boundaryMarkdown] 缓解措施从减排与增汇两个方向作答；CO2增多也促进某些植物光合但总体弊大于利。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fx-s-curve-growth
+来源: 生物方法类《2026届新疆高三生物三轮复习种群、群落、生态系统·完整知识点问答》（registry-kb-biology-methods:biology）
+类型: CONCEPT_EXPLANATION
+[title] S型增长的条件与特点
+[summaryMarkdown] 在资源有限的条件下种群数量先增加后趋于稳定，存在环境容纳量K值，增长速率在K/2时最大。
+[applicabilityMarkdown] S型曲线各点含义与增长速率分析的题目。
+[contentMarkdown] 1. 条件：存在环境阻力（食物有限、空间有限、天敌、竞争等）。
+2. 过程：数量先增加，后趋于稳定；增长速率由0增大、在K/2时最大、再减小到0。
+3. K值：环境条件不受破坏时一定空间所能维持的种群最大数量。
+[boundaryMarkdown] 增长率随密度增大而下降至0；S型与J型的差值表示环境阻力淘汰的个体数。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb-enzyme-hormone-antibody-nature-judgment
+来源: 生物知识清单：《第08讲 酶和ATP（知识清单）（全国通用）（学生版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 酶、激素、抗体化学本质的辨析
+[summaryMarkdown] 大多数酶是蛋白质、少数是RNA；只有部分激素是蛋白质类；酶可重复利用。
+[applicabilityMarkdown] 判断三者本质与特点。
+[contentMarkdown] 1. 酶：绝大多数是蛋白质，少数是RNA。
+2. 激素：部分是蛋白质（如胰岛素），部分是固醇（性激素）、氨基酸衍生物等。
+3. 抗体：本质是蛋白质。
+4. 酶发挥作用后不被灭活，可反复利用；激素发挥作用后失活。
+[boundaryMarkdown] 三者都不能说“都由氨基酸经肽键连接而成”。
+候选（机械预筛，未必对）：氨基酸（名字出现）；蛋白质（名字出现）；胰岛素（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-kb2-07-protoplast-layer
+来源: 生物知识清单：《第07讲 物质运输（知识清单）（全国通用）（教师版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 原生质层与原生质体的区分
+[summaryMarkdown] 原生质层由细胞膜、液泡膜及两层膜之间的细胞质组成，可看作一层半透膜。
+[applicabilityMarkdown] 解释质壁分离的结构基础时使用。
+[contentMarkdown] 原生质层：成熟植物细胞的细胞膜、液泡膜以及两层膜之间的细胞质，相当于一层半透膜；
+原生质体：包括细胞膜、细胞质和细胞核三部分，是去除细胞壁后的植物细胞。
+[boundaryMarkdown] 原生质层伸缩性比细胞壁大，这是质壁分离发生的内因之一。
+候选（机械预筛，未必对）：细胞壁（名字出现）；质壁分离（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-kb2-33-primary-secondary-succession
+来源: 生物知识清单：《第33讲 群落（知识清单）（全国通用）（教师版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 初生演替与次生演替
+[summaryMarkdown] 初生演替发生在从未有植被或植被被彻底消灭的地方，次生演替发生在保留土壤条件或繁殖体的地方。
+[applicabilityMarkdown] 判断演替类型、比较演替进程时使用。
+[contentMarkdown] 初生演替：在从来没有被植物覆盖的地面或原来存在过植被但被彻底消灭了的地方发生的演替，如沙丘、火山岩、冰川泥，时间长、阶段多；
+次生演替：原有植被已不存在但原有土壤条件基本保留、甚至保留种子或其他繁殖体的地方发生的演替，如火灾后的草原、过量砍伐的森林、弃耕的农田，速度快、趋向恢复原群落。
+[boundaryMarkdown] 弃耕农田的次生演替一般直接进入草本植物阶段，不经过苔藓阶段；湖泊的初生演替经历水生、湿生到陆生植物阶段。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-mo-cell-223
+来源: 生物《默写小纸条01 走近细胞（课前5分钟背默）（教师版）》（registry-kb-biology-misc:biology）
+类型: CONCEPT_EXPLANATION
+[title] 目镜的长度与其放大倍数呈反比
+[summaryMarkdown] 目镜的长度与其放大倍数呈反比。
+[applicabilityMarkdown] 用于“走近细胞”的课前背默检查与选择题、填空题作答。
+[contentMarkdown] 1. 目镜的长度与其放大倍数呈反比；
+2. 物镜的长度与其放大倍数呈正比。
+3. 视野中观察对象在视野外侧，要将它移到视野中央，遵循“哪偏哪移”原则。
+4. 如观察对象在视野的左下方，要将它移到视野中央，玻片应向左下方移动。
+[boundaryMarkdown] 该条为背默核心结论，具体数值与反应式书写以教材原文为准。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-respiration-rate-by-curve-tangent
+来源: 《狂K重点》生物 P386-387 重难4·题型2（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 由曲线切线斜率/两点差求速率（速率-梯度法）
+[summaryMarkdown] 曲线某点净光合速率=该点切线斜率（数学），或由相邻两点纵轴差近似求速率。
+[applicabilityMarkdown] 读图计算速率。
+[contentMarkdown] 开放环境速率图：速率 = 曲线某区间纵坐标变化/横坐标变化（斜率）；密闭浓度图：先取两点浓度差再除以时间。
+[boundaryMarkdown] 斜率法只适用线性段；曲线段取均值。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-an-qi-zhong-qing-han-liang-gao-f43x10
+来源: 化学方法类《（重点·方法·点拨）第40讲 化学反应的方向和限度- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: METHOD_MODEL
+[title] 氨气中氢含量高
+[summaryMarkdown] 10．氨气中氢含量高，是一种优良的小分子储氢载体，且安全、易储运，可通过下面两种方法由氨气得到氢气。
+[applicabilityMarkdown] 热化学方程式书写与反应热计算、比较时使用。
+[contentMarkdown] 10．氨气中氢含量高，是一种优良的小分子储氢载体，且安全、易储运，可通过下面两种方法由氨气得到氢气。
+方法Ⅰ.氨热分解法制氢气
+相关化学键的键能数据
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：热化学方程式（名字出现）；反应热（名字出现）；化学键（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-deng-li-zi-ti-f34x01
+来源: 化学方法类《（重点·方法·点拨）第31讲 物质的聚集状态　常见晶体类型- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 等离子体
+[summaryMarkdown] 等离子体：由电子、阳离子和电中性粒子组成的整体上呈电中性的物质聚集体；具有良好的导电性和流动性。
+[applicabilityMarkdown] 复习相关考点、解答对应试题时使用。
+[contentMarkdown] 等离子体：由电子、阳离子和电中性粒子组成的整体上呈电中性的物质聚集体；具有良好的导电性和流动性
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-fang-fen-jie-f65x06
+来源: 化学方法类《（重点·方法·点拨）第62讲 化学实验基础知识和技能- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 防分解
+[summaryMarkdown] 防分解：保存在 瓶中，并置于阴暗处；浓HNO3、KMnO4溶液、AgNO3溶液、氯水等。
+[applicabilityMarkdown] 复习相关考点、解答对应试题时使用。
+[contentMarkdown] 防分解：保存在 瓶中，并置于阴暗处；浓HNO3、KMnO4溶液、AgNO3溶液、氯水等
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-jiang-dai-ru-zhong-f52x06
+来源: 化学方法类《（重点·方法·点拨）第49讲 溶液中“粒子”浓度关系- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 将①代入②中
+[summaryMarkdown] 将①代入②中，整理得质子守恒：c(H+)+c(H2CO3)=c(OH-)+c(CO)。
+[applicabilityMarkdown] 解决相关化学计算问题时使用。
+[contentMarkdown] 将①代入②中，整理得质子守恒：c(H+)+c(H2CO3)=c(OH-)+c(CO)
+（4）混合溶液中粒子浓度大小比较
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-qing-xi-bo-si-f13x11
+来源: 化学方法类《（重点·方法·点拨）第10讲 碳酸钠和碳酸氢钠　碱金属- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 清洗铂丝
+[summaryMarkdown] (3)清洗铂丝：将铂丝再用盐酸洗净后，在外焰上灼烧至与原来的火焰颜色相同。
+[applicabilityMarkdown] 离子或物质检验、实验现象描述与推断题作答时使用。
+[contentMarkdown] (3)清洗铂丝：将铂丝再用盐酸洗净后，在外焰上灼烧至与原来的火焰颜色相同。
+提醒　做钾的焰色试验时，需透过蓝色钴玻璃观察火焰的颜色。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：焰色试验（名字出现）；物质检验（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-tiao-jie-fa-f67x13
+来源: 化学方法类《（重点·方法·点拨）第64讲 物质的分离与提纯- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: METHOD_MODEL
+[title] 调节pH法
+[summaryMarkdown] 调节pH法：通过加入试剂来调节溶液的pH，使溶液中某组分沉淀而分离的方法，一般是加入相应的难溶或微溶物来调节，如除去CuCl2中的FeCl3，可加入CuO，使Fe3+生成Fe(。
+[applicabilityMarkdown] 分析溶液酸碱性、比较粒子浓度大小与pH判断时使用。
+[contentMarkdown] 调节pH法：通过加入试剂来调节溶液的pH，使溶液中某组分沉淀而分离的方法，一般是加入相应的难溶或微溶物来调节，如除去CuCl2中的FeCl3，可加入CuO，使Fe3+生成Fe(OH)3过滤除去
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：溶液的ph（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-yi-ban-pan-duan-f80x03
+来源: 化学方法类《考点03 大π键（离域π键、大派键）（学生版）（全国通用）》（registry-kb-chemistry-methods:chemistry）
+类型: METHOD_MODEL
+[title] 一般判断
+[summaryMarkdown] 一般判断：对于多电子的粒子，若中心原子的杂化方式不是sp3杂化，中心原子与配位原子可能形成大π键。
+[applicabilityMarkdown] 比较键角、判断分子构型与中心原子杂化方式时使用。
+[contentMarkdown] 一般判断：对于多电子的粒子，若中心原子的杂化方式不是sp3杂化，中心原子与配位原子可能形成大π键。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：大π键（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-zhu-yao-xing-zhi-f13x02
+来源: 化学方法类《（重点·方法·点拨）第10讲 碳酸钠和碳酸氢钠　碱金属- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 主要性质
+[summaryMarkdown] 主要性质：热稳定性；稳定，但结晶碳酸钠；(Na2CO3·10H2O)易风化；受热。
+[applicabilityMarkdown] 热化学方程式书写与反应热计算、比较时使用。
+[contentMarkdown] 主要性质：热稳定性；稳定，但结晶碳酸钠；(Na2CO3·10H2O)易风化；受热
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：碳酸钠（名字出现）；热化学方程式（名字出现）；反应热（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-hj2-yeguti-dengli-ziti-gainian
+来源: 化学讲义《第04讲 晶体结构与性质（复习讲义）（安徽专用）（学生版）》（registry-kb-chemistry-handout:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 液晶、等离子体与离子液体
+[summaryMarkdown] 液晶兼具液体的流动性与晶体的各向异性；等离子体是由离子、电子与电中性微粒组成、整体呈电中性的气态物质。
+[applicabilityMarkdown] 物质聚集状态新形态判断。
+[contentMarkdown] 液晶：固态向液态转化过程中存在的取向有序流体状态；分热致液晶（某温度范围内）和溶致液晶（溶于水或有机溶剂后）；既有液体的流动性、黏度、形变性，又有晶体的导热性、各向异性；用于液晶显示器和高强度液晶纤维。
+等离子体：由大量带电微粒（离子、电子）和电中性微粒（原子或分子）组成、整体呈电中性的气态物质；高温、紫外线、X射线、高能电磁波照射可使气体变成等离子体；存在于日光灯、霓虹灯灯管、蜡烛火焰、极光和雷电中。
+离子液体：完全由离子组成的液态物质。
+[boundaryMarkdown] 物质聚集状态不止气、液、固三态。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-fangshuo-sin-le-x
+来源: 《狂K重难点》数学 书页P393，重难点17（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: CONCEPT_EXPLANATION
+[title] 三角放缩 sin x ≤ x（x≥0）与 sin x ≥ x（x≤0）
+[summaryMarkdown] $\sin x$ 与 $x$ 的大小随 $x$ 符号改变方向。
+[applicabilityMarkdown] 涉及正弦函数与一次函数大小比较的证明题。
+[contentMarkdown] ①当 $x\geqslant0$ 时 $\sin x\leqslant x$；②当 $x\leqslant0$ 时 $\sin x\geqslant x$。
+[boundaryMarkdown] 方向随 $x$ 的符号改变，使用时先确认 $x$ 的范围；解答题需先证明。
+候选（机械预筛，未必对）：正弦函数（名字出现）
+
+==============================================================================
+## MATH | math-hj-gaillv-jiafa-tuiguang
+来源: 数学讲义《第4节　随机事件、频率与概率》（registry-kb-math-handout:math）
+类型: CONCEPT_EXPLANATION
+[title] 概率加法公式及其推广
+[summaryMarkdown] 互斥时 $P(A\cup B)=P(A)+P(B)$；一般再减 $P(AB)$。
+[applicabilityMarkdown] 计算并事件概率。
+[contentMarkdown] 若 $A,B$ 互斥，则 $P(A\cup B)=P(A)+P(B)$；一般情形 $P(A\cup B)=P(A)+P(B)-P(A\cap B)$；多个互斥事件 $P(A_1\cup\cdots\cup A_n)=\sum P(A_i)$。
+[boundaryMarkdown] 对立事件概率和为 1。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-hj-sheying-dingli
+来源: 数学讲义《5.1正弦定理（讲义）（学生版）》（registry-kb-math-handout:math）
+类型: CONCEPT_EXPLANATION
+[title] 射影定理
+[summaryMarkdown] $a=b\cos C+c\cos B$（轮换）。
+[applicabilityMarkdown] 边角混合式化简、构造消元。
+[contentMarkdown] 在 $ ria\angle ABC$ 中：$a=b\cos C+c\cos B$，$b=c\cos A+a\cos C$，$c=a\cos B+b\cos A$。
+[boundaryMarkdown] 常与余弦定理联立化简。
+候选（机械预筛，未必对）：余弦定理（名字出现）
+
+==============================================================================
+## MATH | math-mo-danfenmu-shuangfenmu-coupei
+来源: 数学《专题05 均值不等式培优归类（题型清单）（学生版）》（registry-kb-math-misc:math）
+类型: METHOD_MODEL
+[title] 构造分母型凑配（单分母与双分母）
+[summaryMarkdown] 把 $pa+b=t$ 凑成 $(pa+m)+(b+m')=t+m+m'$ 再乘“1”求最值。
+[applicabilityMarkdown] 由线性条件求分式 $\frac{1}{pa+b}+\frac{1}{b+n}$ 型最值。
+[contentMarkdown] 形如 $pa+b=t$，求 $\dfrac{1}{pa+b}+\dfrac{1}{b+m}$ 型：凑配 $(pa+m)+(b+m')=t+m+m'$（人为加减常数）后再利用“1”的代换求解；可以任意调换系数进行变换凑配。双分母基础型 $a+b=t$ 求 $\dfrac1a+\dfrac1b$ 同理凑配 $(a+m)+(b+m')=t+m+m'$。
+[boundaryMarkdown] 凑配的常数要保证新变量仍为正；目标分母结构决定凑配方向，凑错对象则均值无从谈起。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-mo-wudian-zuotu-guanjiandian
+来源: 数学《专题02 三角函数图象与性质（题型清单）（原卷版）》（registry-kb-math-misc:math）
+类型: CONCEPT_EXPLANATION
+[title] 五点作图法的关键点
+[summaryMarkdown] 正弦 $(0,0),(\frac\pi2,1),(\pi,0),(\frac{3\pi}2,-1),(2\pi,0)$，余弦对应 $(0,1)\dots$。
+[applicabilityMarkdown] 画 $y=\sin x$、$y=\cos x$ 及其变换图象。
+[contentMarkdown] 1. $y=\sin x$，$x\in[0,2\pi]$ 图象的五个关键点：$(0,0)$，$\left(\dfrac\pi2,1\right)$，$(\pi,0)$，$\left(\dfrac{3\pi}2,-1\right)$，$(2\pi,0)$。
+2. $y=\cos x$，$x\in[0,2\pi]$ 的五个关键点：$(0,1)$，$\left(\dfrac\pi2,0\right)$，$(\pi,-1)$，$\left(\dfrac{3\pi}2,0\right)$，$(2\pi,1)$。
+[boundaryMarkdown] 复合式 $y=A\sin(\omega x+\varphi)$ 的五点按 $\omega x+\varphi=0,\frac\pi2,\pi,\frac{3\pi}2,2\pi$ 反解 $x$；描点后用平滑曲线连接。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-bullet-embeds-block
+来源: 《狂K重难点》物理 书页P428，重难点18（registry-lixiangshu-2027-bikuti-kuangk-physics:physics）
+类型: CONCEPT_EXPLANATION
+[title] 子弹留物块中（最终共速）的公式组
+[summaryMarkdown] 子弹留在物块中最终共速：系统动量守恒求v，子弹、物块分别用动能定理，Q=fd。
+[applicabilityMarkdown] 子弹未穿出、最终与物块以共同速度运动的情形。
+[contentMarkdown] 系统动量守恒：$mv_0 = (M + m)v$；子弹动能定理：$−f(s + d) = (mv^2 − mv_0^2)/2$；物块动能定理：$fs = Mv^2/2$；系统能量守恒：$Q_{热} = fd = mv_0^2/2 − (M + m)v^2/2$。
+[boundaryMarkdown] $s$ 为物块对地位移、$d$ 为子弹相对物块进入的深度；$fd$ 恰等于系统动能的损失量。
+候选（机械预筛，未必对）：动能定理（名字出现）
+
+==============================================================================
+## PHYSICS | phys-hj-086-momentum-concept
+来源: 物理讲义《第33讲 动量 动量定理-（讲义）（学生版）》（registry-kb-physics-handout:physics）
+类型: CONCEPT_EXPLANATION
+[title] 动量
+[summaryMarkdown] 描述机械运动状态的矢量
+[applicabilityMarkdown] 碰撞、冲击类问题
+[contentMarkdown] 动量等于质量与速度的乘积 $p=mv$，单位 kg·m/s；是矢量，方向与速度方向相同。
+[boundaryMarkdown] 动量运算遵循平行四边形定则。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-hj3-hanging-rope-model
+来源: 物理讲义《第23讲 五种“类碰撞”典型模型研究（复习讲义）（安徽专用）（学生版）》（registry-kb-physics-handout:physics）
+类型: METHOD_MODEL
+[title] 悬绳类碰撞模型
+[summaryMarkdown] 上升最高点环与滑块水平共速；最低点过程为弹性碰撞。
+[applicabilityMarkdown] 小球（滑块）穿过竖直环或悬绳类系统的问题。
+[contentMarkdown] 最高点：环与滑块（小球）水平方向共速，滑块上升的最大高度由系统水平动量守恒与机械能守恒联立求得。
+最低点：从开始到滑至最低点此过程为弹性碰撞；此时绳子拉力需结合以环为参考系的速度求解。
+[boundaryMarkdown] 绳子拉力方向与速度方向垂直时拉力不做功，但系统内张力对不同物体做功代数和为零的结论要逐条核对。
+候选（机械预筛，未必对）：参考系（名字出现）；弹性碰撞（名字出现）
+
+==============================================================================
+## PHYSICS | phys-photoelectron-is-electron
+来源: 《狂K重难点》物理 书页P470，重难点38（光电效应的规律及应用）（registry-lixiangshu-2027-bikuti-kuangk-physics:physics）
+类型: CONCEPT_EXPLANATION
+[title] 光电子是电子而不是光子
+[summaryMarkdown] 光电效应中飞出的“光电子”是从金属表面逸出的电子，不是光子。
+[applicabilityMarkdown] 概念辨析。
+[contentMarkdown] 光电子不是光子，而是电子。
+[boundaryMarkdown] 光电流由光电子定向移动形成；光电子的最大初动能由光电效应方程决定。
+候选（机械预筛，未必对）：光电效应（名字出现）
+

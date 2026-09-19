@@ -1,0 +1,30 @@
+subject,material_slug,node_slug,confidence,evidence
+BIOLOGY,bio-ecology-protection-measures,生物多样性,high,材料讲生物多样性保护的三类措施（就地保护的自然保护区；易地保护；种子基因库）；是该点的保护措施内容
+BIOLOGY,bio-fj-03-lactose-in-milk,细胞中的糖类,medium,材料讲乳糖由半乳糖与葡萄糖脱水缩合而成的动物二糖及其在乳汁中的分布；属细胞中的糖类
+BIOLOGY,bio-fj-09-electron-transport-chain,有氧呼吸的过程分析,medium,材料讲有氧呼吸第三阶段内膜电子传递链与化学渗透假说驱动ATP合成；服务于有氧呼吸过程分析
+BIOLOGY,bio-fj-20-chargaff-rule-base-equality,DNA分子中碱基数量关系,high,材料讲查哥夫发现同一DNA中A与T含量相等C与G含量相等；正是DNA分子中碱基数量关系
+BIOLOGY,bio-fx-age-structure-three-types,种群的数量特征,high,材料讲年龄组成的增长型稳定型衰退型及对未来种群密度的预测；属种群数量特征之一
+BIOLOGY,bio-fx-k-value-fluctuation,k值,high,材料讲K值定义及环境条件改变使K值变化；与该节点一致
+BIOLOGY,bio-hormone-experiment-variables,生命活动调节实验的设计要点,medium,材料讲激素类动物实验各组动物数量年龄性别生理状态饲养条件相同且适宜并多次重复；属生命活动调节实验设计要点
+BIOLOGY,bio-kb-sodium-potassium-pump-function,通道蛋白与载体蛋白的辨析,medium,材料对比离子通道顺浓度被动运输与钠钾泵逆浓度转运并水解ATP；核心是两类转运蛋白的区分
+BIOLOGY,bio-kb2-26-secretin-discovery,激素,medium,材料讲促胰液素的发现史即人们发现的第一种激素；服务于激素概念的建立
+BIOLOGY,bio-kb3-f4-s55-n01,细胞不能无限长大的原因,high,材料是不等大小模型模拟细胞大小与扩散速率相同的实验原理；服务于细胞不能无限长大的原因
+BIOLOGY,bio-photorespiration-consumes-energy,光呼吸,high,材料讲光呼吸途径消耗ATP和NADPH并释放CO2且不产生糖；即光呼吸节点
+BIOLOGY,bio-sex-linked-pollen-all-lethal,个体或配子致死问题的处理-规律方法,medium,材料讲含X^A花粉全部致死导致子代无雄株的配子致死判断；属致死问题的处理方法
+CHEMISTRY,chem-fx-chen-dian-yong-yi-chun-xi-di-f71x02,沉淀的洗涤与检验,high,材料讲沉淀用乙醇洗涤的三个作用（减小溶解度；除表面杂质；带水快速干燥）；即沉淀的洗涤
+CHEMISTRY,chem-fx-entry-f09x09,常见阳离子的检验与推断依据,medium,材料是Mg2+用NaOH溶液检验先产生沉淀的现象条目；属常见阳离子检验依据
+CHEMISTRY,chem-fx-gu-ti-ye-ti-f28x02,气体制备,high,材料按固体加液体等反应物状态归纳气体发生装置与Cl2及C2H4制取实例；属气体制备
+CHEMISTRY,chem-fx-na-jian-tuo-liu-fa-f23x08,二氧化硫的尾气处理,high,材料讲用NaOH或Na2CO3吸收烟气中SO2的钠碱脱硫法；即二氧化硫尾气处理
+CHEMISTRY,chem-fx-shi-yan-xiao-jie-f38x11,反应热,low,材料是反应焓变测定实验小结（有气体生成不能直接测需另设无气体方案）；节点表无测定类节点只能上位归入反应热
+CHEMISTRY,chem-fx-xiang-guan-gai-nian-f10x02,氧化还原反应,medium,材料给出氧化性与还原性定义及升失氧降得还口诀；属氧化还原反应基本概念
+CHEMISTRY,chem-fx-yi-zhi-f55x05,解沉淀溶解平衡图像题的三步骤,medium,材料讲pM等于负lg c(M)的坐标读法即数值越大离子浓度越小；服务于沉淀溶解平衡图像题
+CHEMISTRY,chem-hj-jian-jixing,键的极性和分子的极性,medium,材料讲不同种元素原子间形成极性键而同种元素原子间形成非极性键；属键的极性
+MATH,math-divider-direct-method,隔板法,high,材料讲n个相同元素排成排插m-1块隔板每组至少一个的方法数；即直接隔板法
+MATH,math-fx-qiexianchang-gongshi,圆的切线方程,low,材料讲圆外一点切线长由勾股定理得 l²＝|MO|²－r²；节点表无切线长节点只能就近归入圆的切线
+MATH,math-hj-s14-three-conds,基本不等式,high,材料讲用基本不等式求最值须一正二定三相等；属基本不等式的使用条件
+MATH,math-inverse-construct-plus-lambda-power,导数构造法解函数不等式,high,材料讲由xf'(x)+λf(x)形式构造h(x)=x^λf(x)解不等式；即导数构造法解函数不等式
+MATH,math-mo-omega-qiujie-wutujing,三角函数中 ω 的求解,high,材料讲由周期单调性零点与对称轴等五条途径求ω；即三角函数中ω的求解
+MATH,math-partial-uniform-grouping-formula,均匀分组与分配问题,high,材料讲恰有i组人数相等的部分平均分组要除以i组的全排列数；属均匀分组计数的公式
+PHYSICS,phys-fx-live-knot-dead-knot,活结与死结模型,high,材料讲死结两侧弹力不一定相等而活结两侧必等大；即活结与死结模型
+PHYSICS,phys-hj2-shangbiaomian-guanghua-xiaoche-zhuangban,多物体-多过程问题中动量守恒定律的应用,medium,材料讲上表面光滑小车与物块挡板碰撞的分段处理即碰撞瞬间只对碰撞双方列动量守恒；属多物体多过程动量守恒
+PHYSICS,phys-kb-explosion-recoil-motion,爆炸现象与动量守恒,medium,材料讲爆炸与反冲内力远大于外力时动量守恒且机械能增加；以爆炸与动量守恒为主取该点

@@ -1,0 +1,368 @@
+# 绑定作业片 12：30 条无绑定材料
+#
+# 任务：为每条材料选定它应该绑定的知识点节点（就是讲题时该材料服务的那个点）。
+# 交付（写到 tools/kb_coverage/binding_fixes/slice_12/notes.csv）：
+#   subject,material_slug,node_slug,confidence,evidence
+#   （node_slug 用下面的节点表里的 slug；确实没有合适的写 NONE；
+#     evidence 一句话说明依据；字段内不要有 ASCII 逗号）
+#
+# 硬规矩：
+#   · 宁缺勿错：不确定就 confidence=low 或写 NONE —— 错绑会让检索喂错材料
+#   · 只能从本学科节点表里选（见 tools/kb_coverage/binding_slices/nodes/nodes_<学科>.txt）
+#   · 一条材料只绑一个节点（就是它最主要服务的那个点）
+
+==============================================================================
+## BIOLOGY | bio-circrna-sponge-mechanism
+来源: 《狂K重点》生物 P403 重难9·题型2（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: CONCEPT_EXPLANATION
+[title] circRNA 竞争性结合（海绵吸附）miRNA，解除对靶 mRNA 的抑制
+[summaryMarkdown] circRNA 含 miRNA 结合位点，竞争性吸附 miRNA，使 miRNA 对靶 mRNA 的抑制解除、靶蛋白合成增多。
+[applicabilityMarkdown] circRNA—miRNA—靶蛋白互作图分析。
+[contentMarkdown] circRNA 为环状 RNA、不编码蛋白，但含 miRNA 结合位点→竞争性吸附 miRNA→游离 miRNA 减少→靶 mRNA 翻译增加；'mRNA 总量升高'也可能源于降解减慢，需分别验证。
+[boundaryMarkdown] 'mRNA 升高'与'蛋白升高'是两个层级，指明调控环节。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-02-fresh-dry-weight-order
+来源: 生物讲义《第02讲 细胞中的元素和化合物（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 鲜重与干重中元素含量排序
+[summaryMarkdown] 鲜重元素含量O>C>H>N，干重C>O>N>H，差异主因是水含量不同。
+[applicabilityMarkdown] 元素含量排序判断题。
+[contentMarkdown] 1. 鲜重中O>C>H>N，含量最多的元素是氧，但原子数量最多的是氢。
+2. 干重中C>O>N>H。
+3. 差异的主要原因是鲜重含水多，O比例高。
+[boundaryMarkdown] 细胞中含量最多的4种元素是C、H、O、N。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-07-solute-can-pass
+来源: 生物讲义《第07讲 物质运输（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 溶质能通过半透膜的液面变化
+[summaryMarkdown] 溶质能通过半透膜时，液面先因浓度差变化，后因溶质扩散两侧浓度相等而持平。
+[applicabilityMarkdown] 渗透装置变式分析。
+[contentMarkdown] 1. 若S1浓度大于S2且溶质可通过半透膜：最初水分子净流入S1，液面先上升。
+2. 随溶质扩散，最终两侧浓度相等，液面持平（先升后降）。
+[boundaryMarkdown] 最终“液面持平”不等于“无浓度差时的渗透平衡”，而是溶质扩散导致浓度差消失。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-14-callus-dedifferentiation
+来源: 生物讲义《第14讲 细胞的分化、衰老和死亡（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 愈伤组织是脱分化形成的
+[summaryMarkdown] 愈伤组织是幼嫩叶片等离体组织通过脱分化形成的，可再分化出根芽。
+[applicabilityMarkdown] 植物组织培养细节。
+[contentMarkdown] 1. 离体的植物组织在激素作用下脱分化。
+2. 脱分化形成排列疏松、无定形状态的愈伤组织。
+3. 愈伤组织可再分化形成根、芽。
+4. 愈伤组织不是细胞分化的结果，而是脱分化的结果。
+[boundaryMarkdown] “愈伤组织是细胞分化形成的”说法错误。
+候选（机械预筛，未必对）：细胞分化（名字出现）；植物组织培养（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fj-33-dominant-species-concept
+来源: 生物讲义《第33讲 群落（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 优势种的概念
+[summaryMarkdown] 优势种是对群落中其他物种的生存和发展有重大影响的物种。
+[applicabilityMarkdown] 优势种概念判断。
+[contentMarkdown] 1. 优势种在群落中数量多，更重要的是对其他物种影响大。
+2. “常见但对其他物种影响不大”的物种不属于优势种。
+3. 不同群落的优势种不同。
+[boundaryMarkdown] 过度放牧可能改变草原群落的优势种（荒漠化）。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fx-hormone-research-methods
+来源: 生物方法类《2026届高考生物一轮复习讲义第9单元素养提升 实验设计的一般原则和基本方法 探究动植物生命活动调节实验的思路与方法》（registry-kb-biology-methods:biology）
+类型: METHOD_MODEL
+[title] 激素生理功能研究的常用方法
+[summaryMarkdown] 依据激素化学本质选择饲喂、摘除、注射、阉割与移植等方法研究其功能。
+[applicabilityMarkdown] 设计激素功能探究实验、选择实验方法的大题。
+[contentMarkdown] 1. 甲状腺激素：饲喂法（含甲状腺制剂的饲料）或摘除法（切除甲状腺）。
+2. 生长激素：切除小狗垂体后生长立即停滞，每天注射适量生长激素可逐渐恢复。
+3. 性激素：阉割公鸡母鸡后第二性征逐渐丧失；把公鸡睾丸移植到阉割母鸡体内，母鸡长出公鸡型鸡冠、长尾羽并好斗。
+4. 胰岛素：注射法，观察小白鼠低血糖症状及注射葡萄糖后的缓解，证明胰岛素能降低血糖。
+[boundaryMarkdown] 蛋白质（多肽）类激素不能饲喂，会被消化分解失效；固醇类性激素可饲喂。
+候选（机械预筛，未必对）：蛋白质（名字出现）；甲状腺激素（名字出现）；胰岛素（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fx-solve-method-three-elements
+来源: 生物方法类《宝典01　细胞的分子组成、基本结构和物质运输（3类解题大招）（学生版）》（registry-kb-biology-methods:biology）
+类型: METHOD_MODEL
+[title] 跨膜运输判断的三要素提取法
+[summaryMarkdown] 锁定浓度梯度、能量、转运蛋白三要素判断运输方式，结合曲线模型匹配与特例标注验证。
+[applicabilityMarkdown] 跨膜运输方式判断题的系统方法。
+[contentMarkdown] 1. 三要素提取法：从题干提取浓度梯度（顺或逆）、能量（是否耗ATP）、转运蛋白（是否需要）三项根本依据。
+2. 模型匹配法：把信息转化为文字、曲线、示意图模型，对照典型特征快速匹配（如速率与浓度差成正比对应自由扩散）。
+3. 特例标注法：牢记特殊物质运输方式（葡萄糖进红细胞协助扩散、进小肠上皮细胞主动运输），避免一刀切。
+[boundaryMarkdown] 先用三要素分类穿膜与非穿膜（大分子经囊泡为胞吞胞吐），再细分穿膜类型；缺氧、呼吸抑制剂等描述是需能的暗示。
+候选（机械预筛，未必对）：自由扩散（名字出现）；协助扩散（名字出现）；主动运输（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-kb-fehling-reagent-reducing-sugar
+来源: 生物知识清单：《第02讲 细胞中的元素和化合物（知识清单）（全国通用）（学生版）》（registry-kb-biology-knowledge-list:biology）
+类型: METHOD_MODEL
+[title] 斐林试剂检测还原糖的操作要点
+[summaryMarkdown] 斐林试剂甲乙液现配现用、等量混合，水浴加热后与还原糖反应生成砖红色沉淀。
+[applicabilityMarkdown] 还原糖鉴定实验操作与分析。
+[contentMarkdown] 1. 步骤：组织样液＋斐林试剂（甲液和乙液等量混合均匀）→50~65摄氏度水浴加热约2分钟→砖红色沉淀。
+2. 斐林试剂不稳定（易生成Cu(OH)2沉淀），甲液乙液需分别保存、现配现用。
+3. 是三类有机物检测中唯一需要水浴加热的实验。
+4. 不含还原糖时加热后呈蓝色（Cu(OH)2自身颜色），不是无色。
+[boundaryMarkdown] 材料应选白色或浅色组织（如苹果、梨），避免颜色干扰。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb2-08-ph-temperature-relation
+来源: 生物知识清单：《第08讲 酶和ATP（知识清单）（全国通用）（教师版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] pH与温度对酶活性的互不影响关系
+[summaryMarkdown] pH的变化不影响酶的最适温度，温度的变化也不影响酶的最适pH。
+[applicabilityMarkdown] 分析多曲线组合图、判断最适值变化时使用。
+[contentMarkdown] 不同pH条件下酶的最适温度不变；不同温度条件下酶的最适pH不变；
+温度和pH通过影响酶活性影响酶促反应速率。
+[boundaryMarkdown] 底物浓度和酶浓度通过影响底物与酶的接触影响反应速率，并不改变酶活性。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb3-f4-s15-n01
+来源: 生物知识清单《2027届高三生物一轮复习知识清单4：分子与细胞基础》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 核酸的种类及其分布
+[summaryMarkdown] 种类：脱氧核糖核酸，简称DNA。
+[applicabilityMarkdown] 复习“核酸的种类及其分布”考点或解答涉及“核酸的种类及其分布”的题目时使用。
+[contentMarkdown] 种类：脱氧核糖核酸，简称DNA；核糖核酸，简称RNA。
+[boundaryMarkdown] 一轮复习结论性要点，表述以人教版现行教材为准；具体数值可能因教材版本略有差异。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-mutation-breeding-features
+来源: 《狂K重点》生物 P405 重难10·题型2（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 诱变育种：提高突变率、大幅改良性状，但有利变异少且随机
+[summaryMarkdown] 物理/化学因素提高突变率，可产生新基因；有利变异少、需大量处理材料。
+[applicabilityMarkdown] '产生新基因'类育种方案。
+[contentMarkdown] 原理：基因突变。方法：物理（X 射线、γ 射线、紫外线、激光）或化学（亚硝酸、硫酸二乙酯）因素处理。优点：提高突变率、大幅度改良某些性状、产生新基因；局限：有利变异少、随机性强、需大量处理。
+[boundaryMarkdown] 不能定向控制突变方向；适合个体小、世代短的生物。
+候选（机械预筛，未必对）：基因突变（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-resting-potential-k-outflow
+来源: 《狂K重点》生物 P406 重难11·题型1（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: CONCEPT_EXPLANATION
+[title] 静息电位：安静状态下 K+ 通道开放、K+ 外流形成外正内负
+[summaryMarkdown] 安静状态下细胞膜主要对 K+ 有通透性，K+ 顺浓度梯度外流使膜电位外正内负。
+[applicabilityMarkdown] 电位成因与曲线判读基础。
+[contentMarkdown] 安静状态下细胞膜电位为外正内负（静息电位）；此时 K+ 通道开放，K+ 顺浓度梯度外流（细胞内 K+ 浓度高于细胞外）→膜外阳离子多于膜内。
+[boundaryMarkdown] Na+ 与静息电位形成无直接关系。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-ben-jia-quan-f61x01
+来源: 化学方法类《（重点·方法·点拨）第58讲 醛、酮、羧酸、酯、酰胺- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 苯甲醛
+[summaryMarkdown] 苯甲醛()：有苦杏仁气味的液体，俗称苦杏仁油；制造染料、香料及药物的重要原料。
+[applicabilityMarkdown] 有机推断、官能团性质判断与方程式书写时使用。
+[contentMarkdown] 苯甲醛()：有苦杏仁气味的液体，俗称苦杏仁油；制造染料、香料及药物的重要原料
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-di-gou-you-chang-chang-han-you-you-sua-f62x06
+来源: 化学方法类《（重点·方法·点拨）第59讲 油脂　生物大分子- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] “地沟油”常常含有油酸甘油酯
+[summaryMarkdown] (2)“地沟油”常常含有油酸甘油酯，在微生物作用下水解生成的不饱和脂肪酸中的碳碳双键在日光作用下被空气中的氧气氧化生成有臭味的醛或酮，这种过程称为“酸败”。
+[applicabilityMarkdown] 分析溶液酸碱性、比较粒子浓度大小与pH判断时使用。
+[contentMarkdown] (2)“地沟油”常常含有油酸甘油酯，在微生物作用下水解生成的不饱和脂肪酸中的碳碳双键在日光作用下被空气中的氧气氧化生成有臭味的醛或酮，这种过程称为“酸败”。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-fang-nian-jie-f65x08
+来源: 化学方法类《（重点·方法·点拨）第62讲 化学实验基础知识和技能- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 防黏结
+[summaryMarkdown] 防黏结：碱性溶液用 塞；NaOH、Na2CO3、Na2SiO3溶液等。
+[applicabilityMarkdown] 复习相关考点、解答对应试题时使用。
+[contentMarkdown] 防黏结：碱性溶液用 塞；NaOH、Na2CO3、Na2SiO3溶液等
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-jie-gou-shi-f02x06
+来源: 化学方法类《第01讲 有机化合物的结构特点与研究方法（学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 结构式
+[summaryMarkdown] 结构式：①具有化学式所能表示的意义，能反映物质的结构；②表示分子中原子的 的式子，但不表示空间结构。
+[applicabilityMarkdown] 有机推断、官能团性质判断与方程式书写时使用。
+[contentMarkdown] 结构式：①具有化学式所能表示的意义，能反映物质的结构；②表示分子中原子的 的式子，但不表示空间结构
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-rong-qi-bi-shang-fu-zhuo-de-liu-f74x06
+来源: 化学方法类《高考化学化学实验基础(选择题)(学生版)-34页》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 容器壁上附着的硫
+[summaryMarkdown] 容器壁上附着的硫：CS2或热的NaOH溶液。
+[applicabilityMarkdown] 物质分离提纯方案选择与操作要点判断时使用。
+[contentMarkdown] 容器壁上附着的硫：CS2或热的NaOH溶液
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：分离提纯（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-ting-zhi-jia-re-f69x17
+来源: 化学方法类《（重点·方法·点拨）第66讲 　以物质制备为主的综合实验- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 停止加热
+[summaryMarkdown] ②停止加热，待沸腾平息后加入安息香，加热回流。
+[applicabilityMarkdown] 热化学方程式书写与反应热计算、比较时使用。
+[contentMarkdown] ②停止加热，待沸腾平息后加入安息香，加热回流。
+③加入水，煮沸后冷却，有黄色固体析出。
+④过滤，并用冷水洗涤固体3次，得到粗品。
+⑤粗品用的乙醇重结晶，干燥后得淡黄色结晶。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：热化学方程式（名字出现）；反应热（名字出现）；重结晶（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-yi-ben-fen-you-du-f60x13
+来源: 化学方法类《（重点·方法·点拨）第57讲 卤代烃　醇　酚- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 意　苯酚有毒
+[summaryMarkdown] 意　苯酚有毒，浓溶液对皮肤有强腐蚀性，如皮肤不慎沾上苯酚溶液，应立即用酒精洗涤，再用水冲洗。
+[applicabilityMarkdown] 分析氧化还原反应、比较氧化性还原性强弱与电子转移数目时使用。
+[contentMarkdown] 注意　苯酚有毒，浓溶液对皮肤有强腐蚀性，如皮肤不慎沾上苯酚溶液，应立即用酒精洗涤，再用水冲洗。
+(1) 与不是同类物质，前者属于酚，后者属于醇，故不是同系物。
+(2)苯酚具有弱酸性，但酸性比碳酸弱，所以苯酚与碳酸钠反应只能生成NaHCO3，不能生成CO2。向苯酚钠溶液中通入二氧化碳有白色浑浊物苯酚出现，但不论CO2是否过量，生成物均为NaHCO3，不会生成Na2CO3。
+[boundaryMarkdown] 注意　苯酚有毒，浓溶液对皮肤有强腐蚀性，如皮肤不慎沾上苯酚溶液，应立即用酒精洗涤，再用水冲洗。；(2)苯酚具有弱酸性，但酸性比碳酸弱，所以苯酚与碳酸钠反应只能生成NaHCO3，不能生成CO2。向苯酚钠溶液中通入二氧化碳有白色浑浊物苯酚出现，但不论CO2是否过量，生成物均为NaHCO3，不会生成Na2CO3。
+候选（机械预筛，未必对）：电子转移（名字出现）；氧化还原反应（名字出现）；碳酸钠（名字出现）；同系物（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-zhu-yao-yong-tu-f12x09
+来源: 化学方法类《（重点·方法·点拨）第09讲 钠及其氧化物- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 主要用途
+[summaryMarkdown] 主要用途：用于制取少量Na2O2、烧碱；强氧化剂、漂白剂、供氧剂、消毒剂。
+[applicabilityMarkdown] 分析氧化还原反应、比较氧化性还原性强弱与电子转移数目时使用。
+[contentMarkdown] 主要用途：用于制取少量Na2O2、烧碱；强氧化剂、漂白剂、供氧剂、消毒剂
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：氧化剂（名字出现）；电子转移（名字出现）；氧化还原反应（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-kb-colloid-particle-charge-rules
+来源: 化学知识清单：《专题01 物质及其变化（知识清单）（全国通用）（教师版）》（registry-kb-chemistry-knowledge-list:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 胶粒的带电规律与电泳
+[summaryMarkdown] 金属氢氧化物、金属氧化物胶粒带正电，非金属氧化物、金属硫化物胶粒带负电，淀粉等不带电。
+[applicabilityMarkdown] 电泳现象与胶粒电荷判断。
+[contentMarkdown] 胶体粒子因表面积大、吸附能力强而吸附分散系中的带电离子带电。
+金属氢氧化物、金属氧化物的胶粒带正电荷；非金属氧化物、金属硫化物的胶粒带负电荷；淀粉等固体胶粒、高分子有机胶粒不带电荷。
+不是所有胶体都有电泳现象，如淀粉胶体不发生电泳。
+[boundaryMarkdown] 胶体粒子带电但整个分散系呈电中性。
+候选（机械预筛，未必对）：分散系（名字出现）
+
+==============================================================================
+## MATH | math-fangshuo-yanzheng-denghao-noufou
+来源: 《狂K重难点》数学 书页P393，重难点17（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: METHOD_MODEL
+[title] 验证放缩后等号能否取到
+[summaryMarkdown] 放缩后必须验证等号能否取到，若不能取到则需调整放缩式。
+[applicabilityMarkdown] 含等号或最值型结论的放缩证明题。
+[contentMarkdown] 必须验证放缩后的等号能否取到，若不能取到，则需要调整放缩式。
+[boundaryMarkdown] 等号条件通常对应切点（如 $x=1$、$x=0$），检查目标条件是否满足。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-hj-hailun-gongshi
+来源: 数学讲义《第一章 §1.5　基本不等式的综合应用》（registry-kb-math-handout:math）
+类型: CONCEPT_EXPLANATION
+[title] 海伦公式
+[summaryMarkdown] $S=\sqrt{p(p-a)(p-b)(p-c)}$，$p=\frac{a+b+c}{2}$。
+[applicabilityMarkdown] 已知三边求三角形面积。
+[contentMarkdown] 海伦公式：设三角形三边为 $a,b,c$，令 $p=\frac{a+b+c}{2}$（半周长），则面积 $S=\sqrt{p(p-a)(p-b)(p-c)}$。
+[boundaryMarkdown] 结合基本不等式可求面积最值。
+候选（机械预筛，未必对）：基本不等式（名字出现）
+
+==============================================================================
+## MATH | math-hj-wudianfa-sanzhong-hanshu
+来源: 数学讲义《第5节　三角函数的图象与性质》（registry-kb-math-handout:math）
+类型: CONCEPT_EXPLANATION
+[title] 正弦余弦正切的五点与图象
+[summaryMarkdown] 正弦、余弦各五个关键点描图；正切用三线两块。
+[applicabilityMarkdown] 画三角函数简图。
+[contentMarkdown] $y=\sin x$ 在 $[0,2\pi]$ 的五点：$(0,0),(\frac{\pi}{2},1),(\pi,0),(\frac{3\pi}{2},-1),(2\pi,0)$；$y=\cos x$ 五点：$(0,1),(\frac{\pi}{2},0),(\pi,-1),(\frac{3\pi}{2},0),(2\pi,1)$。
+[boundaryMarkdown] 五点横坐标间隔为 $\frac{\pi}{2}$。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-mo-duigou-coupei-quzui
+来源: 数学《专题05 均值不等式培优归类（题型清单）（学生版）》（registry-kb-math-misc:math）
+类型: METHOD_MODEL
+[title] 对勾结构的凑配与取等
+[summaryMarkdown] 把目标式凑成 $ax+\frac{b}{x}$ 型对勾结构，用均值求最值并检验取等。
+[applicabilityMarkdown] $\frac{ax+b}{x}$、$ax+\frac{b}{x+c}$ 型分式求最值。
+[contentMarkdown] 对勾型结构 $y=ax+\dfrac{b}{x}$（$a,b>0$）求最值：凑配出对勾后用 $ax+\dfrac{b}{x}\ge2\sqrt{ab}$，取等点 $x=\sqrt{\dfrac{b}{a}}$。对勾添加常数型（如 $\dfrac{cx+d}{ax+b}$ 型）：把分子转化为分母的线性关系消去常数项，化为对勾结构处理，不必死记公式，直接按结构转化。
+[boundaryMarkdown] 取等点必须落在定义域（或题目区间）内，否则均值失效改用对勾函数单调性求最值。
+候选（机械预筛，未必对）：对勾函数（名字出现）
+
+==============================================================================
+## MATH | math-mo-xielvji-fuzhi-fanzhi
+来源: 数学《教考衔接十六 教材中的易混易错杜绝再错学案》（registry-kb-math-misc:math）
+类型: CONCEPT_EXPLANATION
+[title] 斜率之积为 $-1$ 的“反之不成立”
+[summaryMarkdown] 两直线垂直还有“一斜率不存在一斜率为 0”的情形。
+[applicabilityMarkdown] 两直线垂直的判定。
+[contentMarkdown] 若两直线斜率之积为 $-1$，则两直线垂直；反之不一定成立：两直线垂直包含两种情况——1. 两直线中一条直线的斜率不存在，另一条直线的斜率为 $0$；2. 两直线斜率均存在且斜率之积为 $-1$。
+[boundaryMarkdown] 设直线方程为点斜式前先排查竖直线；由“垂直”反求参数时两情形都要求。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-cut-fill-method-field
+来源: 《狂K重难点》物理 书页P433，重难点21考法1（registry-lixiangshu-2027-bikuti-kuangk-physics:physics）
+类型: METHOD_MODEL
+[title] 割补法求特殊带电体的场强
+[summaryMarkdown] 把不完整带电体补全为规则带电体，用完整带电体的场强减去补上部分的场强。
+[applicabilityMarkdown] 均匀带电球挖去一部分、环缺一块等组合体的场强计算。
+[contentMarkdown] 将挖去部分补完整，利用完整带电体的场强 = 剩余部分场强 + 补上部分场强，得 $E_{剩} = E_{完} − E_{补}$；补上部分的电荷量按体积（或长度、面积）比例确定。
+[boundaryMarkdown] 补上部分与原体电性相同；前提是完整体的场强可求（如均匀带电球壳内部场强为零、外部视为点电荷）。
+候选（机械预筛，未必对）：割补法（名字出现）
+
+==============================================================================
+## PHYSICS | phys-hj-140-electric-potential-concept
+来源: 物理讲义《第42讲 电场能的性质-（讲义）（学生版）》（registry-kb-physics-handout:physics）
+类型: CONCEPT_EXPLANATION
+[title] 电势
+[summaryMarkdown] 描述电场能的性质的标量
+[applicabilityMarkdown] 电势分析
+[contentMarkdown] 电势定义为电荷在某点的电势能与电荷量之比 $φ=E_p/q$，是标量但有正负，正负表示比零电势高或低；点电荷电势 $φ=kQ/r$；某点总电势等于各点电荷单独存在时电势的代数和。
+[boundaryMarkdown] 零电势点选取具相对性。
+候选（机械预筛，未必对）：电势能（名字出现）
+
+==============================================================================
+## PHYSICS | phys-hj3-live-dead-knot-model
+来源: 物理讲义《第06讲 力的合成与分解（复习讲义）（湖南专用）（学生版）》（registry-kb-physics-handout:physics）
+类型: CONCEPT_EXPLANATION
+[title] “活结”与“死结”模型
+[summaryMarkdown] 活结两侧同一根绳张力处处相等；死结两侧为两段独立绳张力不一定相等。
+[applicabilityMarkdown] 辨析绳结类问题中的张力关系。
+[contentMarkdown] “活结”由绳跨过滑轮或光滑挂钩形成，绳虽弯曲实为同一根绳，两侧绳上张力大小处处相等。
+“死结”把绳分为两段且不可沿绳移动，两侧成为独立的两根绳，张力不一定相等。
+[boundaryMarkdown] 判断绳是否为同一根连续绳是使用该模型的前提。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-point-charge-potential-superposition
+来源: 《狂K重难点》物理 书页P435，重难点21（registry-lixiangshu-2027-bikuti-kuangk-physics:physics）
+类型: CONCEPT_EXPLANATION
+[title] 点电荷电势公式与多电荷电势的代数叠加
+[summaryMarkdown] 取无穷远电势为零时点电荷电势φ=kQ/r；多个点电荷电场中某点电势等于各电荷单独存在时电势的代数和。
+[applicabilityMarkdown] 点电荷系的电势计算与比较。
+[contentMarkdown] 在电荷量为 $Q$ 的点电荷电场中，将无限远处电势规定为零时，距离该点电荷 $r$ 处的电势 $φ = kQ/r$；多个点电荷产生的电场中某点的电势，等于每个点电荷单独存在时该点电势的代数和。
+[boundaryMarkdown] 电势是标量，叠加时代数相加并注意正负；各电荷必须采用同一零电势点，$r$ 不能取零。
+候选（机械预筛，未必对）：无
+

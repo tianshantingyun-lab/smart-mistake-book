@@ -1,0 +1,368 @@
+# 绑定作业片 26：29 条无绑定材料
+#
+# 任务：为每条材料选定它应该绑定的知识点节点（就是讲题时该材料服务的那个点）。
+# 交付（写到 tools/kb_coverage/binding_fixes/slice_26/notes.csv）：
+#   subject,material_slug,node_slug,confidence,evidence
+#   （node_slug 用下面的节点表里的 slug；确实没有合适的写 NONE；
+#     evidence 一句话说明依据；字段内不要有 ASCII 逗号）
+#
+# 硬规矩：
+#   · 宁缺勿错：不确定就 confidence=low 或写 NONE —— 错绑会让检索喂错材料
+#   · 只能从本学科节点表里选（见 tools/kb_coverage/binding_slices/nodes/nodes_<学科>.txt）
+#   · 一条材料只绑一个节点（就是它最主要服务的那个点）
+
+==============================================================================
+## BIOLOGY | bio-energy-ecological-pyramid
+来源: 《狂K重点》生物 P430 重难17·题型1（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: CONCEPT_EXPLANATION
+[title] 能量金字塔：营养级越高能量越少，呈正金字塔型
+[summaryMarkdown] 生态系统中各营养级能量逐级递减，能量在相邻营养级间传递效率仅约 10%-20%，故能量金字塔总是正金字塔型。
+[applicabilityMarkdown] 能量金字塔与食物链。
+[contentMarkdown] 1. 能量流动沿食物链单向流动、逐级递减。
+2. 低营养级能量 > 高营养级（若营养级越高，其能量越少）。
+3. 单位时间各营养级能量所绘金字塔正立（尖朝上）。
+[boundaryMarkdown] 可能有'数量'金字塔倒立（如树多植食虫少），但能量金字塔一般正立。
+候选（机械预筛，未必对）：食物链（名字出现）；能量流动（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fj-03-pentose-sugars
+来源: 生物讲义《第03讲 糖类和脂质（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 核糖与脱氧核糖的分布
+[summaryMarkdown] 核糖是RNA和ATP的组成成分，脱氧核糖是DNA的组成成分，动植物细胞都有。
+[applicabilityMarkdown] 五碳糖分布判断。
+[contentMarkdown] 1. 核糖（C5H10O5）：构成RNA的成分，也存在于ATP中。
+2. 脱氧核糖（C5H10O4）：构成DNA的成分。
+3. 两者都是动植物细胞共有的五碳糖。
+[boundaryMarkdown] RNA、DNA、ATP中的糖依次为核糖、脱氧核糖、核糖。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-09-storage-conditions
+来源: 生物讲义《第09讲 细胞呼吸（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 果蔬与种子储存条件辨析
+[summaryMarkdown] 蔬菜水果应零上低温、低氧储存并保持湿度，种子应干燥低温储存。
+[applicabilityMarkdown] 储存条件正误判断。
+[contentMarkdown] 1. 储存不是无氧环境：应低温（零上，不破坏组织）、低氧。
+2. 种子储存应保持干燥（降低自由水），果蔬储存需一定湿度。
+3. 完全无氧时呼吸强度不为零（无氧呼吸进行）。
+[boundaryMarkdown] 影响呼吸的因素是综合的：供水、升温、增氧增强呼吸；干燥、低温、低氧减弱呼吸。
+候选（机械预筛，未必对）：无氧呼吸（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fj-20-semidiscontinuous-replication
+来源: 生物讲义《第20讲 DNA的结构、复制与基因的本质（复习讲义）（全国通用）（解析版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 半不连续复制与端粒缩短
+[summaryMarkdown] 连续复制链与解旋方向相同，后随链不连续合成；引物切除使子链短于母链，端粒随之缩短。
+[applicabilityMarkdown] 复制延伸新情境。
+[contentMarkdown] 1. 前导链：延伸方向与解旋方向相同，连续复制。
+2. 后随链：延伸方向与解旋方向相反，不连续合成小片段，由DNA连接酶连接。
+3. 引物被切除后留下的空隙无法完全填补，子链比母链短一截，这是端粒每次分裂后缩短的原因，可由端粒酶延长。
+[boundaryMarkdown] 多数DNA双向复制（如大肠杆菌θ复制）；线粒体叶绿体DNA为D环复制。
+候选（机械预筛，未必对）：线粒体（名字出现）；叶绿体（名字出现）；dna连接酶（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fx-autoclave-notes
+来源: 生物方法类《2026届高三复习：微生物培养发酵工程高考题解题技巧和高考题目类型》（registry-kb-biology-methods:biology）
+类型: METHOD_MODEL
+[title] 高压蒸汽灭菌的操作注意事项
+[summaryMarkdown] 使用高压蒸汽灭菌锅时物品不可过挤、冷空气必须排尽，否则压力达标温度不达标。
+[applicabilityMarkdown] 灭菌操作细节与原因分析的题目。
+[contentMarkdown] 1. 灭菌物品不要放得过挤，保证蒸汽流通。
+2. 冷空气完全排尽后开始加压，否则锅内温度达不到设定值（压力达标而温度不足的最常见原因）。
+3. 压力降为零后再打开排气阀、开盖；对称旋紧螺栓使盖均匀受力。
+[boundaryMarkdown] 压力与温度的对应关系以纯蒸汽为前提；含芽孢的细菌需更高条件才能被杀灭。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fx-mcq-basic-three-steps
+来源: 生物方法类《题型01 根基筑梦场 —— 基础知识型选择题（7大类别）（学生版）》（registry-kb-biology-methods:biology）
+类型: METHOD_MODEL
+[title] 基础知识型选择题的三步解题法
+[summaryMarkdown] 基础知识型选择题按精准定位、细节辨析、排除验证三步作答，优先排除绝对化表述。
+[applicabilityMarkdown] 基础选择题的通用解题策略。
+[contentMarkdown] 1. 审题定位：快速锁定考查知识点，关联教材原文或核心概念。
+2. 细节辨析：优先排除绝对化表述（所有、唯一）、概念混淆项（如腺苷与腺嘌呤）和细节错误项（场所、产物写错），关注主要、直接等限定词。
+3. 验证选择：不确定时优先选择表述严谨、符合教材结论的选项；情境题先剥离无关信息再聚焦知识点。
+[boundaryMarkdown] 错误选项常从概念混淆、细节遗漏、绝对化表述三方面设置；回归教材原文是最终校验依据。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-hypothalamus-removal-dehydration
+来源: 《狂K重点》生物 P410 重难13·题型1（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 切除下丘脑 → 抗利尿激素分泌减少 → 机体脱水
+[summaryMarkdown] 下丘脑合成抗利尿激素，切除后 ADH 分泌减少、水重吸收减少，导致机体脱水。
+[applicabilityMarkdown] 下丘脑损伤/切除实验判断。
+[contentMarkdown] 切除下丘脑→抗利尿激素（下丘脑合成）分泌减少→肾小管和集合管重吸收水减少→尿量增多、机体脱水。
+[boundaryMarkdown] 垂体后叶只是释放部位，切除垂体后叶影响释放、合成仍在。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb-sugar-not-all-reducing-energy
+来源: 生物知识清单：《第03讲 糖类和脂质（知识清单）（全国通用）（学生版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 并非所有糖都是还原糖或能源物质
+[summaryMarkdown] 蔗糖、淀粉、纤维素是非还原糖；核糖、脱氧核糖、纤维素等不参与氧化分解供能。
+[applicabilityMarkdown] 判断糖类功能的正误。
+[contentMarkdown] 1. 非还原糖：蔗糖、淀粉、纤维素等，不能用斐林试剂检测出砖红色沉淀。
+2. 非能源糖：核糖、脱氧核糖（构成核酸）、纤维素（结构物质）不参与氧化分解供能。
+3. 并非所有糖都是能源物质，也并非所有糖都是还原糖。
+[boundaryMarkdown] 葡萄糖、果糖、麦芽糖等是常见还原糖。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb2-27-hypothalamus-functions
+来源: 生物知识清单：《第27讲 体液调节与神经调节的关系（知识清单）（全国通用）（教师版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 下丘脑在稳态调节中的四大功能
+[summaryMarkdown] 下丘脑集感受、分泌、调节、传导四大功能于一身，是内分泌系统的总枢纽。
+[applicabilityMarkdown] 综合分析下丘脑参与的调节过程时使用。
+[contentMarkdown] 感受：含渗透压感受器，感受细胞外液渗透压的变化；分泌：合成并分泌抗利尿激素和多种促激素释放激素；
+调节：体温调节中枢、血糖调节中枢、水盐平衡调节中枢都位于下丘脑；传导：将渗透压感受器产生的兴奋传导至大脑皮层产生渴觉。
+[boundaryMarkdown] 下丘脑的部分细胞是神经分泌细胞，既能传导神经冲动又有分泌功能；下丘脑同时受大脑皮层的调控。
+候选（机械预筛，未必对）：渗透压（名字出现）；体温调节（名字出现）；大脑皮层（名字出现）；内分泌系统（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-kb3-f4-s55-n04
+来源: 生物知识清单《2027届高三生物一轮复习知识清单4：分子与细胞基础》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 运用模型解释细胞·4
+[summaryMarkdown] 葡萄糖扩散深度(mm)：0.5。
+[applicabilityMarkdown] 复习“运用模型解释细胞不能无限”考点或解答涉及“运用模型解释细胞·4”的题目时使用。
+[contentMarkdown] 模型边长(mm)：4；表面积(mm2)：96；体积(mm3)：64；葡萄糖扩散深度(mm)：0.5；表面积/体积(相对表面积)：3/2。
+含葡萄糖的体积/“细胞”体积：37/64。
+[boundaryMarkdown] 一轮复习结论性要点，表述以人教版现行教材为准；具体数值可能因教材版本略有差异。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-plasmolysis-automatic-recovery-substances
+来源: 《狂K重点》生物 P377-378 重难1·题型1（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: CONCEPT_EXPLANATION
+[title] 自动复原的溶液：KNO3、尿素、乙二醇等溶质可被吸收的溶液
+[summaryMarkdown] 溶液中溶质可通过主动运输等被细胞吸收时，细胞先失水质壁分离、后因细胞液浓度回升而自动复原。
+[applicabilityMarkdown] '自动复原'型曲线/现象分析。
+[contentMarkdown] 1. 高渗(但溶质可被吸收)溶液→先失水质壁分离。
+2. 溶质被细胞吸收→细胞液浓度升高→吸水→自动复原。
+3. 典型溶液：KNO3（K+、NO3−可吸收）、尿素、乙二醇、甘油。
+[boundaryMarkdown] 蔗糖等不能被吸收的溶质不会自动复原。
+候选（机械预筛，未必对）：质壁分离（名字出现）；主动运输（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-synapse-structure
+来源: 《狂K重点》生物 P407 重难11·题型2（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: CONCEPT_EXPLANATION
+[title] 突触结构：突触前膜（轴突末梢）+突触间隙+突触后膜（树突/胞体）
+[summaryMarkdown] 突触由突触前膜（突触小体膜）、突触间隙、突触后膜（另一神经元树突膜或胞体膜）构成。
+[applicabilityMarkdown] 兴奋在神经元间传递的结构基础。
+[contentMarkdown] 1. 突触前膜：突触小体（轴突末梢膨大）的膜。
+2. 突触间隙：两神经元之间的组织液间隙。
+3. 突触后膜：与前一神经元胞体膜或树突膜接触的膜（常含受体）。
+4. 突触前膜内有突触小泡，含神经递质。
+[boundaryMarkdown] 神经肌肉接头、神经—膜接头都是突触形态。
+候选（机械预筛，未必对）：神经递质（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-cheng-tai-fan-ying-f62x07
+来源: 化学方法类《（重点·方法·点拨）第59讲 油脂　生物大分子- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 成肽反应
+[summaryMarkdown] ②成肽反应。
+[applicabilityMarkdown] 复习相关考点、解答对应试题时使用。
+[contentMarkdown] ②成肽反应
+两个氨基酸分子(可以相同，也可以不同)在一定条件下，通过氨基与羧基间缩合脱去水，形成含有肽键()的化合物，发生成肽反应。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：化合物（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-entry-f09x12
+来源: 化学方法类《（重点·方法·点拨）第06讲 离子共存、离子检验与推断- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] Cl-
+[summaryMarkdown] Cl-；Br-；I-：AgNO3溶液和稀HNO3；产生 沉淀：AgCl；产生 色沉淀：AgBr；产生 沉淀：AgI。
+[applicabilityMarkdown] 分析沉淀溶解平衡、判断沉淀生成或溶解时使用。
+[contentMarkdown] Cl-；Br-；I-：AgNO3溶液和稀HNO3；产生 沉淀：AgCl；产生 色沉淀：AgBr；产生 沉淀：AgI
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：沉淀溶解平衡（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-guo-zai-shi-ke-f47x04
+来源: 化学方法类《（重点·方法·点拨）第44讲 常考化学反应速率和化学平衡图像的分析- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 果在t6时刻
+[summaryMarkdown] (4)如果在t6时刻，从反应体系中分离出部分氨，t7时刻反应达到平衡状态，请在图中画出反应速率的变化曲线。
+[applicabilityMarkdown] 判断平衡状态、分析平衡移动方向与相关计算时使用。
+[contentMarkdown] (4)如果在t6时刻，从反应体系中分离出部分氨，t7时刻反应达到平衡状态，请在图中画出反应速率的变化曲线。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-pai-shui-fa-f28x07
+来源: 化学方法类《（重点·方法·点拨）第25讲 常见气体的实验室制备、净化和收集- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 排水法
+[summaryMarkdown] 排水法：难溶于水或微溶于水，且不与水反应的气体；O2、H2、NO、CO等。
+[applicabilityMarkdown] 复习相关考点、解答对应试题时使用。
+[contentMarkdown] 排水法：难溶于水或微溶于水，且不与水反应的气体；O2、H2、NO、CO等
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-shi-ying-dui-xiang-f04x05
+来源: 化学方法类《（重点·方法·点拨）第01讲 物质的量　气体摩尔体积- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 适应对象
+[summaryMarkdown] (6)适应对象：只限于气体，单一气体或互不反应的混合气体。
+[applicabilityMarkdown] 复习“⟦BLANK⟧气体摩尔体积”相关考点、解答对应试题时使用。
+[contentMarkdown] (6)适应对象：只限于气体，单一气体或互不反应的混合气体。
+【易错】①注意对象。②NO2(N2O4)、HF、SO3等在标准状况下不是气体；SiF4在标准状况下是气体。③标准状况下气体摩尔体积约是22.4 L·mol-1；气体摩尔体积是22.4 L·mol-1时，气体所处的状况不一定是标准状况。
+[boundaryMarkdown] 【易错】①注意对象。②NO2(N2O4)、HF、SO3等在标准状况下不是气体；SiF4在标准状况下是气体。③标准状况下气体摩尔体积约是22.4 L·mol-1；气体摩尔体积是22.4 L·mol-1时，气体所处的状况不一定是标准状况。
+候选（机械预筛，未必对）：气体摩尔体积（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-xie-ming-cheng-f02x02
+来源: 化学方法类《第01讲 有机化合物的结构特点与研究方法（学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 写名称
+[summaryMarkdown] 写名称：将支链作为取代基，写在“某醇”“某醛”或“某酸”的前面，用阿拉伯数字标明官能团的位置。
+[applicabilityMarkdown] 有机推断、官能团性质判断与方程式书写时使用。
+[contentMarkdown] 写名称：将支链作为取代基，写在“某醇”“某醛”或“某酸”的前面，用阿拉伯数字标明官能团的位置
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-yong-jiao-dian-f53x04
+来源: 化学方法类《（重点·方法·点拨）第50讲 反应过程中溶液粒子浓度变化的图像分析- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] “用交点”
+[summaryMarkdown] (3)“用交点”——交点是某两种粒子浓度相等的点，可计算电离常数K；。
+[applicabilityMarkdown] 分析溶液酸碱性、比较粒子浓度大小与pH判断时使用。
+[contentMarkdown] (3)“用交点”——交点是某两种粒子浓度相等的点，可计算电离常数K；
+(4)“可替换”——根据溶液中的物料守恒进行替换，分析得出结论。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：电离常数（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-hj-jiaoli-daidian-jingshui
+来源: 化学讲义《第01讲  物质的分类及转化（举一反三讲义）（学生版）》（registry-kb-chemistry-handout:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 胶粒带电与明矾净水原理
+[summaryMarkdown] 胶体整体呈电中性而胶粒带电；明矾、FeCl3 净水是利用水解生成胶体吸附悬浮物。
+[applicabilityMarkdown] 解释胶体介稳性、电泳现象及净水剂原理时使用。
+[contentMarkdown] 胶体不带电，胶粒因吸附带电粒子而带电荷，整个体系呈电中性。
+同种胶体粒子电性相同、相互排斥是胶体较稳定的主要原因，布朗运动是次要原因。
+明矾 KAl(SO4)2·12H2O、FeCl3 净水：Al3+、Fe3+ 水解生成 Al(OH)3、Fe(OH)3 胶体，表面积大，吸附悬浮固体形成沉淀。
+[boundaryMarkdown] 胶粒带电但胶体不带电；并非所有胶粒都带同种电荷。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-ellipse-e-and-b-over-a
+来源: 《狂K重难点》数学 P421，重难点38·离心率问题（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: CONCEPT_EXPLANATION
+[title] 椭圆中 e 与 b/a 的互化公式
+[summaryMarkdown] 椭圆中 $e=\sqrt{1-(b/a)^2}$，即 $b/a=\sqrt{1-e^2}$。
+[applicabilityMarkdown] 离心率与 a、b 比值互化的快速计算。
+[contentMarkdown] 在椭圆中，$e=\frac{c}{a}=\sqrt{1-\left(\frac{b}{a}\right)^2}$，则 $\frac{b}{a}=\sqrt{1-e^2}$。
+[boundaryMarkdown] 仅适用于椭圆（$0<e<1$）；双曲线中根号内是 $1+(b/a)^2$，勿混。
+候选（机械预筛，未必对）：双曲线（名字出现）
+
+==============================================================================
+## MATH | math-fx-sanjiao-huajian-shunxu-yuanze
+来源: 数学方法类《第18讲：三角恒等变换（知识梳理+题型总结）》（registry-kb-math-methods:math）
+类型: METHOD_MODEL
+[title] 三角化简的操作顺序原则
+[summaryMarkdown] 三角化简一般按“先切化弦→再降幂（升幂去根号）→后统一角与函数名”的顺序推进，逐步逼近目标形式。
+[applicabilityMarkdown] 复杂三角式的化简顺序决策。
+[contentMarkdown] 1. 切化弦：含 $\tan$ 的混合式先化为弦（$\tan x=\dfrac{\sin x}{\cos x}$），便于约分与合并。
+2. 降幂：平方项用降幂公式化为一次；$\sin x\cos x$ 化 $\dfrac{1}{2}\sin 2x$。
+3. 统一角：用角的拆分（凑角）把复角化到目标角；用辅助角公式合并异名项。
+4. 检查：每步保持同解，最终达到“一角一名一次”的最简结构。
+[boundaryMarkdown] 顺序不是绝对：目标形式是“切”时应反向（弦化切）；每步后重新评估最短路径。
+候选（机械预筛，未必对）：辅助角公式（名字出现）
+
+==============================================================================
+## MATH | math-hj-s410-relative-direction
+来源: 数学讲义《第四章 §4.10　解三角形及其应用举例.docx》（registry-kb-math-handout:math）
+类型: METHOD_MODEL
+[title] 由方位角判断两点的相对方向
+[summaryMarkdown] 两点间的相对方向由其方位角之差确定，画图后按角度平移转换。
+[applicabilityMarkdown] 根据方位角条件判断一点在另一点的方向。
+[contentMarkdown] 两观察方向角之差即两目标相对观察站的角度；判断 A 在 B 的方向时，把 B 作为新参照点重画角度。
+[boundaryMarkdown] 方向角描述总是从参照点的正北（或正南）起算。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-inverse-construct-quotient-rule
+来源: 《狂K重难点》数学 P391 重难15·续表（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: METHOD_MODEL
+[title] 逆向构造：$f'(x)g(x)-f(x)g'(x)>0$ 时构造 $h(x)=\dfrac{f(x)}{g(x)}\ (g(x)\neq 0)$
+[summaryMarkdown] 题干出现商的求导分子形式 $f'(x)g(x)-f(x)g'(x)>0$ 时，构造商函数 $h(x)=\dfrac{f(x)}{g(x)}$。
+[applicabilityMarkdown] 条件形如 $f'(x)g(x)-f(x)g'(x)>0$（除法求导结构）的不等式问题。
+[contentMarkdown] 1. 识别题干形式 $f'(x)g(x)-f(x)g'(x)>0$。
+2. 构造 $h(x)=\dfrac{f(x)}{g(x)}$（$g(x)\neq 0$），则 $h'(x)=\dfrac{f'(x)g(x)-f(x)g'(x)}{g^2(x)}>0$，$h(x)$ 单调递增。
+3. 将目标式化为 $\dfrac{f(\cdot)}{g(\cdot)}$ 的比较，由单调性得出结论。
+[boundaryMarkdown] 分母 $g(x)\neq 0$ 是前提；$g^2(x)>0$ 保证导数符号由分子决定。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-mo-qiegua-moxing-shuangbanjing
+来源: 数学《高考数学二级结论篇（核心知识背记手册）（默写版）》（registry-kb-math-misc:math）
+类型: METHOD_MODEL
+[title] 切瓜模型与双半径单交线
+[summaryMarkdown] 两互相垂直平面截球得两小圆，公共交线为弦，由 $R^2=r^2+d^2$ 联立。
+[applicabilityMarkdown] 两个平面互相垂直的几何体外接球问题。
+[contentMarkdown] 切瓜模型：两个互相垂直的平面截球得到两个截面小圆，其公共交线是两圆的公共弦（“双半径单交线”）。利用 $R^2=r^2+d^2$（截面圆半径 $r$、球心到截面距离 $d$）对两个截面分别列式，联立求出 $R$。求点到平面距离的最大（小）值时，先求底面圆直径，再按垂径定理在球大圆中分析。
+[boundaryMarkdown] 两个截面圆必须真的共弦（交线在两平面上）；$d$ 的几何位置（球心两侧）分情况讨论。
+候选（机械预筛，未必对）：两圆的公共弦（名字出现）
+
+==============================================================================
+## MATH | math-period-opposite-next-term
+来源: 《狂K重难点》数学 P378 重难4·1(2)（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: CONCEPT_EXPLANATION
+[title] 半周期反号式：$f(x+a)=-f(x)\Rightarrow T=2a$
+[summaryMarkdown] 若对任意 $x$ 有 $f(x+a)=-f(x)$，则再迭代一次得 $f(x+2a)=f(x)$，周期为 $2a$。
+[applicabilityMarkdown] 由『自变量平移 $a$ 后函数值变号』型函数方程求周期。
+[contentMarkdown] 1. 已知 $f(x+a)=-f(x)$（$a>0$）对任意 $x$ 成立。
+2. 迭代：$f(x+2a)=-f(x+a)=f(x)$，故周期 $T=2a$。
+[boundaryMarkdown] 结论给出的是一个周期，不一定是最小正周期。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-fx-multimeter-ohm-range-usage
+来源: 物理方法类《第17讲 测量电阻的八种实验方法（学生版）（模型与方法）（全国通用）》（registry-kb-physics-methods:physics）
+类型: METHOD_MODEL
+[title] 多用电表欧姆挡测电阻
+[summaryMarkdown] 欧姆表测电阻快捷但刻度不均匀、只能粗测，换挡必须重新调零，读数乘以倍率。
+[applicabilityMarkdown] 粗测电阻、判断二极管极性等。
+[contentMarkdown] 1. 步骤：机械调零→选挡→欧姆调零→测量→换挡重新调零→测毕开关置交流电压最高挡或 OFF。
+2. 注意：待测电阻须与电源断开，两手不同时接触表笔金属杆。
+3. 指针指中值附近较准，偏转过小换大挡、过大换小挡。
+[boundaryMarkdown] 欧姆表内部电池用久电动势下降会造成系统误差。
+候选（机械预筛，未必对）：电动势（名字出现）；系统误差（名字出现）
+
+==============================================================================
+## PHYSICS | phys-hj2-xiangtong-jinshuqiu-dianhe-chongxin-fenbu
+来源: 物理讲义《第29讲 电场力的性质（复习讲义）（四川专用）》（registry-kb-physics-handout:physics）
+类型: CONCEPT_EXPLANATION
+[title] 相同带电金属球间库仑力的修正
+[summaryMarkdown] 相同的带电金属球不能视为点电荷时考虑电荷重新分布：同种电荷 $F<kq_1q_2/r^2$，异种电荷 $F>kq_1q_2/r^2$。
+[applicabilityMarkdown] 两靠近带电导体球间作用力的定性判断。
+[contentMarkdown] 1. 同种电荷：电荷相互排斥分布于远端，等效电荷中心间距大于球心距，实际作用力小于按球心距计算的值，$F<kq_1q_2/r^2$。
+2. 异种电荷：电荷相互吸引分布于近端，等效间距小于球心距，$F>kq_1q_2/r^2$。
+[boundaryMarkdown] 只有当球心距远大于球半径时才能直接用 $F=kq_1q_2/r^2$。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-kb-liquid-crystal-property
+来源: 物理知识清单：《专题17 热学（知识清单）（全国通用）（教师版）》（registry-kb-physics-knowledge-list:physics）
+类型: CONCEPT_EXPLANATION
+[title] 液晶
+[summaryMarkdown] 液晶介于固态与液态之间，兼具流动性和光学各向异性。
+[applicabilityMarkdown] 理解液晶显示原理时使用。
+[contentMarkdown] 液晶像液体一样具有流动性，又像晶体一样分子在某方向排列有序，具有光学各向异性。
+分子排列对微小外界条件（温度、压力、电场等）敏感，排列变化引起光学性质变化。
+[boundaryMarkdown] 液晶态是物质的一种状态，不是液体与晶体的混合物。
+候选（机械预筛，未必对）：无
+

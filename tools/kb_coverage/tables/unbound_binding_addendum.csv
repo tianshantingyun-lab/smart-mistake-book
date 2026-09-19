@@ -1,0 +1,3 @@
+subject,material_slug,node_slug,confidence,evidence,note
+MATH,math-mo-zhongguo-shengyu-dingli,中国剩余定理,high,材料就是中国剩余定理本身；该节点按库内惯例（同系列背景定理各建一点）本次新建,代理判 NONE（当时无该节点）；主循环补建节点后绑定
+BIOLOGY,bio-textbook-biological-weapons-ban,转基因生物的安全性,high,该节点现有材料已含「生物武器包括致病菌类」生殖性克隆设计试管婴儿——是选必3安全与伦理的落点,代理按字面判 NONE；按库内既有先例（同节点已收生物武器材料）绑定

@@ -1173,7 +1173,12 @@
    "sourceId": "registry-kb-biology-misc:biology",
    "sourceLocator": "生物《默写小纸条01 走近细胞（课前5分钟背默）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:使用高倍显微镜观察细胞",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-mo-cell-222",
@@ -1188,7 +1193,12 @@
    "sourceId": "registry-kb-biology-misc:biology",
    "sourceLocator": "生物《默写小纸条01 走近细胞（课前5分钟背默）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:使用高倍显微镜观察细胞",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-mo-cell-223",
@@ -1203,7 +1213,12 @@
    "sourceId": "registry-kb-biology-misc:biology",
    "sourceLocator": "生物《默写小纸条01 走近细胞（课前5分钟背默）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:使用高倍显微镜观察细胞",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-mo-cell-225",
@@ -1898,7 +1913,12 @@
    "sourceId": "registry-kb-biology-misc:biology",
    "sourceLocator": "生物《默写小纸条08 酶和ATP（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:atp的合成和利用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-mo-enzyme-008",
@@ -2413,7 +2433,12 @@
    "sourceId": "registry-kb-biology-textbook-preserve:biology",
    "sourceLocator": "人教版生物学选择性必修3 第四章第2节 关注生殖性克隆人",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:转基因生物的安全性",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-textbook-biological-weapons-ban",
@@ -2428,7 +2453,12 @@
    "sourceId": "registry-kb-biology-textbook-preserve:biology",
    "sourceLocator": "人教版生物学选择性必修3 第四章第3节 禁止生物武器",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:转基因生物的安全性",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "bio-textbook-gene-engineering-uses-medicine-agri",

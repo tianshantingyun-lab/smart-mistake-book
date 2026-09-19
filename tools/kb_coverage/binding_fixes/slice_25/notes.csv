@@ -1,0 +1,30 @@
+subject,material_slug,node_slug,confidence,evidence
+BIOLOGY,bio-energy-assimilation-issue,能量流动,high,材料讲同化量＝摄入量−粪便且粪便能量属上一营养级；该节点别名即含「摄入量≠同化量」「摄入量、同化量与粪便能量的关系」
+BIOLOGY,bio-fj-03-maltose-in-germinating-grain,细胞中的糖类,high,材料讲麦芽糖为植物二糖由两分子葡萄糖缩合且发芽谷粒中含量多；该节点边界即「三种二糖的水解产物与分布」
+BIOLOGY,bio-fj-09-sealed-container-co2,细胞呼吸的影响因素及应用,high,材料讲密闭容器中O2减少与CO2积累逐渐抑制呼吸使CO2生成速率降低；属O2与CO2浓度对细胞呼吸的影响
+BIOLOGY,bio-fj-20-dna-strand-ends,dna的双螺旋结构,medium,材料讲单链5′端为游离磷酸与3′端为羟基且两链走向相反；该节点边界即「两条反向平行的脱氧核苷酸链」（与「dna的结构及特点」有重叠）
+BIOLOGY,bio-fx-assimilation-fates,能量流动,high,材料讲某营养级同化量的四个去向（呼吸散失流向下一营养级流向分解者未被利用）；该节点别名含「同化量一来二去」
+BIOLOGY,bio-fx-lactobacillus-characters,传统发酵技术,high,材料讲乳酸菌厌氧原核与乳酸发酵并联系泡菜亚硝酸盐；该节点边界即利用厌氧乳酸菌的传统发酵且已含泡菜亚硝酸盐别名
+BIOLOGY,bio-hypothalamus-circadian-rhythm,下丘脑的功能,medium,材料讲下丘脑（视交叉上核）是昼夜节律控制中心；属下丘脑功能之一（另一节点侧重稳态调节链条）
+BIOLOGY,bio-kb-sterol-types-functions,细胞中的脂质,high,材料讲固醇三成员胆固醇性激素维生素D的功能；该节点别名含「性激素的功能」与「细胞中的脂质·种类及功能」
+BIOLOGY,bio-kb2-27-aldosterone,水和无机盐平衡的调节,high,材料讲醛固酮由肾上腺皮质分泌并吸钠泌钾维持血钠血钾平衡；该节点别名含「醛固酮与抗利尿激素调节血钠」
+BIOLOGY,bio-kb3-f4-s55-n03,细胞不能无限长大的原因,high,材料给出模型表面积体积与葡萄糖扩散深度数据以解释细胞不能无限长大；同源同节的n04条目已绑此节点
+BIOLOGY,bio-photosynthetic-dawn-reading,辨析真正光合速率-净光合速率和呼吸速率,medium,材料教光响应曲线逐点判读（起点为呼吸速率交点为零净光合平台为最大净光合）并强调先看纵轴净或真光合语义；同源同题型的「光饱和点」条目已绑此节点
+BIOLOGY,bio-storage-low-o2-high-co2-low-temp,细胞呼吸原理的应用,high,材料讲低O2高CO2与零上低温抑制呼吸以减少消耗的保鲜手段；该节点边界即果蔬保鲜与粮食储存的依据
+CHEMISTRY,chem-fx-chen-re-guo-lv-hou-f71x03,重结晶,medium,材料讲趁热过滤后向滤液加水稀释再加热沸腾并冷却结晶以防杂质析出提高纯度；该节点边界即重结晶的溶剂选择与冷却结晶依据
+CHEMISTRY,chem-fx-entry-f09x10,fe2-fe3-的检验方法,high,材料给出Fe2+加NaOH先生成白色沉淀再迅速变灰绿最后变红褐的检验现象；属该节点Fe2+检验试剂与现象的范围
+CHEMISTRY,chem-fx-guang-fan-shi-zhi-zhi-neng-du-chu-zhen-f65x14,ph试纸的规范使用,high,材料讲广泛pH试纸只能读出整数且不能测漂白性与强氧化性试剂；与该节点边界第(3)(4)条逐字对应
+CHEMISTRY,chem-fx-pai-kong-qi-fa-f28x08,气体制备,medium,材料讲向上排空气法的适用条件（密度大于空气且不与之反应）与Cl2 SO2 NO2 CO2；属气体制备的收集环节（同讲义排水法条目同绑此节点）
+CHEMISTRY,chem-fx-shi-yang-chu-shi-zhi-liang-wei-f01x05,热重分析法,medium,材料给出试样初始质量m0与失重后质量m1及失重质量Δm与失重百分数的算式；该节点边界即区分失重质量与残留固体质量的热重分析
+CHEMISTRY,chem-fx-xiang-yuan-li-f53x06,对数折线图四步法,medium,材料是图像分析的第(3)想原理写电离平衡常数表达式与第(4)用公式作对数计算两步；属对数折线图的四步破解法
+CHEMISTRY,chem-fx-yin-ji-f41x07,电解饱和食盐水-氯碱工业,high,材料给出阴极反应2H2O+2e-=H2↑+2OH-与电解饱和食盐水总反应及食盐精制；该节点边界即电极反应与粗盐精制
+CHEMISTRY,chem-hj-jianya-zhengfa-cuiqu,萃取,medium,材料三段以萃取原理与反萃取（被萃物返水相有机相再生循环）为主并含减压蒸发；该节点边界即含反萃取方法
+MATH,math-divider-preallocation-method,隔板法,high,材料讲某组至少k个时先预分配k−1个再按每组至少1个插板得C_n−k^m−1；即隔板法的限制条件变式
+MATH,math-fx-sanjiao-bianhuan-nixiang,函数y-asin-ωx-φ-的图象,high,材料讲由变换前后解析式逆向拆解y=Asin(ωx+φ)的平移与伸缩并用特殊点验证；该节点别名含「三角函数图象变换的两条途径」
+MATH,math-hj-s36-construct-xfx,导数构造法解函数不等式,high,材料讲xf'(x)±nf(x)型构造F=x^n f(x)或f(x)/x^n；该节点别名含「f'(x)±nf(x) 型的指数构造」与「构造 xf(x) 与 f(x)/x 型函数」
+MATH,math-inverse-construct-product-rule,导数构造法解函数不等式,high,材料讲由乘积求导结构f'(x)g(x)+f(x)g'(x)>0逆向构造h=fg再借单调性解不等式；同源系列材料均绑此节点
+MATH,math-mo-qiedianxian-fangcheng,圆锥曲线的切点弦,high,材料给出圆椭圆双曲线抛物线的切点弦方程且点须在曲线外；该节点边界即圆锥曲线切点弦方程与点在曲线外的前提
+MATH,math-period-mobius-fraction-iteration,函数的周期性,high,材料讲f(x+a)=(1−f(x))/(1+f(x))迭代两次还原故T=2a；属该节点「函数周期性的六个常用结论」
+PHYSICS,phys-fx-live-rod-dead-rod,活杆与定杆模型,high,材料讲光滑铰链活杆平衡时弹力沿杆而被固定的死杆弹力方向不定；即活杆与定杆模型的受力区别
+PHYSICS,phys-hj2-sijie-huojie-moxing,活结与死结模型,high,材料讲死结把绳分成两段张力不一定相等而活结两侧张力相等；与节点同名且同类材料均绑此节点
+PHYSICS,phys-kb-hall-effect-voltage,霍尔元件,high,材料讲载流子在磁场中偏转达平衡形成霍尔电压并可测磁感应强度；即霍尔元件的原理与霍尔电压

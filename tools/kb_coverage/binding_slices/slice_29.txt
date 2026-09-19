@@ -1,0 +1,366 @@
+# 绑定作业片 29：29 条无绑定材料
+#
+# 任务：为每条材料选定它应该绑定的知识点节点（就是讲题时该材料服务的那个点）。
+# 交付（写到 tools/kb_coverage/binding_fixes/slice_29/notes.csv）：
+#   subject,material_slug,node_slug,confidence,evidence
+#   （node_slug 用下面的节点表里的 slug；确实没有合适的写 NONE；
+#     evidence 一句话说明依据；字段内不要有 ASCII 逗号）
+#
+# 硬规矩：
+#   · 宁缺勿错：不确定就 confidence=low 或写 NONE —— 错绑会让检索喂错材料
+#   · 只能从本学科节点表里选（见 tools/kb_coverage/binding_slices/nodes/nodes_<学科>.txt）
+#   · 一条材料只绑一个节点（就是它最主要服务的那个点）
+
+==============================================================================
+## BIOLOGY | bio-exp-control-types
+来源: 《狂K重点》生物 P428 重难20·题型1（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 对照设置四类型：空白对照、条件对照、相互对照、自身对照
+[summaryMarkdown] 按实验需要选择对照类型：不加处理的空白对照、用已知效应替代的条件对照、多组互比的相互对照、同一对象前后的自身对照。
+[applicabilityMarkdown] 实验方案设计。
+[contentMarkdown] 1. 空白对照：不给任何处理（或给生理盐水）。
+2. 条件对照：给某种已知效应的处理作参照（如'熊果素+'组）。
+3. 相互对照：不单独设对照，各组互为对照。
+4. 自身对照：同一对象处理前后对比。
+[boundaryMarkdown] 选择依据：是否能单独剥离自变量效应。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-03-sudan-stains-fat-only
+来源: 生物讲义《第03讲 糖类和脂质（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 苏丹Ⅲ只染脂肪不染磷脂
+[summaryMarkdown] 脂质中只有脂肪可被苏丹Ⅲ染液染成橘黄色，磷脂不显此反应。
+[applicabilityMarkdown] 检测反应特异性的判断。
+[contentMarkdown] 1. 苏丹Ⅲ染液使脂肪呈橘黄色。
+2. 磷脂虽属脂质，但不能被苏丹Ⅲ染成橘黄色。
+[boundaryMarkdown] 脂质检测反应通常针对脂肪，磷脂无此显色反应。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-10-chlorophyll-a-b-absorption-bands
+来源: 生物讲义《第10讲 光合作用（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 叶绿素a与叶绿素b吸收光谱带的差异
+[summaryMarkdown] 叶绿素a在红光部分的吸收带比叶绿素b偏向长波且更宽；叶绿素b在蓝紫光部分的吸收带比叶绿素a宽。
+[applicabilityMarkdown] 吸收光谱细节。
+[contentMarkdown] 1. 叶绿素a红光吸收带偏向长波方向，且吸收带较宽。
+2. 叶绿素b在蓝紫光部分的吸收带比叶绿素a宽。
+3. 二者主要都吸收红光和蓝紫光。
+[boundaryMarkdown] 遮光（弱光）环境下叶绿素a/b降低以增强捕光能力。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-23-darwin-limitation
+来源: 生物讲义《第23讲 生物的进化（复习讲义）（全国通用）（解析版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 达尔文学说的局限性
+[summaryMarkdown] 达尔文学说对遗传变异本质缺乏科学解释，局限于个体水平，认为物种形成是渐变的。
+[applicabilityMarkdown] 学说局限判断。
+[contentMarkdown] 1. 对遗传和变异的本质不能作出科学解释，认识局限于性状水平。
+2. 对生物进化的解释局限于个体水平。
+3. 认为物种形成都是渐变的结果，不能很好解释物种大爆发。
+[boundaryMarkdown] 达尔文以后的理论以种群为基本单位，深入到基因水平。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fx-counting-formula
+来源: 生物方法类《2026届高三复习：微生物培养发酵工程高考题解题技巧和高考题目类型》（registry-kb-biology-methods:biology）
+类型: METHOD_MODEL
+[title] 活菌计数的公式与平板菌落数选择
+[summaryMarkdown] 每克样品活菌数＝（平板平均菌落数÷涂布体积）×稀释倍数，选用30-300菌落的平板计数。
+[applicabilityMarkdown] 微生物计数计算与数据处理的题目。
+[contentMarkdown] 1. 公式：每克（毫升）样品活菌数＝（C÷V）×M，C为平均菌落数，V为涂布体积，M为稀释倍数。
+2. 只统计菌落数在30-300的平板，取平均值，减少偶然误差。
+3. 设置空白对照检测培养基灭菌是否合格；设置未接种对照组排除污染。
+[boundaryMarkdown] 稀释涂布计数结果通常偏小（两个或多个活菌连在一起形成一个菌落）；显微镜直接计数结果偏大（含死菌、无法区分死活）。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fx-monosome-trisome-location
+来源: 生物方法类《第28讲　染色体变异与育种》（registry-kb-biology-methods:biology）
+类型: METHOD_MODEL
+[title] 利用单体、三体、缺体定位基因
+[summaryMarkdown] 让待测个体与非整倍体（三体、单体或缺体）杂交测交，由后代性状分离情况判断基因是否位于该染色体。
+[applicabilityMarkdown] 非整倍体基因定位类新情境大题。
+[contentMarkdown] 1. 三体定位：待测个体与野生型某染色体三体杂交，再用F1三体与缺失（或隐性）个体测交，观察后代野生型比例偏离1:1则该基因可能位于该染色体。
+2. 单体定位：隐性个体与缺失一条染色体的显性单体杂交，F1中隐性个体出现说明基因在该条染色体上。
+3. 缺失定位：染色体片段缺失杂合体与隐性个体杂交，出现假显性可定位缺失区段内的基因。
+[boundaryMarkdown] 前提是三体（或单体）产生的配子均可育、后代均存活；分析时要分别写出n与n+1配子的基因组成。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-info-extraction-bar-chart
+来源: 《狂K重点》生物 P428 重难20·题型2（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 柱状图信息：各组自变量与因变量、可进一步求相差值
+[summaryMarkdown] 柱状图给出不同实验组的自变量与因变量，可比较组间差值获取信息。
+[applicabilityMarkdown] 柱状图分析题。
+[contentMarkdown] 柱状图信息：柱状图给出的是不同实验组的自变量和因变量，可进一步根据每一组实验柱数值求出相差值，从而获取组间差异信息。
+[boundaryMarkdown] 注意纵轴是否从 0 开始（影响差值直观比较）。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb-water-18o-irrigation-judgment
+来源: 生物知识清单：《第11讲 细胞代谢综合分析（知识清单）（全国通用）（学生版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] H2(18)O浇灌植物后18O的去向判定
+[summaryMarkdown] 用H2(18)O浇灌植物，周围空气中的H2O、O2、CO2都能检测到18O。
+[applicabilityMarkdown] 同位素示踪类判断。
+[contentMarkdown] 1. 蒸腾作用使H2(18)O以水蒸气形式进入空气。
+2. 光反应中H2(18)O光解产生18O2进入空气。
+3. 细胞呼吸第二阶段水参与反应，18O进入CO2。
+[boundaryMarkdown] 此判定需植物正常进行光合与呼吸。
+候选（机械预筛，未必对）：光反应（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-kb2-28-b-cell-activation
+来源: 生物知识清单：《第28讲 免疫调节（知识清单）（全国通用）（教师版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] B细胞活化的两个信号
+[summaryMarkdown] B细胞活化需要病原体（抗原）的直接刺激和辅助性T细胞表面分子变化并与B细胞结合这两个信号。
+[applicabilityMarkdown] 判断B细胞活化条件、分析免疫缺陷病因时使用。
+[contentMarkdown] 第一个信号：病原体（抗原）与B细胞接触；
+第二个信号：辅助性T细胞表面的特定分子发生变化并与B细胞结合；细胞因子能促进B细胞的分裂、分化。
+[boundaryMarkdown] 为B细胞激活提供第二个信号的是辅助性T细胞表面的特定分子变化，不是病毒与辅助性T细胞的接触。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb3-f5-s5-1-n04
+来源: 生物知识清单《2027届高三生物一轮复习知识清单5：细胞的能量供应和利用》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 酶的来源
+[summaryMarkdown] 作用原理是降低化学反应的活化能。
+[applicabilityMarkdown] 复习“降低化学反应活化能的酶”考点或解答涉及“酶的来源”的题目时使用。
+[contentMarkdown] 酶的来源是活细胞产生的；酶的作用是催化作用；作用原理是降低化学反应的活化能；酶的本质是绝大多数酶是蛋白质，少数是RNA；
+酶的合成原料是氨基酸、核糖核苷酸；合成场所是核糖体、细胞核。
+[boundaryMarkdown] 一轮复习结论性要点，表述以人教版现行教材为准；具体数值可能因教材版本略有差异。
+候选（机械预筛，未必对）：氨基酸（名字出现）；核苷酸（名字出现）；蛋白质（名字出现）；核糖体（名字出现）；酶的本质（名字出现）；酶的作用（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-primer-pair-complement-dimer
+来源: 《狂K重点》生物 P418 重难19·题型1（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 引物设计原则二·引物间互补：避免连续 4 个及以上碱基互补，尤其 3' 端重叠，防引物二聚体
+[summaryMarkdown] 两种引物间不能有连续 4 个及以上的碱基互补，尤其应避免 3' 端互补重叠，以防形成引物二聚体。
+[applicabilityMarkdown] 引物序列评价题。
+[contentMarkdown] 避免引物之间互补：两种引物之间不能有连续 4 个及以上的碱基互补，尤其应避免 3' 端的互补重叠，以防形成引物二聚体（二聚体被扩增、消耗原料、降低目标产物量）。
+[boundaryMarkdown] 3' 端互补最危险，因 Taq 酶可从 3' 端延伸。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-textbook-biological-weapons-ban
+来源: 人教版生物学选择性必修3 第四章第3节 禁止生物武器（registry-kb-biology-textbook-preserve:biology）
+类型: CONCEPT_EXPLANATION
+[title] 禁止生物武器：公约签署国承诺不发展、不生产、不储存生物武器
+[summaryMarkdown] 生物武器是指利用致病菌、病毒、生化毒剂等制成的大规模杀伤性武器；1972 年《禁止生物武器公约》签署国承诺在任何情况下不发展、不生产、不储存生物武器，并销毁现有储备。
+[applicabilityMarkdown] 生物技术与安全伦理（选必3）考点。
+[contentMarkdown] 1. 生物武器种类：致病菌（鼠疫杆菌、炭疽杆菌）、病毒（天花病毒）、生化毒剂（肉毒杆菌毒素）及经基因重组改造的致病菌。
+2. 特点：传染性强、传播途径广、成本低、危害持续时间长、主要伤害平民。
+3. 公约：1972 年签署《禁止生物武器公约》，中国是缔约国；公约缺乏核查机制是遗留问题。
+[boundaryMarkdown] 禁止生物武器是国际共识与法律义务；论述题需答‘种类举例+危害特点+公约立场’三层。
+候选（机械预筛，未必对）：基因重组（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-chu-za-si-yuan-ze-f67x06
+来源: 化学方法类《（重点·方法·点拨）第64讲 物质的分离与提纯- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: METHOD_MODEL
+[title] 除杂“四原则”
+[summaryMarkdown] 1．除杂“四原则”。
+[applicabilityMarkdown] 物质分离提纯方案选择与操作要点判断时使用。
+[contentMarkdown] 1．除杂“四原则”
+(1)不增，不得引入新杂质。
+(2)不减，尽量不减少被提纯和分离的物质。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：分离提纯（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-entry-f58x03
+来源: 化学方法类《（重点·方法·点拨）第55讲 有机化合物的空间结构　同系物　同分异构体- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] CnH2nO2
+[summaryMarkdown] CnH2nO2：1；饱和一元羧酸和酯、羟基醛等。
+[applicabilityMarkdown] 有机推断、官能团性质判断与方程式书写时使用。
+[contentMarkdown] CnH2nO2：1；饱和一元羧酸和酯、羟基醛等
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-he-xin-fan-ying-f56x01
+来源: 化学方法类《（重点·方法·点拨）第53讲 无机化工流程题的解题策略- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 核心反应
+[summaryMarkdown] 1．核心反应——陌生方程式的书写。
+[applicabilityMarkdown] 分析氧化还原反应、比较氧化性还原性强弱与电子转移数目时使用。
+[contentMarkdown] 1．核心反应——陌生方程式的书写
+关注箭头的指向：箭头指入→反应物，箭头指出→生成物。
+(1)氧化还原反应：熟练应用氧化还原规律判断产物，并根据化合价升降相等配平。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：电子转移（名字出现）；化合价（名字出现）；氧化还原反应（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-pei-wei-shu-f78x05
+来源: 化学方法类《考点01 配位键与配合物（学生版）（全国通用）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 配位数
+[summaryMarkdown] 配位数：直接同中心原子(或离子)配位的含有孤电子对的分子(或离子)的数目，中心原子(或离子)的配位数一般为2、4、6、8等。
+[applicabilityMarkdown] 比较键角、判断分子构型与中心原子杂化方式时使用。
+[contentMarkdown] 配位数：直接同中心原子(或离子)配位的含有孤电子对的分子(或离子)的数目，中心原子(或离子)的配位数一般为2、4、6、8等。如：[Cu(NH3)4]2+的配位数为4，[Ag(NH3)2]+的配位数为2，[Fe(CN)6]4-中配位数为6。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-shi-zheng-tu-ran-zeng-da-f47x02
+来源: 化学方法类《（重点·方法·点拨）第44讲 常考化学反应速率和化学平衡图像的分析- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] t1时v′正突然增大
+[summaryMarkdown] t1时v′正突然增大，v′逆逐渐增大；v′正>v′逆，平衡向正反应方向移动：t1时其他条件不变，增大反应物的浓度。
+[applicabilityMarkdown] 判断平衡状态、分析平衡移动方向与相关计算时使用。
+[contentMarkdown] t1时v′正突然增大，v′逆逐渐增大；v′正>v′逆，平衡向正反应方向移动：t1时其他条件不变，增大反应物的浓度
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-xing-cheng-tiao-jian-f80x01
+来源: 化学方法类《考点03 大π键（离域π键、大派键）（学生版）（全国通用）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 形成条件
+[summaryMarkdown] 形成条件：（1）所有参与形成离域π键的原子必须在同一直线或同一平面上，所以中心原子只能采取sp2或sp1杂化。
+[applicabilityMarkdown] 比较键角、判断分子构型与中心原子杂化方式时使用。
+[contentMarkdown] 形成条件：（1）所有参与形成离域π键的原子必须在同一直线或同一平面上，所以中心原子只能采取sp2或sp1杂化。；（2）参与离域π键的原子都必须提供一个或两个互相平行的p轨道。；（3）形成离域π键的p电子的总数小于p轨道数的两倍。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-you-shi-wei-jian-hua-zhuang-zhi-f22x09
+来源: 化学方法类《（重点·方法·点拨）第19讲 硫及其氧化物- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 有时为简化装置
+[summaryMarkdown] 【注意】　有时为简化装置，可将除去SO2和检验SO2是否除尽合并为一个装置，用较浓的酸性KMnO4溶液，现象是酸性KMnO4溶液颜色变浅，但不褪成无色。
+[applicabilityMarkdown] 离子或物质检验、实验现象描述与推断题作答时使用。
+[contentMarkdown] 【注意】　有时为简化装置，可将除去SO2和检验SO2是否除尽合并为一个装置，用较浓的酸性KMnO4溶液，现象是酸性KMnO4溶液颜色变浅，但不褪成无色。
+[boundaryMarkdown] 【注意】　有时为简化装置，可将除去SO2和检验SO2是否除尽合并为一个装置，用较浓的酸性KMnO4溶液，现象是酸性KMnO4溶液颜色变浅，但不褪成无色。
+候选（机械预筛，未必对）：物质检验（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-hj-nengceng-nengji-rongna
+来源: 化学讲义《第02讲 原子结构与性质（复习讲义）（全国通用）（学生版）》（registry-kb-chemistry-handout:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 能层、能级的容纳规律
+[summaryMarkdown] 能层序数等于该能层包含的能级数；s、p、d、f 能级最多容纳电子数为轨道数的 2 倍。
+[applicabilityMarkdown] 书写电子排布、计算容纳电子数时使用。
+[contentMarkdown] 能层：按电子能量差异分层，用 n 表示，n 越大能量越高。
+能级：同一能层中按电子能量差异再分，第 n 能层的能级由低到高为 ns、np、nd、nf…；能层序数等于该能层包含的能级数（第三能层有 3 个能级）。
+容纳规律：s、p、d、f 能级分别有 1、3、5、7 个轨道，每个轨道最多容纳 2 个电子，即各能级最多容纳 2、6、10、14 个电子。
+每层最多容纳 2n2 个电子。
+[boundaryMarkdown] 能量相同的轨道为简并轨道。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-fangshuo-1bijin2-xiaoyu-4nfjian1
+来源: 《狂K重难点》数学 书页P409，重难点29（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: CONCEPT_EXPLANATION
+[title] 放缩结论：1/n² < 4/(4n²−1)
+[summaryMarkdown] $\frac{1}{n^2}=\frac{4}{4n^2}<\frac{4}{4n^2-1}=2\left(\frac{1}{2n-1}-\frac{1}{2n+1}\right)$。
+[applicabilityMarkdown] 分母凑成平方差结构的上界放缩。
+[contentMarkdown] $\frac{1}{n^2}=\frac{4}{4n^2}<\frac{4}{4n^2-1}=2\left(\frac{1}{2n-1}-\frac{1}{2n+1}\right)$。
+[boundaryMarkdown] 先同乘 4 再放缩，是更精细的上界估计。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-fx-tonggou-fa-sanmoxing
+来源: 数学方法类《专题一　微专题1　常用构造函数的几种方法》（registry-kb-math-methods:math）
+类型: METHOD_MODEL
+[title] 指对同构的三大模型
+[summaryMarkdown] $a^a\le b^{\ln b}$ 型不等式可同构为 $x e^x$、$x\ln x$、$e^x\pm x$ 三类标准模型，借同一函数单调性比较。
+[applicabilityMarkdown] 不等式两端分别含指数式与对数式、可整理成同构结构的证明与恒成立问题。
+[contentMarkdown] 1. 模型一：$a e^a\le b\ln b\iff a e^a\le(\ln b)e^{\ln b}$，构造 $g(x)=xe^x$，比较 $g(a)$ 与 $g(\ln b)$。
+2. 模型二：$a e^a\le b\ln b\iff e^{a+\ln a}\le e^{\ln b+\ln(\ln b)}$ 型，构造 $f(x)=x\ln x$（$a\ln a\le \ln b\cdot\ln(\ln b)$ 结构）。
+3. 模型三：$e^a\pm a>b\pm\ln b\iff e^a\pm\ln e^a>b\pm\ln b$，构造 $f(x)=e^x\pm x$ 或 $g(x)=x\pm\ln x$。
+4. 操作：先凑出“同构”外观（乘 $e$、取对数、加常数），再对同一函数按单调性脱壳。
+[boundaryMarkdown] 同构前必须统一变量范围（如 $\ln b$ 要求 $b>1$）；变形要恒等，避免“凑”出不等价的式子。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-hj-s45-five-points
+来源: 数学讲义《第四章 §4.5　三角函数的图象与性质.docx》（registry-kb-math-handout:math）
+类型: CONCEPT_EXPLANATION
+[title] 五点法作图
+[summaryMarkdown] 正弦、余弦函数在一个周期 [0,2π] 内的五个关键点：最高点、零点、最低点交替。
+[applicabilityMarkdown] 画三角函数简图、确定图象特征。
+[contentMarkdown] 1. $y=\sin x$：$(0,0)$，$\left(\dfrac{\pi}{2},1\right)$，$(\pi,0)$，$\left(\dfrac{3\pi}{2},-1\right)$，$(2\pi,0)$。
+2. $y=\cos x$：$(0,1)$，$\left(\dfrac{\pi}{2},0\right)$，$(\pi,-1)$，$\left(\dfrac{3\pi}{2},0\right)$，$(2\pi,1)$。
+[boundaryMarkdown] 五点法对 y=Asin(ωx+φ) 同样适用，令相位取五个值。
+候选（机械预筛，未必对）：余弦函数（名字出现）
+
+==============================================================================
+## MATH | math-isomorphic-quotient-model-xlnx-eexx
+来源: 《狂K重难点》数学 P392 重难16·1(1)续（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: METHOD_MODEL
+[title] 积（商）型同构模型二：$\dfrac{\mathrm{e}^{a}}{a}<\dfrac{b}{\ln b}$ 型化为 $\dfrac{\mathrm{e}^{a}}{\mathrm{e}^{\ln a}}<\dfrac{b}{\ln b}$，构造 $f(x)=\dfrac{x}{\ln x}$ 或 $g(x)=\dfrac{\mathrm{e}^{x}}{x}$
+[summaryMarkdown] 形如 $\dfrac{\mathrm{e}^{a}}{a}<\dfrac{b}{\ln b}$ 的不等式，利用 $a=\mathrm{e}^{\ln a}$ 化为 $\dfrac{\mathrm{e}^{a}}{\mathrm{e}^{\ln a}}<\dfrac{b}{\ln b}$，构造 $f(x)=\dfrac{x}{\ln x}$（$x\neq 1$）或 $g(x)=\dfrac{\mathrm{e}^{x}}{x}$（$x\neq 0$）。
+[applicabilityMarkdown] 『指数式与对数式各带一个变量作分母』型不等式的同构。
+[contentMarkdown] 1. 配凑：$\dfrac{\mathrm{e}^{a}}{a}<\dfrac{b}{\ln b}\Leftrightarrow\dfrac{\mathrm{e}^{a}}{\mathrm{e}^{\ln a}}<\dfrac{b}{\ln b}$。
+2. 构造 $f(x)=\dfrac{x}{\ln x}$（$x\neq 1$）或 $g(x)=\dfrac{\mathrm{e}^{x}}{x}$（$x\neq 0$）。
+3. 判断新函数单调性，去外层结构得 $\mathrm{e}^{a}$ 与 $b$（或 $a$ 与 $\ln b$）的比较。
+[boundaryMarkdown] $\dfrac{x}{\ln x}$ 要求 $x>0$ 且 $x\neq 1$；$\dfrac{\mathrm{e}^{x}}{x}$ 要求 $x\neq 0$，去外壳前须确认单调区间。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-mo-shuyu-baohan-bianxi
+来源: 数学《教考衔接十六 教材中的易混易错杜绝再错学案》（registry-kb-math-misc:math）
+类型: CONCEPT_EXPLANATION
+[title] $\in$、$\subseteq$ 与 $\subset$ 的层次区分
+[summaryMarkdown] $\in$ 连接元素与集合，$\subseteq$ 连接集合与集合，$\subset$ 在立体几何中表示线在面内。
+[applicabilityMarkdown] 符号书写与关系判断。
+[contentMarkdown] 1. $\in$：表示元素与集合的从属关系，如 $0\in\{0\}$；2. $\subseteq$：集合与集合的包含关系（可相等）；3. $\subset$：在立体几何中常表示直线在平面内，如 $l\subset\alpha$；4. $\subseteq$ 与 $\subsetneqq$ 的区别在“可相等”与“真包含”。
+[boundaryMarkdown] 元素与集合之间不能用 $\subseteq$，集合与集合之间不能用 $\in$（除非该集合又是更大集合的元素）。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-set-line-x-plus-by-plus-c-form
+来源: 《狂K重难点》数学 P419，重难点36·圆与圆的公切线（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: METHOD_MODEL
+[title] 设直线为 x+by+c=0 型可避免讨论斜率不存在
+[summaryMarkdown] 可能垂直于 x 轴的直线设成 x+by+c=0，b=0 即竖直线，免分类讨论。
+[applicabilityMarkdown] 求圆的切线、公切线等可能出现竖直线的设线环节。
+[contentMarkdown] 所求直线可能垂直于 $x$ 轴时，设方程为 $x+by+c=0$（$b=0$ 时即竖直线），一次设式覆盖所有情形，避免分类讨论斜率不存在。
+[boundaryMarkdown] 此设法不覆盖水平线以外的讨论需求时仍需检查；求得结果后按 $b$ 是否为零归类整理。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-gong-xing-qiao-shi-zhong
+来源: 《狂K重难点》物理 书页P418，重难点11（registry-lixiangshu-2027-bikuti-kuangk-physics:physics）
+类型: CONCEPT_EXPLANATION
+[title] 拱形桥模型（失重）
+[summaryMarkdown] 拱形桥顶点 $mg-F_N=\frac{mv^2}{r}$，支持力 $F_N=mg-\frac{mv^2}{r}<mg$，处于失重状态。
+[applicabilityMarkdown] 车辆过拱形桥顶点的压力问题。
+[contentMarkdown] 拱形桥模型：$F_{拱}=mg-F_N=\frac{mv^2}{r}$，$F_N=mg-\frac{mv^2}{r}<mg$。
+[boundaryMarkdown] $v\ge\sqrt{gr}$ 时 $F_N\le0$，车将离开桥面（飞车临界）。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-hj3-anti-reflection-coating-flatness
+来源: 物理讲义《第61讲 光的波动性（复习讲义）（湖南专用）（学生版）》（registry-kb-physics-handout:physics）
+类型: CONCEPT_EXPLANATION
+[title] 增透膜与平面平整度检测
+[summaryMarkdown] 增透膜厚度为膜中波长的 $\frac{1}{4}$ 使两反射光相消；干涉条纹弯曲方向判断表面凹凸。
+[applicabilityMarkdown] 理解薄膜干涉的两个典型应用。
+[contentMarkdown] 增透膜的厚度为光在膜中波长的 $\frac{1}{4}$，使膜前后表面反射光的光程差为 $\frac{\lambda}{2}$ 相互抵消，减少反射、增强透射。
+检测平面平整度：将标准样板放在被测表面上观察干涉条纹，条纹向劈尖（空气膜薄处）弯曲处表明表面凹陷，背离弯曲表明凸起（“凹向劈尖”）。
+单缝衍射与双缝干涉比较：衍射条纹宽度不等、中央最宽最亮，间距不等；干涉条纹等间距、亮度基本相同；两者本质都是光波的叠加。
+[boundaryMarkdown] 自然光通过起偏器或界面反射、折射可成为（部分）偏振光。
+候选（机械预筛，未必对）：薄膜干涉（名字出现）
+
+==============================================================================
+## PHYSICS | phys-kb-vernier-micrometer-reading
+来源: 物理知识清单：《专题19 实验相关基础知识和实验仪器的原理及使用（知识清单）（全国通用）（教师版）》（registry-kb-physics-knowledge-list:physics）
+类型: CONCEPT_EXPLANATION
+[title] 游标卡尺与螺旋测微器的读数
+[summaryMarkdown] 游标卡尺不估读，螺旋测微器须估读一位。
+[applicabilityMarkdown] 长度测量读数时使用。
+[contentMarkdown] 游标卡尺：读数等于主尺整毫米数加对齐格数乘精度（10 分度 0.1 mm、20 分度 0.05 mm、50 分度 0.02 mm），不需要估读。
+螺旋测微器：读数等于固定刻度加可动刻度（须估读一位）乘 0.01 mm，如 4.5 + 9.2×0.01 = 4.592 mm。
+[boundaryMarkdown] 螺旋测微器注意半刻度线是否露出。
+候选（机械预筛，未必对）：无
+

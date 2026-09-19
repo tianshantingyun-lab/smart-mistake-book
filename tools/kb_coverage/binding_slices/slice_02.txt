@@ -1,0 +1,376 @@
+# 绑定作业片 02：30 条无绑定材料
+#
+# 任务：为每条材料选定它应该绑定的知识点节点（就是讲题时该材料服务的那个点）。
+# 交付（写到 tools/kb_coverage/binding_fixes/slice_02/notes.csv）：
+#   subject,material_slug,node_slug,confidence,evidence
+#   （node_slug 用下面的节点表里的 slug；确实没有合适的写 NONE；
+#     evidence 一句话说明依据；字段内不要有 ASCII 逗号）
+#
+# 硬规矩：
+#   · 宁缺勿错：不确定就 confidence=low 或写 NONE —— 错绑会让检索喂错材料
+#   · 只能从本学科节点表里选（见 tools/kb_coverage/binding_slices/nodes/nodes_<学科>.txt）
+#   · 一条材料只绑一个节点（就是它最主要服务的那个点）
+
+==============================================================================
+## BIOLOGY | bio-age-structure-types
+来源: 《狂K重点》生物 P429 重难16·题型1（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: CONCEPT_EXPLANATION
+[title] 年龄结构三种类型：增长型、稳定型、衰退型
+[summaryMarkdown] 按老年/成年/幼年个体比例，年龄结构分增长型（幼年多，种群扩大）、稳定型（相当，种群稳定）、衰退型（老年多，种群缩小）。
+[applicabilityMarkdown] 年龄结构预测种群趋势。
+[contentMarkdown] 1. 增长型：幼年个体多、老年个体少→种群增大（未来密度增加）。
+2. 稳定型：各龄级比例相当→种群稳定。
+3. 衰退型：老年个体多、幼年少→种群减小。
+[boundaryMarkdown] 年龄结构只反映'趋势'，不表示当前数量变化。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-exp-irrelevant-variables-constant
+来源: 《狂K重点》生物 P428 重难20·题型1（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 无关变量：保持相同且适宜
+[summaryMarkdown] 除自变量外，各组其他条件（材料、温度、用量、时间等）必须相同且适宜。
+[applicabilityMarkdown] 实验方案设计。
+[contentMarkdown] 确保无关变量相同且适宜：各组实验材料数量与状态、温度、pH、试剂用量、处理时间等保持一致且处于适宜范围。
+[boundaryMarkdown] '相同'是公平，'适宜'是保证生理状态正常。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-04-peptide-disulfide-bonds
+来源: 生物讲义《第04讲 蛋白质和核酸（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 肽键与二硫键的连接位置
+[summaryMarkdown] 同一条肽链内相邻氨基酸以肽键连接，不同肽链间氨基酸可通过二硫键连接。
+[applicabilityMarkdown] 蛋白质化学键判断。
+[contentMarkdown] 1. 一条肽链中相邻氨基酸通过肽键（—CO—NH—）相连接。
+2. 不同肽链之间的氨基酸可通过二硫键等化学键连接。
+[boundaryMarkdown] 胶原蛋白中氮元素主要存在于肽键（—CO—NH—）结构中，不在游离氨基中。
+候选（机械预筛，未必对）：氨基酸（名字出现）；蛋白质（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fj-10-magnesium-chlorosis
+来源: 生物讲义《第10讲 光合作用（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 缺镁与黑暗培养叶片黄化的原因
+[summaryMarkdown] 缺镁使叶绿素合成受阻显类胡萝卜素颜色，黑暗中叶绿素无法合成且被分解而黄化。
+[applicabilityMarkdown] 叶片黄化原因分析。
+[contentMarkdown] 1. Mg是叶绿素的组成元素，缺Mg叶绿素合成受阻，叶片显类胡萝卜素的颜色。
+2. 黑暗中培养的幼苗叶绿素无法合成且逐渐被分解，显黄色。
+3. 高温使作物叶绿素降解，光反应产生的NADPH和ATP减少。
+[boundaryMarkdown] 发黄说明显现的是黄色素（类胡萝卜素），不是合成了新色素。
+候选（机械预筛，未必对）：光反应（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fj-24-blood-through-organs
+来源: 生物讲义《第24讲  内环境与稳态（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: METHOD_MODEL
+[title] 血液流经各器官的物质变化模型
+[summaryMarkdown] 血液流经骨骼肌、肺、肾、胰腺、肝脏后流出端物质含量各有特征变化。
+[applicabilityMarkdown] 器官与内环境交换分析。
+[contentMarkdown] 1. 骨骼肌：O2和营养物质降低，CO2和尿素升高。
+2. 肺：O2升高，CO2降低。
+3. 肾脏：尿素降低。
+4. 胰腺：进食后胰岛素升高，饥饿时胰高血糖素升高。；5. 肝脏：进食后血糖降低，饥饿时血糖升高。
+[boundaryMarkdown] 流出端（B端）与流入端比较是分析器官功能的常用模型。
+候选（机械预筛，未必对）：内环境（名字出现）；胰岛素（名字出现）；胰高血糖素（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fx-electrophoresis-gene-location
+来源: 生物方法类《第20讲　自由组合定律中特殊分离比、探究不同对基因在常染色体上的位置》（registry-kb-biology-methods:biology）
+类型: METHOD_MODEL
+[title] 电泳法与SSR标记定位基因
+[summaryMarkdown] 利用染色体特异SSR标记扩增电泳，若隐性个体的SSR带型与隐性亲本一致，则控制该性状的基因位于该染色体上。
+[applicabilityMarkdown] 结合分子标记的基因定位新情境题。
+[contentMarkdown] 1. 原理：SSR标记与目的基因在染色体上连锁，随染色体一起遗传。
+2. 操作：提取F2隐性个体的DNA，用目标染色体特异SSR引物PCR扩增、电泳。
+3. 判断：若隐性个体SSR扩增带型与隐性亲本基本一致，说明该基因位于该染色体；若带型与两亲本混合一致（1:2:1）则不位于该染色体。
+4. 个别单株出现特殊带型，可能是F1产生配子时发生染色体片段交换。
+[boundaryMarkdown] 电泳图谱带的位置由碱基对数目决定；同数目不同序列的基因需经酶切或测序区分。
+候选（机械预筛，未必对）：基因在染色体上（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fx-osmosis-dynamic-equilibrium
+来源: 生物方法类《2026届高三生物三轮复习人教版高中生物必修一教材插图体现的隐藏知识点》（registry-kb-biology-methods:biology）
+类型: CONCEPT_EXPLANATION
+[title] 渗透平衡时水分子仍双向移动
+[summaryMarkdown] 渗透平衡时水分子并未停止移动，单位时间内双向通过半透膜的水分子数相等。
+[applicabilityMarkdown] 渗透平衡状态判断题。
+[contentMarkdown] 1. 判断：当渗透装置中漏斗液面不再升高时，水分子停止了跨膜运输（×）。
+2. 提示：液面高度稳定说明双向水分子移动达到动态平衡，速率相等但仍在移动。
+[boundaryMarkdown] 动态平衡与静止不动是两回事；任何打破压力差的因素都会重新引起净流动。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-inverse-pcr-unknown-flanking
+来源: 《狂K重点》生物 P419-420 重难19·题型2（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 反向 PCR：扩增已知序列两侧的未知序列
+[summaryMarkdown] 已知某段序列、要扩增其两侧未知序列时，用限制酶将 DNA 环化，以已知序列两端设计一对相反方向引物扩增未知区。
+[applicabilityMarkdown] 未知侧翼序列扩增设计题。
+[contentMarkdown] 1. 适用条件：DNA 某段序列已知、需扩增该段两侧的未知序列。
+2. 过程：用限制酶内切核酸酶切割该 DNA→使片段两端环化（连接）→以已知序列的两条链为模板设计一对相反方向的特异性引物→扩增出未知序列。
+[boundaryMarkdown] 引物方向与常规 PCR 相反是关键特征。
+候选（机械预筛，未必对）：限制酶（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-kb2-02-reducing-sugar-test
+来源: 生物知识清单：《第02讲 细胞中的元素和化合物（知识清单）（全国通用）（教师版）》（registry-kb-biology-knowledge-list:biology）
+类型: METHOD_MODEL
+[title] 还原糖的检测
+[summaryMarkdown] 斐林试剂需现配现用，与还原糖水浴加热后生成砖红色沉淀。
+[applicabilityMarkdown] 检测组织样液中是否含还原糖、分析实验现象时使用。
+[contentMarkdown] 待测组织样液加斐林试剂（甲液和乙液等量混合均匀），50至65摄氏度水浴加热约2分钟，出现砖红色沉淀即含还原糖；
+若不含还原糖，加热后呈蓝色（氢氧化铜自身颜色），不是无色。
+[boundaryMarkdown] 斐林试剂不稳定，需甲乙液分别保存、现配现用；温度过高可能使氢氧化铜分解为黑色氧化铜干扰观察；材料应选白色或无色的（如苹果、梨）。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb2-29-hiv-aids
+来源: 生物知识清单：《第29讲 免疫失调和免疫学的应用（知识清单）（全国通用）（教师版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 艾滋病的病因、传播与预防
+[summaryMarkdown] HIV是逆转录病毒，主要攻击辅助性T细胞，通过性接触、血液和母婴三种途径传播。
+[applicabilityMarkdown] 分析HIV致病机理、判断传播途径时使用。
+[contentMarkdown] HIV遗传物质为RNA（逆转录病毒），单链结构使突变率高、变异类型多，给疫苗研制带来困难；
+致病机理：主要侵入并破坏人体的辅助性T细胞，使患者几乎丧失一切免疫功能，最终死于免疫功能丧失引起的严重感染或恶性肿瘤等；
+传播途径：性接触传播、血液传播、母婴传播。
+[boundaryMarkdown] 艾滋病属于获得性免疫缺陷病（不是先天性）；感染HIV后不能立即检出（有潜伏期）；HIV侵染时进入细胞的不只有RNA（囊膜与细胞膜融合，全部内容物进入）。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb3-f5-s5-1-n10
+来源: 生物知识清单《2027届高三生物一轮复习知识清单5：细胞的能量供应和利用》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 细胞代谢
+[summaryMarkdown] 细胞代谢能够有条不紊地进行，与酶的专一性和酶在细胞中的分布有关。
+[applicabilityMarkdown] 复习“降低化学反应活化能的酶”考点或解答涉及“细胞代谢”的题目时使用。
+[contentMarkdown] 细胞代谢能够有条不紊地进行，与酶的专一性和酶在细胞中的分布有关。
+[boundaryMarkdown] 一轮复习结论性要点，表述以人教版现行教材为准；具体数值可能因教材版本略有差异。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-qpcr-taqman-probe-principle
+来源: 《狂K重点》生物 P420-421 重难19·题型2（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 实时荧光定量 PCR（qPCR）：TaqMan 探针水解释放荧光，Ct 值与起始模板量成反比
+[summaryMarkdown] 荧光探针完整时报告基团荧光被淬灭；延伸时探针被水解、两基团分离而发荧光；荧光信号达到设定阈值时的循环数（Ct 值）越小，起始核酸浓度越高。
+[applicabilityMarkdown] 病毒核酸检测与定量分析题。
+[contentMarkdown] 1. 反应体系中含一对特异性引物和一个 TaqMan 探针（一段特异序列，两端分别标记报告荧光基团与淬灭荧光基团）。
+2. 探针完整时报告荧光被淬灭；扩增时 Taq 酶沿模板移动，其 5'→3' 外切酶活性将探针水解切断→两基团分离→发出荧光信号。
+3. 荧光变异：探针与模板配对杂交→延伸→两基团分离发出荧光。
+4. Ct 值（荧光信号达到设定强度阈值时的循环数）与病毒核酸浓度负相关：浓度越高，Ct 值越小。
+[boundaryMarkdown] 探针必须与靶序列特异配对才能被水解，非特异扩增不发荧光。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-cold-condensation-reflux
+来源: 《狂K重点》化学 书页P406，重难点19 考向1 防止产物损失（registry-lixiangshu-2027-bikuti-kuangk-chemistry:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 冷凝回流防止产物或原料挥发损失
+[summaryMarkdown] 易挥发的液体反应物或产物用竖直冷凝管冷凝回流，减少损失。
+[applicabilityMarkdown] 加热易挥发物质反应时的装置选择。
+[contentMarkdown] 当反应物易挥发或产物易受热分解、挥发时，需在反应装置中加装冷凝回流装置（如竖直的球形冷凝管），使蒸气冷凝后流回反应容器，提高原料利用率、防止产物损失。
+[boundaryMarkdown] 回流用球形冷凝管（竖直），蒸馏用直形冷凝管（倾斜）；两者冷凝水均下进上出。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-cui-qu-yu-fan-cui-qu-f74x10
+来源: 化学方法类《高考化学化学实验基础(选择题)(学生版)-34页》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 萃取与反萃取
+[summaryMarkdown] 4．萃取与反萃取。
+[applicabilityMarkdown] 物质分离提纯方案选择与操作要点判断时使用。
+[contentMarkdown] 4．萃取与反萃取
+(1)理想萃取剂应该满足的条件
+①与原溶剂互不相溶；②与原溶剂及溶质都不反应；③溶质在萃取剂中的溶解度要远大于其在原溶剂中的溶解度。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：分离提纯（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-entry-f76x04
+来源: 化学方法类《高考化学离子检验、推断与共存(学生版)-26页》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] Fe2+
+[summaryMarkdown] Fe2+：先加KSCN溶液再加氯水；先无明显变化，再变红色。
+[applicabilityMarkdown] 判断离子能否大量共存、书写不能共存的原因时使用。
+[contentMarkdown] Fe2+：先加KSCN溶液再加氯水；先无明显变化，再变红色
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-huo-jian-de-di-yi-er-ji-fa-dong-ji-zho-f38x03
+来源: 化学方法类《（重点·方法·点拨）第35讲 反应热的测定与计算- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 火箭的第一、二级发动机中
+[summaryMarkdown] 3．火箭的第一、二级发动机中，所用的燃料为偏二甲肼和四氧化二氮，偏二甲肼可用肼来制备。
+[applicabilityMarkdown] 分析氧化还原反应、比较氧化性还原性强弱与电子转移数目时使用。
+[contentMarkdown] 3．火箭的第一、二级发动机中，所用的燃料为偏二甲肼和四氧化二氮，偏二甲肼可用肼来制备。用肼(N2H4)作燃料，四氧化二氮作氧化剂，二者反应生成氮气和气态水。已知
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：氧化剂（名字出现）；电子转移（名字出现）；氧化还原反应（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-ping-jun-zhi-fa-f03x14
+来源: 化学方法类《第01讲 有机化合物的结构特点与研究方法（学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 平均值法
+[summaryMarkdown] 5．平均值法。
+[applicabilityMarkdown] 解决相关化学计算问题时使用。
+[contentMarkdown] 5．平均值法
+当几种烃混合时，往往能求出其平均分子式。把混合物当成一种烃分子计算时，可以得出平均摩尔质量，进而求出平均分子式。若平均摩尔质量为，两种成分的摩尔质量分别为M1、M2，且M1<M2，则一定有M1<<M2。平均分子式中C、H个数介于两种成分之间，故可确定烃的范围。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：混合物（名字出现）；平均值法（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-si-fan-ying-f76x13
+来源: 化学方法类《高考化学离子检验、推断与共存(学生版)-26页》（registry-kb-chemistry-methods:chemistry）
+类型: METHOD_MODEL
+[title] 四反应
+[summaryMarkdown] (4)四反应——四种反应类型。
+[applicabilityMarkdown] 判断离子能否大量共存、书写不能共存的原因时使用。
+[contentMarkdown] (4)四反应——四种反应类型
+四反应是指离子间通常能发生的四种类型的反应，能相互反应的离子显然不能大量共存。
+①复分解反应：如Ba2+与SO，NH与OH-，H+与CH3COO-等。
+②氧化还原反应：如Fe3+与I-、S2-，NO(H+)与Fe2+等。
+[boundaryMarkdown] 四反应是指离子间通常能发生的四种类型的反应，能相互反应的离子显然不能大量共存。
+候选（机械预筛，未必对）：氧化还原反应（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-xuan-yong-shi-ji-f22x08
+来源: 化学方法类《（重点·方法·点拨）第19讲 硫及其氧化物- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 选用试剂
+[summaryMarkdown] 选用试剂：品红溶液；酸性KMnO4溶液；品红溶液；澄清石灰水。
+[applicabilityMarkdown] 复习相关考点、解答对应试题时使用。
+[contentMarkdown] 选用试剂：品红溶液；酸性KMnO4溶液；品红溶液；澄清石灰水
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-zai-zhong-f21x02
+来源: 化学方法类《（重点·方法·点拨）第18讲 卤族元素　溴、碘单质的提取- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 在HX中
+[summaryMarkdown] (3)在HX中，HF的熔、沸点最高，氢氟酸是弱酸，能腐蚀玻璃。
+[applicabilityMarkdown] 电极反应式书写与电化学装置分析时使用。
+[contentMarkdown] (3)在HX中，HF的熔、沸点最高，氢氟酸是弱酸，能腐蚀玻璃。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：电极反应式（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-hj-yuanzi-fenshuzuobiao-tuying
+来源: 化学讲义《第04讲 晶体结构与性质（举一反三讲义）（学生版）》（registry-kb-chemistry-handout:chemistry）
+类型: METHOD_MODEL
+[title] 原子分数坐标与投影图
+[summaryMarkdown] 用小于 1 的三个数表示原子在晶胞中的位置；投影要明确方向与重叠。
+[applicabilityMarkdown] 确定原子分数坐标、分析晶胞投影图时使用。
+[contentMarkdown] 原子分数坐标：以晶胞参数为单位长度建立坐标系表示原子相对位置，顶角为 (0,0,0)，其余按截距比棱长取值。
+确定方法：由已知原子坐标定坐标系取向；以棱长为 1 个单位；从原子位置向三轴作垂线，截距即坐标。
+投影技巧：明确投影方向；注意不同层微粒可能重叠；把投影位置与三维粒子一一对应；投影共面不等于实际共面，求微粒间距须还原三维。
+[boundaryMarkdown] 对称晶胞可由对称中心推补坐标。
+候选（机械预筛，未必对）：晶胞投影（名字出现）；原子分数坐标（名字出现）
+
+==============================================================================
+## MATH | math-fangshuo-1chuyi-2ndejian1
+来源: 《狂K重难点》数学 书页P409，重难点29（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: CONCEPT_EXPLANATION
+[title] 放缩结论：1/(2ⁿ−1) 裂项放缩（n≥2）
+[summaryMarkdown] $\frac{1}{2^n-1}<\frac{2^{n-1}}{(2^{n-1}-1)(2^n-1)}=\frac{1}{2^{n-1}-1}-\frac{1}{2^n-1}\ (n\geqslant2)$。
+[applicabilityMarkdown] 指数型分式的上界放缩求和。
+[contentMarkdown] $\frac{1}{2^n-1}<\frac{2^{n-1}}{(2^{n-1}-1)(2^n-1)}=\frac{1}{2^{n-1}-1}-\frac{1}{2^n-1}\ (n\geqslant2)$。
+[boundaryMarkdown] 分子放缩为 $2^{n-1}$ 后可裂项，注意 $n\geqslant2$。
+候选（机械预筛，未必对）：裂项放缩（名字出现）
+
+==============================================================================
+## MATH | math-fx-zhangjiao-dingli
+来源: 数学方法类《答题模板10　解三角形公式定理解题技巧 6 类核心题型》（registry-kb-math-methods:math）
+类型: CONCEPT_EXPLANATION
+[title] 张角定理
+[summaryMarkdown] 点 $D$ 在 $BC$ 上，$\angle BAD=\alpha$、$\angle DAC=\beta$，则 $\dfrac{\sin(\alpha+\beta)}{AD}=\dfrac{\sin\alpha}{AC}+\dfrac{\sin\beta}{AB}$。
+[applicabilityMarkdown] 顶点向对边引线（角平分线、中线、高线）且已知张角结构的求长度、比值问题时。
+[contentMarkdown] 1. 内容：$D$ 在线段 $BC$ 上，$\dfrac{\sin(\alpha+\beta)}{AD}=\dfrac{\sin\alpha}{AC}+\dfrac{\sin\beta}{AB}$（$\alpha=\angle BAD$，$\beta=\angle DAC$）。
+2. 推导：由 $S_{\triangle ABC}=S_{\triangle ABD}+S_{\triangle ACD}$ 展开约去 $\dfrac{1}{2}AB\cdot AC\cdot AD$ 即得。
+3. 特例：$AD$ 为角平分线（$\alpha=\beta$）时退化为 $\dfrac{\sin A}{AD}=\dfrac{\sin\alpha}{AC}+\dfrac{\sin\alpha}{AB}$ 型关系，配合角平分线定理使用。
+[boundaryMarkdown] 定理要求 $D$ 在线段 $BC$ 内部（内张角）；$D$ 在延长线上时角度为外角，需改号处理。
+候选（机械预筛，未必对）：角平分线定理（名字出现）；张角定理（名字出现）
+
+==============================================================================
+## MATH | math-hj-s89-chord-formula
+来源: 数学讲义《第八章 §8.9　直线与圆锥曲线的位置关系.docx》（registry-kb-math-handout:math）
+类型: METHOD_MODEL
+[title] 弦长公式与设而不求
+[summaryMarkdown] 弦长 |AB|=√(1+k²)|x₁−x₂|，配合韦达定理整体代换，避免求出交点坐标。
+[applicabilityMarkdown] 求直线被圆锥曲线截得的弦长。
+[contentMarkdown] 1. 联立得 $Ax^2+Bx+C=0$，$\lvert AB\rvert=\sqrt{1+k^2}\cdot\dfrac{\sqrt{\Delta}}{\lvert A\rvert}$。
+2. 设而不求：由韦达定理写 $x_1+x_2$、$x_1x_2$ 代入目标式。
+[boundaryMarkdown] 斜率不存在时直接用竖直弦长计算；抛物线焦点弦用 $x_1+x_2+p$ 更简。
+候选（机械预筛，未必对）：抛物线（名字出现）；弦长公式（名字出现）
+
+==============================================================================
+## MATH | math-kb-axiom-parallel-transitivity
+来源: 数学知识清单：《专题01 立体几何初步（知识清单）（教师版）》（registry-kb-math-knowledge-list:math）
+类型: CONCEPT_EXPLANATION
+[title] 公理 4：平行线的传递性
+[summaryMarkdown] 平行于同一条直线的两条直线互相平行。
+[applicabilityMarkdown] 空间中平行关系的传递。
+[contentMarkdown] 平行于同一条直线的两条直线互相平行。
+[boundaryMarkdown] 空间与平面中都成立，是空间线线平行的基础。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-mo-sitewaerte-dingli
+来源: 数学《专题12 以相关公式、定义、定理、模型为命题背景（附加）（全国通用）（学生版）（会一题通一类系列）》（registry-kb-math-misc:math）
+类型: CONCEPT_EXPLANATION
+[title] 斯特瓦尔特定理
+[summaryMarkdown] $D$ 分 $BC$ 为 $m,n$ 时 $b^2m+c^2n=a(d^2+mn)$。
+[applicabilityMarkdown] 以斯特瓦尔特定理为背景的三角形线段问题。
+[contentMarkdown] 斯特瓦尔特定理：设 $D$ 是 $ ria\angle ABC$ 边 $BC$ 上一点，$BC=a$，$BD=m$，$DC=n$，$AD=d$，则 $b^2m+c^2n=a(d^2+mn)$（$b,c$ 为角 $B,C$ 的对边）。当 $D$ 为中线（$m=n$）时给出中线长公式，$D$ 为内角平分线时给出张角相关结论。
+[boundaryMarkdown] 点 $D$ 在边 $BC$ 内部时用上式，在外部时符号要调整；是背景性结论，考试常以验证、求值形式出现。
+候选（机械预筛，未必对）：斯特瓦尔特定理（名字出现）
+
+==============================================================================
+## MATH | math-tangent-missing-slope-undefined-check
+来源: 《狂K重难点》数学 P418，重难点36·与圆有关的切线问题（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: METHOD_MODEL
+[title] 圆外一点求切线：只求得一个 k 时必查斜率不存在情形
+[summaryMarkdown] 点在圆外只解得一个斜率值时，另一条切线通常是斜率不存在的竖直线。
+[applicabilityMarkdown] 用点斜式设切线求出唯一 k 的情形。
+[contentMarkdown] 当点在圆外且只求得一个 $k$ 的值时，要考虑斜率不存在（垂直于 $x$ 轴）的切线是否符合题意，防止漏解。
+[boundaryMarkdown] 圆外点应有两条切线；点斜式设方程天然丢失竖直线，需补检 $x=x_0$。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-hj-015-live-knot-model
+来源: 物理讲义《第11讲 摩擦力的突变 “活结”和“死结”“动杆”和“定杆”-（讲义）（学生版）》（registry-kb-physics-handout:physics）
+类型: METHOD_MODEL
+[title] 活结模型
+[summaryMarkdown] 同一根绳跨过滑轮或光滑挂钩张力处处相等
+[applicabilityMarkdown] 绳跨滑轮、挂光滑挂钩的平衡问题
+[contentMarkdown] 活结由绳跨过滑轮或挂光滑挂钩形成，绳虽弯曲实为同一根绳，两侧张力大小处处相等，一般以结点为研究对象分析。
+[boundaryMarkdown] 滑轮与挂钩必须光滑。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-hj3-bulb-volt-ampere-exp
+来源: 物理讲义《第35讲 实验：描绘小灯泡的伏安特性曲线（复习讲义）（福建专用）（学生版）》（registry-kb-physics-handout:physics）
+类型: METHOD_MODEL
+[title] 描绘小灯泡伏安特性曲线实验
+[summaryMarkdown] 电流表外接、滑动变阻器分压接法，$I\text{-}U$ 图线为向 U 轴弯曲的曲线。
+[applicabilityMarkdown] 完成描绘小灯泡伏安特性曲线的实验。
+[contentMarkdown] 电路选择：小灯泡电阻很小，电流表采用外接法；滑动变阻器采用分压式接法，使小灯泡两端电压从零开始连续变化。
+闭合开关前滑片应移到使小灯泡电压为零的一端，防止闭合时电压过大烧坏灯丝；电压接近额定值时缓慢增加，读数后立即断开。
+图线特征：$I\text{-}U$ 图线是向 U 轴（或 $U\text{-}I$ 向 I 轴）弯曲的平滑曲线，原因是温度升高电阻增大；图线上某点电阻为 $U/I$ 而非斜率。
+描点要点：不遗漏 (0,0) 点，用平滑曲线连接，明显偏离的点舍去；在 U≈1 V 附近曲线明显弯曲处描点要密。
+[boundaryMarkdown] $U\text{-}I$ 图线斜率表示电阻，$I\text{-}U$ 图线斜率倒数意义需按坐标定义辨析。
+候选（机械预筛，未必对）：伏安特性曲线（名字出现）
+
+==============================================================================
+## PHYSICS | phys-mo-l06-force-composition-b-4
+来源: 物理《第06讲 力的合成与分解-必备基础知识》（registry-kb-physics-misc:physics）
+类型: CONCEPT_EXPLANATION
+[title] 活结和死结
+[summaryMarkdown] 活结：绳子上的张力大小处处相等；死结：两侧的绳子上张力不一定相等。
+[applicabilityMarkdown] 适用于相关概念辨析、结论套用与解题自查。
+[contentMarkdown] 活结：绳子上的张力大小处处相等；死结：两侧的绳子上张力不一定相等。
+[boundaryMarkdown] 合成分解只保证效果等效，分解结果随实际效果不同而不同。
+候选（机械预筛，未必对）：无
+

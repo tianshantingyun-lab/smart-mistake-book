@@ -1,0 +1,375 @@
+# 绑定作业片 03：30 条无绑定材料
+#
+# 任务：为每条材料选定它应该绑定的知识点节点（就是讲题时该材料服务的那个点）。
+# 交付（写到 tools/kb_coverage/binding_fixes/slice_03/notes.csv）：
+#   subject,material_slug,node_slug,confidence,evidence
+#   （node_slug 用下面的节点表里的 slug；确实没有合适的写 NONE；
+#     evidence 一句话说明依据；字段内不要有 ASCII 逗号）
+#
+# 硬规矩：
+#   · 宁缺勿错：不确定就 confidence=low 或写 NONE —— 错绑会让检索喂错材料
+#   · 只能从本学科节点表里选（见 tools/kb_coverage/binding_slices/nodes/nodes_<学科>.txt）
+#   · 一条材料只绑一个节点（就是它最主要服务的那个点）
+
+==============================================================================
+## BIOLOGY | bio-atp-driven-pump
+来源: 《狂K重点》生物 P378 重难1·题型2（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: CONCEPT_EXPLANATION
+[title] ATP 驱动泵：能量直接来自 ATP 水解
+[summaryMarkdown] ATP 驱动泵直接水解 ATP 供能，逆浓度梯度转运离子（如 Na+-K+ 泵、H+-ATP 酶）。
+[applicabilityMarkdown] 判断转运蛋白能量来源类型。
+[contentMarkdown] ATP 驱动泵：转运蛋白兼具酶活性，水解 ATP 释放能量直接用于转运；典型：Na+-K+ 泵、Ca2+ 泵、H+-ATP 酶。
+[boundaryMarkdown] '直接耗 ATP'是与协同转运的区别点。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-01-all-cells-from-preexisting
+来源: 生物讲义《第01讲 走近细胞（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 所有细胞都来源于先前存在的细胞
+[summaryMarkdown] “所有细胞都来源于先前存在的细胞”是魏尔肖总结提出的，暗示每个细胞都凝聚着漫长的进化史。
+[applicabilityMarkdown] 细胞学说细节判断。
+[contentMarkdown] 1. 魏尔肖总结：所有细胞都来源于先前存在的细胞。
+2. 这暗示身体的每个细胞都凝聚着漫长的进化史。
+3. 细胞通过分裂产生，也可由受精卵发育而来。
+[boundaryMarkdown] “所有细胞来源于先前存在的细胞”不等同于细胞都靠分裂产生（受精卵由精卵融合形成）。
+候选（机械预筛，未必对）：细胞学说（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fj-04-peptide-naming
+来源: 生物讲义《第04讲 蛋白质和核酸（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 二肽、多肽与肽链的命名
+[summaryMarkdown] 由几个氨基酸缩合而成的化合物叫几肽，多个氨基酸缩合成多肽，通常链状少数环状。
+[applicabilityMarkdown] 肽类命名判断。
+[contentMarkdown] 1. 两个氨基酸脱水缩合形成二肽。
+2. 多个氨基酸缩合形成多肽（链状为主，少数环状）。
+3. 多肽含多个肽键，盘曲折叠形成蛋白质。
+[boundaryMarkdown] 环状肽两端无游离的氨基和羧基（主链上），氨基羧基只存在于R基。
+候选（机械预筛，未必对）：氨基酸（名字出现）；脱水缩合（名字出现）；蛋白质（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fj-10-pigment-absorption-spectrum
+来源: 生物讲义《第10讲 光合作用（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 色素的吸收光谱特点
+[summaryMarkdown] 叶绿素主要吸收红光和蓝紫光，类胡萝卜素主要吸收蓝紫光，其他波段并非不吸收。
+[applicabilityMarkdown] 色素与光的吸收判断。
+[contentMarkdown] 1. 色素分布在叶绿体类囊体薄膜上，功能是吸收、传递、转化光能。
+2. 叶绿素a和b主要吸收红光和蓝紫光；胡萝卜素和叶黄素主要吸收蓝紫光。
+3. 对其他波段的光并非不吸收，只是吸收量少。
+[boundaryMarkdown] 光合作用利用的都是可见光；绿光吸收最少，植物工厂不用绿光光源。
+候选（机械预筛，未必对）：叶绿体（名字出现）；类囊体（名字出现）；光合作用（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fj-24-lactic-acid-buffer
+来源: 生物讲义《第24讲  内环境与稳态（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 乳酸进入血液后pH的维持机制
+[summaryMarkdown] 剧烈运动产生的乳酸与血液中NaHCO3反应生成乳酸钠和碳酸，碳酸分解为CO2和水排出。
+[applicabilityMarkdown] pH调节机理情境题。
+[contentMarkdown] 1. 剧烈运动时肌肉产生大量乳酸进入血液。
+2. 乳酸与碳酸氢钠（NaHCO3）反应，生成乳酸钠和碳酸。
+3. 碳酸分解为CO2和水，CO2刺激呼吸中枢使呼吸增强排出。
+4. 乳酸钠经肾脏排出。；5. 血浆pH不会发生大的变化。
+[boundaryMarkdown] 与乳酸反应的是NaHCO3，不是H2CO3。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fx-exp-control-types
+来源: 生物方法类《微专题4：实验专题讲座》（registry-kb-biology-methods:biology）
+类型: METHOD_MODEL
+[title] 对照原则与四种常用对照方法
+[summaryMarkdown] 实验须设对照以减小误差，常用空白对照、自身对照、条件对照和相互对照（对比实验）。
+[applicabilityMarkdown] 识别实验中对照类型、设计对照组的题目。
+[contentMarkdown] 1. 空白对照：对照组不作实验处理（或只加等量溶剂），如注射生理盐水。
+2. 自身对照：同一实验对象处理前后或不同部位对照。
+3. 条件对照：给对照组施以部分相同但非目的性的条件。
+4. 相互对照（对比实验）：不单独设对照，各组之间互为对照，如不同温度组比较。
+[boundaryMarkdown] 注射类实验的空白对照应注射生理盐水而非蒸馏水；对照设置要保证除自变量外条件完全相同。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fx-overlap-extension-pcr
+来源: 生物方法类《高考共鸣点13 特殊PCR技术、双标记基因技术、基因编辑技术》（registry-kb-biology-methods:biology）
+类型: METHOD_MODEL
+[title] 重叠延伸PCR定点突变
+[summaryMarkdown] 重叠延伸PCR用四条引物，中间两条含突变位点且部分互补，经两段PCR、杂交延伸获得突变基因。
+[applicabilityMarkdown] 在目的基因内部引入突变位点的设计题。
+[contentMarkdown] 1. 四条引物：引物1、4为外侧常规引物；引物2、3含突变位点（与模板不互补的突起）且两者部分碱基互补。
+2. 第一次PCR：引物1＋2、引物3＋4分别扩增出两个含重叠区的片段。
+3. 杂交延伸：两片段通过引物2、3互补区配对，在DNA聚合酶作用下延伸成完整双链。
+4. 第二次PCR：用引物1和4扩增得到含突变位点的全长片段，经测序检验。
+[boundaryMarkdown] 只有3′端互补的杂交DNA才能延伸；两反应系统须分开进行以免引物1与4直接扩增出野生型。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-k-value-max-rate
+来源: 《狂K重点》生物 P429 重难16·题型1（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: CONCEPT_EXPLANATION
+[title] S 形曲线最大增长速率发生在 K/2 处
+[summaryMarkdown] S 形曲线中，种群增长速率在数量达到 K/2 时最大；过了 K/2 增长速率减小。
+[applicabilityMarkdown] S 形增长定量分析。
+[contentMarkdown] 1. 数量 < K/2：增长速率随数量增加而增大。
+2. 数量 = K/2：增长速率最大（斜率最大的点）。
+3. 数量 > K/2：增长速率逐渐减小；趋近 K 时减为零。
+[boundaryMarkdown] K/2 是'最大增长速率点'不是'最大值'。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb2-02-three-unique-organic-test
+来源: 生物知识清单：《第02讲 细胞中的元素和化合物（知识清单）（全国通用）（教师版）》（registry-kb-biology-knowledge-list:biology）
+类型: METHOD_MODEL
+[title] 三类有机物检测的“三个唯一”
+[summaryMarkdown] 还原糖检测唯一需要水浴加热，脂肪观察唯一需要显微镜，脂肪检测唯一使用酒精。
+[applicabilityMarkdown] 比较三大物质检测步骤差异、设计实验时使用。
+[contentMarkdown] 唯一需要水浴加热——还原糖检测，不加热无砖红色沉淀；
+唯一需要显微镜——脂肪颗粒的观察；
+唯一使用酒精——脂肪检测中用50%酒精洗去浮色。
+[boundaryMarkdown] 三个实验都宜选白色或无色材料，避免材料颜色干扰结果。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb2-29-mrna-vaccine
+来源: 生物知识清单：《第29讲 免疫失调和免疫学的应用（知识清单）（全国通用）（教师版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] mRNA疫苗的优点
+[summaryMarkdown] mRNA疫苗能同时诱导体液免疫和细胞免疫，且不进入细胞核、比DNA疫苗更安全。
+[applicabilityMarkdown] 比较新型疫苗与传统疫苗时使用。
+[contentMarkdown] mRNA疫苗能同时诱导体液免疫和细胞免疫，而灭活病毒疫苗仅能诱导体液免疫；
+mRNA疫苗没有进入细胞核，避免了插入基因组导致突变的危险，比DNA疫苗更安全。
+[boundaryMarkdown] 灭活病毒疫苗不含病毒核酸、无法复制增殖，对人体安全，但只激活体液免疫。
+候选（机械预筛，未必对）：体液免疫（名字出现）；细胞免疫（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-kb3-f5-s5-1-n11
+来源: 生物知识清单《2027届高三生物一轮复习知识清单5：细胞的能量供应和利用》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 酶活性
+[summaryMarkdown] 酶活性是指酶催化特定化学反应的能力。
+[applicabilityMarkdown] 复习“降低化学反应活化能的酶”考点或解答涉及“酶活性”的题目时使用。
+[contentMarkdown] 酶活性是指酶催化特定化学反应的能力。酶活性可用在一定条件下酶所催化某一反应的化学反应速率表示。
+[boundaryMarkdown] 一轮复习结论性要点，表述以人教版现行教材为准；具体数值可能因教材版本略有差异。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-ratio-sum-below16-lethal
+来源: 《狂K重点》生物 P392 重难6·题型2（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 两对基因子代比例之和小于 16 → 存在致死
+[summaryMarkdown] 独立遗传等位基因的子代比例之和小于 16 时，说明存在致死现象，转入致死模型分析。
+[applicabilityMarkdown] 致死题的判定入口。
+[contentMarkdown] 两对独立遗传等位基因控制的性状，其自交后代比例之和小于 16 → 存在致死；结合缺失的组与剩余比例匹配具体致死类型。
+[boundaryMarkdown] 先确认两对基因独立遗传（连锁时和 16 系比例不适用）。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-crystallization-method-selection
+来源: 《狂K重点》化学 书页P357，重难点5 锦囊3 产品分离提纯问题（registry-lixiangshu-2027-bikuti-kuangk-chemistry:chemistry）
+类型: METHOD_MODEL
+[title] 蒸发结晶与冷却结晶的选用依据
+[summaryMarkdown] 溶解度受温度影响大用冷却结晶，受温度影响小用蒸发结晶。
+[applicabilityMarkdown] 从溶液中分离提纯晶态产品的方法选择。
+[contentMarkdown] KNO3类（溶解度随温度变化大）：蒸发浓缩→冷却结晶→过滤→洗涤→干燥。
+NaCl类（溶解度受温度影响小）：直接蒸发结晶。
+[boundaryMarkdown] 蒸发浓缩至有晶膜出现再冷却；带结晶水的晶体不宜过度加热防止失水。
+候选（机械预筛，未必对）：分离提纯（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-dan-ti-te-dian-f63x02
+来源: 化学方法类《（重点·方法·点拨）第60讲 合成高分子　有机合成路线设计- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 单体特点
+[summaryMarkdown] 单体特点：含有 的不饱和有机物；含有 的反应基团(如—OH、—COOH、—NH2、—X等)。
+[applicabilityMarkdown] 有机推断、官能团性质判断与方程式书写时使用。
+[contentMarkdown] 单体特点：含有 的不饱和有机物；含有 的反应基团(如—OH、—COOH、—NH2、—X等)
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-entry-f76x05
+来源: 化学方法类《高考化学离子检验、推断与共存(学生版)-26页》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] Cl-
+[summaryMarkdown] Cl-；Br-；I-：AgNO3溶液和稀HNO3；产生白色沉淀AgCl；产生淡黄色沉淀AgBr；产生黄色沉淀AgI。
+[applicabilityMarkdown] 判断离子能否大量共存、书写不能共存的原因时使用。
+[contentMarkdown] Cl-；Br-；I-：AgNO3溶液和稀HNO3；产生白色沉淀AgCl；产生淡黄色沉淀AgBr；产生黄色沉淀AgI
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-jia-de-huo-yan-yan-se-yao-tou-guo-lan-f13x15
+来源: 化学方法类《（重点·方法·点拨）第10讲 碳酸钠和碳酸氢钠　碱金属- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 钾的火焰颜色要透过蓝色钴玻璃观察　②先将铂丝
+[summaryMarkdown] ①钾的火焰颜色要透过蓝色钴玻璃观察　②先将铂丝灼烧到与原来火焰的颜色相同，再蘸取被检验的物质　③每次实验后，要将铂丝用盐酸洗净。
+[applicabilityMarkdown] 离子或物质检验、实验现象描述与推断题作答时使用。
+[contentMarkdown] ①钾的火焰颜色要透过蓝色钴玻璃观察　②先将铂丝灼烧到与原来火焰的颜色相同，再蘸取被检验的物质　③每次实验后，要将铂丝用盐酸洗净
+④实验时最好选择本身颜色较浅的火焰　⑤没有铂丝时，也可以用光洁无锈的铁丝代替
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：物质检验（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-po-huai-chou-yang-ceng-f25x02
+来源: 化学方法类《（重点·方法·点拨）第22讲 氮及其氧化物　硝酸- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 破坏臭氧层
+[summaryMarkdown] ③破坏臭氧层：NO2可使平流层中的臭氧减少，导致地面紫外线辐射量增加。
+[applicabilityMarkdown] 复习相关考点、解答对应试题时使用。
+[contentMarkdown] ③破坏臭氧层：NO2可使平流层中的臭氧减少，导致地面紫外线辐射量增加。
+④NO与血红蛋白结合使人中毒。
+(2)常见的NOx尾气处理方法
+①碱液吸收法
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-suan-ye-sa-zai-pi-fu-shang-f65x12
+来源: 化学方法类《（重点·方法·点拨）第62讲 化学实验基础知识和技能- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 酸液洒在皮肤上
+[summaryMarkdown] 酸液洒在皮肤上：立即用大量水冲洗，然后用3%～5% NaHCO3溶液冲洗。
+[applicabilityMarkdown] 复习相关考点、解答对应试题时使用。
+[contentMarkdown] 酸液洒在皮肤上：立即用大量水冲洗，然后用3%～5% NaHCO3溶液冲洗
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-xuan-ze-de-tu-jing-yao-zui-jia-f67x08
+来源: 化学方法类《（重点·方法·点拨）第64讲 物质的分离与提纯- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: METHOD_MODEL
+[title] 选择的途径要最佳
+[summaryMarkdown] (3)选择的途径要最佳。
+[applicabilityMarkdown] 复习相关考点、解答对应试题时使用。
+[contentMarkdown] (3)选择的途径要最佳。
+(4)除去多种杂质时要考虑加入试剂的先后顺序。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-zao-zhi-shu-f73x14
+来源: 化学方法类《高考化学化学与传统文化及STSE(学生版)-20页》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 造纸术
+[summaryMarkdown] ③造纸术：原材料的主要成分是纤维素。
+[applicabilityMarkdown] 分析氧化还原反应、比较氧化性还原性强弱与电子转移数目时使用。
+[contentMarkdown] ③造纸术：原材料的主要成分是纤维素。
+④指南针：原理与化学无关，磁性氧化铁(Fe3O4)属于特殊物质。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：电子转移（名字出现）；氧化还原反应（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-hj2-ben-cuiqu-xiandai-fenceng
+来源: 化学讲义《专题12 有机化学基础（二）（学生版）》（registry-kb-chemistry-handout:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 苯萃取溴水的分层与颜色现象
+[summaryMarkdown] 苯萃取溴水中的溴后分层：上层为橙红色的溴的苯溶液，下层为近无色的水层。
+[applicabilityMarkdown] 萃取现象描述与颜色判断。
+[contentMarkdown] 苯密度比水小，萃取溴水中的溴后水在下层、溴的苯溶液在上层。
+溴水橙色褪去（褪色为萃取褪色不是化学反应），溴的苯溶液呈橙色（橙红色）。
+[boundaryMarkdown] 若用CCl4萃取，则溴的CCl4溶液在下层。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-fangshuo-2ndeming-pingfang
+来源: 《狂K重难点》数学 书页P409，重难点29（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: CONCEPT_EXPLANATION
+[title] 放缩结论：2ⁿ/(2ⁿ−1)² 裂项放缩（n≥2）
+[summaryMarkdown] $\frac{2^n}{(2^n-1)^2}<\frac{2^n}{(2^n-1)(2^n-2)}=\frac{1}{2^{n-1}-1}-\frac{1}{2^n-1}\ (n\geqslant2)$。
+[applicabilityMarkdown] 指数型分式的上界放缩求和。
+[contentMarkdown] $\frac{2^n}{(2^n-1)^2}=\frac{2^n}{(2^n-1)(2^n-1)}<\frac{2^n}{(2^n-1)(2^n-2)}=\frac{1}{2^{n-1}-1}-\frac{1}{2^n-1}\ (n\geqslant2)$。
+[boundaryMarkdown] 把一个因子 $2^n-1$ 缩为 $2^n-2$ 实现分式变大再裂项。
+候选（机械预筛，未必对）：裂项放缩（名字出现）
+
+==============================================================================
+## MATH | math-fx-zheng-fu-ling-jiao
+来源: 数学方法类《第15讲：任意角和弧度制及任意角的三角函数（知识梳理+解题总结）》（registry-kb-math-methods:math）
+类型: CONCEPT_EXPLANATION
+[title] 正角、负角与零角
+[summaryMarkdown] 按旋转方向规定角的符号：逆时针旋转为正角、顺时针旋转为负角、未旋转（始边终边重合）为零角。
+[applicabilityMarkdown] 理解任意角概念、判断旋转形成的角度（钟表指针、齿轮）时。
+[contentMarkdown] 1. 正角：按逆时针方向旋转形成的角（如 $30°$、$400°$）。
+2. 负角：按顺时针方向旋转形成的角（如 $-30°$、$-390°$）。
+3. 零角：射线没有旋转（始边与终边重合）的角，度数为 $0°$。
+4. 旋转可以是多圈叠加，故角的大小可以任意（弧度制下 $\alpha\in\mathbb{R}$）。
+[boundaryMarkdown] 角的大小与旋转方向、圈数都有关，比较角的大小按实数比较；“分针拨快/拨慢”类问题要按顺逆时针定符号。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-hj-s89-mid-chord
+来源: 数学讲义《第八章 §8.9　直线与圆锥曲线的位置关系.docx》（registry-kb-math-handout:math）
+类型: METHOD_MODEL
+[title] 中点弦问题与点差法
+[summaryMarkdown] 设弦两端点代入曲线方程后相减，得到中点坐标与斜率的关系（点差法）。
+[applicabilityMarkdown] 由中点求弦所在直线斜率、求中点弦方程。
+[contentMarkdown] 两端点 $A(x_1,y_1),B(x_2,y_2)$ 代入方程并相减，得 $\dfrac{y_1^2-y_2^2}{x_1-x_2}$ 型关系，联系中点 $\left(\dfrac{x_1+x_2}{2},\dfrac{y_1+y_2}{2}\right)$ 与斜率 $k$。
+[boundaryMarkdown] 由点差法求出的直线需回代验证与曲线确有两个交点（判别式）。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-kb-inequality-same-direction-multiply
+来源: 数学知识清单：《专题02 二次函数与一元二次方程、不等式（知识清单）（教师版）》（registry-kb-math-knowledge-list:math）
+类型: CONCEPT_EXPLANATION
+[title] 同向可乘与乘方性质
+[summaryMarkdown] a>b>0，c>d>0 时 ac>bd；a>b>0 时 aⁿ>bⁿ（n≥2）。
+[applicabilityMarkdown] 同向不等式相乘、比较幂的大小。
+[contentMarkdown] $a>b>0,c>d>0\Rightarrow ac>bd$；$a>b>0\Rightarrow a^n>b^n\ (n\in\mathbf{N^*},n\ge 2)$。
+[boundaryMarkdown] 两式必须都为正且同向，缺一不成立。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-mo-tanlu-shuangduandian
+来源: 数学《培优点23：必要性探路与主元法（知识梳理+例题讲解+真题练习）（学生版）》（registry-kb-math-misc:math）
+类型: METHOD_MODEL
+[title] 含两个端点的找点探路
+[summaryMarkdown] 两端点各建参数不等式锁定范围，再验证内部极值点。
+[applicabilityMarkdown] 闭区间上两端点均可建条件的恒成立问题。
+[contentMarkdown] 关键特征：闭区间两个端点均能建立关于参数的不等式，通过端点不等式初步锁定参数范围。逻辑：端点探路缩小范围，再利用导数找到区间内极值点，验证极值（最小值或最大值）满足恒成立条件，必要时进一步缩小参数范围。技巧：若某一端点函数值与参数无关且满足恒成立条件，可仅对另一端点探路；若端点处函数值为负，可直接排除对应参数范围。
+[boundaryMarkdown] 端点不等式只是必要条件；极值点处的验证决定最终范围，漏验会扩大范围。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-third-definition-ellipse-slope-product
+来源: 《狂K重难点》数学 P425，重难点42·第三定义与斜率积（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: CONCEPT_EXPLANATION
+[title] 椭圆第三定义斜率积结论
+[summaryMarkdown] 椭圆长轴两端点 $A,B$ 与曲线上点 $P$ 连线斜率积为 $-\frac{b^2}{a^2}$（横轴型）或 $-\frac{a^2}{b^2}$（竖轴型）。
+[applicabilityMarkdown] 椭圆中对称点连线斜率积、垂直关系、求离心率。
+[contentMarkdown] 焦点在 $x$ 轴：$\frac{x^2}{a^2}+\frac{y^2}{b^2}=1$（$a>b>0$）中 $k_{PA}\cdot k_{PB}=-\frac{b^2}{a^2}=e^2-1$；焦点在 $y$ 轴：$\frac{y^2}{a^2}+\frac{x^2}{b^2}=1$ 中 $k_{PA}\cdot k_{PB}=-\frac{a^2}{b^2}=\frac{1}{e^2-1}$（$A,B$ 为长轴两端点）。
+[boundaryMarkdown] $A,B$ 必须是长轴两端点；$P$ 不能取顶点。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-hj-016-dead-knot-model
+来源: 物理讲义《第11讲 摩擦力的突变 “活结”和“死结”“动杆”和“定杆”-（讲义）（学生版）》（registry-kb-physics-handout:physics）
+类型: METHOD_MODEL
+[title] 死结模型
+[summaryMarkdown] 绳结把绳分成两段独立绳且张力不一定相等
+[applicabilityMarkdown] 绳在结点被系死的平衡问题
+[contentMarkdown] 死结把绳分为不可沿绳移动的两段，两侧绳相当于独立的两根绳，张力一般不相等，需对结点分别列平衡方程。
+[boundaryMarkdown] 两段绳张力独立求解。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-hj3-collision-constraints
+来源: 物理讲义《第22讲 动量守恒定律及其应用（复习讲义）（安徽专用）（学生版）》（registry-kb-physics-handout:physics）
+类型: CONCEPT_EXPLANATION
+[title] 碰撞遵循的现实约束
+[summaryMarkdown] 同向碰撞碰后前面物体速度不小于后面物体；相向碰撞后两物体速度不可能都不改变。
+[applicabilityMarkdown] 检验碰撞解是否物理合理。
+[contentMarkdown] 同向碰撞：碰撞前后面物体速度大；碰撞后若仍同向，则前面物体的速度大于或等于后面物体的速度。
+相向碰撞：碰撞后两物体的运动方向不可能都不改变。
+[boundaryMarkdown] 违反这些约束（如碰后穿越）的解应舍去。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-mo-l06-force-composition-b-5
+来源: 物理《第06讲 力的合成与分解-必备基础知识》（registry-kb-physics-misc:physics）
+类型: CONCEPT_EXPLANATION
+[title] 动杆和定杆
+[summaryMarkdown] 动杆：杆所受的弹力方向一定沿杆；定杆：杆所受的弹力方向不一定沿杆。
+[applicabilityMarkdown] 适用于相关概念辨析、结论套用与解题自查。
+[contentMarkdown] 动杆：杆所受的弹力方向一定沿杆；定杆：杆所受的弹力方向不一定沿杆。
+[boundaryMarkdown] 合成分解只保证效果等效，分解结果随实际效果不同而不同。
+候选（机械预筛，未必对）：无
+

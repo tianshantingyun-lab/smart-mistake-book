@@ -1,0 +1,386 @@
+# 绑定作业片 19：30 条无绑定材料
+#
+# 任务：为每条材料选定它应该绑定的知识点节点（就是讲题时该材料服务的那个点）。
+# 交付（写到 tools/kb_coverage/binding_fixes/slice_19/notes.csv）：
+#   subject,material_slug,node_slug,confidence,evidence
+#   （node_slug 用下面的节点表里的 slug；确实没有合适的写 NONE；
+#     evidence 一句话说明依据；字段内不要有 ASCII 逗号）
+#
+# 硬规矩：
+#   · 宁缺勿错：不确定就 confidence=low 或写 NONE —— 错绑会让检索喂错材料
+#   · 只能从本学科节点表里选（见 tools/kb_coverage/binding_slices/nodes/nodes_<学科>.txt）
+#   · 一条材料只绑一个节点（就是它最主要服务的那个点）
+
+==============================================================================
+## BIOLOGY | bio-cotransporter-electrochemical-gradient
+来源: 《狂K重点》生物 P378 重难1·题型2（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: CONCEPT_EXPLANATION
+[title] 协同转运蛋白：依赖离子电化学梯度的间接耗能转运
+[summaryMarkdown] 协同转运蛋白让一种粒子顺其电化学梯度、另一种逆梯度转运，能量来自离子的电化学梯度（间接耗能），分同向与逆向两类。
+[applicabilityMarkdown] 判断依赖 H+/Na+ 梯度的转运方式。
+[contentMarkdown] 1. 机制：一种离子（常为 H+ 或 Na+）顺其电化学梯度回流，释放能量驱动另一种粒子逆浓度梯度转运。
+2. 两者方向相同为同向协同运输，相反为逆向协同运输。
+3. 能量来源：离子的电化学梯度（由 ATP 驱动泵预先建立），故为间接耗能。
+[boundaryMarkdown] 协同运输不直接消耗 ATP，但依赖梯度，仍属主动运输。
+候选（机械预筛，未必对）：主动运输（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fj-02-water-ratio-metabolism
+来源: 生物讲义《第02讲 细胞中的元素和化合物（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 自由水与结合水比值与代谢、抗逆性
+[summaryMarkdown] 自由水比例越大代谢越旺盛；比值降低抗逆性增强，冬小麦结合水含量可高于自由水。
+[applicabilityMarkdown] 水比值与代谢抗逆关系判断。
+[contentMarkdown] 1. 细胞内自由水所占比例越大，细胞代谢越旺盛。
+2. 自由水/结合水比值升高，细胞质流动速率加快。
+3. 冬季冬小麦细胞中结合水含量可高于自由水，抗逆性增强。
+[boundaryMarkdown] 比值高代谢强但抗逆弱，二者相反，注意题干问代谢还是抗逆。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-08-enzyme-reusability
+来源: 生物讲义《第08讲 酶和ATP（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 酶可重复利用且可作底物
+[summaryMarkdown] 酶可以重复多次利用不会立即被降解；酶既可作催化剂，又可作另一反应的底物。
+[applicabilityMarkdown] 酶属性判断。
+[contentMarkdown] 1. 酶作为催化剂可重复多次利用。
+2. 酶（如蛋白酶）也可被其他蛋白酶水解，作为底物。
+[boundaryMarkdown] 正是酶可作底物，才可用酶解法验证酶的化学本质。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-19-blender-centrifuge-purpose
+来源: 生物讲义《第19讲 DNA是主要的遗传物质（复习讲义）（全国通用）（解析版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 搅拌和离心的目的
+[summaryMarkdown] 搅拌使蛋白质外壳与细菌分离；离心使轻的噬菌体颗粒进上清液、细菌进沉淀物。
+[applicabilityMarkdown] 实验操作目的判断。
+[contentMarkdown] 1. 搅拌：使吸附在细菌上的噬菌体蛋白质外壳与细菌分离。
+2. 离心：上清液析出较轻的噬菌体颗粒（外壳），沉淀物留下被侵染的大肠杆菌。
+3. 正常结果：35S组放射性主要在上清液；32P组放射性主要在沉淀物。
+[boundaryMarkdown] 上清液主要是噬菌体外壳，沉淀物主要是被侵染的大肠杆菌。
+候选（机械预筛，未必对）：蛋白质（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fj-33-soil-animal-richness-experiment
+来源: 生物讲义《第33讲 群落（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: METHOD_MODEL
+[title] 研究土壤中小动物类群的丰富度
+[summaryMarkdown] 土壤小动物身体微小、活动能力强，用取样器取样法调查，用记名计算法或目测估计法统计。
+[applicabilityMarkdown] 土壤小动物丰富度实验。
+[contentMarkdown] 1. 不适合样方法（活动能力强、身体微小）和标志重捕法。
+2. 采集：诱虫器利用土壤动物趋暗、趋湿、避高温的习性（电灯使动物远离光源热源）；吸虫器中纱布防止小动物被吸走。
+3. 统计：记名计算法（个体较大、数量有限的物种）；目测估计法（按多度等级估计：非常多、多、较多、较少、少、很少）。
+4. 取样应随机；不同营养环境的样本分开统计。
+[boundaryMarkdown] 通过丰富度研究可得出：不同群落优势种不同，环境越优越、发育时间越长物种越多。
+候选（机械预筛，未必对）：样方法（名字出现）；标志重捕法（名字出现）；研究土壤中小动物类群的丰富度（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fx-judge-aldosterone-sodium
+来源: 生物方法类《稳态与调节阶段排查　回扣落实（七）》（registry-kb-biology-methods:biology）
+类型: CONCEPT_EXPLANATION
+[title] 易错：血钠升高时醛固酮分泌减少
+[summaryMarkdown] 当血钠升高时，肾上腺皮质分泌的醛固酮减少，以减少Na+的重吸收。
+[applicabilityMarkdown] 水盐调节的过程判断题。
+[contentMarkdown] 1. 判断：当正常人血钠升高时，肾上腺皮质分泌的醛固酮增加（×）。
+2. 提示：醛固酮促进肾小管和集合管对Na+的重吸收（保钠排钾），血钠升高时其分泌应减少。
+3. 血钠降低、血钾升高时醛固酮分泌增加。
+[boundaryMarkdown] 细胞外液渗透压升高时由ADH起主要作用；血钠平衡主要由醛固酮调节。
+候选（机械预筛，未必对）：渗透压（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fx-variable-change
+来源: 生物方法类《微专题4：实验专题讲座》（registry-kb-biology-methods:biology）
+类型: METHOD_MODEL
+[title] 自变量处理之换法
+[summaryMarkdown] 对无法直接加减的自变量（如温度、pH）用设置不同梯度值的方法处理。
+[applicabilityMarkdown] 探究温度、pH、光照强度等对生命活动影响的实验设计。
+[contentMarkdown] 1. 换：设置自变量的不同取值分别处理，如用不同温度水浴探究酶活性。
+2. 各组除该自变量外其余条件相同且适宜。
+3. 结果以组间比较（相互对照）得出最适值或变化趋势。
+[boundaryMarkdown] 温度、pH、光照等物理变量通常用换法；同一自变量不能同时混用加减与换。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb-neuron-and-glia-cells
+来源: 生物知识清单：《第25讲 神经调节（知识清单）（全国通用）（学生版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 神经元与神经胶质细胞
+[summaryMarkdown] 神经元是神经系统结构和功能的基本单位；神经胶质细胞数量为神经元的10~50倍，起辅助作用。
+[applicabilityMarkdown] 神经细胞判断。
+[contentMarkdown] 1. 神经元：神经系统结构和功能的基本单位，由胞体和突起（树突、轴突）组成。
+2. 神经胶质细胞：广泛分布于神经元之间，数量是神经元的10~50倍；具有支持、保护、营养和修复神经元等功能；在外周神经系统中参与构成神经纤维表面的髓鞘。
+3. 神经元与神经胶质细胞共同完成神经系统的调节功能。
+4. 轴突长有利于将信息输送到远距离支配器官；树突多有利于充分接收信息。
+[boundaryMarkdown] 髓鞘由神经胶质细胞（外周）参与构成。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb2-15-homozygote-judgement
+来源: 生物知识清单：《第15讲 分离定律（知识清单）（全国通用）（教师版）》（registry-kb-biology-knowledge-list:biology）
+类型: METHOD_MODEL
+[title] 纯合子与杂合子的鉴定方法
+[summaryMarkdown] 植物最简便的方法是自交法，动物常用测交法，也可与隐性个体杂交鉴别。
+[applicabilityMarkdown] 设计鉴定个体基因型的实验时使用。
+[contentMarkdown] 自交法：后代出现性状分离则为杂合子，不出现则为纯合子，最简便，适用于植物；
+测交法：与隐性纯合子杂交，后代有隐性个体则为杂合子，适用于动物；
+与隐性个体杂交是测交的具体形式。
+[boundaryMarkdown] 被测个体为动物时常用测交法（动物自交困难）。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb3-f4-s28-n06
+来源: 生物知识清单《2027届高三生物一轮复习知识清单4：分子与细胞基础》（registry-kb-biology-knowledge-list:biology）
+类型: METHOD_MODEL
+[title] 探究·实践（三）
+[summaryMarkdown] c.确定制作模型的实施过程和具体分工。
+[applicabilityMarkdown] 实验设计、操作或结果分析中涉及该要点时使用。
+[contentMarkdown] c.确定制作模型的实施过程和具体分工。
+d.完成模型的制作。
+e.检查、修补存在的缺陷。
+(4)表达和交流：对各小组模型进行评价。
+[boundaryMarkdown] 适用于教材原型实验与操作类题型；实验细节以人教版现行教材为准。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-photoinhibition-excess-light-damage
+来源: 《狂K重点》生物 P382 重难3·题型3（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: CONCEPT_EXPLANATION
+[title] 光抑制环节一：光能过剩损伤光系统 I 和 II
+[summaryMarkdown] 光照过强、光能超过光合利用能力时，过量光能直接损伤光系统 I 和 II。
+[applicabilityMarkdown] 光抑制发生机制的第一环节。
+[contentMarkdown] 强光下光能过剩→对光系统 I 和 II 造成损伤→光合速率下降；这是光抑制的起始环节。
+[boundaryMarkdown] 与'午休'（气孔因素）机理不同。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-selfing-homozygote-ratio
+来源: 《狂K重点》生物 P389 重难5·题型1（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 连续自交逐代纯合化：n 代后纯合子趋近于 1
+[summaryMarkdown] 连续自交 n 代后杂合子比例 (1/2)^n 趋于 0、纯合子趋于 1——自交使种群纯合化。
+[applicabilityMarkdown] 自交对基因频率与纯度的影响题。
+[contentMarkdown] n 越大纯合子比例越高：自交 n 代纯合子 = 1−(1/2)^n → 1；意义：连续自交可提高纯合度（育种中选纯系）。
+[boundaryMarkdown] 基因频率不变、基因型频率改变（自交不改变 A/a 频率）。
+候选（机械预筛，未必对）：基因频率（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-chang-kao-jing-dian-shi-ji-cai-liao-gu-f73x16
+来源: 化学方法类《高考化学化学与传统文化及STSE(学生版)-20页》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 常考经典史籍材料归纳
+[summaryMarkdown] 10．常考经典史籍材料归纳。
+[applicabilityMarkdown] 分析氧化还原反应、比较氧化性还原性强弱与电子转移数目时使用。
+[contentMarkdown] 10．常考经典史籍材料归纳
+(1)《抱朴子内篇·黄白》中“曾青涂铁，铁赤如铜”，其“曾青”是可溶性铜盐；“丹砂烧之成水银，积变又还成丹砂”，丹砂是红色的硫化汞。
+(2)《本草纲目》中“冬月灶中所烧薪柴之灰，令人以灰淋汁，取碱浣衣”里的“碱”是K2CO3；“(火药)乃焰消、硫磺、杉木炭所合，以为烽燧铳机诸药者”，利用KNO3的氧化性。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：电子转移（名字出现）；氧化还原反应（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-duan-shao-han-liu-liang-gao-de-kuang-w-f24x04
+来源: 化学方法类《（重点·方法·点拨）第21讲 硫及其化合物的相互转化- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: METHOD_MODEL
+[title] 煅烧含硫量高的矿物得到高浓度
+[summaryMarkdown] (2)煅烧含硫量高的矿物得到高浓度的，通过途径Ⅱ最终转化为化合物A。
+[applicabilityMarkdown] 复习相关考点、解答对应试题时使用。
+[contentMarkdown] (2)煅烧含硫量高的矿物得到高浓度的，通过途径Ⅱ最终转化为化合物A。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：化合物（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-gai-jin-de-mu-f28x12
+来源: 化学方法类《（重点·方法·点拨）第25讲 常见气体的实验室制备、净化和收集- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 改进的目
+[summaryMarkdown] 改进的目的：用于加热易溶化的固体物质的分解，这样可有效地防止固体熔化时造成液体的倒流，如用草酸晶体受热分解制取CO2气体。
+[applicabilityMarkdown] 实验方案设计、评价与异常现象分析时使用。
+[contentMarkdown] 改进的目的：用于加热易溶化的固体物质的分解，这样可有效地防止固体熔化时造成液体的倒流，如用草酸晶体受热分解制取CO2气体。
+(2)“固体+液体―→气体”装置的创新
+(3)“固(液)+液气体”装置的创新
+图A的改进优点是能控制反应液的温度。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：实验方案设计（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-liang-yuan-su-shou-heng-f52x04
+来源: 化学方法类《（重点·方法·点拨）第49讲 溶液中“粒子”浓度关系- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 两元素守恒
+[summaryMarkdown] ②两元素守恒，如NaHCO3溶液中，c(Na+)=c(H2CO3)+c(HCO)+c(CO)，即钠元素与碳元素质量守恒。
+[applicabilityMarkdown] 分析溶液酸碱性、比较粒子浓度大小与pH判断时使用。
+[contentMarkdown] ②两元素守恒，如NaHCO3溶液中，c(Na+)=c(H2CO3)+c(HCO)+c(CO)，即钠元素与碳元素质量守恒。
+(3)质子守恒
+电解质溶液中，由于电离、水解等过程的发生，往往存在质子(H+)的转移，转移过程中质子数量保持不变，称为质子守恒。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：电解质（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-shi-pin-dai-nei-de-gan-zao-ji-f73x04
+来源: 化学方法类《高考化学化学与传统文化及STSE(学生版)-20页》（registry-kb-chemistry-methods:chemistry）
+类型: METHOD_MODEL
+[title] 食品袋内的干燥剂
+[summaryMarkdown] (3)食品袋内的干燥剂，应是无毒、无味、无腐蚀性，且易吸水的物质：如生石灰(CaO)(区别：熟石灰和石灰石)，硅胶(物理吸附)，无水氯化钙(吸水后得到的CaCl2·6H2O，失。
+[applicabilityMarkdown] 分析氧化还原反应、比较氧化性还原性强弱与电子转移数目时使用。
+[contentMarkdown] (3)食品袋内的干燥剂，应是无毒、无味、无腐蚀性，且易吸水的物质：如生石灰(CaO)(区别：熟石灰和石灰石)，硅胶(物理吸附)，无水氯化钙(吸水后得到的CaCl2·6H2O，失去干燥效果)，甚至用有吸水性的植物纤维，不能用P2O5(吸水后转变成有腐蚀性的H3PO4)。
+(4)葡萄酒常用少量的SO2、Na2S2O5(Na2SO3·SO2)等作抗氧化剂起到抑菌、杀菌的作用，但SO2不能用于食品的漂白。
+[boundaryMarkdown] (3)食品袋内的干燥剂，应是无毒、无味、无腐蚀性，且易吸水的物质：如生石灰(CaO)(区别：熟石灰和石灰石)，硅胶(物理吸附)，无水氯化钙(吸水后得到的CaCl2·6H2O，失去干燥效果)，甚至用有吸水性的植物纤维，不能用P2O5(吸水后转变成有腐蚀性的H3PO4)。；(4)葡萄酒常用少量的SO2、Na2S2O5(Na2SO3·SO2)等作抗氧化剂起到抑菌、杀菌的作用，但SO2不能用于食品的漂白。
+候选（机械预筛，未必对）：氧化剂（名字出现）；电子转移（名字出现）；氧化还原反应（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-wei-zhi-yi-gou-f02x10
+来源: 化学方法类《第01讲 有机化合物的结构特点与研究方法（学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 位置异构
+[summaryMarkdown] 位置异构：官能团位置不同；CH2=CHCH2CH3与。
+[applicabilityMarkdown] 有机推断、官能团性质判断与方程式书写时使用。
+[contentMarkdown] 位置异构：官能团位置不同；CH2=CHCH2CH3与
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-yi-wen-du-ji-de-shui-yin-qiu-zai-zheng-f67x02
+来源: 化学方法类《（重点·方法·点拨）第64讲 物质的分离与提纯- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 意　①温度计的水银球在蒸馏烧瓶的支管口处
+[summaryMarkdown] 意　①温度计的水银球在蒸馏烧瓶的支管口处；②蒸馏烧瓶中要加沸石或碎瓷片，目的是防止暴沸；③冷凝管水流方向为下口进，上口出。
+[applicabilityMarkdown] 物质分离提纯方案选择与操作要点判断时使用。
+[contentMarkdown] 注意　①温度计的水银球在蒸馏烧瓶的支管口处；②蒸馏烧瓶中要加沸石或碎瓷片，目的是防止暴沸；③冷凝管水流方向为下口进，上口出。
+[boundaryMarkdown] 注意　①温度计的水银球在蒸馏烧瓶的支管口处；②蒸馏烧瓶中要加沸石或碎瓷片，目的是防止暴沸；③冷凝管水流方向为下口进，上口出。
+候选（机械预筛，未必对）：分离提纯（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-gas-washing-points
+来源: 《狂K重点》化学 书页P404，重难点19 锦囊妙计 洗气（registry-lixiangshu-2027-bikuti-kuangk-chemistry:chemistry）
+类型: METHOD_MODEL
+[title] 洗气操作要点
+[summaryMarkdown] 选只吸收杂质气体的试剂，洗气瓶导管长进短出。
+[applicabilityMarkdown] 气体的除杂与净化。
+[contentMarkdown] 试剂选择：能将杂质气体吸收（反应或溶解），且不与目标气体反应、不吸收目标气体（常用饱和盐溶液）。
+操作：气体从洗气瓶长导管进入、短导管流出（长进短出）。
+[boundaryMarkdown] 除杂原则：不引入新杂质、不损耗主气体；干燥用浓硫酸时装洗气瓶同理。
+候选（机械预筛，未必对）：浓硫酸（名字出现）；盐溶液（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-textbook-methane-structure
+来源: 人教版化学必修第二册 第七章第一节 认识有机化合物（registry-kb-chemistry-textbook-preserve:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 甲烷的正四面体结构（键角109°28′）
+[summaryMarkdown] 甲烷分子为正四面体结构，碳原子位于中心，4个C−H键完全相同，键角均为109°28′。
+[applicabilityMarkdown] 有机物空间结构判断的基础考点。
+[contentMarkdown] 1. 甲烷分子式 CH4，电子式与结构式表明碳形成 4 个共价单键。
+2. 空间构型：正四面体（不是平面正方形）——二氯代物只有一种可证明。
+3. 键角 109°28′，键长、键能均相同。
+[boundaryMarkdown] 空间构型判断依据：二氯甲烷无同分异构体说明 4 个氢等效（单键可旋转）。
+候选（机械预筛，未必对）：电子式（名字出现）；同分异构体（名字出现）
+
+==============================================================================
+## MATH | math-fx-pingfenxian-jiao-xingshi
+来源: 数学方法类《第07讲　拓展二：三角形中线、角平分线方法技巧篇》（registry-kb-math-methods:math）
+类型: CONCEPT_EXPLANATION
+[title] 角平分线的角形式
+[summaryMarkdown] 在 $ ria\angle ABD$ 与 $ ria\angle ACD$ 中分别用余弦定理，利用 $\cos\angle BAD=\cos\angle DAC$ 建立边的关系。
+[applicabilityMarkdown] 由角平分线条件（含角）建立边角等式时。
+[contentMarkdown] 1. 设 $AD=t$，在 $\triangle ABD$ 中 $\cos\dfrac{A}{2}=\dfrac{c^2+t^2-BD^2}{2ct}$；在 $\triangle ACD$ 中同理。
+2. 两式相等（同为 $\cos\dfrac{A}{2}$），配合 $BD+DC=a$ 可解出 $t$ 与分段。
+3. 该法与等面积法、比例定理等效，按已知量选择最简便的一条。
+[boundaryMarkdown] 三个方法（比例、面积、余弦）结果一致，选取时以未知量最少为准；注意 $t$ 为正且满足三角形不等式。
+候选（机械预筛，未必对）：余弦定理（名字出现）
+
+==============================================================================
+## MATH | math-hj-pinlv-zhitu-fang-fenbu
+来源: 数学讲义《第1节　随机抽样、统计图表》（registry-kb-math-handout:math）
+类型: CONCEPT_EXPLANATION
+[title] 频率分布直方图的作法与要素
+[summaryMarkdown] 小长方形高＝频率/组距，各矩形面积和为 1。
+[applicabilityMarkdown] 读图、由直方图估计。
+[contentMarkdown] 频率分布直方图：小长方形的高＝频率/组距，每个小长方形面积＝该组频率，所有矩形面积之和为 1；纵轴刻度为频率/组距。
+[boundaryMarkdown] 纵轴不是频率本身。
+候选（机械预筛，未必对）：频率分布直方图（名字出现）
+
+==============================================================================
+## MATH | math-hj-zhiyiqiuer
+来源: 数学讲义《第2节　同角三角函数的基本关系及诱导公式》（registry-kb-math-handout:math）
+类型: METHOD_MODEL
+[title] 知一求二与齐次式求值
+[summaryMarkdown] 由 $\sin\alpha+\cos\alpha$ 与 $\sin\alpha\cos\alpha$ 互相转化求值。
+[applicabilityMarkdown] 给值求值问题。
+[contentMarkdown] 常用变形：$(\sin\alpha\pm\cos\alpha)^2=1\pm 2\sin\alpha\cos\alpha$；$\sin\alpha=\tan\alpha\cos\alpha$；由 $\sin\alpha\pm\cos\alpha$ 的值结合平方关系可得 $\sin\alpha\cos\alpha$，进而解出各值。
+[boundaryMarkdown] 先定角的范围再定符号。
+候选（机械预筛，未必对）：给值求值问题（名字出现）
+
+==============================================================================
+## MATH | math-mo-jiemian-jiaoxian-zuofa
+来源: 数学《专题01 立体几何初步（题型清单）（学生版）》（registry-kb-math-misc:math）
+类型: METHOD_MODEL
+[title] 截面与交线的两种作图方法
+[summaryMarkdown] 作截面用平行线法与延长线法，作交线用基本事实与平行性质。
+[applicabilityMarkdown] 画几何体的截面、求截面形状或交线位置。
+[contentMarkdown] 1. 截面作图常用方法：（1）平行线法：截面与几何体的两个平行平面相交，或截面内一条直线与几何体某表面平行时利用平行关系延展截面；（2）延长线法：截面上至少有两个点在几何体同一个表面上，这两点的连线必在截面内，延长求交。
+2. 作交线两种方法：利用基本事实（两平面有一个公共点则有经过该点的一条交线）；利用线面平行、面面平行的性质定理寻找平行关系后作出交线。
+[boundaryMarkdown] 交线必须在两个平面的公共部分内，超出多面体范围要截断；截面形状（三角形、四边形、五边形等）随点的位置变化要分类。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-mo-ziji-qiucan-kongji-shunxu
+来源: 数学《专题03 集合培优归类（题型清单）（学生版）》（registry-kb-math-misc:math）
+类型: METHOD_MODEL
+[title] 子集求参的思维顺序：从空集开始到自身结束
+[summaryMarkdown] 讨论子集（含参）时按“空集→非空真子集→自身”的顺序逐一处理。
+[applicabilityMarkdown] 由子集、真子集关系求参数。
+[contentMarkdown] 子集个数公式：$n$ 元集合有 $2^n$ 个子集、$2^n-1$ 个真子集、$2^n-1$ 个非空子集、$2^n-2$ 个非空真子集。子集求参题型的“坑”：若 $B\subseteq A$ 且 $B$ 含参数，必须讨论 $B$ 为空集的情形；思考子集要有“从空集开始，到自身结束”的顺序感，逐档列举不遗漏。
+[boundaryMarkdown] 真子集与子集的差别就在“自身”一档；空集讨论后其余情形按数轴（列举）取交集。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-fx-calculation-answer-standards
+来源: 物理方法类《突破三  计算题答题规范指导》（registry-kb-physics-methods:physics）
+类型: METHOD_MODEL
+[title] 计算题答题规范
+[summaryMarkdown] 计算题须文字说明与方程结合、用原始公式分步列式、字母先运算后代数据、结果带单位。
+[applicabilityMarkdown] 计算题的规范书写与得分。
+[contentMarkdown] 1. 简洁文字说明与方程式结合；设出题目未给的量并说明意义。
+2. 写原始公式而非导出式；分步列式不用连等式，按式得分。
+3. 不写代入数据的推导过程，中间数据不得分；数据结果带单位，字母结果（含常量）不写单位。
+4. 不会解时写出相关公式，可“踩点”得分。
+[boundaryMarkdown] 未知量统一用题目符号或通用符号，避免自造符号。
+候选（机械预筛，未必对）：计算题答题规范（名字出现）
+
+==============================================================================
+## PHYSICS | phys-hj2-feizixing-it-tuxiang-yichu
+来源: 物理讲义《第11讲 曲线运动、运动的合成与分解（复习讲义）（安徽专用）》（registry-kb-physics-handout:physics）
+类型: CONCEPT_EXPLANATION
+[title] I-U 图线弯曲的元件特征
+[summaryMarkdown] 伏安特性曲线为过原点直线的元件适用欧姆定律（线性元件）；弯曲的为非线性元件，某点电阻用 $U/I$ 计算。
+[applicabilityMarkdown] 伏安特性曲线的分类与计算。
+[contentMarkdown] 1. 线性元件：$I-U$ 图线是过原点的直线，斜率倒数恒定，欧姆定律适用（金属导体、电解液）。
+2. 非线性元件：图线弯曲（如小灯泡、二极管），不适用欧姆定律；某状态下电阻等于该点电压与电流之比。
+3. 小灯泡图线弯曲的原因：温度升高使电阻率增大，电阻随电压升高而增大。
+[boundaryMarkdown] 非线性元件的“动态电阻”$ΔU/ΔI$ 与状态电阻 $U/I$ 不同，不能混淆。
+候选（机械预筛，未必对）：伏安特性曲线（名字出现）；欧姆定律（名字出现）；电阻率（名字出现）
+
+==============================================================================
+## PHYSICS | phys-isothermal-partition-formula
+来源: 《狂K重难点》物理 书页P466，重难点35（气体实验定律和热力学定律的综合应用）（registry-lixiangshu-2027-bikuti-kuangk-physics:physics）
+类型: CONCEPT_EXPLANATION
+[title] 等温分态公式
+[summaryMarkdown] 温度不变时几部分气体混合（或分离）满足 $p_1V_1+p_2V_2+\cdots=pV$。
+[applicabilityMarkdown] 等温变质量问题的快速列式。
+[contentMarkdown] 若温度不变，可得气体等温分态公式：$p_1V_1+p_2V_2+\cdots=pV$。
+[boundaryMarkdown] 各项的压强、体积须对应同一温度；它是分态求和公式在等温下的特例。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-tp-quantum-catastrophe-classical
+来源: 人教版物理（2019）选择性必修第三册 第4章第1节 普朗克黑体辐射理论（registry-kb-physics-textbook-preserve:physics）
+类型: CONCEPT_EXPLANATION
+[title] 能量量子化对经典物理的冲击
+[summaryMarkdown] 经典物理无法解释黑体辐射实验曲线（紫外灾难），普朗克能量子假说揭示能量不连续，成为量子理论的起点。
+[applicabilityMarkdown] 理解量子论诞生背景、经典物理局限性的论述类问题。
+[contentMarkdown] 1. 经典物理困境：按经典电磁理论与能量均分假设，黑体辐射在短波区的能量应趋于无穷大（“紫外灾难”），与实验曲线不符。
+2. 普朗克突破：用能量子假说（能量为 $h\nu$ 的整数倍）导出的辐射公式与实验曲线完全符合。
+3. 意义：首次提出能量量子化，动摇“能量连续”的经典观念，标志量子理论的诞生，深化了人们对微观世界的认识。
+[boundaryMarkdown] 普朗克本人对假说态度谨慎，其后光的粒子性等内容由爱因斯坦等人推进；本条仅限普朗克黑体辐射理论的内容。
+候选（机械预筛，未必对）：能量子（名字出现）；黑体辐射-黑体虽然不反射电磁波-却可以向外辐射电磁波（名字出现）
+

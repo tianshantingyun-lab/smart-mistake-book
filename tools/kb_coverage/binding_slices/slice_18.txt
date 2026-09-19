@@ -1,0 +1,377 @@
+# 绑定作业片 18：30 条无绑定材料
+#
+# 任务：为每条材料选定它应该绑定的知识点节点（就是讲题时该材料服务的那个点）。
+# 交付（写到 tools/kb_coverage/binding_fixes/slice_18/notes.csv）：
+#   subject,material_slug,node_slug,confidence,evidence
+#   （node_slug 用下面的节点表里的 slug；确实没有合适的写 NONE；
+#     evidence 一句话说明依据；字段内不要有 ASCII 逗号）
+#
+# 硬规矩：
+#   · 宁缺勿错：不确定就 confidence=low 或写 NONE —— 错绑会让检索喂错材料
+#   · 只能从本学科节点表里选（见 tools/kb_coverage/binding_slices/nodes/nodes_<学科>.txt）
+#   · 一条材料只绑一个节点（就是它最主要服务的那个点）
+
+==============================================================================
+## BIOLOGY | bio-consanguinity-multiplier
+来源: 《狂K重点》生物 P401 重难8·题型1（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 近亲婚配风险倍数 = 近亲概率 ÷ 随机婚配概率
+[summaryMarkdown] 近亲婚配患儿概率与随机婚配之比通常为数十倍，结论：避免近亲结婚可显著降低隐性遗传病风险。
+[applicabilityMarkdown] 近亲婚配危害论证。
+[contentMarkdown] 例：随机 1/75×1/4 = 1/300；近亲（表兄妹）1/36；倍数 = 1/36 ÷ (1/300) = 25 倍 → 避免近亲结婚可有效降低发病风险。
+[boundaryMarkdown] 倍数随系谱与人群数据变化，按题给计算。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-02-water-properties
+来源: 生物讲义《第02讲 细胞中的元素和化合物（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 水分子的三个特性
+[summaryMarkdown] 水分子具极性是良好溶剂；氢键断裂与形成赋予流动性；高比热容使水温相对稳定。
+[applicabilityMarkdown] 水特性与功能对应判断。
+[contentMarkdown] 1. 水分子具有极性，是良好的溶剂。
+2. 水分子间氢键不断断裂又不断形成，使水具有流动性（氢键是弱的静电引力）。
+3. 水具有较高的比热容，温度相对不易改变。
+[boundaryMarkdown] 水是良好溶剂的根本原因是水分子的极性结构（氧端带部分负电、氢端带部分正电）。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-08-enzyme-concentration-curves
+来源: 生物讲义《第08讲 酶和ATP（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 酶浓度、底物浓度与反应速率曲线
+[summaryMarkdown] 底物充足时速率与酶浓度成正比；酶一定时随底物浓度增加速率先增后达到饱和。
+[applicabilityMarkdown] 酶促反应速率曲线分析。
+[contentMarkdown] 1. 底物充足、其他条件适宜：反应速率与酶浓度成正比。
+2. 酶量一定：随底物浓度增加速率先加快，达到一定浓度后受酶数量限制不再增加。
+3. 生成物浓度高时酶促反应速率明显下降（产物抑制）。
+[boundaryMarkdown] 曲线平台期的限制因素是酶数量（和酶活性），不是底物浓度。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-16-recombination-type-ratio
+来源: 生物讲义《第16讲 自由组合定律（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: METHOD_MODEL
+[title] F2中亲本类型与重组类型比例
+[summaryMarkdown] AABB×aabb的F2中重组类型占3/8；AAbb×aaBB的F2中重组类型占5/8。
+[applicabilityMarkdown] 重组类型比例计算。
+[contentMarkdown] 1. 亲本AABB×aabb：F2重组类型为A_bb和aaB_，占3/16+3/16=3/8。
+2. 亲本AAbb×aaBB：F2重组类型为A_B_和aabb，占9/16+1/16=5/8。
+3. 黄皱YYrr×绿圆yyRR：F2重组类型（绿皱+黄圆）占5/8，亲本类型占3/8。
+[boundaryMarkdown] 重组类型取决于亲本组合方式，先确定双亲基因型再算。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-33-secondary-succession-examples
+来源: 生物讲义《第33讲 群落（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 次生演替的典型实例
+[summaryMarkdown] 火灾过后的草原、过量砍伐的森林、弃耕的农田上发生的演替都属于次生演替。
+[applicabilityMarkdown] 次生演替实例判断。
+[contentMarkdown] 1. 火灾过后的草原：土壤条件保留，有种子或繁殖体。
+2. 过量砍伐的森林：原有植被不存在但土壤保留。
+3. 弃耕的农田：演替为一年生杂草→多年生杂草→灌木丛→乔木林。
+4. 小路废弃后长出高茎植物也属次生演替。
+[boundaryMarkdown] 判断依据：原有土壤条件基本保留，甚至保留了种子或其他繁殖体。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fx-judge-adh-release
+来源: 生物方法类《稳态与调节阶段排查　回扣落实（七）》（registry-kb-biology-methods:biology）
+类型: CONCEPT_EXPLANATION
+[title] 易错：抗利尿激素由下丘脑分泌、垂体释放
+[summaryMarkdown] 抗利尿激素由下丘脑分泌、由垂体释放，不能说由下丘脑细胞释放。
+[applicabilityMarkdown] 水平衡调节的过程判断题。
+[contentMarkdown] 1. 判断：抗利尿激素由下丘脑细胞释放（×）。
+2. 提示：下丘脑分泌细胞合成并分泌ADH，经轴突运输到垂体后叶释放。
+3. ADH促进肾小管和集合管对水分的重吸收。
+[boundaryMarkdown] 类似地，促激素释放激素由下丘脑分泌作用于垂体；激素分泌部位与释放部位可以不同。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fx-variable-add-subtract
+来源: 生物方法类《微专题4：实验专题讲座》（registry-kb-biology-methods:biology）
+类型: METHOD_MODEL
+[title] 自变量处理的加与减
+[summaryMarkdown] 对可以直接增减的自变量用添加或去除的方法设置实验组与对照组。
+[applicabilityMarkdown] 设计验证某物质（激素、酶、无机盐）作用的实验。
+[contentMarkdown] 1. 加：给实验组添加该物质，如口服或注射甲状腺激素。
+2. 减：去除该物质或其来源，如手术切除甲状腺。
+3. 加减法适用于可以直接施加或去除的自变量。
+[boundaryMarkdown] 减法处理后的回补（恢复）实验可进一步确证因果关系；饲喂属加法、切除属减法。
+候选（机械预筛，未必对）：无机盐（名字出现）；甲状腺激素（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-kb-monosaccharide-types-distribution
+来源: 生物知识清单：《第03讲 糖类和脂质（知识清单）（全国通用）（学生版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 常见单糖的种类与分布
+[summaryMarkdown] 核糖、脱氧核糖是核酸组成成分，葡萄糖是主要能源物质，果糖、半乳糖分布各有特点。
+[applicabilityMarkdown] 判断单糖分布与功能。
+[contentMarkdown] 1. 五碳糖：核糖（RNA的组成成分）、脱氧核糖（DNA的组成成分），动植物细胞都有。
+2. 六碳糖：葡萄糖是细胞生命活动的主要能源物质；果糖主要在植物细胞；半乳糖主要分布在动物乳汁中。
+[boundaryMarkdown] 果糖、半乳糖并非严格的动物或植物特有（有例外发现）。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb2-15-continuous-selfing-formula
+来源: 生物知识清单：《第15讲 分离定律（知识清单）（全国通用）（教师版）》（registry-kb-biology-knowledge-list:biology）
+类型: METHOD_MODEL
+[title] 杂合子连续自交的比例公式
+[summaryMarkdown] 杂合子Aa连续自交n代，杂合子比例为(1/2)^n，纯合子比例为1－(1/2)^n。
+[applicabilityMarkdown] 计算连续自交后代基因型比例时使用。
+[contentMarkdown] 杂合子连续自交n代：杂合子比例＝(1/2)^n；纯合子比例＝1－(1/2)^n；显性纯合子＝隐性纯合子＝[1－(1/2)^n]×1/2；
+若连续自交并逐代淘汰隐性个体：自交n代后显性个体中纯合子比例为(2^n－1)/(2^n＋1)，杂合子比例为2/(2^n＋1)。
+[boundaryMarkdown] 自花传粉植物（豌豆、水稻、小麦）自然状态下是自交，玉米等雌雄异花植物自然状态下是自由交配。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb3-f4-s28-n05
+来源: 生物知识清单《2027届高三生物一轮复习知识清单4：分子与细胞基础》（registry-kb-biology-knowledge-list:biology）
+类型: METHOD_MODEL
+[title] 探究·实践（二）
+[summaryMarkdown] (2)材料用具：根据模型种类选取材料用具。
+[applicabilityMarkdown] 实验设计、操作或结果分析中涉及该要点时使用。
+[contentMarkdown] (2)材料用具：根据模型种类选取材料用具。
+(3)建立模型。
+a.确定制作模型的种类、规格。
+b.确定使用的材料用具。
+[boundaryMarkdown] 适用于教材原型实验与操作类题型；实验细节以人教版现行教材为准。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-photoinhibition-3-links
+来源: 《狂K重点》生物 P382 重难3·题型3（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 光抑制三步链：光能过剩→ROS 生成→D1 蛋白失活
+[summaryMarkdown] 光抑制按'光能过剩损伤光系统→NADP+ 不足使电子传给 O2 生成 ROS→ROS 使 D1 蛋白失活'三步链条发生。
+[applicabilityMarkdown] 光抑制机制整体分析题。
+[contentMarkdown] 1. 光能过剩：强光下光能超过光合利用能力。
+2. ROS 生成：电子受体（NADP+）不足→电子传给 O2→活性氧。
+3. D1 失活：ROS 氧化 PSII 的 D1 蛋白→光抑制。
+[boundaryMarkdown] 按顺序环环相扣，每一步都可被光保护措施干预。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-selfing-eliminating-recessive-heterozygote
+来源: 《狂K重点》生物 P389 重难5·题型1（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 连续自交淘汰隐性个体：n 代后杂合子 = (2^n−1)/(2^n+1)
+[summaryMarkdown] 每代自交后淘汰 aa，只保留 AA 与 Aa，n 代后杂合子比例为 (2^n−1)/(2^n+1)。
+[applicabilityMarkdown] '逐代淘汰隐性后连续自交'计算。
+[contentMarkdown] 递推起点 F1 淘汰后杂合子占 2/3；每代自交并淘汰 aa 后，n 代杂合子 = (2^n−1)/(2^n+1)。
+[boundaryMarkdown] '淘汰'发生在每一代自交之后；只淘汰一代则按普通连续自交处理。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-chang-jian-shi-ji-f28x05
+来源: 化学方法类《（重点·方法·点拨）第25讲 常见气体的实验室制备、净化和收集- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 常见试剂
+[summaryMarkdown] 常见试剂：浓H2SO4(酸性、强氧化性)；无水氯化钙(中性)、碱石灰(碱性)；Cu、CuO、Mg等。
+[applicabilityMarkdown] 分析氧化还原反应、比较氧化性还原性强弱与电子转移数目时使用。
+[contentMarkdown] 常见试剂：浓H2SO4(酸性、强氧化性)；无水氯化钙(中性)、碱石灰(碱性)；Cu、CuO、Mg等
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：电子转移（名字出现）；氧化还原反应（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-dian-zhong-xing-yuan-ze-f76x02
+来源: 化学方法类《高考化学离子检验、推断与共存(学生版)-26页》（registry-kb-chemistry-methods:chemistry）
+类型: METHOD_MODEL
+[title] 电中性原则
+[summaryMarkdown] (4)电中性原则，溶液呈电中性，一定既有阳离子，又有阴离子，且溶液中阳离子所带电荷数等于阴离子所带电荷数，帮助确定一些隐含离子。
+[applicabilityMarkdown] 判断离子能否大量共存、书写不能共存的原因时使用。
+[contentMarkdown] (4)电中性原则，溶液呈电中性，一定既有阳离子，又有阴离子，且溶液中阳离子所带电荷数等于阴离子所带电荷数，帮助确定一些隐含离子。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-fen-qiang-ji-f64x04
+来源: 化学方法类《（重点·方法·点拨）第61讲 有机合成与推断综合题突破- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 酚羟基
+[summaryMarkdown] 酚羟基：(1)弱酸性：能与NaOH溶液反应；(2)显色反应：遇FeCl3溶液显紫色；(3)取代反应：与浓溴水反应生成白色沉淀。
+[applicabilityMarkdown] 分析沉淀溶解平衡、判断沉淀生成或溶解时使用。
+[contentMarkdown] 酚羟基：(1)弱酸性：能与NaOH溶液反应；(2)显色反应：遇FeCl3溶液显紫色；(3)取代反应：与浓溴水反应生成白色沉淀
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：取代反应（名字出现）；沉淀溶解平衡（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-li-yong-lv-hui-f17x12
+来源: 化学方法类《（重点·方法·点拨）第14讲 金属材料和金属的冶炼- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 利用铝灰
+[summaryMarkdown] 12．利用铝灰(主要成分为Al、Al2O3、AlN、FeO等)制备铝鞣剂[主要成分为Al(OH)2Cl]的一种工艺如下。
+[applicabilityMarkdown] 气体或物质的实验室制备与装置、试剂选择时使用。
+[contentMarkdown] 12．利用铝灰(主要成分为Al、Al2O3、AlN、FeO等)制备铝鞣剂[主要成分为Al(OH)2Cl]的一种工艺如下
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-sheng-gao-wen-du-f54x04
+来源: 化学方法类《（重点·方法·点拨）第51讲 沉淀溶解平衡- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 升高温度
+[summaryMarkdown] ①升高温度，平衡逆向移动。
+[applicabilityMarkdown] 判断平衡状态、分析平衡移动方向与相关计算时使用。
+[contentMarkdown] ①升高温度，平衡逆向移动
+②向溶液中加入少量碳酸钠粉末能增大钙离子的浓度
+③除去氯化钠溶液中混有的少量钙离子，可以向溶液中加入适量的NaOH溶液
+④恒温下，向溶液中加入CaO，溶液的pH升高
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：碳酸钠（名字出现）；溶液的ph（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-wei-rong-wu-f08x21
+来源: 化学方法类《（重点·方法·点拨）第05讲 离子反应　离子方程式- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 微溶物
+[summaryMarkdown] (2)微溶物：不论是反应物还是生成物，是否写离子形式都由其浓度决定。
+[applicabilityMarkdown] 分析溶液酸碱性、比较粒子浓度大小与pH判断时使用。
+[contentMarkdown] (2)微溶物：不论是反应物还是生成物，是否写离子形式都由其浓度决定。如石灰乳写化学式Ca(OH)2，澄清石灰水写成Ca2+、OH-。
+(3)固体之间的反应、浓硫酸(或浓磷酸)与固体之间的反应，不能电离出自由离子，所以不写离子方程式。如
+[boundaryMarkdown] (3)固体之间的反应、浓硫酸(或浓磷酸)与固体之间的反应，不能电离出自由离子，所以不写离子方程式。如
+候选（机械预筛，未必对）：离子方程式（名字出现）；浓硫酸（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-yi-suan-wu-se-you-qiang-f61x05
+来源: 化学方法类《（重点·方法·点拨）第58讲 醛、酮、羧酸、酯、酰胺- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 乙酸：CH3COOH；无色、有强
+[summaryMarkdown] 乙酸：CH3COOH；无色、有强烈刺激性气味的液体，能与水互溶，具有酸性。
+[applicabilityMarkdown] 复习相关考点、解答对应试题时使用。
+[contentMarkdown] 乙酸：CH3COOH；无色、有强烈刺激性气味的液体，能与水互溶，具有酸性
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-zui-jian-shi-f02x05
+来源: 化学方法类《第01讲 有机化合物的结构特点与研究方法（学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 最简式
+[summaryMarkdown] 最简式；(实验式)：乙烷(C2H6)；最简式为；CH3；①表示物质组成的各元素原子 的式子；②由最简式可求最简式量。
+[applicabilityMarkdown] 实验方案设计、评价与异常现象分析时使用。
+[contentMarkdown] 最简式；(实验式)：乙烷(C2H6)；最简式为；CH3；①表示物质组成的各元素原子 的式子；②由最简式可求最简式量
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：实验方案设计（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-stop-heating-before-gas
+来源: 《狂K重点》化学 书页P407，重难点19 例题解析（registry-lixiangshu-2027-bikuti-kuangk-chemistry:chemistry）
+类型: METHOD_MODEL
+[title] 实验结束时先停止加热后停止通气
+[summaryMarkdown] 停止加热后持续通入保护气至装置冷却，防止产物被氧化及倒吸。
+[applicabilityMarkdown] 有保护气参与的反应结束阶段的操作顺序。
+[contentMarkdown] 停止加热后继续通入N2等保护气，可维持无氧环境防止产物（如HI）被氧化，待装置冷却后再停止通气；同时防止停止加热时液体倒吸进入热的反应管。
+[boundaryMarkdown] 顺序为『先撤酒精灯（停止加热）→继续通气→冷却后停气』，与气体制备结束时防倒吸的顺序判断结合考查。
+候选（机械预筛，未必对）：气体制备（名字出现）
+
+==============================================================================
+## MATH | math-fx-pingfenxian-dengmianji-fa
+来源: 数学方法类《第07讲　拓展二：三角形中线、角平分线方法技巧篇》（registry-kb-math-methods:math）
+类型: METHOD_MODEL
+[title] 角平分线长的等面积法
+[summaryMarkdown] 用 $ ria\angle ABC$ 的面积等于两个小三角形面积之和，解出角平分线长 $t$。
+[applicabilityMarkdown] 求角平分线长或由角平分线长建立方程时。
+[contentMarkdown] 1. 等面积：$S_{\triangle ABC}=S_{\triangle ABD}+S_{\triangle ACD}$，即 $\dfrac{1}{2}bc\sin A=\dfrac{1}{2}c\cdot t\sin\dfrac{A}{2}+\dfrac{1}{2}b\cdot t\sin\dfrac{A}{2}$。
+2. 整理得 $t=\dfrac{2bc\cos\frac{A}{2}}{b+c}$（再用 $\cos\dfrac{A}{2}=\sqrt{\dfrac{1+\cos A}{2}}$ 可化为边式）。
+3. 等价结论：$t^2=bc\left(1-\dfrac{a^2}{(b+c)^2}\right)$。
+[boundaryMarkdown] 面积法中两小三角形的高都是 $t$、底角都是 $\dfrac{A}{2}$，方向不能写错；结果式依赖 $a^2=b^2+c^2-2bc\cos A$ 化简。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-hj-pingxing-sibianxing-faze
+来源: 数学讲义《3.2平面向量的线性运算（讲义）（学生版）》（registry-kb-math-handout:math）
+类型: CONCEPT_EXPLANATION
+[title] 向量加减的平行四边形法则
+[summaryMarkdown] 共起点两向量的和与差是平行四边形两条对角线向量。
+[applicabilityMarkdown] 以两邻边作平行四边形求和差。
+[contentMarkdown] 以共起点的 $\overrightarrow{AB}$、$\overrightarrow{AD}$ 为邻边作平行四边形，则 $\overrightarrow{AB}+\overrightarrow{AD}=\overrightarrow{AC}$ 为公共起点的对角线，$\overrightarrow{AB}-\overrightarrow{AD}=\overrightarrow{DB}$ 为另一条对角线。
+[boundaryMarkdown] 两向量必须共起点。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-hj-zhengxingleixing-gainian
+来源: 数学讲义《第6节　函数y＝Asin(ωx＋φ)的图象及应用》（registry-kb-math-handout:math）
+类型: CONCEPT_EXPLANATION
+[title] 振幅、周期、频率与相位
+[summaryMarkdown] $A$ 为振幅，$T=\frac{2\pi}{\omega}$，$\omega x+\varphi$ 为相位，$\varphi$ 为初相。
+[applicabilityMarkdown] 识别 $A\sin(\omega x+arphi)$ 的各参数。
+[contentMarkdown] 函数 $y=A\sin(\omega x+\varphi)$（$A>0,\ \omega>0$）中：$A$ 叫振幅，$T=\frac{2\pi}{\omega}$ 为周期，频率 $f=\frac{\omega}{2\pi}$，$\omega x+\varphi$ 叫相位，$\varphi$ 叫初相；图象平移遵循“左加右减、上加下减”。
+[boundaryMarkdown] $A$ 影响值域 $[-A,A]$。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-mo-jieda-qianhouwen-guanlian
+来源: 数学《教考衔接十六 教材中的易混易错杜绝再错学案》（registry-kb-math-misc:math）
+类型: METHOD_MODEL
+[title] 解答题中前后问的隐藏关联
+[summaryMarkdown] 第二问常隐含使用第一问结论，需跨问关联。
+[applicabilityMarkdown] 多问解答题的整体规划。
+[contentMarkdown] 解答题中前后问常有隐藏关联条件，如导数压轴题中第二问的参数范围常隐含在第一问的结论（单调性、极值、恒成立结果）中，需跨问关联使用，避免重复讨论。
+[boundaryMarkdown] 第一问证得的单调性、最值常是第二问放缩的“跳板”；跳问作答时也须补足依赖的结论。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-mo-zhuyuan-fa
+来源: 数学《培优点23：必要性探路与主元法（知识梳理+例题讲解+真题练习）（学生版）》（registry-kb-math-misc:math）
+类型: METHOD_MODEL
+[title] 主元法（变换主元法）
+[summaryMarkdown] 把式子整理为关于某一变量的线性（二次）函数，用其单调性与端点最值消元。
+[applicabilityMarkdown] 双变量恒成立、含参不等式证明问题。
+[contentMarkdown] 主元法的核心是打破“以 $x$ 为唯一自变量”的思维，根据式子结构将参数或另一变量视为“主元”，把式子整理为关于主元的一次函数、二次函数等可直接分析单调性的形式，利用主元的取值范围求最值完成证明或求参。模板：1. 确定主元（优先选使一次项系数简单或范围已知的变量）；2. 整理为 $g(t)=mt+b$（$t$ 为主元）；3. 由 $m$ 的符号确定单调性；4. 利用主元范围求 $g$ 的最值并验证题设条件。
+[boundaryMarkdown] 应用前提是式子关于某变量至多一次（或易讨论）；若 $m$ 含另一变量需对 $m$ 的符号再讨论。
+候选（机械预筛，未必对）：主元法（名字出现）
+
+==============================================================================
+## PHYSICS | phys-fx-arch-bridge-model
+来源: 物理方法类《第7讲 圆周运动模型（学生版）》（registry-kb-physics-methods:physics）
+类型: METHOD_MODEL
+[title] 拱形桥与凹形桥模型
+[summaryMarkdown] 拱桥顶端 $mg-F_N=m\frac{v^2}{R}$，速度越大支持力越小，$v=\sqrt{gR}$ 时腾空；凹形桥底部超重。
+[applicabilityMarkdown] 汽车过拱桥、凹桥的压力问题。
+[contentMarkdown] 1. 拱桥顶：$F_N=m(g-\frac{v^2}{R})$，随速度增大而减小，$v\geq\sqrt{gR}$ 时车离地。
+2. 凹桥底：$F_N-mg=m\frac{v^2}{R}$，超重。
+[boundaryMarkdown] 桥面压力由牛顿第三定律转求，区分对桥压力与桥面支持力。
+候选（机械预筛，未必对）：牛顿第三定律（名字出现）
+
+==============================================================================
+## PHYSICS | phys-hj2-dianli-yu-dianlineng
+来源: 物理讲义《第67讲 原子结构和原子核（复习讲义）（全国通用） 》（registry-kb-physics-handout:physics）
+类型: CONCEPT_EXPLANATION
+[title] 电离与电离能
+[summaryMarkdown] 电离是跃迁到 $n=∞$（$E=0$）的过程，基态氢原子电离能为 $13.6$ eV。
+[applicabilityMarkdown] 原子电离问题的能量计算。
+[contentMarkdown] 1. 电离：原子从基态（$n=1$）或激发态跃迁到 $n=∞$ 的状态，电离态 $E=0$。
+2. 电离能：跃迁到电离态所需吸收的最小能量；氢原子基态为 $0-(-13.6)=13.6$ eV，$n=2$ 激发态为 $3.4$ eV。
+3. 吸收能量超过电离能时，多余部分成为电离出的自由电子的动能。
+[boundaryMarkdown] 电离吸收的光子能量不要求恰好等于电离能，大于即可。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-hj3-wiring-diagram-rules
+来源: 物理讲义《第32讲 实验：测电阻和电阻率（复习讲义）（福建专用）（学生版）》（registry-kb-physics-handout:physics）
+类型: CONCEPT_EXPLANATION
+[title] 实物图连接的规则
+[summaryMarkdown] 总原则“先串后并，接线到柱，注意量程和正负”。
+[applicabilityMarkdown] 按规范连接实验电路实物图。
+[contentMarkdown] 总原则：先串后并，接线到柱，注意量程和正负。
+限流电路：从电源正极开始，把电源、开关、滑动变阻器、伏安法部分依次串联（滑动变阻器调到阻值最大处）。
+分压电路：先把电源、开关和滑动变阻器全部电阻丝三部分连接起来，再比较某接头与滑动头的电势高低，将伏安法部分接入该两点间（滑动变阻器调到使所接两点间阻值最小处）。
+[boundaryMarkdown] 连接完成前开关应断开，滑动变阻器应置于保护位置。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-tp-energy-quantum-hnu
+来源: 人教版物理（2019）选择性必修第三册 第4章第1节 普朗克黑体辐射理论（registry-kb-physics-textbook-preserve:physics）
+类型: CONCEPT_EXPLANATION
+[title] 能量子假说与普朗克常量
+[summaryMarkdown] 普朗克提出物体发射或吸收电磁波的能量是不连续的，只能是一份一份的能量子 $\varepsilon=h\nu$ 的整数倍。
+[applicabilityMarkdown] 计算电磁波（光子）能量、判断能量量子化相关概念。
+[contentMarkdown] 1. 普朗克假说（1900 年）：物体发射与吸收电磁波时，能量是不连续的，一份一份地发射或吸收。
+2. 能量子：最小能量单元 $\varepsilon=h\nu$，$\nu$ 为电磁波的频率，$h$ 为普朗克常量。
+3. 普朗克常量 $h=6.626\times10^{-34}\ \mathrm{J\cdot s}$，是自然界普适常量。
+4. 能量只能是能量子的整数倍，即 $E=n\varepsilon=nh\nu$（$n$ 为正整数），能量是量子化的。
+[boundaryMarkdown] $\nu$ 是频率，$\varepsilon=h\nu$ 与波速 $c=\lambda\nu$ 不要混用；量子化在宏观现象中表现为连续，只在微观（光、原子）尺度显著。
+候选（机械预筛，未必对）：电磁波（名字出现）；能量子（名字出现）
+

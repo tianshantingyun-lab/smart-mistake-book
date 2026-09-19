@@ -127,13 +127,18 @@ class GateTest(unittest.TestCase):
         # （三条主线框架 + 资源加工工艺的物理/化学变化判别，各挂一个来源块）→ 1→0。
         # 从此它是防回归哨兵（新知识点进包却带不上材料时会红）。
         self.assertEqual(0, metrics["unbound_points"].value)
-        self.assertEqual(892, metrics["unbound_materials"].value)
         # 2026-09-19 两批扫描件视觉转写入库（951 + 3,609 条材料）后：
         #   unbound_points 1→0（最后一个零材料点拿到材料）。
         # 同日别名重建（rebuild_aliases：别名必须来自本节点绑定材料标题、全局互斥）后：
         #   ghost_aliases 919→0、alias_collision 0（新建指标）。两项都从此充当防回归哨兵。
         self.assertEqual(0, metrics["ghost_aliases"].value)
         self.assertEqual(0, metrics["alias_collision"].value)
+        # 2026-09-19 夜绑定轮：892 条 registry 批次材料本来没有任何绑定（检索取不到它们）。
+        # 30 个子代理逐条语义裁定 + 写回器三重校验（材料存在且无绑定 / 节点同科存在 /
+        # 一材料一节点 / 只动 bindings 字段），其中 2 条代理判 NONE 的由主循环补依据
+        # （1 条补建节点「中国剩余定理」、1 条按节点既有材料先例）→ 892→0。
+        # 零回退性证据：237 条旧错绑嫌疑里，本批绑定占 0 条。
+        self.assertEqual(0, metrics["unbound_materials"].value)
         # 2026-09-19 文本级修复收口：latex_damage 194→0、control_chars 80→0。
         # 修复逻辑**早就在**（textfix + build.py._repair_material_text），但那条路只在已停用的
         # build.py 的**内存**里跑过，成品 sidecar 一条都没改——"算得出该修什么"与"真的改到
@@ -187,9 +192,10 @@ class GateTest(unittest.TestCase):
         # duplicate_names / bad_names 已修到 0（上方专门断言），不在此"必须非零"列表。
         # undeclared_prereq / boundary_excerpt / locator_boundary 2026-09-19 内容裁定轮（R 节）
         # 修到 0，已移出此列（上方 assertEqual(0,…) 充当防回归哨兵）。
-        for key in ("unbound_materials",):
-            with self.subTest(metric=key):
-                self.assertFalse(metrics[key].ok, f"{key} 修复前不该是 0")
+        # 缺陷类指标修复前必须非零——否则门禁不是在测真东西。
+        # （本列表 2026-09-19 夜已空：unbound_materials 892→0 后移入上方哨兵组；
+        #   剩下的 22 项指标全部为 0，各自在提交里有修复记录。）
+        defect_sentinels: tuple[str, ...] = ()
         # 章节覆盖率与归属完整性在现行包上本来就是满的，不该被当成缺陷
         self.assertTrue(metrics["chapter_uncovered_units"].ok)
         self.assertTrue(metrics["chapter_no_book"].ok)

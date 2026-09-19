@@ -737,7 +737,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 P378 重难4·1(2)",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:半周期推导周期",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-period-reciprocal-next-term",
@@ -792,7 +797,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 P378 重难4·1(2)",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:函数的周期性",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-period-shift-equal-different-offsets",
@@ -807,7 +817,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 P378 重难4·1(3)",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:函数的周期性",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-period-shift-opposite-different-offsets",
@@ -822,7 +837,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 P378 重难4·1(4)",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:半周期推导周期",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-axis-symmetry-equivalence",
@@ -2457,7 +2477,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 P391 重难15·续表",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:导数构造法解函数不等式",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-inverse-construct-quotient-rule",
@@ -2472,7 +2497,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 P391 重难15·续表",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:导数构造法解函数不等式",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-inverse-construct-logarithm-rule",
@@ -2527,7 +2557,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 P391 重难15·续表",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:导数构造法解函数不等式",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-inverse-construct-minus-lambda-power",
@@ -2542,7 +2577,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 P391 重难15·续表",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:导数构造法解函数不等式",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-inverse-construct-general-sum-difference",
@@ -2637,7 +2677,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 P391 重难16·1(1)",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:同构法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-isomorphic-quotient-model-xlnx-eexx",
@@ -2652,7 +2697,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 P392 重难16·1(1)续",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:同构法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-isomorphic-sum-difference-model",
@@ -2667,7 +2717,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 P392 重难16·1(2)",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:同构法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-isomorphic-match-product-form",
@@ -2682,7 +2737,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 P392 重难16·2(1)",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:同构法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-isomorphic-match-sum-form",
@@ -2797,7 +2857,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 书页P393，重难点17",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:三角函数放缩不等式",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-fangshuo-cos-ge-1-jian-erfenzhix2",
@@ -2812,7 +2877,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 书页P393，重难点17",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:三角函数放缩不等式",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-fangshuo-x-xiao-yu-tan",
@@ -2827,7 +2897,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 书页P393，重难点17",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:三角函数放缩不等式",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-fangshuo-jietida-xianzhengming",
@@ -2882,7 +2957,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 书页P393，重难点17",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:放缩精度的控制",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-fangshuo-yanzheng-denghao-noufou",
@@ -2897,7 +2977,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 书页P393，重难点17",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:放缩法证明不等式",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-duobianliang-xian-huadanbianliang",
@@ -3292,7 +3377,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 书页P394，重难点19",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:洛必达法则",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-luobida-shiyong-bianjie",
@@ -3307,7 +3397,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 书页P394，重难点19",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:洛必达法则",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-tubian-pingyi-buliang-bubian",
@@ -3862,7 +3957,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 书页P400，重难点22",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:边角互化",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-jiao-zhengxian-qici-huaweibian",
@@ -3877,7 +3977,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 书页P400，重难点22",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:边角互化",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-jiao-yuxian-yuxian-dingli-huabian",
@@ -4892,7 +4997,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 书页P409，重难点29",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:数列不等式的放缩",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-fangshuo-1bijin2-dayu-luixiang",
@@ -4907,7 +5017,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 书页P409，重难点29",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:裂项放缩",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-fangshuo-1bijin2-xiaoyu-nj1",
@@ -4922,7 +5037,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 书页P409，重难点29",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:裂项放缩",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-fangshuo-1bijin2-xiaoyu-n2jian1",
@@ -4937,7 +5057,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 书页P409，重难点29",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:裂项放缩",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-fangshuo-1bijin2-xiaoyu-4nfjian1",
@@ -4952,7 +5077,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 书页P409，重难点29",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:裂项放缩",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-fangshuo-genhao-n-xiaoyu",
@@ -4967,7 +5097,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 书页P409，重难点29",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:裂项放缩",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-fangshuo-genhao-n-dayu",
@@ -4982,7 +5117,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 书页P409，重难点29",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:裂项放缩",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-fangshuo-2ndeming-pingfang",
@@ -4997,7 +5137,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 书页P409，重难点29",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:裂项放缩",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-fangshuo-1chuyi-2ndejian1",
@@ -5012,7 +5157,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 书页P409，重难点29",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:裂项放缩",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-fangshuo-dengbi-jiegou-qiuhes",
@@ -5027,7 +5177,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 书页P409，重难点29",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:等比放缩",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-fangshuo-dengbi-fenmu-jian-hao-bukao",
@@ -5042,7 +5197,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 书页P409，重难点29",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:等比放缩",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-ncifangcha-gongshi",
@@ -5837,7 +5997,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 P415，重难点34·翻折问题",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:对折叠与展开问题认识不清致误",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-folding-target-quantities-after-fold",
@@ -6032,7 +6197,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 P417，重难点35·空间动态问题",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:空间几何体中的截面问题",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-circle-tangent-count-by-point-position",
@@ -6107,7 +6277,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 P418，重难点36·与圆有关的切线问题",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:圆的切线方程",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-tangent-at-point-unit-circle-formula",
@@ -6322,7 +6497,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 P419，重难点36·圆与圆的公切线",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:圆的切线方程",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-point-inside-circle-distance-extremes",
@@ -6497,7 +6677,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 P421，重难点38·离心率问题",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:椭圆的离心率",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hyperbola-e-and-b-over-a",
@@ -6612,7 +6797,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 P421，重难点38·离心率问题",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:椭圆焦点三角形",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-ellipse-focal-triangle-perimeter",
@@ -7147,7 +7337,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 P425，重难点42·第三定义与斜率积",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:圆锥曲线第三定义的应用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-third-definition-hyperbola-slope-product",
@@ -7202,7 +7397,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 P426，重难点43·中点弦问题",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:弦中点与点差法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-midpoint-chord-slope-product-hyperbola",
@@ -7517,7 +7717,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 P430，重难点44·设而不求思想·考法4平移齐次化",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:齐次化",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-restricted-count-three-approaches",
@@ -7552,7 +7757,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 P431，重难点46·捆绑法与插空法",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:捆绑法与插空法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-insertion-space-method",
@@ -7567,7 +7777,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 P431，重难点46·捆绑法与插空法",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:捆绑法与插空法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-insert-space-count-formula",
@@ -7662,7 +7877,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 P432，重难点48·隔板法解决相同元素分组问题",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:隔板法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-divider-add-element-method",
@@ -7677,7 +7897,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 P432，重难点48·隔板法解决相同元素分组问题",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:隔板法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-divider-preallocation-method",
@@ -7692,7 +7917,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 P432，重难点48·隔板法解决相同元素分组问题",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:隔板法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-uniform-grouping-formula",
@@ -7707,7 +7937,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 P433，重难点49·不同元素分组分配问题",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:均匀分组与分配问题",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-nonuniform-grouping-formula",
@@ -7722,7 +7957,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 P433，重难点49·不同元素分组分配问题",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:分组分配问题",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-partial-uniform-grouping-formula",
@@ -7737,7 +7977,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 P433，重难点49·不同元素分组分配问题",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:均匀分组与分配问题",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-group-then-assign-principle",
@@ -7752,7 +7997,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 P433，重难点49·不同元素分组分配问题",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:分组分配问题",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-binomial-coefficient-sum-2n",
@@ -8027,7 +8277,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 P436，重难点52·条件概率、乘法公式、全概率公式",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:贝叶斯公式",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hypergeometric-distribution-model",
@@ -8242,7 +8497,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 P437，重难点54·正态曲线的应用",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:正态分布",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-normal-variance-controls-shape",
@@ -8437,7 +8697,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-math:math",
    "sourceLocator": "《狂K重难点》数学 P433，重难点49·不同元素分组分配问题",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:分组分配问题",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-binomial-coefficients-monotonic-symmetric",
@@ -9012,7 +9277,12 @@
    "sourceId": "registry-kb-math-knowledge-list:math",
    "sourceLocator": "数学知识清单：《专题02 二次函数与一元二次方程、不等式（知识清单）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:不等式的基本性质",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-kb-three-quadratics-relation",
@@ -10747,7 +11017,12 @@
    "sourceId": "registry-kb-math-knowledge-list:math",
    "sourceLocator": "数学知识清单：《专题02 数列通项及数列求和（知识清单）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:分组-并项-法求数列的前n项和",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-kb-reverse-order-addition",
@@ -11282,7 +11557,12 @@
    "sourceId": "registry-kb-math-knowledge-list:math",
    "sourceLocator": "数学知识清单：《专题01 立体几何初步（知识清单）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:四个公理",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-kb-equal-angle-theorem-space",
@@ -11617,7 +11897,12 @@
    "sourceId": "registry-kb-math-knowledge-list:math",
    "sourceLocator": "数学知识清单：《专题01 立体几何初步（知识清单）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:点到平面的距离",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-kb-projection-method-line-plane-angle",
@@ -12632,7 +12917,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《1.4命题与充要条件（讲义）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:命题",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-chongfen-biyao-tiaojian",
@@ -12807,7 +13097,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《2.1基本不等式（讲义）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:基本不等式",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-junzhi-qiu-zuizhi-moxing",
@@ -13002,7 +13297,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《3.2平面向量的线性运算（讲义）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:平面向量的线性运算",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-shucheng-yunsuan",
@@ -13397,7 +13697,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《5.1正弦定理（讲义）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:正弦定理",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-neijiaohe-bianxing",
@@ -13432,7 +13737,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《5.1正弦定理（讲义）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:三角形的射影定理",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-yuxian-dingli",
@@ -13767,7 +14077,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《6.3数列求和（讲义）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:分组-并项-法求数列的前n项和",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-zuocha-fa-bijiao",
@@ -14262,7 +14577,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《第3节　空间点、直线、平面之间的位置关系》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:异面直线所成的角",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-xianmian-pingxing-panding",
@@ -15317,7 +15637,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《第二课时 构造函数证明不等式》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:切线放缩不等式",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-jixiaodian-pianyi-dingyi",
@@ -15412,7 +15737,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《第1节　随机抽样、统计图表》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:频率分布直方图",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-baifenweishu-dingyi",
@@ -15467,7 +15797,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《第2节　用样本估计总体》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:方差与标准差",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-fangcha-xianxing-bianhuan",
@@ -15702,7 +16037,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《第12节 函数模型及其应用》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:函数模型与增长速度的比较",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-hanshu-jianmo-yicuo",
@@ -16477,7 +16817,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《第2节　排列与组合》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:排列",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-zuhe-gainian-shu",
@@ -16492,7 +16837,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《第2节　排列与组合》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:组合",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-pailie-zuhe-gongshi-xingzhi",
@@ -16607,7 +16957,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《第3节　二项式定理》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:二项式定理",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-yangben-kongjian-shijian",
@@ -16682,7 +17037,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《第4节　随机事件、频率与概率》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:概率的基本性质",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-gudai-gaixing-dingyi",
@@ -16917,7 +17277,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《第8节　二项分布、超几何分布与正态分布》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:两点分布及其均值与方差",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-chaojihe-fenbu",
@@ -17092,7 +17457,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《第2节　同角三角函数的基本关系及诱导公式》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:同角三角函数的基本关系",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-yindao-gongshi-koujue",
@@ -17187,7 +17557,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《第3节　和、差、倍角的正弦、余弦和正切公式》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:降幂公式与升幂公式",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-banjiao-gongshi",
@@ -17242,7 +17617,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《第5节　三角函数的图象与性质》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:三角函数的图象与性质",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-sanjiao-hanshu-xingzhi-biao",
@@ -17297,7 +17677,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《第6节　函数y＝Asin(ωx＋φ)的图象及应用》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:函数y-asin-ωx-φ-的图象",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-zhengxingleixing-liangzhong-bianhuan",
@@ -17332,7 +17717,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《第6节　函数y＝Asin(ωx＋φ)的图象及应用》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:函数y-asin-ωx-φ-的图象",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-sanjiao-canshu-fanwei-silu",
@@ -17467,7 +17857,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《第9节　三角函数模型及解三角形的实际应用》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:解三角形的实际应用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-fangwei-fangxiang-podu",
@@ -17482,7 +17877,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《第9节　三角函数模型及解三角形的实际应用》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:解三角形的实际应用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-rongchi-yuanli",
@@ -17577,7 +17977,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《第一章 §1.4　基本不等式》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:1的代换",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-hailun-gongshi",
@@ -17592,7 +17997,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《第一章 §1.5　基本不等式的综合应用》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:秦九韶公式与海伦公式",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-dengji-bianhuan-tiji",
@@ -17667,7 +18077,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《第七章 §7.5　空间直线、平面的垂直》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:割补法求空间几何体的体积",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-gouzao-xf-f-x",
@@ -17742,7 +18157,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《第九章 §9.4　列联表与独立性检验》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:独立性检验",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-erfen-fa",
@@ -18157,7 +18577,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《第8节　直线与圆锥曲线》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:弦中点与点差法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-yuanzhui-changyong-jielun",
@@ -18792,7 +19217,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《第一章 §1.4　基本不等式.docx》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:基本不等式",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-s14-three-conds",
@@ -18807,7 +19237,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《第一章 §1.4　基本不等式.docx》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:基本不等式",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-s14-differ-same",
@@ -20862,7 +21297,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《第三章 §3.6　函数中的构造问题.docx》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:导数构造法解函数不等式",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-s36-construct-exp",
@@ -21217,7 +21657,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《第四章 §4.2　同角三角函数基本关系式及诱导公式.docx》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:同角三角函数的基本关系",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-s42-chord-to-tangent",
@@ -21232,7 +21677,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《第四章 §4.2　同角三角函数基本关系式及诱导公式.docx》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:齐次式与切弦互化",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-s43-sum-diff-formulas",
@@ -21407,7 +21857,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《第四章 §4.5　三角函数的图象与性质.docx》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:三角函数的图象与性质",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-s45-trig-properties",
@@ -22462,7 +22917,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《第六章 §6.5　数列求和(一).docx》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:分组-并项-法求数列的前n项和",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-s65-sum-merge",
@@ -22477,7 +22937,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《第六章 §6.5　数列求和(一).docx》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:分组-并项-法求数列的前n项和",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-s65-sum-reverse",
@@ -23612,7 +24077,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《第八章 §8.9　直线与圆锥曲线的位置关系.docx》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:圆锥曲线的弦长公式",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-s89-mid-chord",
@@ -23627,7 +24097,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《第八章 §8.9　直线与圆锥曲线的位置关系.docx》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:弦中点与点差法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-s810-fixed-value",
@@ -23742,7 +24217,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《第九章 §9.1　随机抽样、统计图表.docx》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:简单随机抽样",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-s91-simple-random",
@@ -23817,7 +24297,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《第九章 §9.1　随机抽样、统计图表.docx》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:频率分布直方图",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-s92-percentile",
@@ -23832,7 +24317,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《第九章 §9.2　用样本估计总体.docx》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:百分位数",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-s92-central-tendency",
@@ -23927,7 +24417,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《第九章 §9.3　一元线性回归模型及其应用.docx》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:回归分析",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-s93-nonlinear",
@@ -23962,7 +24457,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《第九章 §9.4　列联表与独立性检验.docx》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:独立性检验",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-s94-chi-square",
@@ -24717,7 +25217,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《第四章 §4.10　解三角形及其应用举例.docx》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:解三角形的实际应用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-s87-hyperbola-branch",
@@ -24892,7 +25397,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《第十章 §10.3　二项式定理.docx》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:三项展开式的通项",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-s109-at-least-prob",
@@ -24907,7 +25417,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《第十章 §10.4　随机事件与概率.docx》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:概率的基本性质",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-s109-nonadjacent-prob",
@@ -24942,7 +25457,12 @@
    "sourceId": "registry-kb-math-handout:math",
    "sourceLocator": "数学讲义《第九章 §9.2　用样本估计总体.docx》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:方差与标准差",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-hj-s77-line-plane-angle-steps",
@@ -25117,7 +25637,12 @@
    "sourceId": "registry-kb-math-methods:math",
    "sourceLocator": "数学方法类《第三章　进阶篇　不等式证明方法　进阶3　切割线放缩》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:切线夹与割线夹",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-fx-qiexian-fangshuo-buzhou",
@@ -25132,7 +25657,12 @@
    "sourceId": "registry-kb-math-methods:math",
    "sourceLocator": "数学方法类《第三章　进阶篇　不等式证明方法　进阶3　切割线放缩》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:切线夹与割线夹",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-fx-jzhidian-pianyi-dingyi",
@@ -25547,7 +26077,12 @@
    "sourceId": "registry-kb-math-methods:math",
    "sourceLocator": "数学方法类《第16讲：同角三角函数的基本关系与诱导公式（知识梳理+解题总结）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:齐次式与切弦互化",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-fx-hechaji-guanxi",
@@ -25562,7 +26097,12 @@
    "sourceId": "registry-kb-math-methods:math",
    "sourceLocator": "数学方法类《第16讲：同角三角函数的基本关系与诱导公式（知识梳理+解题总结）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:三角函数和差积的互化",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-fx-youdao-gongshi-koujue",
@@ -25697,7 +26237,12 @@
    "sourceId": "registry-kb-math-methods:math",
    "sourceLocator": "数学方法类《第17讲：两角和差的正弦、余弦和正切公式（题型总结+解题策略分析）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:拼凑角思想",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-fx-geizhi-qiuzhi-sanbufa",
@@ -25812,7 +26357,12 @@
    "sourceId": "registry-kb-math-methods:math",
    "sourceLocator": "数学方法类《第18讲：三角恒等变换（知识梳理+题型总结）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:积化和差与和差化积公式",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-fx-sanjiao-huajian-wuce",
@@ -26087,7 +26637,12 @@
    "sourceId": "registry-kb-math-methods:math",
    "sourceLocator": "数学方法类《第20讲：函数 y=Asin(ωx+φ) 的图象与性质及三角函数模型的应用（知识梳理+题型总结）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:函数y-asin-ωx-φ-的图象",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-fx-sanjiao-hanshangxia-bianhuan",
@@ -26582,7 +27137,12 @@
    "sourceId": "registry-kb-math-methods:math",
    "sourceLocator": "数学方法类《第24讲：数列的综合应用（知识梳理+题型总结）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:等比数列的前n项和",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-fx-ditui-moxing-sanlei",
@@ -27517,7 +28077,12 @@
    "sourceId": "registry-kb-math-methods:math",
    "sourceLocator": "数学方法类《第33讲：直线与圆、圆与圆的位置关系（知识梳理+题型总结）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:圆的切线方程",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-fx-xianchang-gongshi-xue",
@@ -28072,7 +28637,12 @@
    "sourceId": "registry-kb-math-methods:math",
    "sourceLocator": "数学方法类《第07讲　拓展二：三角形中线、角平分线方法技巧篇》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:角平分线定理",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-fx-pingfenxian-jiao-xingshi",
@@ -28087,7 +28657,12 @@
    "sourceId": "registry-kb-math-methods:math",
    "sourceLocator": "数学方法类《第07讲　拓展二：三角形中线、角平分线方法技巧篇》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:角平分线定理",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-fx-gonglingdian-jiben-yuanli",
@@ -29322,7 +29897,12 @@
    "sourceId": "registry-kb-math-methods:math",
    "sourceLocator": "数学方法类《答题模板10　解三角形公式定理解题技巧 6 类核心题型》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:张角定理",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-fx-beijiao-dingli",
@@ -29537,7 +30117,12 @@
    "sourceId": "registry-kb-math-methods:math",
    "sourceLocator": "数学方法类《答题模板17　球体的外接球、内切球、棱切球解题技巧 12 类核心题型》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:求解几何体外接球的半径的思路",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-fx-celeng-chuizhi-qiuxin-gougu",
@@ -29752,7 +30337,12 @@
    "sourceId": "registry-kb-math-methods:math",
    "sourceLocator": "数学方法类《专题一　微专题1　常用构造函数的几种方法》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:同构法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-fx-gouzao-shuanghanshu-jiaobi",
@@ -30147,7 +30737,12 @@
    "sourceId": "registry-kb-math-methods:math",
    "sourceLocator": "数学方法类《第15讲：任意角和弧度制及任意角的三角函数（知识梳理+解题总结）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:任意角与弧度制",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-fx-teshujiao-hudu-duizhao",
@@ -30282,7 +30877,12 @@
    "sourceId": "registry-kb-math-methods:math",
    "sourceLocator": "数学方法类《第18讲：三角恒等变换（知识梳理+题型总结）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:两角和与差的公式",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-fx-sanjiao-hanshuxian",
@@ -30637,7 +31237,12 @@
    "sourceId": "registry-kb-math-methods:math",
    "sourceLocator": "数学方法类《第32讲：圆的方程（知识梳理+题型总结）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:圆的对称性",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-fx-qiexian-zai-guo-bianxi",
@@ -31212,7 +31817,12 @@
    "sourceId": "registry-kb-math-methods:math",
    "sourceLocator": "数学方法类《考点09　函数的周期性和对称性 2 类常见考点全归纳》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:函数的周期性",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-fx-hanshu-renyi-weiyi-liangyao",
@@ -31327,7 +31937,12 @@
    "sourceId": "registry-kb-math-methods:math",
    "sourceLocator": "数学方法类《第18讲：三角恒等变换（知识梳理+题型总结）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:三角函数式的化简与证明",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-fx-fushu-gonge-qiuz-jiqiao",
@@ -31422,7 +32037,12 @@
    "sourceId": "registry-kb-math-methods:math",
    "sourceLocator": "数学方法类《专题1.1　子数列问题及数列放缩技巧（6 大考向）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:数列不等式的放缩",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-fx-fushu-yicuo-bianxi",
@@ -32437,7 +33057,12 @@
    "sourceId": "registry-kb-math-misc:math",
    "sourceLocator": "数学《专题01 立体几何初步（题型清单）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:空间几何体中的截面问题",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-mo-pingxing-mingti-panding",
@@ -34552,7 +35177,12 @@
    "sourceId": "registry-kb-math-misc:math",
    "sourceLocator": "数学《专题03 集合培优归类（题型清单）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:利用集合间的关系求参数",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-mo-jiaobing-bu-xingzhi-qingdan",
@@ -34747,7 +35377,12 @@
    "sourceId": "registry-kb-math-misc:math",
    "sourceLocator": "数学《专题05 均值不等式培优归类（题型清单）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:对勾函数",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-mo-fenli-changshu-duigou",
@@ -34782,7 +35417,12 @@
    "sourceId": "registry-kb-math-misc:math",
    "sourceLocator": "数学《专题05 均值不等式培优归类（题型清单）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:1的代换",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-mo-jihe-hunhe-tongchu",
@@ -34797,7 +35437,12 @@
    "sourceId": "registry-kb-math-misc:math",
    "sourceLocator": "数学《专题05 均值不等式培优归类（题型清单）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:1的代换",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-mo-jihe-hunhe-jiebudengshi",
@@ -34832,7 +35477,12 @@
    "sourceId": "registry-kb-math-misc:math",
    "sourceLocator": "数学《专题05 均值不等式培优归类（题型清单）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:1的代换",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-mo-sanjiaoxing-coudingzhi",
@@ -34927,7 +35577,12 @@
    "sourceId": "registry-kb-math-misc:math",
    "sourceLocator": "数学《专题05 均值不等式培优归类（题型清单）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:双变量问题的题型与解法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-mo-liangci-junzhi-qudeng",
@@ -34942,7 +35597,12 @@
    "sourceId": "registry-kb-math-misc:math",
    "sourceLocator": "数学《专题05 均值不等式培优归类（题型清单）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:连续使用基本不等式忽略等号同时成立致错",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-mo-wanneng-k-fa",
@@ -34957,7 +35617,12 @@
    "sourceId": "registry-kb-math-misc:math",
    "sourceLocator": "数学《专题05 均值不等式培优归类（题型清单）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:判别式法-主要用于含有二次的分式函数-形如",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-mo-sanyuan-duoyuan-jianyuan",
@@ -35612,7 +36277,12 @@
    "sourceId": "registry-kb-math-misc:math",
    "sourceLocator": "数学《专题01 三角函数概念及公式应用（题型清单）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:齐次式与切弦互化",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-mo-sanjianke-zhiyiqiuer",
@@ -35627,7 +36297,12 @@
    "sourceId": "registry-kb-math-misc:math",
    "sourceLocator": "数学《专题01 三角函数概念及公式应用（题型清单）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:同角三角函数的基本关系",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-mo-hechajiao-erbeijiao-gongshizu",
@@ -35682,7 +36357,12 @@
    "sourceId": "registry-kb-math-misc:math",
    "sourceLocator": "数学《专题01 三角函数概念及公式应用（题型清单）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:三角恒等变换",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-mo-geizhi-qiujiao-sanbu",
@@ -35737,7 +36417,12 @@
    "sourceId": "registry-kb-math-misc:math",
    "sourceLocator": "数学《专题02 三角函数图象与性质（题型清单）（原卷版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:描点法作图",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-mo-sanjiao-qiou-phi-tiaojian",
@@ -35832,7 +36517,12 @@
    "sourceId": "registry-kb-math-misc:math",
    "sourceLocator": "数学《专题02 三角函数图象与性质（题型清单）（原卷版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:三角函数中 ω 的求解",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-mo-youtu-qiujiexishi-sanding",
@@ -36287,7 +36977,12 @@
    "sourceId": "registry-kb-math-misc:math",
    "sourceLocator": "数学《专题12 以相关公式、定义、定理、模型为命题背景（附加）（全国通用）（学生版）（会一题通一类系列）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:祖暅原理",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-mo-sanyuxian-dingli",
@@ -36322,7 +37017,12 @@
    "sourceId": "registry-kb-math-misc:math",
    "sourceLocator": "数学《专题12 以相关公式、定义、定理、模型为命题背景（附加）（全国通用）（学生版）（会一题通一类系列）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:托勒密定理",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-mo-yuanmi-dingli",
@@ -36337,7 +37037,12 @@
    "sourceId": "registry-kb-math-misc:math",
    "sourceLocator": "数学《专题12 以相关公式、定义、定理、模型为命题背景（附加）（全国通用）（学生版）（会一题通一类系列）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:圆幂定理与相交弦定理",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-mo-yueya-dingli",
@@ -36352,7 +37057,12 @@
    "sourceId": "registry-kb-math-misc:math",
    "sourceLocator": "数学《专题12 以相关公式、定义、定理、模型为命题背景（附加）（全国通用）（学生版）（会一题通一类系列）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:月牙定理",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-mo-sipingfanghe-dingli",
@@ -36367,7 +37077,12 @@
    "sourceId": "registry-kb-math-misc:math",
    "sourceLocator": "数学《专题12 以相关公式、定义、定理、模型为命题背景（附加）（全国通用）（学生版）（会一题通一类系列）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:四平方和定理",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-mo-zhongguo-shengyu-dingli",
@@ -36382,7 +37097,12 @@
    "sourceId": "registry-kb-math-misc:math",
    "sourceLocator": "数学《专题12 以相关公式、定义、定理、模型为命题背景（附加）（全国通用）（学生版）（会一题通一类系列）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:中国剩余定理",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-mo-lagelangri-zhongzhi",
@@ -36397,7 +37117,12 @@
    "sourceId": "registry-kb-math-misc:math",
    "sourceLocator": "数学《专题12 以相关公式、定义、定理、模型为命题背景（附加）（全国通用）（学生版）（会一题通一类系列）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:拉格朗日中值定理",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-mo-kexi-zhongzhi",
@@ -36412,7 +37137,12 @@
    "sourceId": "registry-kb-math-misc:math",
    "sourceLocator": "数学《专题12 以相关公式、定义、定理、模型为命题背景（附加）（全国通用）（学生版）（会一题通一类系列）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:柯西中值定理",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-mo-sitewaerte-dingli",
@@ -36427,7 +37157,12 @@
    "sourceId": "registry-kb-math-misc:math",
    "sourceLocator": "数学《专题12 以相关公式、定义、定理、模型为命题背景（附加）（全国通用）（学生版）（会一题通一类系列）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:斯特瓦尔特定理",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-mo-waijieqiu-badamoxing-qingdan",
@@ -36542,7 +37277,12 @@
    "sourceId": "registry-kb-math-misc:math",
    "sourceLocator": "数学《教考衔接十六 教材中的易混易错杜绝再错学案》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:元素与集合的关系",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-mo-quancheng-cunzai-liangci",
@@ -36957,7 +37697,12 @@
    "sourceId": "registry-kb-math-misc:math",
    "sourceLocator": "数学《教考衔接十六 教材中的易混易错杜绝再错学案》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:概率的基本性质",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-mo-dingyv-youxian-yvyutianran",
@@ -36992,7 +37737,12 @@
    "sourceId": "registry-kb-math-misc:math",
    "sourceLocator": "数学《教考衔接十六 教材中的易混易错杜绝再错学案》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:给值求角问题",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-mo-qiehuaxian-kaifang-fuhao",
@@ -37047,7 +37797,12 @@
    "sourceId": "registry-kb-math-misc:math",
    "sourceLocator": "数学《教考衔接十六 教材中的易混易错杜绝再错学案》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:离散型随机变量",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-mo-jieda-qianhouwen-guanlian",
@@ -37062,7 +37817,12 @@
    "sourceId": "registry-kb-math-misc:math",
    "sourceLocator": "数学《教考衔接十六 教材中的易混易错杜绝再错学案》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:导数压轴题的解题流程",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-mo-dandiaozeng-fdaoyu-0",
@@ -37117,7 +37877,12 @@
    "sourceId": "registry-kb-math-misc:math",
    "sourceLocator": "数学《教考衔接十六 教材中的易混易错杜绝再错学案》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:三角形解的个数判断",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-mo-cosa-zheng-bubiruijiao",
@@ -37332,7 +38097,12 @@
    "sourceId": "registry-kb-math-misc:math",
    "sourceLocator": "数学《教考衔接十六 教材中的易混易错杜绝再错学案》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:两条直线的位置关系",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-mo-jzhidian-pianyi-fangxiang-aotuxing",
@@ -37387,7 +38157,12 @@
    "sourceId": "registry-kb-math-misc:math",
    "sourceLocator": "数学《培优点20：同构函数（知识梳理+题型突破训练）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:同构法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-mo-tonggou-zhiduikuajie",
@@ -37402,7 +38177,12 @@
    "sourceId": "registry-kb-math-misc:math",
    "sourceLocator": "数学《培优点20：同构函数（知识梳理+题型突破训练）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:同构法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-mo-tonggou-lingdian-xing",
@@ -37417,7 +38197,12 @@
    "sourceId": "registry-kb-math-misc:math",
    "sourceLocator": "数学《培优点20：同构函数（知识梳理+题型突破训练）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:同构法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-mo-biyaoxing-tanlu-benzhi",
@@ -37472,7 +38257,12 @@
    "sourceId": "registry-kb-math-misc:math",
    "sourceLocator": "数学《培优点23：必要性探路与主元法（知识梳理+例题讲解+真题练习）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:必要性探路",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-mo-tanlu-duishu-teshudian",
@@ -37507,7 +38297,12 @@
    "sourceId": "registry-kb-math-misc:math",
    "sourceLocator": "数学《培优点23：必要性探路与主元法（知识梳理+例题讲解+真题练习）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:主元法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-mo-demogen-gongshi",
@@ -37522,7 +38317,12 @@
    "sourceId": "registry-kb-math-misc:math",
    "sourceLocator": "数学《高考数学二级结论篇（核心知识背记手册）（默写版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:德摩根定律",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-mo-rongchi-yuanli-jihe",
@@ -37577,7 +38377,12 @@
    "sourceId": "registry-kb-math-misc:math",
    "sourceLocator": "数学《高考数学二级结论篇（核心知识背记手册）（默写版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:万能公式",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-mo-hechahuaji-jihuahecha",
@@ -37592,7 +38397,12 @@
    "sourceId": "registry-kb-math-misc:math",
    "sourceLocator": "数学《高考数学二级结论篇（核心知识背记手册）（默写版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:积化和差与和差化积公式",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-mo-zhongxianchang-dingli",
@@ -37607,7 +38417,12 @@
    "sourceId": "registry-kb-math-misc:math",
    "sourceLocator": "数学《高考数学二级结论篇（核心知识背记手册）（默写版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:平行四边形恒等式与中线定理",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-mo-hailun-qinjiushao-gongshi",
@@ -37622,7 +38437,12 @@
    "sourceId": "registry-kb-math-misc:math",
    "sourceLocator": "数学《高考数学二级结论篇（核心知识背记手册）（默写版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:秦九韶公式与海伦公式",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-mo-sanbeijiao-gongshi",
@@ -37877,7 +38697,12 @@
    "sourceId": "registry-kb-math-misc:math",
    "sourceLocator": "数学《高考数学二级结论篇（核心知识背记手册）（默写版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:双外心模型求外接球",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-mo-zhedie-quandeng-sanjiaoxing-waijieqiu",
@@ -37932,7 +38757,12 @@
    "sourceId": "registry-kb-math-misc:math",
    "sourceLocator": "数学《高考数学二级结论篇（核心知识背记手册）（默写版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:圆锥曲线的切点弦",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "math-mo-pasika-dingli",
@@ -38807,7 +39637,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-physics:physics",
    "sourceLocator": "《狂K重难点》物理 书页P403，重难点4",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:正交分解法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-zhengjiao-zhun-que-jiaodu",
@@ -39102,7 +39937,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-physics:physics",
    "sourceLocator": "《狂K重难点》物理 书页P407，重难点5",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:全反力与摩擦角",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-lianjieti-zhengtifa-qian-ti",
@@ -39257,7 +40097,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-physics:physics",
    "sourceLocator": "《狂K重难点》物理 书页P408，重难点6",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:共速连接体对合力的分配原理",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-dongli-fenpei-shi-yong-tiao-jian",
@@ -40092,7 +40937,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-physics:physics",
    "sourceLocator": "《狂K重难点》物理 书页P415，重难点9",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:平抛运动与曲面的结合分析",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-pingpao-bu-neng-chui-zhi-yuan-hu",
@@ -40207,7 +41057,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-physics:physics",
    "sourceLocator": "《狂K重难点》物理 书页P417，重难点11",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:绳球模型-杆球模型两类经典模型中的临界条件-情景分析",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-sheng-moxing-bu-neng-guo-zui-gao-dian",
@@ -40222,7 +41077,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-physics:physics",
    "sourceLocator": "《狂K重难点》物理 书页P417，重难点11",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:绳球模型-杆球模型两类经典模型中的临界条件-情景分析",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-gan-moxing-zui-gao-dian",
@@ -40237,7 +41097,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-physics:physics",
    "sourceLocator": "《狂K重难点》物理 书页P417，重难点11",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:绳球模型-杆球模型两类经典模型中的临界条件-情景分析",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-gan-moxing-fn-si-fen-qu",

@@ -1,0 +1,380 @@
+# 绑定作业片 04：30 条无绑定材料
+#
+# 任务：为每条材料选定它应该绑定的知识点节点（就是讲题时该材料服务的那个点）。
+# 交付（写到 tools/kb_coverage/binding_fixes/slice_04/notes.csv）：
+#   subject,material_slug,node_slug,confidence,evidence
+#   （node_slug 用下面的节点表里的 slug；确实没有合适的写 NONE；
+#     evidence 一句话说明依据；字段内不要有 ASCII 逗号）
+#
+# 硬规矩：
+#   · 宁缺勿错：不确定就 confidence=low 或写 NONE —— 错绑会让检索喂错材料
+#   · 只能从本学科节点表里选（见 tools/kb_coverage/binding_slices/nodes/nodes_<学科>.txt）
+#   · 一条材料只绑一个节点（就是它最主要服务的那个点）
+
+==============================================================================
+## BIOLOGY | bio-axis-confirmation-open-vs-closed
+来源: 《狂K重点》生物 P386-387 重难4·题型2（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 读图第一步：确认纵轴是'吸收速率'（开放）还是'浓度变化'（密闭）
+[summaryMarkdown] 开放环境测'吸收速率'、密闭容器测'浓度变化'，两者符号含义相反，读图前必须先确认纵轴。
+[applicabilityMarkdown] 所有光合呼吸曲线题的先行步骤。
+[contentMarkdown] 开放（自然）环境：纵轴为 CO2 吸收速率，正值=净光合>0。密闭容器：纵轴为 CO2 浓度，下降=净光合>0。两者对同一生理过程呈现相反的曲线方向。
+[boundaryMarkdown] 不确认纵轴直接套结论是本类题最常见的错误。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-01-epidemic-prevention-measures
+来源: 生物讲义《第01讲 走近细胞（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 病毒性传染病的预防措施
+[summaryMarkdown] 预防病毒性疾病从控制传染源、切断传播途径和保护易感人群三方面入手。
+[applicabilityMarkdown] 传染病预防措施判断。
+[contentMarkdown] 1. 控制传染源：隔离治疗患者、处理患病动物。
+2. 切断传播途径：消毒、戴口罩等。
+3. 保护易感人群：接种疫苗。
+[boundaryMarkdown] 疫苗制备是病毒应用之一，接种对象是易感人群。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-04-salting-denaturation-hydrolysis
+来源: 生物讲义《第04讲 蛋白质和核酸（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 盐析、变性和水解的辨析
+[summaryMarkdown] 盐析不改空间结构可复原，变性空间结构不可逆破坏但肽键不断，水解断裂肽键成氨基酸。
+[applicabilityMarkdown] 三种蛋白质变化的概念辨析。
+[contentMarkdown] 1. 盐析：由溶解度变化引起，空间结构没有发生变化（加水可溶解复原）。
+2. 变性：高温、过酸过碱、重金属盐、酒精、紫外线等导致空间结构不可逆变化，丧失生物活性，肽键一般不断裂。
+3. 水解：蛋白酶作用下肽键断裂，蛋白质分解为短肽进而彻底水解为氨基酸。
+[boundaryMarkdown] 盐析是物理变化可逆，变性是化学变化不可逆，水解彻底破坏一级结构。
+候选（机械预筛，未必对）：氨基酸（名字出现）；蛋白质（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fj-10-pigment-bands-order
+来源: 生物讲义《第10讲 光合作用（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 四种色素带的含量与扩散速度
+[summaryMarkdown] 滤纸条从上到下依次为胡萝卜素、叶黄素、叶绿素a、叶绿素b，含量与扩散速度各有规律。
+[applicabilityMarkdown] 色素带位置与含量判断。
+[contentMarkdown] 1. 扩散速度与溶解度：胡萝卜素最快、叶黄素较快、叶绿素a较慢、叶绿素b最慢。
+2. 含量：叶绿素a最多，叶绿素b较多，叶黄素较少，胡萝卜素最少。
+3. 叶绿素约占3/4，类胡萝卜素约占1/4。
+[boundaryMarkdown] 色素带颜色从上到下：橙黄色、黄色、蓝绿色、黄绿色。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-32-birth-death-rate
+来源: 生物讲义《第32讲 种群（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 出生率、死亡率与迁入迁出率
+[summaryMarkdown] 出生率和死亡率、迁入率和迁出率都是决定种群大小和种群密度的重要因素。
+[applicabilityMarkdown] 数量特征意义判断。
+[contentMarkdown] 1. 出生率：单位时间内新产生的个体数目占该种群个体总数的比率。
+2. 死亡率：单位时间内死亡的个体数目占该种群个体总数的比率。
+3. 迁入率和迁出率：单位时间内迁入或迁出个体占该种群个体总数的比率。
+4. 研究城市人口变动时迁入迁出率不可忽视。
+[boundaryMarkdown] 药物灭鼠后种群下降除死亡率升高外还应考虑个体迁出。
+候选（机械预筛，未必对）：种群密度（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fx-exp-design-procedure
+来源: 生物方法类《2026届高考生物一轮复习讲义第9单元素养提升 实验设计的一般原则和基本方法 探究动植物生命活动调节实验的思路与方法》（registry-kb-biology-methods:biology）
+类型: METHOD_MODEL
+[title] 实验设计的一般程序（六步）
+[summaryMarkdown] 实验设计按明确目的、选择原理、确定思路、设计步骤、预期结果、得出结论六步进行。
+[applicabilityMarkdown] 完整实验设计题的构思与作答顺序。
+[contentMarkdown] 1. 明确实验目的→2. 选择实验原理→3. 确定实验思路→4. 设计实验步骤→5. 预期实验结果→6. 得出实验结论。
+[boundaryMarkdown] 六步环环相扣，目的不明确则原理与变量无从谈起；结果与结论必须建立在步骤之上。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fx-photoinhibition-defense
+来源: 生物方法类《第三单元 专题突破3 二氧化碳固定方式的多样性、光呼吸及光抑制》（registry-kb-biology-methods:biology）
+类型: METHOD_MODEL
+[title] 光抑制的机理与防御机制
+[summaryMarkdown] 光能过剩破坏PSⅡ使光合效率下降，植物通过减少光吸收、增加热耗散和光呼吸等机制防御。
+[applicabilityMarkdown] 强光下植物适应机制的分析题。
+[contentMarkdown] 1. 机理：光能超过光合作用利用能力时，PSⅡ是光破坏主要场所，电子传递受阻、光合效率下降。
+2. 防御一：减少光吸收（叶运动、叶绿体避光运动）。
+3. 防御二：增加热耗散（叶绿素荧光猝灭、玉米黄素耗散激发能）。
+4. 防御三：进行光呼吸消耗过剩能量；同时增强自由基清除能力（SOD等）。
+[boundaryMarkdown] 光饱和点低的植物（如黄连）更易发生光抑制，生产上可搭棚或林下栽培减轻。
+候选（机械预筛，未必对）：叶绿体（名字出现）；光合作用（名字出现）；光呼吸（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-kb-adaptation-formation-necessary-conditions
+来源: 生物知识清单：《第23讲 生物的进化（知识清单）（全国通用）（学生版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 适应形成的必要条件
+[summaryMarkdown] 群体中出现可遗传的有利变异和环境的定向选择是适应形成的必要条件。
+[applicabilityMarkdown] 适应形成过程分析。
+[contentMarkdown] 1. 适应的来源：可遗传的变异。
+2. 在环境的选择作用下，可遗传变异赋予某些个体生存和繁殖优势，经代代繁殖，有利变异个体越来越多。
+3. 结论：可遗传的有利变异＋环境的定向选择＝适应形成。
+[boundaryMarkdown] 变异是随机的、不定向的，选择是定向的。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb2-03-chitin
+来源: 生物知识清单：《第03讲 糖类和脂质（知识清单）（全国通用）（教师版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 几丁质（壳多糖）的分布与应用
+[summaryMarkdown] 几丁质是广泛存在于甲壳类动物和昆虫外骨骼中的多糖，可用于医药化工。
+[applicabilityMarkdown] 判断几丁质的类别、分布与应用时使用。
+[contentMarkdown] 几丁质又称壳多糖，广泛存在于甲壳类动物和昆虫的外骨骼中，是结构材料；
+几丁质及其衍生物可用于医药、化工方面；其基本单位是N-乙酰葡糖胺，故含N元素。
+[boundaryMarkdown] 真菌细胞壁也含几丁质类成分；几丁质合成发生在细胞膜外侧，合成后无需跨膜运输到胞外。
+候选（机械预筛，未必对）：细胞壁（名字出现）；几丁质（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-kb2-29-organ-transplant-hla
+来源: 生物知识清单：《第29讲 免疫失调和免疫学的应用（知识清单）（全国通用）（教师版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 器官移植与免疫排斥
+[summaryMarkdown] 每个人的细胞表面有独特的组织相容性抗原（HLA），供者与受者主要HLA一半以上相同即可移植，并用免疫抑制剂降低排斥。
+[applicabilityMarkdown] 分析器官移植问题、理解免疫排斥原因时使用。
+[contentMarkdown] 组织相容性抗原（HLA）：每个人细胞表面都带有一组与别人不同的蛋白质，白细胞借此区分自己和非己；
+移植面临的问题：免疫排斥（免疫系统把他人器官当作非己成分攻击）和供体器官短缺；对策：供者和受者的主要HLA一半以上相同、使用免疫抑制剂，以及干细胞培养组织器官、鼓励捐献。
+[boundaryMarkdown] 脏器移植前供受者ABO血型必须相符，否则可能发生强烈排斥；自体干细胞培养的器官移植不易发生排斥。
+候选（机械预筛，未必对）：蛋白质（名字出现）；干细胞（名字出现）；免疫系统（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-lac-operon-mechanism
+来源: 《狂K重点》生物 P403 重难9·题型2（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: CONCEPT_EXPLANATION
+[title] 乳糖操纵子负调控：阻遏蛋白结合操纵基因、乳糖解除抑制
+[summaryMarkdown] 无乳糖时阻遏蛋白结合操纵基因阻止转录；乳糖与阻遏蛋白结合使其脱离，结构基因得以表达。
+[applicabilityMarkdown] 操纵子模型图分析。
+[contentMarkdown] 1. 无乳糖：阻遏蛋白与操纵基因结合→RNA 聚合酶不能通过→结构基因不转录。
+2. 乳糖存在：乳糖（诱导物）与阻遏蛋白结合使其构象改变、脱离→结构基因转录翻译出利用乳糖的酶。
+3. 意义：只在底物存在时合成相关酶，节约物质能量。
+[boundaryMarkdown] 属转录水平负调控；真核无典型操纵子。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-replication-5-to-3-semidiscontinuous
+来源: 《狂K重点》生物 P402 重难9·题型1（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: CONCEPT_EXPLANATION
+[title] 子链沿 5'→3' 延伸：前导链连续、后随链不连续（半不连续复制）
+[summaryMarkdown] DNA 子链延伸方向固定为 5'→3'，前导链可连续合成，后随链分段合成。
+[applicabilityMarkdown] 复制叉方向分析。
+[contentMarkdown] DNA 聚合酶只能沿子链 5'端→3'端方向延伸；两条模板反向平行，故一条子链（前导链）连续合成，另一条（后随链）不连续合成（冈崎片段）。
+[boundaryMarkdown] 延伸方向由酶特性决定。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-ding-yi-yi-isomers
+来源: 《狂K重点》化学 书页P393，重难点16 锦囊5 定一移一法（registry-lixiangshu-2027-bikuti-kuangk-chemistry:chemistry）
+类型: METHOD_MODEL
+[title] 苯环多取代计数的定一移一法
+[summaryMarkdown] 二元取代物固定一个取代基位置，移动另一个以清点异构体数目。
+[applicabilityMarkdown] 苯环及环状结构的二元、多元取代产物计数。
+[contentMarkdown] 对于二元取代物：先固定一个取代基的位置，再依次移动另一个取代基到可能的对称位置，即可不重不漏地确定数目。
+[boundaryMarkdown] 利用对称性去重；取代基不同与相同时可移动位置数不同。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-dang-chu-xian-gui-dao-shi-f29x09
+来源: 化学方法类《（重点·方法·点拨）第26讲原子结构　核外电子排布规律 - （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 当出现d轨道时
+[summaryMarkdown] (2)当出现d轨道时，虽然电子按ns、(n-1)d、np的顺序填充，但在书写电子排布式时，仍把(n-1)d放在ns前，如Fe：1s22s22p63s23p63d64s2，而失电。
+[applicabilityMarkdown] 复习相关考点、解答对应试题时使用。
+[contentMarkdown] (2)当出现d轨道时，虽然电子按ns、(n-1)d、np的顺序填充，但在书写电子排布式时，仍把(n-1)d放在ns前，如Fe：1s22s22p63s23p63d64s2，而失电子时，却先失4s轨道上的电子，如Fe3+：1s22s22p63s23p63d5。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：电子排布式（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-entry-f80x05
+来源: 化学方法类《考点03 大π键（离域π键、大派键）（学生版）（全国通用）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] CO2
+[summaryMarkdown] CO2：C、O原子的电子式分别为：、，中心原子C采取sp杂化，形成2个σ键，还有2个电子即1对孤对电子，中心C原子最多提供1对孤对电子形成大π键，O原子形成1个σ键后，还有5个。
+[applicabilityMarkdown] 比较键角、判断分子构型与中心原子杂化方式时使用。
+[contentMarkdown] CO2：C、O原子的电子式分别为：、，中心原子C采取sp杂化，形成2个σ键，还有2个电子即1对孤对电子，中心C原子最多提供1对孤对电子形成大π键，O原子形成1个σ键后，还有5个电子，有1个单电子，则两个O原子的单电子参与形成大π键，故n=2+2×1=4，因此CO2大π键为。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：电子式（名字出现）；大π键（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-jia-he-xing-f22x07
+来源: 化学方法类《（重点·方法·点拨）第19讲 硫及其氧化物- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 加合型
+[summaryMarkdown] 加合型：与有机色质内部“生色团”“化合”成无色物质；SO2；可逆、不持久；有选择性。
+[applicabilityMarkdown] 有机推断、官能团性质判断与方程式书写时使用。
+[contentMarkdown] 加合型：与有机色质内部“生色团”“化合”成无色物质；SO2；可逆、不持久；有选择性
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-pu-tong-bo-li-f73x11
+来源: 化学方法类《高考化学化学与传统文化及STSE(学生版)-20页》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 普通玻璃
+[summaryMarkdown] (8)普通玻璃：传统的无机非金属材料，主要成分为Na2SiO3、CaSiO3、SiO2组成的混合物，由纯碱、石灰石和石英砂为原料高温反应制取。
+[applicabilityMarkdown] 气体或物质的实验室制备与装置、试剂选择时使用。
+[contentMarkdown] (8)普通玻璃：传统的无机非金属材料，主要成分为Na2SiO3、CaSiO3、SiO2组成的混合物，由纯碱、石灰石和石英砂为原料高温反应制取。普通玻璃经特殊条件处理，可制成钢化玻璃。
+(9)有机玻璃：有机高分子材料，主要成分：聚甲基丙烯酸甲酯。
+(10)玻璃钢：学名纤维增强塑料，是一种复合材料，以合成树脂为基体，玻璃纤维为增强体。具有质轻而硬，不导电，性能稳定，机械强度高，回收利用少，耐腐蚀等性能，可以代替钢材制造机器零件和汽车、船舶外壳等。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：混合物（名字出现）；金属材料（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-tan-jiu-f27x08
+来源: 化学方法类《（重点·方法·点拨）第24讲 氮及其化合物的转化关系- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 探究Ⅱ
+[summaryMarkdown] 探究Ⅱ：探究NO2、O2混合气体的喷泉实验。
+[applicabilityMarkdown] 实验方案设计、评价与异常现象分析时使用。
+[contentMarkdown] 探究Ⅱ：探究NO2、O2混合气体的喷泉实验。
+(5)请在G装置中的虚线上描出导管实线图。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：喷泉实验（名字出现）；实验方案设计（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-ya-song-ye-ti-f69x06
+来源: 化学方法类《（重点·方法·点拨）第66讲 　以物质制备为主的综合实验- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 压送液体
+[summaryMarkdown] (3)压送液体。
+[applicabilityMarkdown] 分析溶液酸碱性、比较粒子浓度大小与pH判断时使用。
+[contentMarkdown] (3)压送液体
+根据装置的密封性，让反应生成气体或消耗气体，产生压强差，将液体压入或倒流入另一反应容器。
+(4)温度控制
+①控制低温的目的：减少某些反应物或产物分解，如H2O2、NH4HCO3等；减少某些反应物或产物挥发，如盐酸、氨水等；防止某些物质水解，避免副反应发生等。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-ze-f49x10
+来源: 化学方法类《（重点·方法·点拨）第46讲 弱电解质的电离平衡- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 则：Ka=。
+[summaryMarkdown] 则：Ka=。
+[applicabilityMarkdown] 分析溶液酸碱性、比较粒子浓度大小与pH判断时使用。
+[contentMarkdown] 则：Ka=。
+由于弱酸只有极少一部分电离，c(H+)的数值很小，可做近似处理：c(HX)始-c(H+)≈c(HX)始，则Ka=，代入数据求解即可。
+已知c(HX)始和电离常数，求c(H+)
+同理可得Ka=≈，
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：电离常数（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-hj2-boli-yiqi-xijing-biaozhun
+来源: 化学讲义《题型06 实验操作、现象和结论的正误判断（学生版）》（registry-kb-chemistry-handout:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 玻璃仪器洗净的标准
+[summaryMarkdown] 玻璃仪器洗净的标准是内壁附着的水膜均匀，既不聚成水滴也不成股流下。
+[applicabilityMarkdown] 基本操作正误判断。
+[contentMarkdown] 洗净标准：内壁附着的水膜均匀，既不聚成水滴，也不成股流下。
+洗净后应倒放在指定位置晾干，不能图快用抹布擦内壁。
+[boundaryMarkdown] 附有油污先用热碱或洗涤剂清洗，附有难溶物按其性质选试剂溶解。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-fangshuo-bimian-guodufangshuo
+来源: 《狂K重难点》数学 书页P393，重难点17（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: CONCEPT_EXPLANATION
+[title] 避免过度放缩
+[summaryMarkdown] 放缩不能过于宽松，否则推不出目标结论。
+[applicabilityMarkdown] 所有放缩证明题。
+[contentMarkdown] 要避免“过度放缩”，如用 $\mathrm{e}^x\geqslant1\ (x\geqslant0)$ 会导致不等式变得“宽松”，达不到证明目标。
+[boundaryMarkdown] 放缩幅度要与目标式匹配，如 $\mathrm{e}^x\geqslant x+1$ 比 $\mathrm{e}^x\geqslant1$ 更紧。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-group-then-assign-principle
+来源: 《狂K重难点》数学 P433，重难点49·不同元素分组分配问题（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: METHOD_MODEL
+[title] 不同元素分组分配：先分组、后分配
+[summaryMarkdown] 先算分组方法数；分配给人不确定时要再乘以人的全排列。
+[applicabilityMarkdown] 书、球、人等不同元素的分组分配综合题。
+[contentMarkdown] 不同元素分组分配问题遵循先分组、后分配的原则。定向分配（各组归属确定）不考虑顺序，按分组问题解决；不定向分配（分给不确定的 $m$ 个人）需要考虑顺序，即需要乘 $A_m^m$。
+[boundaryMarkdown] 判断组是否需要除 $A_k^k$ 与是否乘 $A_m^m$ 要分别依据分组与分配两个环节。
+候选（机械预筛，未必对）：分组分配问题（名字出现）
+
+==============================================================================
+## MATH | math-hj-s91-frequency-hist
+来源: 数学讲义《第九章 §9.1　随机抽样、统计图表.docx》（registry-kb-math-handout:math）
+类型: METHOD_MODEL
+[title] 频率分布直方图的作法与读法
+[summaryMarkdown] 作直方图按求极差、定组距组数、分组、列表、画图五步；各矩形面积和为1。
+[applicabilityMarkdown] 绘制与计算频率分布直方图相关量。
+[contentMarkdown] 1. 步骤：求极差、决定组距与组数、将数据分组、列频率分布表、画图。
+2. 每组频率=矩形面积=纵坐标×组距；所有面积之和为1。
+[boundaryMarkdown] 由频率与样本量可反求频数。
+候选（机械预筛，未必对）：频率分布直方图（名字出现）
+
+==============================================================================
+## MATH | math-kb-merge-terms-sum-method
+来源: 数学知识清单：《专题02 数列通项及数列求和（知识清单）（教师版）》（registry-kb-math-knowledge-list:math）
+类型: METHOD_MODEL
+[title] 并项求和法
+[summaryMarkdown] 相邻两项（或几项）的和为常数或有规律时，两两合并后求和。
+[applicabilityMarkdown] 含 (−1)ⁿ 的摆动数列、具有周期性的数列求和。
+[contentMarkdown] 对 $a_n=(-1)^nf(n)$ 型数列，将相邻两项合并：$a_{2k-1}+a_{2k}$ 化为有规律的式子，再按组数求和；n 为奇偶时收尾不同。
+[boundaryMarkdown] n 为奇数时最后一项要单独处理。
+候选（机械预筛，未必对）：数列求和（名字出现）
+
+==============================================================================
+## MATH | math-mo-tonggou-diweitongdeng
+来源: 数学《培优点20：同构函数（知识梳理+题型突破训练）（学生版）》（registry-kb-math-misc:math）
+类型: METHOD_MODEL
+[title] 地位同等同构型
+[summaryMarkdown] 两变量地位平等且两边结构一致时，构造单调母函数用单调性脱“$f$”。
+[applicabilityMarkdown] 双变量等式求关系、双变量不等式恒成立。
+[contentMarkdown] 1. 识别：题干中两个变量地位平等（无主次限定），等式或不等式整理后两边具有完全一致的结构。2. 本质：利用“结构同源性”构造单调函数，把双变量问题转化为单变量函数的单调性问题。3. 步骤：识别变量地位→变形归一（使两边呈现 $g(a)$ 与 $g(b)$ 结构）→构造单调母函数→利用单调性转化（增函数时 $g(a)<g(b)\Leftrightarrow a<b$）。
+[boundaryMarkdown] 变形时守住变量范围（分母不为零、真数大于零）；优先选择 $e^x$、$\ln x$、$x+\frac1x$ 等单调性明确的母函数。
+候选（机械预筛，未必对）：函数的单调性（名字出现）；不等式恒成立（名字出现）
+
+==============================================================================
+## MATH | math-translation-homogenization
+来源: 《狂K重难点》数学 P430，重难点44·设而不求思想·考法4平移齐次化（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: METHOD_MODEL
+[title] 平移齐次化法求斜率和与斜率积
+[summaryMarkdown] 平移公共点到原点后设 mx+ny=1 齐次化构造二次式，除以 x² 得斜率和与积。
+[applicabilityMarkdown] $k_{OA}+k_{OB}$、$k_{OA}\cdot k_{OB}$、$|k_{OA}-k_{OB}|$、$k_{OA}^2+k_{OB}^2$、$\frac{1}{k_{OA}}+\frac{1}{k_{OB}}$、$|k_{OA}|+|k_{OB}|$ 等斜率运算定值问题。
+[contentMarkdown] 1. 两条直线与圆锥曲线的公共点不在原点时，先平移图形把公共点移到原点，平移口诀为左加右减、上减下加，直线斜率不变。
+2. 设平移后直线为 $mx+ny=1$，与平移后曲线联立：一次项乘 $mx+ny$，常数项乘 $(mx+ny)^2$，构造 $Ay^2+Bxy+Cx^2=0$。
+3. 两边同除以 $x^2$（$x\neq0$）得 $A\left(\frac{y}{x}\right)^2+B\cdot\frac{y}{x}+C=0$，由根与系数关系直接得斜率和、斜率积。
+4. 过定点的题目最后要还原（反平移回去）。
+[boundaryMarkdown] 除以 $x^2$ 要求 $x\neq0$；忘记反平移回原坐标系是常见错误。
+候选（机械预筛，未必对）：齐次化（名字出现）
+
+==============================================================================
+## PHYSICS | phys-hj-017-moving-rod-model
+来源: 物理讲义《第11讲 摩擦力的突变 “活结”和“死结”“动杆”和“定杆”-（讲义）（学生版）》（registry-kb-physics-handout:physics）
+类型: CONCEPT_EXPLANATION
+[title] 动杆模型
+[summaryMarkdown] 可绕转轴或铰链自由转动的轻杆
+[applicabilityMarkdown] 轻杆经光滑转轴或铰链连接
+[contentMarkdown] 动杆可绕转轴或铰链自由转动，杆平衡时所受弹力方向一定沿杆（指向内或外）。
+[boundaryMarkdown] 轻杆重力不计。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-hj3-eddy-current-damping-drive
+来源: 物理讲义《第42讲 法拉第电磁感应定律 自感和涡流（复习讲义）（安徽专用）（学生版）》（registry-kb-physics-handout:physics）
+类型: CONCEPT_EXPLANATION
+[title] 涡流、电磁阻尼与电磁驱动
+[summaryMarkdown] 涡流将其他形式的能转化为内能；阻尼阻碍导体运动，驱动带动导体运动，均遵循楞次定律。
+[applicabilityMarkdown] 分析涡流的产生及电磁阻尼、电磁驱动现象。
+[contentMarkdown] 产生涡流时其他形式的能转化为电能，最终在金属块中转化为内能。
+电磁阻尼：导体在磁场中运动产生感应电流，安培力方向与运动方向相反，阻碍导体运动。
+电磁驱动：磁场运动引起磁通量变化产生感应电流，安培力方向与导体运动方向相同，驱动导体运动。
+两者都是电磁感应现象，都遵循楞次定律，本质都是安培力阻碍导体与磁场间的相对运动。
+[boundaryMarkdown] 电磁驱动中导体速度始终小于磁场速度，否则将失去驱动力。
+候选（机械预筛，未必对）：安培力（名字出现）；磁通量（名字出现）；电磁感应现象（名字出现）；电磁感应（名字出现）；楞次定律（名字出现）；电磁阻尼与电磁驱动（名字出现）
+
+==============================================================================
+## PHYSICS | phys-mo-l19-work-power-e
+来源: 物理《第19讲 功与功率-易错点与误区》（registry-kb-physics-misc:physics）
+类型: CONCEPT_EXPLANATION
+[title] 功与功率·易混概念辨析
+[summaryMarkdown] 功与功率中易混概念辨析的典型误区与正确结论。
+[applicabilityMarkdown] 用于功与功率解题前自查易错点，避免易混概念中的典型错误。
+[contentMarkdown] - 误区：认为只要物体受力和有位移就一定做功——还需力与位移方向不垂直。
+- 误区：认为恒力下 v 增大功率一定增大——$P=Fv$ 还取决于 $F$ 的变化。
+- 正确：力做负功说明该力阻碍物体运动；作用力做正功时，反作用力可以做正功、负功或不做功。
+[boundaryMarkdown] 恒力做功公式不适用于变力，变力做功需用微元、图像或平均力等方法。
+候选（机械预筛，未必对）：无
+

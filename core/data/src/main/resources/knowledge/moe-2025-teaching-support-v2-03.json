@@ -821,7 +821,12 @@
    "sourceId": "registry-kb-physics-misc:physics",
    "sourceLocator": "物理《第24讲 动量和动量定理-必备基础知识》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:动量",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-mo-l24-momentum-impulse-b-2",
@@ -956,7 +961,12 @@
    "sourceId": "registry-kb-physics-misc:physics",
    "sourceLocator": "物理《第25讲 动量守恒定律及其应用-必备基础知识》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:反冲运动",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-mo-l25-momentum-consv-b-5",
@@ -2631,7 +2641,12 @@
    "sourceId": "registry-kb-physics-misc:physics",
    "sourceLocator": "物理《第19讲 功与功率-易错点与误区》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:功",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-mo-l19-work-power-n",
@@ -3746,7 +3761,12 @@
    "sourceId": "registry-kb-physics-textbook-preserve:physics",
    "sourceLocator": "人教版物理（2019）选择性必修第三册 第4章第1节 普朗克黑体辐射理论",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:能量子",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-tp-quantum-catastrophe-classical",
@@ -3761,7 +3781,12 @@
    "sourceId": "registry-kb-physics-textbook-preserve:physics",
    "sourceLocator": "人教版物理（2019）选择性必修第三册 第4章第1节 普朗克黑体辐射理论",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:能量子",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-tp-basic-particles-family",
@@ -5036,7 +5061,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-chemistry:chemistry",
    "sourceLocator": "《狂K重点》化学 书页P357，重难点5 锦囊3 产品分离提纯问题",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:结晶方法的选择与操作",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-washing-solvent-selection",
@@ -5071,7 +5101,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-chemistry:chemistry",
    "sourceLocator": "《狂K重点》化学 书页P357，重难点5 锦囊3 产品分离提纯问题",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:沉淀的洗涤与检验",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-precipitate-washing-check",
@@ -5746,7 +5781,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-chemistry:chemistry",
    "sourceLocator": "《狂K重点》化学 书页P364、P366，重难点8 锦囊4、延伸归纳",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:金属晶体的空间利用率",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-enthalpy-addition-method",
@@ -6481,7 +6521,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-chemistry:chemistry",
    "sourceLocator": "《狂K重点》化学 书页P383，重难点14 考向2 对数图像分析",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:溶液的酸碱性",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-log-image-coordinate-types",
@@ -6556,7 +6601,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-chemistry:chemistry",
    "sourceLocator": "《狂K重点》化学 书页P385，重难点14 考向3 分布分数图像分析",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:分布分数图像",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-hydrolysis-constant-kw-ka",
@@ -6951,7 +7001,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-chemistry:chemistry",
    "sourceLocator": "《狂K重点》化学 书页P393，重难点16 锦囊5 定一移一法",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:含苯环同分异构体数目的确定技巧",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-benzene-multi-substitution-counts",
@@ -7306,7 +7361,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-chemistry:chemistry",
    "sourceLocator": "《狂K重点》化学 书页P401，重难点18 例题解析",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:苯环上取代基的定位规律",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-nitro-to-amino-reduction",
@@ -7641,7 +7701,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-chemistry:chemistry",
    "sourceLocator": "《狂K重点》化学 书页P404，重难点19 锦囊妙计 蒸馏和分液",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:蒸馏",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-extraction-separation-points",
@@ -7656,7 +7721,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-chemistry:chemistry",
    "sourceLocator": "《狂K重点》化学 书页P404，重难点19 锦囊妙计 萃取分液",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:萃取",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-evaporation-crystallization-points",
@@ -7711,7 +7781,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-chemistry:chemistry",
    "sourceLocator": "《狂K重点》化学 书页P404，重难点19 锦囊妙计 洗气",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:干燥管与洗气瓶的作用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-filtration-operation-points",
@@ -7826,7 +7901,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-chemistry:chemistry",
    "sourceLocator": "《狂K重点》化学 书页P406，重难点19 考向1 防止产物损失",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:有机物制备实验的常用操作与仪器",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-gas-functions-in-experiment",
@@ -7901,7 +7981,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-chemistry:chemistry",
    "sourceLocator": "《狂K重点》化学 书页P407，重难点19 例题解析",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:气体制备",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-yield-formula",
@@ -7936,7 +8021,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-chemistry:chemistry",
    "sourceLocator": "《狂K重点》化学 书页P407，重难点19 考向2 有机物制备",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:有机物制备实验的常用操作与仪器",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-organic-prep-considerations",
@@ -8031,7 +8121,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-chemistry:chemistry",
    "sourceLocator": "《狂K重点》化学 书页P408，重难点19 例题解析",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:蒸馏",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-water-bath-heating-purpose",
@@ -9926,7 +10021,12 @@
    "sourceId": "registry-kb-chemistry-knowledge-list:chemistry",
    "sourceLocator": "化学知识清单：《专题01 物质及其变化（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:胶体",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-kb-feoh3-colloid-preparation",
@@ -10001,7 +10101,12 @@
    "sourceId": "registry-kb-chemistry-knowledge-list:chemistry",
    "sourceLocator": "化学知识清单：《专题01 物质的量（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:容量瓶及其使用注意事项",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-kb-224-liquid-mole-volume-conditions",
@@ -11536,7 +11641,12 @@
    "sourceId": "registry-kb-chemistry-knowledge-list:chemistry",
    "sourceLocator": "化学知识清单：《专题02 水的电离和溶液的酸碱性（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:酸碱中和滴定指示剂的选择",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-kb-ph-calculation-models",
@@ -13491,7 +13601,12 @@
    "sourceId": "registry-kb-chemistry-knowledge-list:chemistry",
    "sourceLocator": "化学知识清单：《专题03 电解池、金属的腐蚀与防护（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电冶金",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-kb-metal-corrosion-types",
@@ -13746,7 +13861,12 @@
    "sourceId": "registry-kb-chemistry-handout:chemistry",
    "sourceLocator": "化学讲义《第01讲  物质的分类及转化（举一反三讲义）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:胶体的性质及应用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-hj-chuantong-wenhuatongdui",
@@ -14141,7 +14261,12 @@
    "sourceId": "registry-kb-chemistry-handout:chemistry",
    "sourceLocator": "化学讲义《第01讲 化学反应的热效应（举一反三讲义）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:反应热-焓变",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-hj-jianneng-hanbian-jisuan",
@@ -16536,7 +16661,12 @@
    "sourceId": "registry-kb-chemistry-handout:chemistry",
    "sourceLocator": "化学讲义《第02讲 水的电离和溶液的酸碱性（举一反三讲义，11大题型）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:酸碱中和滴定指示剂的选择",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-hj-ph-shizhi-ceding-zhuyi",
@@ -17831,7 +17961,12 @@
    "sourceId": "registry-kb-chemistry-handout:chemistry",
    "sourceLocator": "化学讲义《第03讲 分子结构与性质、化学键（举一反三讲义）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:键的极性和分子的极性",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-hj-jianjixing-yu-suanxing",
@@ -18106,7 +18241,12 @@
    "sourceId": "registry-kb-chemistry-handout:chemistry",
    "sourceLocator": "化学讲义《第03讲 化学平衡常数及其相关计算（举一反三讲义，7大题型）（原卷版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:压强平衡常数",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-hj-kp-jisuan-moban",
@@ -19721,7 +19861,12 @@
    "sourceId": "registry-kb-chemistry-handout:chemistry",
    "sourceLocator": "化学讲义《第04讲 化学反应的方向、化学反应的调控（举一反三讲义，7大题型）（原卷版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:熵和熵变的含义",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-hj-fuhe-panju-deltag",
@@ -19996,7 +20141,12 @@
    "sourceId": "registry-kb-chemistry-handout:chemistry",
    "sourceLocator": "化学讲义《第04讲 晶体结构与性质（举一反三讲义）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:原子分数坐标与晶胞投影图",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-hj-kongjian-liyonglv-jisuan",
@@ -20731,7 +20881,12 @@
    "sourceId": "registry-kb-chemistry-handout:chemistry",
    "sourceLocator": "化学讲义《第05讲 工业流程题解题策略（举一反三讲义，8大题型）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:萃取",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-hj-changyong-fenli-fangfa-huizong",
@@ -24066,7 +24221,12 @@
    "sourceId": "registry-kb-chemistry-handout:chemistry",
    "sourceLocator": "化学讲义《第02讲 原子结构与性质（复习讲义）（全国通用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:能层",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-hj-dianzishi-shuxie-guize",
@@ -24441,7 +24601,12 @@
    "sourceId": "registry-kb-chemistry-handout:chemistry",
    "sourceLocator": "化学讲义《第01讲 化学实验的常用仪器和基本操作（复习讲义）（四川专用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:常见仪器",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-hj-jiliang-yiqi-jingdu-guifan",
@@ -24476,7 +24641,12 @@
    "sourceId": "registry-kb-chemistry-handout:chemistry",
    "sourceLocator": "化学讲义《第01讲 化学实验的常用仪器和基本操作（复习讲义）（四川专用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:常见仪器",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-hj-guangkouping-duoyongtu-zuhe",
@@ -25151,7 +25321,12 @@
    "sourceId": "registry-kb-chemistry-handout:chemistry",
    "sourceLocator": "化学讲义《第05讲 工业流程题解题策略（复习讲义）（四川专用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化工流程题的分析模型",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-hj-tangujia-goujian-fangfa",
@@ -27126,7 +27301,12 @@
    "sourceId": "registry-kb-chemistry-handout:chemistry",
    "sourceLocator": "化学讲义《专题12 有机化学基础（二）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:萃取",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-hj2-chun-cuihuayang-guilv",
@@ -27281,7 +27461,12 @@
    "sourceId": "registry-kb-chemistry-handout:chemistry",
    "sourceLocator": "化学讲义《题型01 常用仪器的使用、药品保存和实验安全（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:常见仪器",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-hj2-shiji-baocun-shiliu-tiaoli",
@@ -27976,7 +28161,12 @@
    "sourceId": "registry-kb-chemistry-handout:chemistry",
    "sourceLocator": "化学讲义《第01讲 化学实验的常用仪器和基本操作（复习讲义）（四川专用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:二氧化硅",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-hj2-jiliang-yiqi-shiyong-guifan",
@@ -28031,7 +28221,12 @@
    "sourceId": "registry-kb-chemistry-handout:chemistry",
    "sourceLocator": "化学讲义《第01讲 氯及其重要化合物（复习讲义）（四川专用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:氯气",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-hj2-jiti-yuanzi-lizi-gainian",
@@ -28266,7 +28461,12 @@
    "sourceId": "registry-kb-chemistry-handout:chemistry",
    "sourceLocator": "化学讲义《第02讲 物质的分离、提纯与鉴别（复习讲义）（四川专用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:在实验操作②中为什么依次加入的试剂都要略微过量-实验操作④中加入盐酸的目的是什么",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-hj2-wuzhide-nongdu-liangyaosu",
@@ -28521,7 +28721,12 @@
    "sourceId": "registry-kb-chemistry-handout:chemistry",
    "sourceLocator": "化学讲义《第03讲 电解池、金属的腐蚀与防护（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:离子放电顺序与电解产物判断",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-hj2-xiaoqing-xiyang-xuanze-yiju",
@@ -29176,7 +29381,12 @@
    "sourceId": "registry-kb-chemistry-handout:chemistry",
    "sourceLocator": "化学讲义《题型06 实验操作、现象和结论的正误判断（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:仪器的洗涤与洗净标准",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-hj2-teshu-shiji-cunfang",
@@ -30691,7 +30901,12 @@
    "sourceId": "registry-kb-chemistry-handout:chemistry",
    "sourceLocator": "化学讲义《第04讲 化学反应的方向、化学反应的调控（复习讲义）（安徽专用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:判断化学反应的自发性",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-hj2-yeguti-dengli-ziti-gainian",
@@ -30706,7 +30921,12 @@
    "sourceId": "registry-kb-chemistry-handout:chemistry",
    "sourceLocator": "化学讲义《第04讲 晶体结构与性质（复习讲义）（安徽专用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:物质的聚集状态",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-hj2-huajiakou-jue-shuangxianqiao-guifan",
@@ -32461,7 +32681,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《第二章 第8讲 化学计算的常用方法（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:热重分析法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-ji-ben-fang-fa-he-si-lu-f01x06",
@@ -32556,7 +32781,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《第01讲 有机化合物的结构特点与研究方法（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:含官能团的链状有机物命名",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-zhi-de-ming-ming-f02x03",
@@ -32611,7 +32841,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《第01讲 有机化合物的结构特点与研究方法（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:有机物分子分子式的确定",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-jie-gou-shi-f02x06",
@@ -32626,7 +32861,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《第01讲 有机化合物的结构特点与研究方法（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:有机物结构的表示方法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-jian-xian-shi-f02x07",
@@ -32701,7 +32941,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《第01讲 有机化合物的结构特点与研究方法（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:同分异构现象和同分异构体",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-guan-neng-tuan-yi-gou-f02x11",
@@ -32756,7 +33001,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《第01讲 有机化合物的结构特点与研究方法（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:有机化合物的共面共线的判断",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-zhi-xian-yu-ping-mian-lian-jie-f02x14",
@@ -32951,7 +33201,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《第01讲 有机化合物的结构特点与研究方法（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:判断同分异构体数目的常用方法和思路",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-zu-he-fa-f03x07",
@@ -32966,7 +33221,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《第01讲 有机化合物的结构特点与研究方法（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:含苯环同分异构体数目的确定技巧",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-fu-za-fen-zi-shi-de-tong-fen-yi-gou-ti-f03x08",
@@ -33001,7 +33261,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《第01讲 有机化合物的结构特点与研究方法（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:简单有机物同分异构体的书写",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-di-si-bu-f03x10",
@@ -33016,7 +33281,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《第01讲 有机化合物的结构特点与研究方法（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:顺反异构与对映异构的判断",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-bian-shi-xun-lian-bian-kao-fa-fen-zi-s-f03x11",
@@ -33091,7 +33361,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《第01讲 有机化合物的结构特点与研究方法（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:平均值法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-jie-lun-qing-yuan-zi-lei-xing-you-zhon-f03x15",
@@ -33306,7 +33581,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第01讲 物质的量　气体摩尔体积- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:看-气体-是否处于-标准状况-0-101kpa",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-tong-wen-tong-ya-tong-ti-ji-de-ren-he-f04x06",
@@ -33401,7 +33681,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第02讲 物质的量浓度- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:有关物质的量浓度的计算",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-qi-ti-rong-yu-shui-f05x03",
@@ -33456,7 +33741,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第02讲 物质的量浓度- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:常见仪器",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-bo-li-bang-f05x06",
@@ -33471,7 +33761,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第02讲 物质的量浓度- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:配制一定物质的量浓度溶液的仪器与容量瓶使用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-shao-bei-yong-yu-rong-jie-gu-ti-huo-xi-f05x07",
@@ -33626,7 +33921,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第03讲 化学计算的常用方法- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化学计算中的守恒法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-you-de-shi-dian-zi-zong-shu-xiang-deng-f06x07",
@@ -33681,7 +33981,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第03讲 化学计算的常用方法- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:守恒法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-dian-he-shou-heng-f06x10",
@@ -34036,7 +34341,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第04讲 元素与物质的分类- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:胶体的性质及应用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-jiao-ti-wei-li-yi-ban-shi-li-zi-fen-zi-f07x16",
@@ -34191,7 +34501,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第05讲 离子反应　离子方程式- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电离方程式的-易错点",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-liang-xing-qing-yang-hua-wu-shuang-xia-f08x06",
@@ -34506,7 +34821,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第05讲 离子反应　离子方程式- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:离子方程式",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-duo-zhong-fan-ying-li-zi-fang-cheng-sh-f08x22",
@@ -34821,7 +35141,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第06讲 离子共存、离子检验与推断- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:常见阳离子的检验与推断依据",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-entry-f09x10",
@@ -34836,7 +35161,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第06讲 离子共存、离子检验与推断- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:fe2-fe3-的检验方法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-yi-ju-sheng-cheng-de-qi-ti-jian-yan-hu-f09x11",
@@ -34871,7 +35201,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第06讲 离子共存、离子检验与推断- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:卤素离子的检验方法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-xi-yan-suan-he-rong-ye-jia-f09x13",
@@ -34906,7 +35241,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第06讲 离子共存、离子检验与推断- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:常见阴离子的检验与推断依据",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-xiang-mou-rong-ye-zhong-jia-ru-rong-ye-f09x15",
@@ -35021,7 +35361,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第07讲 氧化还原反应的概念和规律- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:氧化还原反应",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-yang-hua-xing-huan-yuan-xing-de-qiang-f10x03",
@@ -35696,7 +36041,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第09讲 钠及其氧化物- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:na2o2的性质及应用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-de-qiang-yang-hua-xing-yu-huan-yuan-xi-f12x10",
@@ -35751,7 +36101,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第09讲 钠及其氧化物- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:na22",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-yu-deng-qiang-yang-hua-ji-shi-f12x13",
@@ -35926,7 +36281,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第10讲 碳酸钠和碳酸氢钠　碱金属- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:碳酸钠",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-zhu-yao-xing-zhi-f13x03",
@@ -35941,7 +36301,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第10讲 碳酸钠和碳酸氢钠　碱金属- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:nahco3与碱反应的应用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-zhu-yao-yong-tu-f13x04",
@@ -35956,7 +36321,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第10讲 碳酸钠和碳酸氢钠　碱金属- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:na2co3-nahco3的应用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-de-jian-bie-fang-fa-f13x05",
@@ -36011,7 +36381,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第10讲 碳酸钠和碳酸氢钠　碱金属- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:碳酸钠和碳酸氢钠易错知识点",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-jiang-yi-ding-wu-zhi-di-liang-de-zu-f13x08",
@@ -36086,7 +36461,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第10讲 碳酸钠和碳酸氢钠　碱金属- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:焰色试验",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-jian-jin-shu-de-te-xing-f13x12",
@@ -36161,7 +36541,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第10讲 碳酸钠和碳酸氢钠　碱金属- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:焰色试验-易错点",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-xuan-ze-shi-dang-de-shi-ji-huo-fang-fa-f13x16",
@@ -36256,7 +36641,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第11讲 侯氏制碱法与Na2CO3含量的测定- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:纯碱中碳酸钠含量的测定方法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-shi-yan-cao-zuo-f14x05",
@@ -36291,7 +36681,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第11讲 侯氏制碱法与Na2CO3含量的测定- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:纯碱中碳酸钠含量的测定方法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-shi-yan-cao-zuo-f14x07",
@@ -36346,7 +36741,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第11讲 侯氏制碱法与Na2CO3含量的测定- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:纯碱中碳酸钠含量的测定方法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-wo-guo-hua-xue-jia-hou-de-bang-gai-jin-f14x10",
@@ -36381,7 +36781,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第11讲 侯氏制碱法与Na2CO3含量的测定- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:纯碱中碳酸钠含量的测定方法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-hua-xue-xing-zhi-f15x01",
@@ -36636,7 +37041,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第13讲 铁及其化合物的转化关系- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:铁盐的性质及应用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-chi-xue-yan-f16x06",
@@ -36651,7 +37061,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第13讲 铁及其化合物的转化关系- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:fe2-fe3-的检验方法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-jian-yan-he-shi-de-zhu-yi-shi-xiang-f16x07",
@@ -36846,7 +37261,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第14讲 金属材料和金属的冶炼- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:铜的冶炼",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-cu-tong-zhong-tong-de-han-liang-wei-f17x03",
@@ -36981,7 +37401,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第14讲 金属材料和金属的冶炼- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:镁的化学性质",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-deng-zhi-liang-de-lv-fen-bie-yu-deng-w-f17x10",
@@ -37036,7 +37461,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第14讲 金属材料和金属的冶炼- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:含铝物质的制备和转化",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-bo-li-zhong-han-you-er-yang-hua-gui-f18x01",
@@ -37111,7 +37541,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第15讲 硅　无机非金属材料- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:新型无机非金属材料",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-gao-wen-jie-gou-f18x05",
@@ -37126,7 +37561,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第15讲 硅　无机非金属材料- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:陶瓷",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-xin-cai-liao-de-xin-xiu-f18x06",
@@ -37141,7 +37581,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第15讲 硅　无机非金属材料- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:碳纳米材料",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-shui-ni-shi-zhong-yao-de-jian-zhu-cai-f18x07",
@@ -37376,7 +37821,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第17讲 氯气的实验室制法及应用- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:cl2的实验室制法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-bi-xu-yong-nong-yan-suan-f20x04",
@@ -37451,7 +37901,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第18讲 卤族元素　溴、碘单质的提取- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:卤族元素",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-lu-su-li-zi-de-jian-yan-fang-fa-f21x03",
@@ -37606,7 +38061,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第18讲 卤族元素　溴、碘单质的提取- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:卤素互化物与拟卤素",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-liu-dan-zhi-jun-shu-yu-fei-ji-xing-fen-f22x01",
@@ -37661,7 +38121,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第19讲 硫及其氧化物- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:二氧化硫",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-shi-yan-shi-zhi-fa-f22x04",
@@ -37716,7 +38181,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第19讲 硫及其氧化物- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:三类漂白剂的区别",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-jia-he-xing-f22x07",
@@ -37731,7 +38201,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第19讲 硫及其氧化物- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:三类漂白剂的区别",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-xuan-yong-shi-ji-f22x08",
@@ -37746,7 +38221,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第19讲 硫及其氧化物- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:检验so2和co2同时存在的一般流程",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-you-shi-wei-jian-hua-zhuang-zhi-f22x09",
@@ -37761,7 +38241,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第19讲 硫及其氧化物- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:检验so2和co2同时存在的一般流程",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-neng-shi-zi-se-shi-rui-rong-ye-bian-ho-f23x01",
@@ -37896,7 +38381,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第20讲 硫酸、酸雨及防治- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:二氧化硫的尾气处理",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-na-jian-tuo-liu-fa-f23x08",
@@ -37911,7 +38401,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第20讲 硫酸、酸雨及防治- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:二氧化硫的尾气处理",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-zhuan-hua-wei-f23x09",
@@ -38006,7 +38501,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第21讲 硫及其化合物的相互转化- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:硫及其化合物之间的转化规律",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-tu-suo-shi-mou-gu-tai-dan-zhi-ji-qi-hu-f24x05",
@@ -38061,7 +38561,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第22讲 氮及其氧化物　硝酸- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:n2o-no和no2等氮氧化物是空气污染物-含有氮氧化物的尾气需处理后才能排放",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-gong-ye-wei-qi-zhong-de-chang-yong-jia-f25x03",
@@ -38116,7 +38621,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第22讲 氮及其氧化物　硝酸- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:氮氧化物与氧气混合溶于水的计算",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-li-yong-dian-zi-shou-heng-guan-xi-qiu-f25x06",
@@ -38151,7 +38661,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第22讲 氮及其氧化物　硝酸- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:硝酸与金属反应的规律",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-qiang-yang-hua-xing-f25x08",
@@ -38666,7 +39181,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第24讲 氮及其化合物的转化关系- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:喷泉实验",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-an-qi-yu-er-yang-hua-dan-de-fan-ying-f27x09",
@@ -38721,7 +39241,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第25讲 常见气体的实验室制备、净化和收集- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:气体制备",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-chang-jian-qi-ti-dian-xing-zhi-bei-zhu-f28x03",
@@ -38776,7 +39301,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第25讲 常见气体的实验室制备、净化和收集- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:气体制备",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-dang-zhong-hun-you-za-zhi-shi-f28x06",
@@ -38811,7 +39341,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第25讲 常见气体的实验室制备、净化和收集- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:气体制备",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-pai-kong-qi-fa-f28x08",
@@ -38826,7 +39361,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第25讲 常见气体的实验室制备、净化和收集- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:气体制备",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-ji-qi-zhuang-zhi-de-chuang-xin-f28x09",
@@ -38901,7 +39441,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第25讲 常见气体的实验室制备、净化和收集- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:气体制备",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-tu-de-gai-jin-you-dian-shi-shi-yuan-di-f28x13",
@@ -38996,7 +39541,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第26讲原子结构　核外电子排布规律 - （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:元素-核素-同位素",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-ding-yi-yi-ge-yuan-zi-de-zhen-shi-zhi-f29x03",
@@ -39111,7 +39661,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第26讲原子结构　核外电子排布规律 - （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:原子核外电子排布",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-dang-chu-xian-gui-dao-shi-f29x09",
@@ -39126,7 +39681,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第26讲原子结构　核外电子排布规律 - （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电子排布式",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-ji-tai-yuan-zi-dian-zi-pai-bu-shi-de-s-f29x10",
@@ -39221,7 +39781,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第27讲 元素周期表、元素的性质- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电离能的三个重要应用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-pan-duan-yuan-su-de-hua-he-jia-f30x03",
@@ -39576,7 +40141,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第30讲 分子的性质　配合物与超分子- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:分子的极性",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-fen-zi-ji-xing-de-pan-duan-fang-fa-f33x02",
@@ -39611,7 +40181,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第30讲 分子的性质　配合物与超分子- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:分子的极性",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-li-yong-hua-he-jia-pan-duan-f33x04",
@@ -39706,7 +40281,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第30讲 分子的性质　配合物与超分子- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:配位键和配合物",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-di-jia-an-shui-hou-f33x09",
@@ -39721,7 +40301,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第30讲 分子的性质　配合物与超分子- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:配合物",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-pei-he-wu-de-xing-cheng-dui-wu-zhi-xin-f33x10",
@@ -39796,7 +40381,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第31讲 物质的聚集状态　常见晶体类型- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:物质的聚集状态",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-ye-jing-jie-yu-ye-tai-he-jing-tai-zhi-f34x02",
@@ -39871,7 +40461,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第31讲 物质的聚集状态　常见晶体类型- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:晶体",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-chang-jian-jing-ti-de-jie-gou-mo-xing-f34x06",
@@ -40186,7 +40781,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第32讲 晶胞结构分析与计算- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:晶胞投影",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-wu-zhi-jie-gou-yu-xing-zhi-zong-he-ti-f36x01",
@@ -40381,7 +40981,12 @@
    "sourceId": "registry-kb-chemistry-methods:chemistry",
    "sourceLocator": "化学方法类《（重点·方法·点拨）第33讲 　物质结构与性质综合题突破- （学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:配位键和配合物",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "chem-fx-gu-an-suan-de-dian-li-chang-shu-f36x11",

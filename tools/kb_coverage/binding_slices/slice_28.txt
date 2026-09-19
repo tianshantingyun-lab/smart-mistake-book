@@ -1,0 +1,372 @@
+# 绑定作业片 28：29 条无绑定材料
+#
+# 任务：为每条材料选定它应该绑定的知识点节点（就是讲题时该材料服务的那个点）。
+# 交付（写到 tools/kb_coverage/binding_fixes/slice_28/notes.csv）：
+#   subject,material_slug,node_slug,confidence,evidence
+#   （node_slug 用下面的节点表里的 slug；确实没有合适的写 NONE；
+#     evidence 一句话说明依据；字段内不要有 ASCII 逗号）
+#
+# 硬规矩：
+#   · 宁缺勿错：不确定就 confidence=low 或写 NONE —— 错绑会让检索喂错材料
+#   · 只能从本学科节点表里选（见 tools/kb_coverage/binding_slices/nodes/nodes_<学科>.txt）
+#   · 一条材料只绑一个节点（就是它最主要服务的那个点）
+
+==============================================================================
+## BIOLOGY | bio-excitatory-inhibitory-neurotransmitters
+来源: 《狂K重点》生物 P407 重难11·题型2（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: CONCEPT_EXPLANATION
+[title] 兴奋性递质（如乙酰胆碱）与抑制性递质（如 GABA）作用差异
+[summaryMarkdown] 兴奋性递质作用于后膜引起 Na+ 内流（产生动作电位）；抑制性递质引起 Cl−/K+ 变化（后膜超极化/抑兴奋）。
+[applicabilityMarkdown] 递质类型判断与突触电位。
+[contentMarkdown] 1. 兴奋性递质（乙酰胆碱、谷氨酸）：与受体结合→Na+ 通道开放→Na+ 内流→后膜兴奋（电位上升）。
+2. 抑制性递质（GABA、甘氨酸）：受体结合→Cl− 内流（或 K+ 外流）→后膜电位下降（超极化）→抑制作用。
+[boundaryMarkdown] '兴奋/抑制'取决于递质与受体结合后的离子流方向。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-03-same-monomer-different-property
+来源: 生物讲义《第03讲 糖类和脂质（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 三种多糖单位相同性质不同
+[summaryMarkdown] 淀粉、糖原、纤维素的基本单位都是葡萄糖，但数量和连接方式不同导致性质差异。
+[applicabilityMarkdown] 结构决定功能的判断。
+[contentMarkdown] 1. 构成淀粉、糖原和纤维素的基本单位都是葡萄糖分子。
+2. 葡萄糖的数量、连接方式等不同，使三者化学性质有很大差距。
+[boundaryMarkdown] 单体相同不等于聚合物性质相同，空间结构决定性质。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-10-algae-distribution-light
+来源: 生物讲义《第10讲 光合作用（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 藻类色素种类与海水深度分布
+[summaryMarkdown] 不同藻类含不同色素吸收不同波长的光，分别分布于浅、中、深水层。
+[applicabilityMarkdown] 藻类分布与色素情境题。
+[contentMarkdown] 1. 绿藻（浅水层）：叶绿素为主，主要吸收红光和蓝紫光。
+2. 褐藻（中水层）：叶黄素类为主，主要吸收绿光和蓝紫光。
+3. 红藻（深水层）：藻红素为主，主要吸收蓝紫光。
+4. 藻类本身的颜色是它们反射的光。
+[boundaryMarkdown] 遮光条件下散光中蓝紫光占比增加，叶片叶绿素a/b降低，是对弱光的适应。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-22-gene-location-by-aneuploid
+来源: 生物讲义《第22讲 生物的变异（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: METHOD_MODEL
+[title] 利用三体、单体或缺体定位基因
+[summaryMarkdown] 利用三体、单体或染色体片段缺失的品系与待测个体杂交，根据后代比例定位基因所在染色体。
+[applicabilityMarkdown] 基因定位方法拓展。
+[contentMarkdown] 1. 三体（2n+1）品系：相应染色体多一条，后代出现特殊分离比。
+2. 单体（2n-1）品系：相应染色体少一条。
+3. 染色体片段缺失品系：假显性现象可用于定位。
+4. 结合后代表型比例推断基因位置。
+[boundaryMarkdown] 与利用已知基因定位、电泳法共同构成基因定位的方法体系。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fx-brdu-staining-method
+来源: 生物方法类《第六单元 专题突破8 DNA复制与细胞分裂中染色体的标记问题》（registry-kb-biology-methods:biology）
+类型: METHOD_MODEL
+[title] BrdU掺入与Giemsa染色区分染色单体
+[summaryMarkdown] 双链都含BrdU的染色单体被染成浅蓝色，只一条链含BrdU的染成深蓝色，据此追踪复制情况。
+[applicabilityMarkdown] 利用BrdU标记分析姐妹染色单体色差的题目。
+[contentMarkdown] 1. BrdU作为胸苷类似物掺入新合成的子链，与A配对。
+2. 第一次分裂中期：每条染色单体均只一条链含BrdU，都呈深蓝色。
+3. 第二次分裂中期：一条单体双链含BrdU呈浅色，另一条只一条链含BrdU呈深色，可观察到色差。
+4. 该方法可直观验证半保留复制。
+[boundaryMarkdown] 色差出现在第二次分裂中期之后；用3H或14C标记DNA区段显色（深色、浅色、不显色）原理类似。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fx-mismatch-repair
+来源: 生物方法类《第六单元 专题突破9 DNA复制与冈崎片段、DNA损伤的修复机制》（registry-kb-biology-methods:biology）
+类型: CONCEPT_EXPLANATION
+[title] DNA错配修复的五个阶段
+[summaryMarkdown] DNA错配修复包括甲基化、识别、切除、填补和连接五个阶段，纠正复制中的碱基错配。
+[applicabilityMarkdown] DNA复制保真机制类题目。
+[contentMarkdown] 1. 甲基化：区分亲代链（已甲基化）与新合成链，确定修哪条。
+2. 识别：发现错配位点。
+3. 切除：去除新链上的错误片段。
+4. 填补：DNA聚合酶以母链为模板合成正确序列；连接：DNA连接酶封闭缺口。
+[boundaryMarkdown] 错配修复进一步降低复制错误率，但每复制约10的9次方个碱基对仍可能出现1个错误，说明保真机制不是绝对的。
+候选（机械预筛，未必对）：dna连接酶（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-incomplete-dominance
+来源: 《狂K重点》生物 P389 重难5（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: CONCEPT_EXPLANATION
+[title] 不完全显性：杂合子表现介于双亲之间
+[summaryMarkdown] 不完全显性中杂合子（Aa）表现介于显性与隐性之间（如红花×白花→粉色花）；自交比例 1:2:1。
+[applicabilityMarkdown] 非孟德尔显隐性分辨。
+[contentMarkdown] 1. AA 红花、aa 白花、Aa 粉花（中间型）。
+2. 自交：1 红 : 2 粉 : 1 白。
+3. 关键：杂合子与显性纯合表现不同。
+[boundaryMarkdown] 与完全显性的区别在杂合子表现。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb-translocation-vs-crossing-over-diff
+来源: 生物知识清单：《第22讲 生物的变异（知识清单）（全国通用）（学生版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 易位与互换的辨析
+[summaryMarkdown] 易位发生在非同源染色体之间，属染色体结构变异；互换发生在同源染色体的非姐妹染色单体之间，属基因重组。
+[applicabilityMarkdown] 两类变异判断。
+[contentMarkdown] 1. 位置：易位发生于非同源染色体之间；互换发生于同源染色体的非姐妹染色单体之间。
+2. 变异类型：易位是染色体结构变异；互换是基因重组。
+3. 观察性：易位可在光学显微镜下观察到；互换观察不到。
+[boundaryMarkdown] 两者都发生在减数分裂过程中，注意区分对象。
+候选（机械预筛，未必对）：同源染色体（名字出现）；减数分裂（名字出现）；基因重组（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-kb2-27-winter-urine
+来源: 生物知识清单：《第27讲 体液调节与神经调节的关系（知识清单）（全国通用）（教师版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 冬天尿多夏天尿少的原因
+[summaryMarkdown] 冬天汗液分泌减少且代谢生成的水增加，导致尿量增加。
+[applicabilityMarkdown] 解释季节性尿量差异、综合水盐调节时使用。
+[contentMarkdown] 冬天相比于夏天：汗液分泌减少，水分通过皮肤散失减少；同时环境温度低，机体代谢生成的水增加；
+两者共同导致冬天尿量增多，夏天尿量较少。
+[boundaryMarkdown] 尿量的多少还与抗利尿激素的分泌有关，摄入水过多时尿量也会增加。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb3-f5-s5-1-n03
+来源: 生物知识清单《2027届高三生物一轮复习知识清单5：细胞的能量供应和利用》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 降低化学反应活化能的酶
+[summaryMarkdown] 加热能促进过氧化氢分解，是因为加热使过氧化氢分子得到了能量，从常态转变为容易分解的活跃状态。
+[applicabilityMarkdown] 复习“降低化学反应活化能的酶”考点或解答涉及“降低化学反应活化能的”的题目时使用。
+[contentMarkdown] 加热能促进过氧化氢分解，是因为加热使过氧化氢分子得到了能量，从常态转变为容易分解的活跃状态。
+活化能是指分子从常态转变为容易发生化学反应的活跃状态所需要的能量。
+[boundaryMarkdown] 一轮复习结论性要点，表述以人教版现行教材为准；具体数值可能因教材版本略有差异。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-primer-directionality-two-primers
+来源: 《狂K重点》生物 P418 重难19·题型1（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 引物设计原则三：方向性——Taq 酶沿子链 5'→3' 合成，PCR 需 2 种引物控制两条链反向合成
+[summaryMarkdown] Taq DNA 聚合酶沿子链 5'→3' 合成，PCR 过程中应加入 2 种引物，分别控制 2 条 DNA 链相反方向的合成。
+[applicabilityMarkdown] 引物结合位置与方向题。
+[contentMarkdown] Taq DNA 聚合酶合成 DNA 子链具有方向性（沿子链 5'→3'）；PCR 中加入 2 种引物，分别与两条模板链结合，控制两条子链相反方向的合成；引物 3' 端朝向待扩增区。
+[boundaryMarkdown] 引物只能从 3' 端延伸，5' 端可加修饰序列（如酶切位点）。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-synaptic-transmission-steps
+来源: 《狂K重点》生物 P407 重难11·题型2（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: CONCEPT_EXPLANATION
+[title] 突触传递三步：递质释放→扩散→作用后膜（递质与受体结合）
+[summaryMarkdown] 突触传递：电信号→化学信号：突触前膜释放递质→突触间隙扩散→递质与突触后膜受体结合→电位改变（化学信号→电信号）。
+[applicabilityMarkdown] 兴奋传递过程题。
+[contentMarkdown] 1. 兴奋到达突触小体→突触小泡与前膜融合（胞吐）→神经递质释放（进入突触间隙，化学信号）。
+2. 递质经扩散到达突触后膜。
+3. 递质与突触后膜受体结合→引起后膜离子通道开闭→电位变化（产生兴奋或抑制）。
+4. 递质被酶降解或被回收（清除。）
+[boundaryMarkdown] 递质不进入后膜细胞内——只是在膜上结合受体。
+候选（机械预筛，未必对）：神经递质（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-chong-dian-shi-f39x05
+来源: 化学方法类《（重点·方法·点拨）第36讲 化学能转化为电能——电池- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 充电时
+[summaryMarkdown] (2)充电时。
+[applicabilityMarkdown] 电极反应式书写与电化学装置分析时使用。
+[contentMarkdown] (2)充电时
+阴极：PbSO4+2e-=Pb+SO；
+阳极：PbSO4+2H2O-2e-=PbO2+4H++SO。
+提醒　充电时电极的连接，负接负作阴极，正接正作阳极。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：电极反应式（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-entry-f55x02
+来源: 化学方法类《（重点·方法·点拨）第52讲 沉淀溶解平衡图像的分析- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] d→c
+[summaryMarkdown] d→c：加入BaCl2固体(忽略溶液的体积变化)。
+[applicabilityMarkdown] 复习相关考点、解答对应试题时使用。
+[contentMarkdown] d→c：加入BaCl2固体(忽略溶液的体积变化)
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-hao-yang-liang-ke-gen-ju-f59x05
+来源: 化学方法类《（重点·方法·点拨）第56讲 烃　化石燃料- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: METHOD_MODEL
+[title] 耗氧量可根据
+[summaryMarkdown] 耗氧量可根据(x+-)的值来比较。
+[applicabilityMarkdown] 解决相关化学计算问题时使用。
+[contentMarkdown] 耗氧量可根据(x+-)的值来比较。
+②等质量的烃完全燃烧耗氧量计算
+等质量的烃(CxHy)完全燃烧时，耗氧量取决于的值大小。比值越大，燃烧时耗氧量越大。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-pei-li-zi-f78x06
+来源: 化学方法类《考点01 配位键与配合物（学生版）（全国通用）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 配离子
+[summaryMarkdown] 配离子：由中心原子(或离子)和配位体组成的离子叫做配离子，如[Cu(NH3)4]2+、[Ag(NH3)2]+。
+[applicabilityMarkdown] 分析物质结构、判断化学键类型与配合物成键情况时使用。
+[contentMarkdown] 配离子：由中心原子(或离子)和配位体组成的离子叫做配离子，如[Cu(NH3)4]2+、[Ag(NH3)2]+。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：配合物（名字出现）；化学键（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-shi-zheng-tu-ran-jian-xiao-f47x03
+来源: 化学方法类《（重点·方法·点拨）第44讲 常考化学反应速率和化学平衡图像的分析- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] t1时v′正突然减小
+[summaryMarkdown] t1时v′正突然减小，v′逆逐渐减小；v′逆>v′正，平衡向逆反应方向移动：t1时其他条件不变，减小反应物的浓度。
+[applicabilityMarkdown] 判断平衡状态、分析平衡移动方向与相关计算时使用。
+[contentMarkdown] t1时v′正突然减小，v′逆逐渐减小；v′逆>v′正，平衡向逆反应方向移动：t1时其他条件不变，减小反应物的浓度
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-xing-cheng-tiao-jian-f33x08
+来源: 化学方法类《（重点·方法·点拨）第30讲 分子的性质　配合物与超分子- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 形成条件
+[summaryMarkdown] (2)形成条件。
+[applicabilityMarkdown] 比较键角、判断分子构型与中心原子杂化方式时使用。
+[contentMarkdown] (2)形成条件
+中心离子或原子：有空轨道，一般是带正电的金属离子，特别是过渡金属离子，如Fe3+、Cu2+、Zn2+、Ag+等，但也有电中性的原子等。
+配体：其中的配位原子(配体中直接同中心离子或原子配合的原子)有孤电子对。配体可以是分子，如CO、NH3、H2O等，也可以是离子，如F-、Cl-、Br-、I-、CN-、SCN-、OH-等。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-yong-zi-mu-biao-shi-ming-cheng-wei-chu-f29x02
+来源: 化学方法类《（重点·方法·点拨）第26讲原子结构　核外电子排布规律 - （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] H：用字母T表示，名称为氚或超重
+[summaryMarkdown] H：用字母T表示，名称为氚或超重氢。
+[applicabilityMarkdown] 复习相关考点、解答对应试题时使用。
+[contentMarkdown] H：用字母T表示，名称为氚或超重氢。
+(4)几种重要核素的用途
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-hj-liuchengtu-sanxian-jiedu
+来源: 化学讲义《第05讲 工业流程题解题策略（复习讲义）（四川专用）（学生版）》（registry-kb-chemistry-handout:chemistry）
+类型: METHOD_MODEL
+[title] 流程图的三线解读与过程评价
+[summaryMarkdown] 流程图主线为主产品、分支线为副产品、回头线为循环物；过程评价有七个要点。
+[applicabilityMarkdown] 快速解读流程图、评价工艺合理性时使用。
+[contentMarkdown] 看三线：主线（主线箭头）为主产品生成路径；分支线为副产品；回头线（返回箭头）为循环利用的物质。
+审题要点：了解生产目的、原料与产品；分析各步反应原理与物质成分；理解分离提纯与条件控制的目的。
+过程评价七条：化学原理可行；成本低；原料利用率高（副产品利用、循环使用）；生产过程快（速率）；产率高（平衡）；产品纯（分离提纯）；环保（三废处理）。
+提高浸出率的方法：矿石粉碎、适当升温、充分搅拌、适当提高浸取液浓度；浸出率先升后降的原因是温度过高时试剂挥发或分解。
+[boundaryMarkdown] 关注所加试剂的多重作用（参与反应、提供氛围、满足定量）。
+候选（机械预筛，未必对）：反应原理（名字出现）；分离提纯（名字出现）
+
+==============================================================================
+## MATH | math-fangshuo-1bijin2-dayu-luixiang
+来源: 《狂K重难点》数学 书页P409，重难点29（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: CONCEPT_EXPLANATION
+[title] 放缩结论：1/n² > 1/[n(n+1)]
+[summaryMarkdown] $\frac{1}{n^2}>\frac{1}{n(n+1)}=\frac{1}{n}-\frac{1}{n+1}$。
+[applicabilityMarkdown] 证明 $\sum\frac{1}{n^2}$ 型下界估计。
+[contentMarkdown] $\frac{1}{n^2}>\frac{1}{n(n+1)}=\frac{1}{n}-\frac{1}{n+1}$。
+[boundaryMarkdown] 用于向下放缩证“大于”型结论；等号不成立（严格不等）。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-fx-teshujiao-coupei
+来源: 数学方法类《第18讲：三角恒等变换（知识梳理+题型总结）》（registry-kb-math-methods:math）
+类型: CONCEPT_EXPLANATION
+[title] $15°$、$75°$ 型特殊角的凑配值
+[summaryMarkdown] $\sin 15°=\dfrac{\sqrt6-\sqrt2}{4}$、$\cos 15°=\dfrac{\sqrt6+\sqrt2}{4}$、$\tan 15°=2-\sqrt3$，可由 $45°\mp30°$ 的和差公式现场推出。
+[applicabilityMarkdown] 求值、化简中出现 $15°$、$75°$（或 $\dfrac{\pi}{12}$、$\dfrac{5\pi}{12}$）角时。
+[contentMarkdown] 1. 来源：$\sin 15°=\sin(45°-30°)$、$\cos 75°=\sin 15°$（互余）等，用和差公式展开。
+2. 常用值：$\sin 15°=\dfrac{\sqrt6-\sqrt2}{4}$，$\cos 15°=\dfrac{\sqrt6+\sqrt2}{4}$，$\tan 15°=2-\sqrt3$，$\tan 75°=2+\sqrt3$。
+3. 配套结论：$\sin 15°+\cos 15°=\sqrt2\sin 60°=\dfrac{\sqrt6}{2}$（辅助角合一生成）。
+[boundaryMarkdown] 记不住时现场推导更可靠；结果含双重根号时注意分母有理化与符号。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-hj-s42-sin-cos-sym
+来源: 数学讲义《第四章 §4.2　同角三角函数基本关系式及诱导公式.docx》（registry-kb-math-handout:math）
+类型: METHOD_MODEL
+[title] sinα±cosα 与 sinαcosα 知一求二
+[summaryMarkdown] (sinα±cosα)²=1±2sinαcosα 联系三个量，知其一可求其余（需定符号）。
+[applicabilityMarkdown] 已知 sinα+cosα、sinαcosα、sinα−cosα 之一求其他。
+[contentMarkdown] $(\sin\alpha\pm\cos\alpha)^2=1\pm2\sin\alpha\cos\alpha$。求 $\sin\alpha\pm\cos\alpha$ 时按角的范围确定开方后的符号。
+[boundaryMarkdown] 同角问题中弦化切：齐次式除以 cos²α 转为 tanα 的式子。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-isomorphic-product-model-xlnx-xex
+来源: 《狂K重难点》数学 P391 重难16·1(1)（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: METHOD_MODEL
+[title] 积（商）型同构模型一：$a\mathrm{e}^{x}\le b\ln b$ 型化为 $\mathrm{e}^{x}\ln\mathrm{e}^{x}\le b\ln b$，构造 $f(x)=x\ln x$ 或 $g(x)=x\mathrm{e}^{x}$
+[summaryMarkdown] 形如 $a\mathrm{e}^{x}\le b\ln b$ 的不等式，利用 $\mathrm{e}^{x}=\mathrm{e}^{\ln\mathrm{e}^{x}}$ 化为 $\mathrm{e}^{x}\ln\mathrm{e}^{x}\le b\ln b$，同构于 $F(\ln\mathrm{e}^{x})\le F(b)$，构造 $F(t)=t\ln t$（或 $g(x)=x\mathrm{e}^{x}$）。
+[applicabilityMarkdown] 『指数式与对数式各带一个变量（参数）相乘』型不等式。
+[contentMarkdown] 1. 配凑：$a\mathrm{e}^{x}\le b\ln b\Leftrightarrow\mathrm{e}^{x}\ln\mathrm{e}^{x}\le b\ln b$。
+2. 构造 $f(t)=t\ln t$（或 $g(u)=u\mathrm{e}^{u}$）。
+3. 判断 $f$（$g$）的单调性，去外层结构得 $\ln\mathrm{e}^{x}$ 与 $b$（或 $\mathrm{e}^{x}$ 与 $\ln b$）的比较。
+[boundaryMarkdown] $f(t)=t\ln t$ 在 $(0,+\infty)$ 上的单调性分界点为 $t=\dfrac{1}{\mathrm{e}}$（先减后增），去外壳时须注意单调方向。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-mo-sanjiao-jiaodu-yinhan
+来源: 数学《教考衔接十六 教材中的易混易错杜绝再错学案》（registry-kb-math-misc:math）
+类型: METHOD_MODEL
+[title] 三角中的角度隐含限制与大边对大角
+[summaryMarkdown] 由函数值、内角和、锐角三角形条件缩小角的范围；解三角形注意大边对大角。
+[applicabilityMarkdown] 三角求值与解三角形中的范围控制。
+[contentMarkdown] 三角函数求值问题中题干未明确角度范围时，应结合三角函数值缩小范围，或根据三角形内角和为 $\pi$、锐角三角形三个内角均在 $\left(0,\dfrac\pi2\right)$ 来缩小角度范围；解三角形问题中注意“大边对大角、大角对大边”。
+[boundaryMarkdown] 给值求角增解的主要来源就是范围没缩够；锐角三角形条件常给出关于 $\tan A\tan B$ 的不等式约束。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-period-shift-opposite-different-offsets
+来源: 《狂K重难点》数学 P378 重难4·1(4)（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: CONCEPT_EXPLANATION
+[title] 平移反号式：$f(a+x)=-f(b+x)\ (a\neq b)\Rightarrow T=2|b-a|$
+[summaryMarkdown] 相隔 $|b-a|$ 的函数值互为相反数，迭代两次还原，周期为 $2|b-a|$。
+[applicabilityMarkdown] 函数方程形如 $f(a+x)=-f(b+x)$ 时判定周期。
+[contentMarkdown] 记 $u=b+x$，则 $f(u+(a-b))=-f(u)$；再迭代一次得 $f(u+2(a-b))=f(u)$，故 $T=2|b-a|$。
+[boundaryMarkdown] $a\neq b$；所得为一个周期，不一定是最小正周期。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-gan-moxing-zui-gao-dian
+来源: 《狂K重难点》物理 书页P417，重难点11（registry-lixiangshu-2027-bikuti-kuangk-physics:physics）
+类型: CONCEPT_EXPLANATION
+[title] 杆（双轨道）模型最高点特征
+[summaryMarkdown] 杆模型为双向约束，最高点 $mg\pm F_N=\frac{mv^2}{r}$，最小速度 $v_{\min}=0$，过最高点条件 $v\ge0$。
+[applicabilityMarkdown] 轻杆、双轨道、管道等最高点有支撑的竖直圆周运动。
+[contentMarkdown] 受力特征：双向约束（重力、弹力），弹力方向向下、等于零或向上；力学特征 $mg\pm F_N=\frac{mv^2}{r}$；临界特征 $v_{\min}=0$（此时 $F_N=mg$，为支持力）；过最高点条件 $v\ge0$。
+[boundaryMarkdown] 杆既能拉也能撑，最高点速度可为零。
+候选（机械预筛，未必对）：圆周运动（名字出现）
+
+==============================================================================
+## PHYSICS | phys-hj3-an-an-method
+来源: 物理讲义《第37讲 创新思维测量电阻常用的5种方法及定值电阻的妙用（复习讲义）（安徽专用）（学生版）》（registry-kb-physics-handout:physics）
+类型: METHOD_MODEL
+[title] 安安法测电阻
+[summaryMarkdown] 用两只电流表测电阻：已知内阻的电流表可当电压表使用，由 $U=I_1 r_1$ 求电压。
+[applicabilityMarkdown] 缺少合适电压表时测量电阻。
+[contentMarkdown] 两只电流表读数为 $I_1、I_2$，已知 $A_1$ 内阻 $r_1$，则待测电阻两端电压 $U=I_1 r_1$，由 $R_x=\frac{U}{I_2-I_1}$（或按电路结构列式）求出。
+应用技巧：缺少合适的电压表时，可将已知内阻的电流表当作电压表使用。
+[boundaryMarkdown] 要求电流表内阻已知且准确，电路结构不同时电流关系式不同。
+候选（机械预筛，未必对）：安安法测电阻（名字出现）
+
+==============================================================================
+## PHYSICS | phys-kb-velocity-selector
+来源: 物理知识清单：《专题12 磁场（知识清单）（全国通用）（教师版）》（registry-kb-physics-knowledge-list:physics）
+类型: CONCEPT_EXPLANATION
+[title] 速度选择器
+[summaryMarkdown] 电场力与洛伦兹力平衡时，只有特定速度的粒子直线通过。
+[applicabilityMarkdown] 分析复合场中选择速度的装置时使用。
+[contentMarkdown] 平衡条件 $qvB=qE$，即 $v=\frac{E}{B}$ 的粒子沿直线通过。
+速度偏小则向电场力方向偏转（动能增加），偏大则向洛伦兹力方向偏转（动能减少）。
+[boundaryMarkdown] 只能选择速度，不能选择电性、电荷量和质量；电场磁场方向须正交且固定。
+候选（机械预筛，未必对）：平衡条件-根本条件-作用在物体上的所有共点力的合力为零-即-f_合-0（名字出现）；洛伦兹力（名字出现）
+

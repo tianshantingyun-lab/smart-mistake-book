@@ -289,7 +289,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-physics:physics",
    "sourceLocator": "《狂K重难点》物理 书页P418，重难点11",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:对超重和失重的理解应当注意的问题",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-gong-xing-qiao-shi-zhong",
@@ -304,7 +309,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-physics:physics",
    "sourceLocator": "《狂K重难点》物理 书页P418，重难点11",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:对超重和失重的理解应当注意的问题",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-tuo-gui-zui-dian-lin-jie",
@@ -559,7 +569,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-physics:physics",
    "sourceLocator": "《狂K重难点》物理 书页P420，重难点13",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:公式法解天体追及相遇问题",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-tian-ti-tong-xiang-zhui-ji",
@@ -734,7 +749,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-physics:physics",
    "sourceLocator": "《狂K重难点》物理 书页P421，重难点14",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:变力做功的求解方法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-p-t-mian-ji-gong",
@@ -749,7 +769,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-physics:physics",
    "sourceLocator": "《狂K重难点》物理 书页P421，重难点14",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:合力做功的计算方法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-wei-yuan-fa-bian-li-gong",
@@ -1424,7 +1449,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-physics:physics",
    "sourceLocator": "《狂K重难点》物理 书页P428，重难点18",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:子弹打木块模型",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-bullet-pierces-block",
@@ -1939,7 +1969,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-physics:physics",
    "sourceLocator": "《狂K重难点》物理 书页P432，重难点20",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:波速",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-field-strength-three-formulas",
@@ -2014,7 +2049,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-physics:physics",
    "sourceLocator": "《狂K重难点》物理 书页P433，重难点21考法1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:割补法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-microelement-method-field",
@@ -2409,7 +2449,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-physics:physics",
    "sourceLocator": "《狂K重难点》物理 书页P435，重难点21",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:电场强度与电势的叠加",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-trajectory-force-direction",
@@ -2484,7 +2529,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-physics:physics",
    "sourceLocator": "《狂K重难点》物理 书页P436，重难点22",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:φ-x图像-反映了电势随位移变化的规律",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-phi-x-graph-energy",
@@ -2659,7 +2709,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-physics:physics",
    "sourceLocator": "《狂K重难点》物理 书页P437，重难点23考法1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:带电粒子在匀强电场中偏转的两个分运动",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-deflection-independent-of-qm",
@@ -2894,7 +2949,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-physics:physics",
    "sourceLocator": "《狂K重难点》物理 书页P440，重难点24考法1",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:电路的故障分析",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-ohmmeter-component-features",
@@ -4069,7 +4129,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-physics:physics",
    "sourceLocator": "《狂K重难点》物理 书页P450，重难点29（现代科学仪器）",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:磁场中的仪器",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-mass-spectrometer-principle",
@@ -4144,7 +4209,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-physics:physics",
    "sourceLocator": "《狂K重难点》物理 书页P451，重难点29（现代科学仪器）",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:回旋加速器",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-cyclotron-max-energy-independent-of-voltage",
@@ -4239,7 +4309,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-physics:physics",
    "sourceLocator": "《狂K重难点》物理 书页P451，重难点29（现代科学仪器）",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:霍尔元件",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hall-potential-judgment",
@@ -4274,7 +4349,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-physics:physics",
    "sourceLocator": "《狂K重难点》物理 书页P451，重难点29（现代科学仪器）",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:电磁流量计",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-lenz-generalized-obstruction",
@@ -5469,7 +5549,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-physics:physics",
    "sourceLocator": "《狂K重难点》物理 书页P465，重难点35（气体实验定律和热力学定律的综合应用）",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:气体实验定律",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-guy-lussac-law",
@@ -5744,7 +5829,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-physics:physics",
    "sourceLocator": "《狂K重难点》物理 书页P466，重难点35（气体实验定律和热力学定律的综合应用）",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:变质量问题的处理思想-等效",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-refractive-index-three-formulas",
@@ -5859,7 +5949,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-physics:physics",
    "sourceLocator": "《狂K重难点》物理 书页P467，重难点36（光的折射和全反射的综合应用）",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:光的折射",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-apparent-height",
@@ -5874,7 +5969,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-physics:physics",
    "sourceLocator": "《狂K重难点》物理 书页P467，重难点36（光的折射和全反射的综合应用）",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:光的折射",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-light-frequency-invariant-medium",
@@ -6069,7 +6169,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-physics:physics",
    "sourceLocator": "《狂K重难点》物理 书页P468，重难点37（光的干涉、衍射）",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:薄膜干涉的应用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-flatness-check-by-interference",
@@ -6264,7 +6369,12 @@
    "sourceId": "registry-lixiangshu-2027-bikuti-kuangk-physics:physics",
    "sourceLocator": "《狂K重难点》物理 书页P470，重难点38（光电效应的规律及应用）",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:光电效应",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-intensity-to-photocurrent",
@@ -6859,7 +6969,12 @@
    "sourceId": "registry-kb-physics-knowledge-list:physics",
    "sourceLocator": "物理知识清单：《专题02 相互作用（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:重心",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-kb-elastic-force-condition",
@@ -7674,7 +7789,12 @@
    "sourceId": "registry-kb-physics-knowledge-list:physics",
    "sourceLocator": "物理知识清单：《专题05 圆周运动（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:圆周运动的经典模型和应用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-kb-arch-bridge-model",
@@ -7689,7 +7809,12 @@
    "sourceId": "registry-kb-physics-knowledge-list:physics",
    "sourceLocator": "物理知识清单：《专题05 圆周运动（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:圆周运动的经典模型和应用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-kb-rope-rod-ball-critical",
@@ -8364,7 +8489,12 @@
    "sourceId": "registry-kb-physics-knowledge-list:physics",
    "sourceLocator": "物理知识清单：《专题08 动量（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:爆炸现象与动量守恒",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-kb-boat-man-model",
@@ -9299,7 +9429,12 @@
    "sourceId": "registry-kb-physics-knowledge-list:physics",
    "sourceLocator": "物理知识清单：《专题12 磁场（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:磁场中的仪器",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-kb-mass-spectrometer-principle",
@@ -9354,7 +9489,12 @@
    "sourceId": "registry-kb-physics-knowledge-list:physics",
    "sourceLocator": "物理知识清单：《专题12 磁场（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:霍尔元件",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-kb-composite-field-motion-classify",
@@ -9569,7 +9709,12 @@
    "sourceId": "registry-kb-physics-knowledge-list:physics",
    "sourceLocator": "物理知识清单：《专题13 电磁感应（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:电磁阻尼与电磁驱动",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-kb-em-circuit-three-steps",
@@ -10544,7 +10689,12 @@
    "sourceId": "registry-kb-physics-knowledge-list:physics",
    "sourceLocator": "物理知识清单：《专题17 热学（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:液晶",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-kb-gas-image-pv-area",
@@ -10699,7 +10849,12 @@
    "sourceId": "registry-kb-physics-knowledge-list:physics",
    "sourceLocator": "物理知识清单：《专题18 近代物理（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:康普顿效应",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-kb-wave-particle-duality-light",
@@ -11014,7 +11169,12 @@
    "sourceId": "registry-kb-physics-knowledge-list:physics",
    "sourceLocator": "物理知识清单：《专题19 实验相关基础知识和实验仪器的原理及使用（知识清单）（全国通用）（教师版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:必备实验仪器的原理及使用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-kb-meter-reading-estimation",
@@ -11989,7 +12149,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第10讲 动态平衡和临界极值问题-（讲义）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:共点力的平衡临界极值问题-临界条件",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj-009-friction-angle-method",
@@ -12124,7 +12289,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第11讲 摩擦力的突变 “活结”和“死结”“动杆”和“定杆”-（讲义）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:活结与死结模型",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj-016-dead-knot-model",
@@ -12139,7 +12309,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第11讲 摩擦力的突变 “活结”和“死结”“动杆”和“定杆”-（讲义）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:活结与死结模型",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj-017-moving-rod-model",
@@ -12154,7 +12329,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第11讲 摩擦力的突变 “活结”和“死结”“动杆”和“定杆”-（讲义）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:活杆与定杆模型",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj-018-fixed-rod-model",
@@ -12169,7 +12349,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第11讲 摩擦力的突变 “活结”和“死结”“动杆”和“定杆”-（讲义）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:活杆与定杆模型",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj-019-knot-rod-matching",
@@ -12344,7 +12529,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第33讲 动量 动量定理-（讲义）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:动量",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj-087-momentum-change",
@@ -12979,7 +13169,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第44讲 电容器 带电粒子在电场中的运动-（讲义）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:电容",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj-152-capacitor-dynamic-two-cases",
@@ -13134,7 +13329,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第46讲 电路的基本概念及电路分析-（讲义）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:电流",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj-160-resistance-law",
@@ -13689,7 +13889,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第15讲 牛顿第二定律的基本应用-（讲义）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:超重",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj-039-weightlessness-phenomenon",
@@ -13704,7 +13909,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第15讲 牛顿第二定律的基本应用-（讲义）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:失重",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj-040-complete-weightlessness",
@@ -13719,7 +13929,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第15讲 牛顿第二定律的基本应用-（讲义）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:失重",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj-041-overweight-judge-methods",
@@ -13814,7 +14029,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第1讲 描述运动的基本概念-（讲义）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:质点",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj-067-reference-frame",
@@ -14389,7 +14609,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第40讲 实验8用单摆测量重力加速度-（讲义）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:用单摆测量重力加速度",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj-128-pendulum-period-measure",
@@ -14644,7 +14869,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第42讲 电场能的性质-（讲义）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:电势",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj-141-potential-difference",
@@ -15139,7 +15369,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第53讲 磁场及其对电流的作用-（讲义）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:安培定则",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj-193-magnetic-field-superposition",
@@ -15194,7 +15429,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第53讲 磁场及其对电流的作用-（讲义）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:磁场",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj2-dianchang-zonghe-dengxiao-zhongli-chang",
@@ -15489,7 +15729,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《微专题一 动态平衡 平衡中的临界与极值问题（复习讲义）（全国通用）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:动态平衡问题",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj2-li-de-tushi-shiyitu",
@@ -15844,7 +16089,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第3讲 三大性质力及力的合成与分解》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:活结与死结模型",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj2-sigan-huogan-moxing",
@@ -19699,7 +19949,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第67讲 原子结构和原子核（复习讲义）（全国通用） 》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:电离态与电离能",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj2-yuedian-puxian-tiaoshu",
@@ -20194,7 +20449,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第17讲 测量电阻的八种实验方法（模型与方法）（全国通用）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:多用电表测电阻",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj2-fuanfa-neiwaibie-xuanze",
@@ -20229,7 +20489,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第17讲 测量电阻的八种实验方法（模型与方法）（全国通用）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:伏伏法与安安法测电阻",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj2-dengxiao-tidai-cezu",
@@ -23604,7 +23869,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第04讲 实验：探究小车速度随时间变化的规律（复习讲义）（四川专用）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:纸带在力学实验中的应用分析",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj2-zhi-lianghua-fenlei-xingzhili-xiaoguoli",
@@ -24179,7 +24449,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第24讲 动量守恒中的力学综合问题（复习讲义）（四川专用）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:多物体-多过程问题中动量守恒定律的应用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj2-danwan-dashaxiang-bai",
@@ -24454,7 +24729,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第29讲 电场力的性质（复习讲义）（四川专用）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:库仑定律",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj2-dianchang-zhigongyou-jingdianli-shouheng",
@@ -24569,7 +24849,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第34讲 电学实验基础（复习讲义）（四川专用）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:必备实验仪器的原理及使用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj2-15v-dianyabiao-gudu-guifan",
@@ -25044,7 +25329,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第51讲 近代物理初步（复习讲义）（四川专用）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:球面辐射模型",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj2-mocali-tubian-sizhong-leixing",
@@ -25219,7 +25509,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第11讲 曲线运动、运动的合成与分解（复习讲义）（安徽专用）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:伏安特性曲线",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj2-yuanzhui-bai-zhouqi-yu-baigao",
@@ -26114,7 +26409,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第22讲 动量守恒定律及其应用（复习讲义）（安徽专用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:碰撞的可能性分析",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj3-elastic-collision-formula",
@@ -26229,7 +26529,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第23讲 五种“类碰撞”典型模型研究（复习讲义）（安徽专用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:悬绳模型",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj3-block-board-collision-model",
@@ -27344,7 +27649,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第36讲 重点实验：用多用电表测量电学中的物理量（复习讲义）（安徽专用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:多用电表的使用方法与注意事项",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj3-multimeter-structure",
@@ -27399,7 +27709,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第37讲 创新思维测量电阻常用的5种方法及定值电阻的妙用（复习讲义）（安徽专用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:安安法测电阻",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj3-fu-fu-method",
@@ -27414,7 +27729,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第37讲 创新思维测量电阻常用的5种方法及定值电阻的妙用（复习讲义）（安徽专用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:伏伏法测电阻",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj3-equivalent-substitution-method",
@@ -27449,7 +27769,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第37讲 创新思维测量电阻常用的5种方法及定值电阻的妙用（复习讲义）（安徽专用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:半偏法测电表内阻",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj3-bridge-method",
@@ -27464,7 +27789,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第37讲 创新思维测量电阻常用的5种方法及定值电阻的妙用（复习讲义）（安徽专用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:电桥法测电阻",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj3-ampere-rule-compare",
@@ -28039,7 +28369,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第42讲 法拉第电磁感应定律 自感和涡流（复习讲义）（安徽专用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:电磁阻尼与电磁驱动",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj3-em-induction-circuit-steps",
@@ -28634,7 +28969,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第48讲 热力学定律与能量守恒定律（复习讲义）（安徽专用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:热力学第二定律",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj3-second-perpetual-machine",
@@ -29429,7 +29769,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第05讲 重力、弹力、摩擦力（复习讲义）（湖南专用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:重力",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj3-elastic-force-judge",
@@ -29624,7 +29969,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第06讲 力的合成与分解（复习讲义）（湖南专用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:活结与死结模型",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj3-moving-fixed-rod-model",
@@ -29639,7 +29989,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第06讲 力的合成与分解（复习讲义）（湖南专用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:活杆与定杆模型",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj3-force-analysis-methods",
@@ -30114,7 +30469,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第13讲 曲线运动、运动的合成与分解（复习讲义）（湖南专用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:小船渡河模型",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj3-rope-end-velocity-model",
@@ -31049,7 +31409,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第34讲 静电场中能的性质（复习讲义）（湖南专用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:等分法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj3-e-field-work-four-methods",
@@ -31104,7 +31469,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第35讲 电场中的功能关系及图像问题（复习讲义）（湖南专用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:φ-x图像-反映了电势随位移变化的规律",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj3-capacitor-rated-voltage",
@@ -31399,7 +31769,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第41讲 电学实验必须熟练掌握的基本技能（复习讲义）（湖南专用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:电表的使用与量程选择",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj3-fixed-resistor-uses",
@@ -31794,7 +32169,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第61讲 光的波动性（复习讲义）（湖南专用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:薄膜干涉的应用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj3-molecular-motion-compare",
@@ -32169,7 +32549,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第35讲 实验：描绘小灯泡的伏安特性曲线（复习讲义）（福建专用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:伏安特性曲线",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj3-ampere-force-motion-judge",
@@ -32544,7 +32929,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第16讲 圆周运动（复习讲义）（黑吉辽蒙专用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:三种传动方式及特点",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj3-kinematics-image-special-points",
@@ -32739,7 +33129,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第32讲 实验：测电阻和电阻率（复习讲义）（福建专用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:实验实物图连线的原则与滑动变阻器接法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj3-instrument-choice-order",
@@ -32794,7 +33189,12 @@
    "sourceId": "registry-kb-physics-handout:physics",
    "sourceLocator": "物理讲义《第44讲 机械波（复习讲义）（福建专用）（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:波长",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-hj3-wave-particle-duality-angles",
@@ -34349,7 +34749,12 @@
    "sourceId": "registry-kb-physics-methods:physics",
    "sourceLocator": "物理方法类《第17讲 测量电阻的八种实验方法（学生版）（模型与方法）（全国通用）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:多用电表欧姆挡的原理与使用",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-fx-volt-ammeter-inner-outer",
@@ -34784,7 +35189,12 @@
    "sourceId": "registry-kb-physics-methods:physics",
    "sourceLocator": "物理方法类《第2讲 运动学图像及追及相遇问题（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:追及问题的常见类型",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-fx-normal-force-existence-judge",
@@ -34839,7 +35249,12 @@
    "sourceId": "registry-kb-physics-methods:physics",
    "sourceLocator": "物理方法类《第3讲 三大性质力及力的合成与分解（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:活结与死结模型",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-fx-live-rod-dead-rod",
@@ -34854,7 +35269,12 @@
    "sourceId": "registry-kb-physics-methods:physics",
    "sourceLocator": "物理方法类《第3讲 三大性质力及力的合成与分解（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:活杆与定杆模型",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-fx-static-friction-judge-methods",
@@ -35429,7 +35849,12 @@
    "sourceId": "registry-kb-physics-methods:physics",
    "sourceLocator": "物理方法类《第7讲 圆周运动模型（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:对超重和失重的理解应当注意的问题",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-fx-kepler-three-laws",
@@ -37464,7 +37889,12 @@
    "sourceId": "registry-kb-physics-methods:physics",
    "sourceLocator": "物理方法类《专题24 法拉第电磁感应定律的理解及应用（学生版）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:涡流",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-fx-ampere-force-expression-bridge",
@@ -38319,7 +38749,12 @@
    "sourceId": "registry-kb-physics-methods:physics",
    "sourceLocator": "物理方法类《突破一  选择题九大快解技法》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:排除法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-fx-limit-thinking-method",
@@ -38394,7 +38829,12 @@
    "sourceId": "registry-kb-physics-methods:physics",
    "sourceLocator": "物理方法类《突破一  选择题九大快解技法》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:类比-创新-极限等物理思维考查",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-fx-symmetry-method-four-types",
@@ -38449,7 +38889,12 @@
    "sourceId": "registry-kb-physics-methods:physics",
    "sourceLocator": "物理方法类《突破三  计算题答题规范指导》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:计算题答题规范",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-fx-mechanics-experiment-breaking",
@@ -38544,7 +38989,12 @@
    "sourceId": "registry-kb-physics-methods:physics",
    "sourceLocator": "物理方法类《第12讲 单个物体的动量定理（学生版）（模型与方法）（全国通用）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:冲量的计算方法",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-fx-elastic-collision-mass-cases",
@@ -39499,7 +39949,12 @@
    "sourceId": "registry-kb-physics-methods:physics",
    "sourceLocator": "物理方法类《第17讲 测量电阻的八种实验方法（学生版）（模型与方法）（全国通用）》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:伏安特性曲线",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-fx-incline-projectile-two-decompositions",
@@ -39814,7 +40269,12 @@
    "sourceId": "registry-kb-physics-misc:physics",
    "sourceLocator": "物理《第01讲 运动的描述 - 必备基础知识》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:质点",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-mo-l01-motion-description-b-2",
@@ -39849,7 +40309,12 @@
    "sourceId": "registry-kb-physics-misc:physics",
    "sourceLocator": "物理《第01讲 运动的描述 - 必备基础知识》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:位移",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-mo-l01-motion-description-b-4",
@@ -40244,7 +40709,12 @@
    "sourceId": "registry-kb-physics-misc:physics",
    "sourceLocator": "物理《第06讲 力的合成与分解-必备基础知识》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:活结与死结模型",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-mo-l06-force-composition-b-5",
@@ -40259,7 +40729,12 @@
    "sourceId": "registry-kb-physics-misc:physics",
    "sourceLocator": "物理《第06讲 力的合成与分解-必备基础知识》",
    "reviewedAtEpochMillis": 1784908800000,
-   "bindings": []
+   "bindings": [
+    {
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:活杆与定杆模型",
+     "role": "PRIMARY"
+    }
+   ]
   },
   {
    "slug": "phys-mo-l07-equilibrium-b",

@@ -1,0 +1,377 @@
+# 绑定作业片 14：30 条无绑定材料
+#
+# 任务：为每条材料选定它应该绑定的知识点节点（就是讲题时该材料服务的那个点）。
+# 交付（写到 tools/kb_coverage/binding_fixes/slice_14/notes.csv）：
+#   subject,material_slug,node_slug,confidence,evidence
+#   （node_slug 用下面的节点表里的 slug；确实没有合适的写 NONE；
+#     evidence 一句话说明依据；字段内不要有 ASCII 逗号）
+#
+# 硬规矩：
+#   · 宁缺勿错：不确定就 confidence=low 或写 NONE —— 错绑会让检索喂错材料
+#   · 只能从本学科节点表里选（见 tools/kb_coverage/binding_slices/nodes/nodes_<学科>.txt）
+#   · 一条材料只绑一个节点（就是它最主要服务的那个点）
+
+==============================================================================
+## BIOLOGY | bio-co2-fertilization-suppress-photorespiration
+来源: 《狂K重点》生物 P381-382 重难3·题型2（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 提高 CO2 浓度（增施气肥）抑制光呼吸、提高产量
+[summaryMarkdown] 温室增施 CO2 提高 Rubisco 处 CO2/O2 比→固碳占优、光呼吸↓、产量↑。
+[applicabilityMarkdown] 农业生产措施与光呼吸结合题。
+[contentMarkdown] 提高环境 CO2（增施气肥）→Rubisco 碳固定占比↑、光呼吸↓、有机物积累↑；C4 植物'CO2 泵'同理。
+[boundaryMarkdown] CO2 过高或光强不足时增产受限。
+候选（机械预筛，未必对）：光呼吸（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fj-02-mg-chlorophyll-not-carotene
+来源: 生物讲义《第02讲 细胞中的元素和化合物（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] Mg2+存在于叶绿素而非类胡萝卜素
+[summaryMarkdown] Mg2+是叶绿素分子的组成成分，不存在于类胡萝卜素中。
+[applicabilityMarkdown] 色素与元素对应判断。
+[contentMarkdown] 1. Mg2+是叶绿素的重要组成成分。
+2. 类胡萝卜素（叶黄素、胡萝卜素）不含Mg。
+[boundaryMarkdown] 叶绿素合成受阻与缺Mg相联系，类胡萝卜素吸收蓝紫光。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-07-sucrase-in-osmometer
+来源: 生物讲义《第07讲 物质运输（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] U形管中加蔗糖酶的液面分析
+[summaryMarkdown] 10%蔗糖侧加蔗糖酶后水解为两分子单糖，物质的量浓度增大，水分子净流向蔗糖侧。
+[applicabilityMarkdown] 渗透装置综合分析。
+[contentMarkdown] 1. 未加酶时10%葡萄糖溶液物质的量浓度大于10%蔗糖溶液（葡萄糖分子量小、微粒多），水净流向葡萄糖侧。
+2. 加蔗糖酶后1分子蔗糖水解产生葡萄糖和果糖两分子单糖，蔗糖侧浓度升高，水净流向蔗糖侧，左侧液面升高。
+[boundaryMarkdown] 关键是比较物质的量浓度（微粒数），不是质量分数。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-15-gene-concepts
+来源: 生物讲义《第15讲 分离定律（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 基因类概念辨析
+[summaryMarkdown] 等位基因是同源染色体同一位置控制相对性状的基因；非等位基因分同源与非同源染色体上两类。
+[applicabilityMarkdown] 基因位置关系判断。
+[contentMarkdown] 1. 显性基因决定显性性状，隐性基因决定隐性性状。
+2. 相同基因：同源染色体相同位置控制相同性状的基因（如A和A）。
+3. 等位基因：同源染色体同一位置控制相对性状的基因（如B和b）。
+4. 非等位基因：位于非同源染色体上（遵循自由组合定律）或同源染色体上（不遵循）。
+[boundaryMarkdown] 同源染色体上的非等位基因不遵循自由组合定律。
+候选（机械预筛，未必对）：同源染色体（名字出现）；自由组合定律（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fj-33-mutualism-protocooperation
+来源: 生物讲义《第33讲 群落（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 原始合作与互利共生
+[summaryMarkdown] 原始合作双方受益但分开后可独立生活，互利共生长期共同生活相互依存。
+[applicabilityMarkdown] 种间关系判断。
+[contentMarkdown] 1. 原始合作（互惠）：双方都受益，但分开后各自也能独立生活，如海葵与寄居蟹。
+2. 互利共生：长期共同生活在一起，相互依存、彼此有利，呈“同生共死”的同步性变化，如豆科植物与根瘤菌、地衣。
+3. 豆科植物为根瘤菌提供有机物（能量），根瘤菌固氮提供含氮养料（不提供能量）。
+[boundaryMarkdown] 螟蛉有子、蜾蠃负之是捕食关系。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fx-influenza-variation-cause
+来源: 生物方法类《微专题1　病毒（学生版）》（registry-kb-biology-methods:biology）
+类型: CONCEPT_EXPLANATION
+[title] 流感病毒变异性大的原因
+[summaryMarkdown] 流感病毒是单链RNA病毒，结构不稳定易变异，且囊膜蛋白种类多、推测以胞吞等方式进入细胞。
+[applicabilityMarkdown] 比较不同病毒变异性、解释流感反复流行的选择题。
+[contentMarkdown] 1. 流感病毒核酸为单链RNA，单链结构稳定性差，复制时易发生基因突变。
+2. 其最外层有脂质囊膜和多种蛋白质，推测病毒可通过膜融合或胞吞方式进入宿主细胞。
+3. T2噬菌体为DNA病毒，DNA双链结构相对稳定，变异性小于流感病毒。
+[boundaryMarkdown] 变异性大与毒性大小没有必然联系；RNA病毒易变异也是其疫苗难以研制的原因之一。
+候选（机械预筛，未必对）：蛋白质（名字出现）；基因突变（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fx-testcross-gamete-ratio
+来源: 生物方法类《微专题10：自由组合定律重点题型的解题建模》（registry-kb-biology-methods:biology）
+类型: METHOD_MODEL
+[title] 测交后代比例等于配子比例
+[summaryMarkdown] 双杂合子测交后代中四种表型比就是其产生四种配子的比例，是判断连锁与自由组合的钥匙。
+[applicabilityMarkdown] 由测交结果推断配子类型及比例、判断基因位置的题目。
+[contentMarkdown] 1. AaBb×aabb后代A_B_:A_bb:aaB_:aabb的比例＝AaBb产生配子AB:Ab:aB:ab的比例。
+2. 1:1:1:1说明自由组合；偏离1:1:1:1说明连锁或配子不育。
+3. 例：测交后代4:1:1:4说明AB连锁、ab连锁且发生互换。
+[boundaryMarkdown] 测交亲本须为隐性纯合子；若涉及配子不育需先折算配子比例再下结论。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb-hybrid-breeding-and-heterosis
+来源: 生物知识清单：《第16讲 自由组合定律（知识清单）（全国通用）（学生版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 杂交选优育种与杂种优势
+[summaryMarkdown] 杂交选育纯合品种需连续自交筛选；隐性优良性状一旦出现即可稳定遗传；杂种优势可用无性繁殖保持。
+[applicabilityMarkdown] 育种方案设计。
+[contentMarkdown] 1. 植物纯合品种：DDTT×ddtt得F1，多代自交逐代筛选获得DDtt等目标纯种。
+2. 隐性优良性状（如aabb）：一旦出现即为纯合子，不需要连续自交。
+3. 杂种优势：遗传组成不同的亲本杂交后代在生活力、抗逆性、产量等方面超过双亲；马铃薯、甘薯等可通过无性生殖保持杂种优势。
+4. 动物育种：通过杂交和多年选育形成新品种（如中国荷斯坦牛）。
+[boundaryMarkdown] 自由组合定律指导亲本选配，分离定律指导分析后代能否稳定遗传。
+候选（机械预筛，未必对）：分离定律（名字出现）；自由组合定律（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-kb2-10-pigment-absorption
+来源: 生物知识清单：《第10讲 光合作用（知识清单）（全国通用）（教师版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 光合色素的吸收光谱
+[summaryMarkdown] 叶绿素主要吸收红光和蓝紫光，类胡萝卜素主要吸收蓝紫光，二者基本不吸收绿光。
+[applicabilityMarkdown] 解释温室补光光质选择、测定叶绿素含量选光时使用。
+[contentMarkdown] 叶绿体中的色素只吸收可见光（约400至760纳米），对红外光和紫外光不吸收；
+叶绿素主要吸收红光和蓝紫光；类胡萝卜素主要吸收蓝紫光。
+[boundaryMarkdown] 测叶绿素含量选红光可减少类胡萝卜素干扰；叶绿素由N、Mg等元素构成，缺N、Mg叶片变黄。
+候选（机械预筛，未必对）：叶绿体（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-kb3-f4-s28-n01
+来源: 生物知识清单《2027届高三生物一轮复习知识清单4：分子与细胞基础》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 建构模型
+[summaryMarkdown] 概念：模型是人们为了某种特定的目的而对认识对象所作的一种简化的概括性的描述。
+[applicabilityMarkdown] 复习“建构模型”考点或解答涉及“建构模型”的题目时使用。
+[contentMarkdown] 概念：模型是人们为了某种特定的目的而对认识对象所作的一种简化的概括性的描述。
+[boundaryMarkdown] 一轮复习结论性要点，表述以人教版现行教材为准；具体数值可能因教材版本略有差异。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-neurotransmitter-clearance
+来源: 《狂K重点》生物 P407 重难11·题型2（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: CONCEPT_EXPLANATION
+[title] 递质清除机制：被酶降解或被突触前膜回收
+[summaryMarkdown] 递质作用后须被清除：被特异性酶降解、或被突触前膜回收（再摄取），保证信号单次准确传递。
+[applicabilityMarkdown] 药物影响突触传递分析（如有机磷、抗抑郁药）。
+[contentMarkdown] 1. 酶解：递质与受体作用后，突触间隙中的酶将其降解（如乙酰胆碱酯酶水解 ACh）。
+2. 回收：部分递质被突触前膜（转运蛋白）回收重新利用。
+3. 若清除被抑制（如酶被抑制）→递质持续作用→后膜持续兴奋/抑制。
+[boundaryMarkdown] 清除障碍是许多神经药物（中毒、抗抑郁）的机制。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-rt-pcr-principle
+来源: 《狂K重点》生物 P421 重难19·题型2（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 逆转录 PCR（RT-PCR）：RNA 逆转录为 cDNA 再扩增
+[summaryMarkdown] 先提取总 RNA，以 Oligo(dT) 为引物用逆转录酶合成 cDNA，再以 cDNA 为模板进行 PCR，用于检测基因是否转录或 RNA 病毒。
+[applicabilityMarkdown] 基因表达检测/RNA 病毒检测题。
+[contentMarkdown] 1. 流程：提取组织或细胞的总 RNA→以 Oligo(dT) 为引物、逆转录酶合成 cDNA→以 cDNA 为模板进行 PCR。
+2. 作为模板的 RNA 可以是总 RNA、mRNA 或体外转录的 RNA 产物。
+3. 应用：检测某基因是否转录（表达）；检测 RNA 病毒是否存在；从 mRNA 出发获得目的基因。
+[boundaryMarkdown] cDNA 无内含子，与基因组 DNA 电泳条带位置不同。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-bo-li-xian-wei-f73x12
+来源: 化学方法类《高考化学化学与传统文化及STSE(学生版)-20页》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 玻璃纤维
+[summaryMarkdown] (11)玻璃纤维：无机非金属材料，主要成分为氧化铝、二氧化硅、氧化钙等材料制成，具有绝缘性好、耐热性强、抗腐蚀性好等优点。
+[applicabilityMarkdown] 分析氧化还原反应、比较氧化性还原性强弱与电子转移数目时使用。
+[contentMarkdown] (11)玻璃纤维：无机非金属材料，主要成分为氧化铝、二氧化硅、氧化钙等材料制成，具有绝缘性好、耐热性强、抗腐蚀性好等优点。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：电子转移（名字出现）；氧化还原反应（名字出现）；金属材料（名字出现）；二氧化硅（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-di-si-bu-f03x10
+来源: 化学方法类《第01讲 有机化合物的结构特点与研究方法（学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: METHOD_MODEL
+[title] 第四步
+[summaryMarkdown] 4. 第四步：检查是否含碳碳双键（判断顺反异构）或手性碳（判断对映异构），如C5H10（烯烃）中，CH₃CH=CHCH₂CH₃存在顺反异构。
+[applicabilityMarkdown] 有机推断、官能团性质判断与方程式书写时使用。
+[contentMarkdown] 4. 第四步：检查是否含碳碳双键（判断顺反异构）或手性碳（判断对映异构），如C5H10（烯烃）中，CH₃CH=CHCH₂CH₃存在顺反异构。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-fang-shui-jie-f74x02
+来源: 化学方法类《高考化学化学实验基础(选择题)(学生版)-34页》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 防水解
+[summaryMarkdown] 防水解：加入酸(碱)抑制水解；向FeCl3溶液中加稀盐酸；向Na2S溶液中加NaOH溶液。
+[applicabilityMarkdown] 分析溶液酸碱性、比较粒子浓度大小与pH判断时使用。
+[contentMarkdown] 防水解：加入酸(碱)抑制水解；向FeCl3溶液中加稀盐酸；向Na2S溶液中加NaOH溶液
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-jin-xian-dai-de-cheng-jiu-f73x13
+来源: 化学方法类《高考化学化学与传统文化及STSE(学生版)-20页》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 近现代的成就
+[summaryMarkdown] (2)近现代的成就：①结晶牛胰岛素：中国科学家在世界上首次人工合成具有生物活性的蛋白质。
+[applicabilityMarkdown] 复习“知识梳理∙智能提升”相关考点、解答对应试题时使用。
+[contentMarkdown] (2)近现代的成就：①结晶牛胰岛素：中国科学家在世界上首次人工合成具有生物活性的蛋白质。
+②中国科学家成功将CO2转化为淀粉或葡萄糖。
+(3)我国古代的发明：①陶瓷：主要成分是硅酸盐，典型的绝缘材料。
+②黑火药(爆竹)：由硫黄(燃烧后生成SO2，不生成SO3)、硝石(KNO3)、木炭三种物质混合制成。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：硅酸盐（名字出现）；蛋白质（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-ruo-shi-jia-re-yi-qi-f65x01
+来源: 化学方法类《（重点·方法·点拨）第62讲 化学实验基础知识和技能- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 若是加热仪器
+[summaryMarkdown] (1)若是加热仪器，蒸发或浓缩溶液用蒸发皿，灼烧固体用坩埚(莫忘玻璃棒搅拌)。
+[applicabilityMarkdown] 实验方案设计、评价与异常现象分析时使用。
+[contentMarkdown] (1)若是加热仪器，蒸发或浓缩溶液用蒸发皿，灼烧固体用坩埚(莫忘玻璃棒搅拌)。
+(2)若是量器，首先注意量程和精确度，粗量器(托盘天平和量筒)读出的数据为小数点后一位，精量器(滴定管)读出的数据为小数点后两位。
+(3)若是分离仪器，过滤用普通漏斗，分液用分液漏斗，蒸馏用蒸馏烧瓶。
+[boundaryMarkdown] (2)若是量器，首先注意量程和精确度，粗量器(托盘天平和量筒)读出的数据为小数点后一位，精量器(滴定管)读出的数据为小数点后两位。
+候选（机械预筛，未必对）：实验方案设计（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-tong-zhong-yuan-zi-f30x02
+来源: 化学方法类《（重点·方法·点拨）第27讲 元素周期表、元素的性质- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 同种原子
+[summaryMarkdown] ③同种原子：逐级电离能越来越大。
+[applicabilityMarkdown] 比较元素性质、进行“位—构—性”推断时使用。
+[contentMarkdown] ③同种原子：逐级电离能越来越大。
+(3)应用
+①判断元素金属性的强弱
+电离能越小，金属越容易失去电子，金属性越强；反之金属性越弱。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：电离能（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-yi-ju-dan-yang-yuan-zi-ge-shu-bi-qiu-j-f25x05
+来源: 化学方法类《（重点·方法·点拨）第22讲 氮及其氧化物　硝酸- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 依据氮氧原子个数比求解
+[summaryMarkdown] 2．依据氮氧原子个数比求解。
+[applicabilityMarkdown] 复习相关考点、解答对应试题时使用。
+[contentMarkdown] 2．依据氮氧原子个数比求解
+通过上述方程式的关系，我们不难发现：无论是哪种情况，生成HNO3的NO、NO2、O2中氮氧原子个数比都为2︰5。都等效于硝酸的酸酐N2O5与H2O的反应。在解题时，我们也可以利用这个关系来进行分析判断，并最终得出结论。
+氮氧原子个数比
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-zhuang-zhi-zhong-f66x09
+来源: 化学方法类《（重点·方法·点拨）第63讲 仪器的组合与创新使用- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 装置Ⅲ中
+[summaryMarkdown] ③装置Ⅲ中，先通入适量的气体X，再通入足量气。
+[applicabilityMarkdown] 实验方案设计、评价与异常现象分析时使用。
+[contentMarkdown] ③装置Ⅲ中，先通入适量的气体X，再通入足量气。若气体X被完全吸收，则可依据和中分别生成的固体质量计算。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：实验方案设计（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-kb-indicator-color-ranges
+来源: 化学知识清单：《专题02 水的电离和溶液的酸碱性（知识清单）（全国通用）（教师版）》（registry-kb-chemistry-knowledge-list:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 常用酸碱指示剂的变色范围
+[summaryMarkdown] 石蕊、甲基橙、酚酞的变色范围及颜色。
+[applicabilityMarkdown] 指示剂选择与终点判断。
+[contentMarkdown] 石蕊：pH＜5.0红色，5.0～8.0紫色，＞8.0蓝色。
+甲基橙：pH＜3.1红色，3.1～4.4橙色，＞4.4黄色。
+酚酞：pH＜8.0无色，8.2～10.0浅红色，＞10.0红色。
+[boundaryMarkdown] 石蕊变色不明显且范围过宽，中和滴定一般不用。
+候选（机械预筛，未必对）：中和滴定（名字出现）
+
+==============================================================================
+## MATH | math-fx-coujiao-fa
+来源: 数学方法类《第17讲：两角和差的正弦、余弦和正切公式（题型总结+解题策略分析）》（registry-kb-math-methods:math）
+类型: METHOD_MODEL
+[title] 三角求值的“凑角”（角的拆分）法
+[summaryMarkdown] 把未知角表示为已知角的和、差、倍（如 $\alpha=(\alpha+\beta)-\beta$），再用和差公式求值。
+[applicabilityMarkdown] 已知若干角的三角函数值，求这些角的和、差、半、倍角的三角函数值时。
+[contentMarkdown] 1. 常用拆分：$\alpha=(\alpha+\beta)-\beta$；$2\alpha=(\alpha+\beta)+(\alpha-\beta)$；$\dfrac{\alpha+\beta}{2}=\left(\alpha+\dfrac{\beta}{2}\right)-\left(\beta+\dfrac{\alpha-\beta}{2}\right)$ 型灵活配凑；$\dfrac{\pi}{4}+\alpha=\dfrac{\pi}{2}-\left(\dfrac{\pi}{4}-\alpha\right)$。
+2. 步骤：先找已知角与未知角的关系式，再对目标角用和差（倍角）公式展开，把未知角函数值用已知角的函数值表示。
+3. 每次拆分后要重新确定新角的范围，用于开方或定符号。
+[boundaryMarkdown] 拆分要使涉及的角全部“已知或可求”；求 $\cos(\alpha+\beta)$ 还是 $\sin(\alpha+\beta)$ 取决于展开后哪个只需已知信息。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-hj-jiangmi-shengmi-gongshi
+来源: 数学讲义《第3节　和、差、倍角的正弦、余弦和正切公式》（registry-kb-math-handout:math）
+类型: CONCEPT_EXPLANATION
+[title] 降幂公式与升幂公式
+[summaryMarkdown] $\sin^2\alpha=\frac{1-\cos 2\alpha}{2}$，$1+\cos 2\alpha=2\cos^2\alpha$。
+[applicabilityMarkdown] 降幂化简、构造完全平方。
+[contentMarkdown] 降幂公式：$\sin^2\alpha=\frac{1-\cos 2\alpha}{2}$，$\cos^2\alpha=\frac{1+\cos 2\alpha}{2}$；升幂公式：$1+\cos 2\alpha=2\cos^2\alpha$，$1-\cos 2\alpha=2\sin^2\alpha$，$1\pm\sin 2\alpha=(\sin\alpha\pm\cos\alpha)^2$。
+[boundaryMarkdown] 与半角公式相通。
+候选（机械预筛，未必对）：降幂公式与升幂公式（名字出现）；半角公式（名字出现）
+
+==============================================================================
+## MATH | math-hj-yangjiao-fujiao
+来源: 数学讲义《第9节　三角函数模型及解三角形的实际应用》（registry-kb-math-handout:math）
+类型: CONCEPT_EXPLANATION
+[title] 仰角与俯角
+[summaryMarkdown] 水平视线与目标视线的夹角，上仰下俯。
+[applicabilityMarkdown] 测量高度问题建模。
+[contentMarkdown] 在同一铅垂平面内，水平视线与目标视线的夹角：目标视线在水平视线上方叫仰角，在下方叫俯角。
+[boundaryMarkdown] 只针对同一铅垂面内的角。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-mo-geijiao-qiuzhi-sanfangmian
+来源: 数学《专题01 三角函数概念及公式应用（题型清单）（学生版）》（registry-kb-math-misc:math）
+类型: METHOD_MODEL
+[title] 给角求值的三个处理方向
+[summaryMarkdown] 化同角减少角的个数、化同角后用同角关系、两角结构用和差公式。
+[applicabilityMarkdown] 给角（非特殊角）求三角式的值。
+[contentMarkdown] 给角求值从几个方面处理：1. 能否利用诱导公式化为同一个角（减少角的个数）；2. 化为同一个角的式子后，用同角关系求解，或换元后化为函数问题利用函数知识解；3. 化为两个角的式子，则利用和差角公式等进行化简求值。
+[boundaryMarkdown] 非特殊角最终要凑出特殊角组合（如 $15°=60°-45°$）；切化弦与降幂是常用过渡手段。
+候选（机械预筛，未必对）：诱导公式（名字出现）
+
+==============================================================================
+## MATH | math-mo-yuanmi-dingli
+来源: 数学《专题12 以相关公式、定义、定理、模型为命题背景（附加）（全国通用）（学生版）（会一题通一类系列）》（registry-kb-math-misc:math）
+类型: CONCEPT_EXPLANATION
+[title] 圆幂定理（相交弦、切割线）
+[summaryMarkdown] 相交弦 $AP\cdot PB=CP\cdot PD$；切割线 $PT^2=PA\cdot PB$；割线积相等。
+[applicabilityMarkdown] 与圆有关的线段乘积问题。
+[contentMarkdown] 圆幂定理：1. 相交弦定理：弦 $AB$、$CD$ 交于圆内一点 $P$，则 $PA\cdot PB=PC\cdot PD$；2. 割线定理：自圆外一点 $P$ 引两条割线交圆于 $A,B$ 与 $C,D$，则 $PA\cdot PB=PC\cdot PD$；3. 切割线定理：自圆外一点 $P$ 引切线 $PT$ 与割线 $PAB$，则 $PT^2=PA\cdot PB$。
+[boundaryMarkdown] 线段长度自 $P$ 起算方向一致；常与相似三角形证明互相印证。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-dongli-fenpei-neili-an-zhiliang
+来源: 《狂K重难点》物理 书页P408，重难点6（registry-lixiangshu-2027-bikuti-kuangk-physics:physics）
+类型: CONCEPT_EXPLANATION
+[title] 动力分配原理（内力按质量分配）
+[summaryMarkdown] 单一动力拉动连接体时，内力 $F_T=\frac{m_B}{m_A+m_B}F$，与μ和θ无关；远离F的物体质量占总质量的比值等于内力与外力的比值。
+[applicabilityMarkdown] 满足使用条件的两物体连接体快速求内力。
+[contentMarkdown] A、B用一根绳子连在一起，在 $F$ 作用下沿倾角 $\theta$ 的粗糙斜面向上匀加速运动，动摩擦因数均为 $\mu$，则A、B之间的弹力 $F_T=\frac{m_B}{m_A+m_B}F$，表达式与 $\mu$ 和 $\theta$ 均无关。$F$ 一定时，无论在水平地面或斜面上运动、接触面粗糙或光滑，内力按质量分配：远离 $F$ 的物体质量与总质量的比值等于内力与外力的比值。
+[boundaryMarkdown] 使用前先核对使用条件（见动力分配使用条件条目）。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-hj-159-electric-current-concept
+来源: 物理讲义《第46讲 电路的基本概念及电路分析-（讲义）（学生版）》（registry-kb-physics-handout:physics）
+类型: CONCEPT_EXPLANATION
+[title] 电流
+[summaryMarkdown] 描述电流强弱的物理量
+[applicabilityMarkdown] 电路基础
+[contentMarkdown] 电荷的定向移动形成电流，$I=q/t$；形成条件是有自由电荷且两端存在电压；电流是标量，方向规定为正电荷定向移动的方向。
+[boundaryMarkdown] 金属中电流方向与电子运动相反。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-hj3-moving-fixed-rod-model
+来源: 物理讲义《第06讲 力的合成与分解（复习讲义）（湖南专用）（学生版）》（registry-kb-physics-handout:physics）
+类型: CONCEPT_EXPLANATION
+[title] “动杆”与“定杆”模型
+[summaryMarkdown] 动杆（铰链连接）平衡时弹力沿杆；定杆（固定）弹力方向不一定沿杆。
+[applicabilityMarkdown] 判断轻杆弹力的方向。
+[contentMarkdown] “动杆”：轻杆用光滑转轴或铰链连接可自由转动，杆平衡时所受弹力方向一定沿杆。
+“定杆”：轻杆被固定不能转动，杆所受弹力方向不一定沿杆，可沿任意方向。
+[boundaryMarkdown] 杆弹力沿杆的结论只对可自由转动的平衡动杆成立。
+候选（机械预筛，未必对）：弹力的方向（名字出现）
+
+==============================================================================
+## PHYSICS | phys-screen-offset-methods
+来源: 《狂K重难点》物理 书页P437，重难点23考法1（registry-lixiangshu-2027-bikuti-kuangk-physics:physics）
+类型: METHOD_MODEL
+[title] 粒子打在屏上偏移量的四种求法
+[summaryMarkdown] 粒子经加速电场、偏转电场后打到屏上的位置离屏中心距离y的四种等价算法。
+[applicabilityMarkdown] 粒子经加速电场 $U_1$ 获得初速度、经偏转电场 $U_2$ 偏转、再经无场区打到屏上的常考题型。
+[contentMarkdown] 1. $y = y_0 + L·tanθ$（$L$ 为屏到偏转电场的水平距离）；2. $y = y_0 + v_y·L/v_0$；3. $y = (l/2 + L)·tanθ$（$l$ 为偏转电场长度，利用出射速度反向延长过极板中线中点）；4. 利用三角形相似 $y/y_0 = (l/2 + L)/(l/2)$。
+[boundaryMarkdown] $y_0$ 为离开偏转电场时的偏移量，$θ$ 为出射偏角；先画好光路几何关系再选最简公式。
+候选（机械预筛，未必对）：无
+

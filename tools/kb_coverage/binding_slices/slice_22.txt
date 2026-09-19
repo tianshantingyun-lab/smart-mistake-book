@@ -1,0 +1,373 @@
+# 绑定作业片 22：30 条无绑定材料
+#
+# 任务：为每条材料选定它应该绑定的知识点节点（就是讲题时该材料服务的那个点）。
+# 交付（写到 tools/kb_coverage/binding_fixes/slice_22/notes.csv）：
+#   subject,material_slug,node_slug,confidence,evidence
+#   （node_slug 用下面的节点表里的 slug；确实没有合适的写 NONE；
+#     evidence 一句话说明依据；字段内不要有 ASCII 逗号）
+#
+# 硬规矩：
+#   · 宁缺勿错：不确定就 confidence=low 或写 NONE —— 错绑会让检索喂错材料
+#   · 只能从本学科节点表里选（见 tools/kb_coverage/binding_slices/nodes/nodes_<学科>.txt）
+#   · 一条材料只绑一个节点（就是它最主要服务的那个点）
+
+==============================================================================
+## BIOLOGY | bio-diurnal-start-light-compensation-crossing
+来源: 《狂K重点》生物 P386-387 重难4·题型2（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 一昼夜曲线：开始光照即开始光合；与横轴交点为光补偿
+[summaryMarkdown] 日出后曲线随光照上升，与横轴交点表示光合=呼吸（光补偿时刻）。
+[applicabilityMarkdown] 一昼夜曲线关键点判读。
+[contentMarkdown] 开始出现光照即开始光合作用；曲线由负转正前的横轴交点=光补偿（光合=呼吸）；此后净光合>0。
+[boundaryMarkdown] 傍晚对称位置再次穿过横轴（第二次补偿）。
+候选（机械预筛，未必对）：光合作用（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fj-03-glucose-fuel
+来源: 生物讲义《第03讲 糖类和脂质（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 葡萄糖是生命的燃料
+[summaryMarkdown] 葡萄糖是动植物细胞共有的六碳糖，是细胞生命活动的主要能源物质。
+[applicabilityMarkdown] 能源物质判断。
+[contentMarkdown] 1. 葡萄糖（C6H12O6）是主要的能源物质，被称为“生命的燃料”。
+2. 可经静脉注射直接进入人体细胞供能。
+[boundaryMarkdown] 葡萄糖是单糖，可直接吸收和注射；蔗糖是二糖不能直接静脉注射。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-08-gastric-pepsin-small-intestine
+来源: 生物讲义《第08讲 酶和ATP（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 胃蛋白酶进入小肠后失活
+[summaryMarkdown] 胃蛋白酶最适pH约1.5，进入小肠（pH约7.6）后活性大大下降甚至失活。
+[applicabilityMarkdown] pH与酶活性应用情境。
+[contentMarkdown] 1. 胃蛋白酶的最适pH为1.5左右。
+2. 小肠液pH约7.6，胃蛋白酶随食糜进入小肠后不能再有效发挥作用。
+[boundaryMarkdown] 这说明酶的作用条件较温和，脱离适宜条件酶活性改变。
+候选（机械预筛，未必对）：酶的作用（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fj-20-base-pair-rule-1-purine-pyrimidine
+来源: 生物讲义《第20讲 DNA的结构、复制与基因的本质（复习讲义）（全国通用）（解析版）》（registry-kb-biology-handout:biology）
+类型: METHOD_MODEL
+[title] 碱基计算规律一：嘌呤总数等于嘧啶总数
+[summaryMarkdown] 双链DNA中A=T、C=G，故A+G=C+T，即嘌呤碱基总数等于嘧啶碱基总数（占50%）。
+[applicabilityMarkdown] 规律一应用。
+[contentMarkdown] 1. 双链DNA中A=T、C=G（碱基互补配对）。
+2. 因此A+G=C+T，嘌呤总数=嘧啶总数。
+3. 嘌呤（A、G）占全部碱基的50%，嘧啶（T、C）占50%。
+[boundaryMarkdown] 单链中嘌呤与嘧啶数目一般不等。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-33-vertical-layering-plants-reason
+来源: 生物讲义《第33讲 群落（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 植物垂直分层的原因：对光的利用
+[summaryMarkdown] 植物的分层现象与对光的利用有关，陆生群落地下分层还与水分、无机盐有关。
+[applicabilityMarkdown] 分层原因分析。
+[contentMarkdown] 1. 不同植物适于在不同光照强度下生长（阳生、阴生）。
+2. 分层显著提高了群落利用阳光等环境资源的能力。
+3. 决定地上分层的环境因素还有温度等。
+4. 决定地下分层的环境因素是水分、无机盐等。
+[boundaryMarkdown] 植物的分层又决定了动物的分层。
+候选（机械预筛，未必对）：无机盐（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fx-judge-organ-transplant-hla
+来源: 生物方法类《稳态与调节阶段排查　回扣落实（七）》（registry-kb-biology-methods:biology）
+类型: CONCEPT_EXPLANATION
+[title] 易错：器官移植只要求主要HLA一半以上相同
+[summaryMarkdown] 供者与受者的主要HLA有一半以上相同就可以进行器官移植，并非必须完全相同。
+[applicabilityMarkdown] 移植免疫判断题。
+[contentMarkdown] 1. 判断：只有供者与受者的主要HLA完全相同，才可以进行器官移植（×）。
+2. 提示：只要主要HLA有一半以上相同即可移植。
+3. 移植后仍需使用免疫抑制剂减轻排斥反应。
+[boundaryMarkdown] 免疫抑制剂会降低整体免疫力，需权衡感染风险；HLA相容程度越高排斥越轻。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-hormone-experiment-controls
+来源: 《狂K重点》生物 P409 重难12·题型2（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 激素实验需生理盐水对照与前后自身对照
+[summaryMarkdown] 实验组处理激素、对照组注射等量生理盐水（或做前后自身对照）。
+[applicabilityMarkdown] 实验设计评价。
+[contentMarkdown] 1. 分组对照：实验组给激素，对照组给等量生理盐水（溶剂对照）。
+2. 前后自身对照：处理前后同一动物指标对比。
+[boundaryMarkdown] '前后自身对照'只适合可逆指标；不可逆过程须另设对照组。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb-polysaccharide-types-functions
+来源: 生物知识清单：《第03讲 糖类和脂质（知识清单）（全国通用）（学生版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 多糖的种类、分布与功能
+[summaryMarkdown] 淀粉是植物储能物质，纤维素构成植物细胞壁，糖原是动物储能物质，几丁质构成甲壳类外骨骼。
+[applicabilityMarkdown] 判断多糖功能与分布。
+[contentMarkdown] 1. 淀粉：植物细胞中重要的储能物质（玉米、小麦、马铃薯等）。
+2. 纤维素：构成植物细胞壁的结构物质。
+3. 糖原：人和动物细胞中重要的储能物质，肝糖原可调节血糖含量，肌糖原可为肌肉供能。
+4. 几丁质：存在于甲壳类动物和昆虫的外骨骼及真菌细胞壁中，基本单位是N-乙酰葡糖胺（含N）。
+[boundaryMarkdown] 淀粉、糖原、纤维素的基本单位都是葡萄糖，但数量和连接方式不同，化学性质不同。
+候选（机械预筛，未必对）：细胞壁（名字出现）；几丁质（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-kb2-26-blood-sugar-source-sink
+来源: 生物知识清单：《第26讲 体液调节（知识清单）（全国通用）（解析版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 血糖的来源与去向
+[summaryMarkdown] 血糖主要来源是食物中糖类的消化吸收，最有意义的去向是氧化分解供能。
+[applicabilityMarkdown] 分析血糖平衡调节起点时使用。
+[contentMarkdown] 来源：食物中的糖类经消化吸收（主要来源）、肝糖原分解、脂肪等非糖物质转化；
+去向：氧化分解（最有意义）、合成肝糖原和肌糖原、转变为脂肪等非糖物质。
+[boundaryMarkdown] 肌糖原在肌肉中转变成乳酸，一般不直接分解成葡萄糖。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb3-f4-s34-n03
+来源: 生物知识清单《2027届高三生物一轮复习知识清单4：分子与细胞基础》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 胞吞与胞吐
+[summaryMarkdown] (1)需要消耗细胞呼吸所释放的能量。
+[applicabilityMarkdown] 复习“胞吞与胞吐”考点或解答涉及“胞吞与胞吐”的题目时使用。
+[contentMarkdown] 特点。
+(1)需要消耗细胞呼吸所释放的能量。
+(2)需要细胞膜上特定蛋白质的识别。
+(3)依靠细胞膜的流动性。
+[boundaryMarkdown] 一轮复习结论性要点，表述以人教版现行教材为准；具体数值可能因教材版本略有差异。
+候选（机械预筛，未必对）：蛋白质（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-photoprotection-heat-dissipation
+来源: 《狂K重点》生物 P382 重难3·题型3（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 光保护防线一（防御）：热耗散过剩光能
+[summaryMarkdown] 通过热耗散等方式把过剩光能以热的形式散失，减少对光系统的损伤。
+[applicabilityMarkdown] 植物抗强光机制归类。
+[contentMarkdown] 防御防线：在光能进入反应中心前把过剩部分以热耗散掉（叶黄素循环等），减轻光系统损伤；叶绿体随光运动、减少受光面积也属防御端。
+[boundaryMarkdown] 提高光能吸收的措施不属于防御。
+候选（机械预筛，未必对）：叶绿体（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-selfing-n-phenotype-ratio
+来源: 《狂K重点》生物 P389 重难5·题型1（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 连续自交 n 代：表现型比 = [1+(1/2)^n] : [1−(1/2)^n]
+[summaryMarkdown] 由显性纯+杂合为显性表现、隐性纯为隐性表现推出表现型比例。
+[applicabilityMarkdown] 连续自交求表现型比。
+[contentMarkdown] 显性表现 = 显性纯合 + 杂合 = [1−(1/2)^n]/2 + (1/2)^n = [1+(1/2)^n]/2；隐性表现 = [1−(1/2)^n]/2；两者之比 = [1+(1/2)^n] : [1−(1/2)^n]。
+[boundaryMarkdown] 显性完全显性前提。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-chen-dian-fa-f14x06
+来源: 化学方法类《（重点·方法·点拨）第11讲 侯氏制碱法与Na2CO3含量的测定- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 沉淀法
+[summaryMarkdown] 2．沉淀法。
+[applicabilityMarkdown] 分析沉淀溶解平衡、判断沉淀生成或溶解时使用。
+[contentMarkdown] 2．沉淀法
+(1)测定原理：Na2CO3+BaCl2=BaCO3↓+2NaCl。
+依据BaCO3沉淀的质量确定Na2CO3的物质的量，进而确定纯碱中Na2CO3的含量。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：物质的量（名字出现）；沉淀溶解平衡（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-duo-yuan-ruo-jian-fen-bu-dian-li-f08x05
+来源: 化学方法类《（重点·方法·点拨）第05讲 离子反应　离子方程式- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 多元弱碱分步电离
+[summaryMarkdown] ②多元弱碱分步电离，但通常一步写出。
+[applicabilityMarkdown] 分析溶液酸碱性、比较粒子浓度大小与pH判断时使用。
+[contentMarkdown] ②多元弱碱分步电离，但通常一步写出。如Fe(OH)3的电离方程式为Fe(OH)3Fe3++3OH-。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-gao-wen-jie-gou-f18x05
+来源: 化学方法类《（重点·方法·点拨）第15讲 硅　无机非金属材料- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 高温结构
+[summaryMarkdown] 高温结构；陶瓷：能承受高；温，强度高；氮化硅；陶瓷；汽轮机叶片、轴承、永久性模具等。
+[applicabilityMarkdown] 复习相关考点、解答对应试题时使用。
+[contentMarkdown] 高温结构；陶瓷：能承受高；温，强度高；氮化硅；陶瓷；汽轮机叶片、轴承、永久性模具等
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-mao-xi-guan-lian-tong-da-qi-f74x09
+来源: 化学方法类《高考化学化学实验基础(选择题)(学生版)-34页》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 毛细管连通大气
+[summaryMarkdown] ②毛细管连通大气(在减压蒸馏中，毛细管吸入少量空气形成小气泡，防止液体暴沸，同时还具有搅拌等作用)。
+[applicabilityMarkdown] 物质分离提纯方案选择与操作要点判断时使用。
+[contentMarkdown] ②毛细管连通大气(在减压蒸馏中，毛细管吸入少量空气形成小气泡，防止液体暴沸，同时还具有搅拌等作用)。
+(3)减压蒸馏：当蒸馏分离受热易分解的物质时，常采取减压蒸馏的方法，以降低馏出物的沸点。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：分离提纯（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-shi-yan-jie-shu-hou-f20x03
+来源: 化学方法类《（重点·方法·点拨）第17讲 氯气的实验室制法及应用- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 实验结束后
+[summaryMarkdown] (3)实验结束后，先使反应停止并排出残留的Cl2后，再拆卸装置，避免污染空气。
+[applicabilityMarkdown] 实验方案设计、评价与异常现象分析时使用。
+[contentMarkdown] (3)实验结束后，先使反应停止并排出残留的Cl2后，再拆卸装置，避免污染空气。
+(4)尾气处理时，用NaOH溶液吸收Cl2，不能用澄清石灰水吸收，因为澄清石灰水中含Ca(OH)2的量少，吸收不完全。
+[boundaryMarkdown] (4)尾气处理时，用NaOH溶液吸收Cl2，不能用澄清石灰水吸收，因为澄清石灰水中含Ca(OH)2的量少，吸收不完全。
+候选（机械预筛，未必对）：实验方案设计（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-wo-guo-li-zheng-yu-nian-qian-zuo-dao-t-f44x10
+来源: 化学方法类《（重点·方法·点拨）第41讲 化学平衡常数的计算- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 我国力争于2030年前做到碳达峰
+[summaryMarkdown] 4．我国力争于2030年前做到碳达峰，2060年前实现碳中和。
+[applicabilityMarkdown] 热化学方程式书写与反应热计算、比较时使用。
+[contentMarkdown] 4．我国力争于2030年前做到碳达峰，2060年前实现碳中和。CH4与CO2重整是CO2利用的研究热点之一。该重整反应体系主要涉及以下反应
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：碳中和（名字出现）；热化学方程式（名字出现）；反应热（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-yi-zhi-f55x03
+来源: 化学方法类《（重点·方法·点拨）第52讲 沉淀溶解平衡图像的分析- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 已知：pM=-lg c(M)(M
+[summaryMarkdown] 已知：pM=-lg c(M)(M：Mg2+、Ca2+、Mn2+)，p(CO)=-lg c(CO)：曲线上方的点为不饱和溶液。
+[applicabilityMarkdown] 复习相关考点、解答对应试题时使用。
+[contentMarkdown] 已知：pM=-lg c(M)(M：Mg2+、Ca2+、Mn2+)，p(CO)=-lg c(CO)：曲线上方的点为不饱和溶液
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-hj-fenya-fenyadinglv
+来源: 化学讲义《第03讲 化学平衡常数及其相关计算（举一反三讲义，7大题型）（原卷版）》（registry-kb-chemistry-handout:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 分压与分压定律
+[summaryMarkdown] 某气体的分压等于总压乘其物质的量分数，总压等于各分压之和。
+[applicabilityMarkdown] 由平衡组成计算各气体分压时使用。
+[contentMarkdown] 分压：同温下某组分气体单独占据与混合气体相同体积时所具有的压强。
+计算：pB=p总×n(B)/n(总)（即物质的量分数或体积分数）。
+分压定律：p总=pA+pB+pC+…。
+[boundaryMarkdown] 适用于理想气体混合体系。
+候选（机械预筛，未必对）：物质的量（名字出现）
+
+==============================================================================
+## MATH | math-bundling-method
+来源: 《狂K重难点》数学 P431，重难点46·捆绑法与插空法（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: METHOD_MODEL
+[title] 捆绑法处理相邻问题
+[summaryMarkdown] 相邻元素捆成整体参与全排列，再排内部顺序，最后相乘。
+[applicabilityMarkdown] 题干含相邻、挨着、必须排在一起等关键词的排列问题。
+[contentMarkdown] 题干关键词为相邻、挨着、必须排在一起时用捆绑法：①将相邻元素捆绑成一个整体（注意内部是否有顺序）；②将这个整体与其他元素一起全排列；③对捆绑内部的元素进行排列（内部有顺序则全排列，否则为 1）；④将以上排列数相乘。
+[boundaryMarkdown] 整体内部无顺序约束时内部排列数取 1；多个捆绑体之间也要参与外层全排列。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-fx-qicishi-huaqie
+来源: 数学方法类《第16讲：同角三角函数的基本关系与诱导公式（知识梳理+解题总结）》（registry-kb-math-methods:math）
+类型: METHOD_MODEL
+[title] 三角齐次式“化切”策略
+[summaryMarkdown] 对弦的齐次式，分子分母同除以 $\cos\alpha$ 的相应次幂化为只含 $\tan\alpha$ 的式子；常数项用 $1=\sin^2\alpha+\cos^2\alpha$ 配齐次。
+[applicabilityMarkdown] 已知 $\tan\alpha$ 的值，求 $\sin\alpha$、$\cos\alpha$ 的齐次分式（或可化为齐次的）代数式的值时。
+[contentMarkdown] 1. 齐次式：分子分母中 $\sin\alpha$、$\cos\alpha$ 次数相同的代数式；一次齐次如 $a\sin\alpha+b\cos\alpha$，二次齐次如 $a\sin^2\alpha+b\sin\alpha\cos\alpha+c\cos^2\alpha$。
+2. 化切：分式分子分母同除以 $\cos\alpha$（二次式除 $\cos^2\alpha$），转化为只含 $\tan\alpha$ 的表达式代入求值。
+3. 可转化齐次式：含常数项时，把 $1$ 写成 $\sin^2\alpha+\cos^2\alpha$（或 $1=\tan\alpha\cdot\dfrac{1}{\tan\alpha}$ 视结构）配成同次齐次式再化切。
+[boundaryMarkdown] 化切要求 $\cos\alpha\ne 0$；非齐次式不能直接除，先配齐次或改用知一求二。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-hj-s109-at-least-prob
+来源: 数学讲义《第十章 §10.4　随机事件与概率.docx》（registry-kb-math-handout:math）
+类型: METHOD_MODEL
+[title] 至少型概率的对立事件解法
+[summaryMarkdown] 至少有一个（相同、发生）型概率先求对立事件（全没有）概率再用 1 减。
+[applicabilityMarkdown] 求至少型事件概率。
+[contentMarkdown] $P(\text{至少一个})=1-P(\text{一个都没有})$；组合计数下对立事件直接用组合数计算。
+[boundaryMarkdown] 正面分类复杂时首选对立事件，检查对立事件定义准确。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-insertion-space-method
+来源: 《狂K重难点》数学 P431，重难点46·捆绑法与插空法（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: METHOD_MODEL
+[title] 插空法处理不相邻问题
+[summaryMarkdown] 先排无限制元素，再把不相邻元素插入空位。
+[applicabilityMarkdown] 题干含不相邻、不能相邻、彼此分开等关键词的排列问题。
+[contentMarkdown] 题干关键词为不相邻、不能相邻、彼此分开时用插空法：①将无要求的元素全排列；②在已排好的元素之间及两端形成的空位中，选择合适的位置插入不相邻的元素；③计算插入的方法数（注意空位数与插入元素数之间的关系，以及插入元素是否相同）。
+[boundaryMarkdown] 插入的元素彼此也不相邻时只能每空至多插一个；注意两端空位同样可用。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-mo-lagelangri-zhongzhi
+来源: 数学《专题12 以相关公式、定义、定理、模型为命题背景（附加）（全国通用）（学生版）（会一题通一类系列）》（registry-kb-math-misc:math）
+类型: CONCEPT_EXPLANATION
+[title] 拉格朗日中值定理（背景了解）
+[summaryMarkdown] $f(b)-f(a)=f'(\xi)(b-a)$，弦斜率等于某点切线斜率。
+[applicabilityMarkdown] 以高等数学结论为背景的导数题。
+[contentMarkdown] 拉格朗日中值定理：设 $f(x)$ 在 $[a,b]$ 上连续，在 $(a,b)$ 内可导，则存在 $\xi\in(a,b)$，使 $f(b)-f(a)=f'(\xi)(b-a)$，即两端点连线的斜率等于曲线上某点处切线的斜率。
+[boundaryMarkdown] 高考中仅作背景了解，常用于判断“存在 $\xi$ 使等式成立”类命题；不作为解题定理直接引用。
+候选（机械预筛，未必对）：拉格朗日中值定理（名字出现）
+
+==============================================================================
+## MATH | math-nonuniform-grouping-formula
+来源: 《狂K重难点》数学 P433，重难点49·不同元素分组分配问题（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: CONCEPT_EXPLANATION
+[title] 不平均分组公式：n 个元素按指定人数分组
+[summaryMarkdown] 各组人数两两不等时直接逐组取组合连乘，无需除法。
+[applicabilityMarkdown] 按 $m_1,m_2,\cdots,m_k$ 人数分组的计数。
+[contentMarkdown] 将 $n$ 个元素按 $m_1,m_2,\cdots,m_k$ 分成 $k$ 组，$m_1+m_2+\cdots+m_k=n$ 且 $m_1,m_2,\cdots,m_k$ 两两不等，分组方法数为 $C_n^{m_1}C_{n-m_1}^{m_2}C_{n-m_1-m_2}^{m_3}\cdots C_{m_k}^{m_k}$。
+[boundaryMarkdown] 各组人数互不相同才不需除法；一旦有相等组要按部分平均分组处理。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-fx-exclusion-method-selection
+来源: 物理方法类《突破一  选择题九大快解技法》（registry-kb-physics-methods:physics）
+类型: METHOD_MODEL
+[title] 选择题的排除法
+[summaryMarkdown] 从寻找差异性的角度逐一排除不符合题意的选项，用已有知识解决不了时换个角度，剩下的即为正确答案。
+[applicabilityMarkdown] 概念辨析类选择题。
+[contentMarkdown] 1. 依据物理知识理解与过程分析排除错误选项。
+2. 定性排除变化趋势与正负不符的选项，再定量核算剩余项。
+[boundaryMarkdown] 排除要有物理依据，不能凭感觉。
+候选（机械预筛，未必对）：排除法（名字出现）
+
+==============================================================================
+## PHYSICS | phys-hj2-oumbiao-cezu-buzhou
+来源: 物理讲义《第17讲 测量电阻的八种实验方法（模型与方法）（全国通用）》（registry-kb-physics-handout:physics）
+类型: METHOD_MODEL
+[title] 用多用电表欧姆挡测电阻
+[summaryMarkdown] 选挡后先欧姆调零，指针指中值附近读数较准，读数等于示数乘倍率，每次换挡必须重新调零。
+[applicabilityMarkdown] 多用电表粗测电阻的操作规范。
+[contentMarkdown] 1. 步骤：机械调零→选 Ω 挡→红黑表笔短接进行欧姆调零（指向 0 刻线）→测量读数（示数×倍率）。
+2. 指针偏转角度过小说明阻值大，应换大倍率挡（如 ×1 换 ×100）并重新调零。
+3. 测量完毕开关置于交流电压最高挡或 OFF 挡。
+[boundaryMarkdown] 待测电阻必须与电源断开；两手不能同时接触表笔金属杆；欧姆表刻度不均匀，只能粗测。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-kb-compton-effect-particle
+来源: 物理知识清单：《专题18 近代物理（知识清单）（全国通用）（教师版）》（registry-kb-physics-knowledge-list:physics）
+类型: CONCEPT_EXPLANATION
+[title] 康普顿效应与光的粒子性
+[summaryMarkdown] 散射光中出现波长变大的成分，进一步证明光具有粒子性。
+[applicabilityMarkdown] 理解光的粒子性证据时使用。
+[contentMarkdown] 康普顿效应：X 射线散射时除原波长成分外还有波长变大的成分。
+原因：光子与电子碰撞时把部分动量转移给电子，光子能量减小、波长变大。
+光电效应证明光具有能量，康普顿效应证明光具有动量：$p=\frac{h}{\lambda}$。
+[boundaryMarkdown] 单个光子与电子的相互作用遵循能量与动量守恒。
+候选（机械预筛，未必对）：康普顿效应（名字出现）；光电效应（名字出现）
+
+==============================================================================
+## PHYSICS | phys-zhengjiao-jian-zhou-yuan-ze
+来源: 《狂K重难点》物理 书页P403，重难点4（registry-lixiangshu-2027-bikuti-kuangk-physics:physics）
+类型: METHOD_MODEL
+[title] 正交分解建轴原则：尽量多的力落在坐标轴上
+[summaryMarkdown] 建系时尽可能使较多的力落在坐标轴上以减少计算量，不一定沿水平、竖直方向建系。
+[applicabilityMarkdown] 正交分解法的第一步。
+[contentMarkdown] 建坐标轴：建系时要尽可能使较多的力落在坐标轴上，减少计算量；不一定都在水平或竖直方向建立直角坐标系。
+[boundaryMarkdown] 常沿运动方向或斜面方向建轴以简化投影。
+候选（机械预筛，未必对）：坐标系（名字出现）；正交分解法（名字出现）
+

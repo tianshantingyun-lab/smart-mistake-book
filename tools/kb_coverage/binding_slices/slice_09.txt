@@ -1,0 +1,375 @@
+# 绑定作业片 09：30 条无绑定材料
+#
+# 任务：为每条材料选定它应该绑定的知识点节点（就是讲题时该材料服务的那个点）。
+# 交付（写到 tools/kb_coverage/binding_fixes/slice_09/notes.csv）：
+#   subject,material_slug,node_slug,confidence,evidence
+#   （node_slug 用下面的节点表里的 slug；确实没有合适的写 NONE；
+#     evidence 一句话说明依据；字段内不要有 ASCII 逗号）
+#
+# 硬规矩：
+#   · 宁缺勿错：不确定就 confidence=low 或写 NONE —— 错绑会让检索喂错材料
+#   · 只能从本学科节点表里选（见 tools/kb_coverage/binding_slices/nodes/nodes_<学科>.txt）
+#   · 一条材料只绑一个节点（就是它最主要服务的那个点）
+
+==============================================================================
+## BIOLOGY | bio-cam-drought-adaptation
+来源: 《狂K重点》生物 P380-381 重难3·题型1（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: CONCEPT_EXPLANATION
+[title] CAM 途径的适应意义：兼顾获得 CO2 与减少蒸腾失水
+[summaryMarkdown] CAM 通过 CO2 固定与利用的时间分离，在高温干旱环境同时满足'获得 CO2'与'减少失水'。
+[applicabilityMarkdown] CAM 适应性意义题。
+[contentMarkdown] 时间分离（夜固定、昼利用）使气孔在夜间开放（夜间蒸腾弱）吸收 CO2、白天关闭防失水→适应干旱高温环境。
+[boundaryMarkdown] C4 是空间分离、CAM 是时间分离，二者机制不同。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-02-felin-reagent-fresh
+来源: 生物讲义《第02讲 细胞中的元素和化合物（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 斐林试剂必须现配现用
+[summaryMarkdown] 斐林试剂不可久置，久置后Cu(OH)2沉淀到试管底部无法使用。
+[applicabilityMarkdown] 试剂使用规范判断。
+[contentMarkdown] 1. 斐林试剂甲液与乙液等量混匀后立即使用。
+2. 久置使Cu(OH)2沉淀，失去检测作用。
+[boundaryMarkdown] 与双缩脲试剂不同：双缩脲先加A液再加B液，无需现混。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-05-robertson-model
+来源: 生物讲义《第05讲 细胞膜和细胞核（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 罗伯特森的静态统一模型
+[summaryMarkdown] 罗伯特森在电镜下看到暗-亮-暗三层结构，提出所有膜都是蛋白质-脂质-蛋白质静态统一模型。
+[applicabilityMarkdown] 膜模型科学史判断。
+[contentMarkdown] 1. 1959年罗伯特森在电镜下看到细胞膜清晰的暗-亮-暗三层结构。
+2. 提出所有细胞膜都由蛋白质-脂质-蛋白质三层结构构成。
+3. 该模型把膜描述为静态统一结构，后被流动镶嵌模型修正。
+[boundaryMarkdown] 静态模型无法解释细胞融合、变形运动等现象。
+候选（机械预筛，未必对）：蛋白质（名字出现）；细胞融合（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fj-11-compensation-saturation-shift
+来源: 生物讲义《第11讲 细胞代谢综合分析（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 条件改变时补偿点与饱和点的移动
+[summaryMarkdown] 提高温度或减光使补偿点右移饱和点左移，增光使补偿点左移饱和点右移。
+[applicabilityMarkdown] 关键点移动规律表。
+[contentMarkdown] 1. 适当提高温度：净积累面积减少，补偿点右移，饱和点左移。
+2. 适当增大光照强度（CO2浓度）：面积增加，补偿点左移，饱和点右移。
+3. 植物缺Mg：面积减少，补偿点右移，饱和点左移。
+[boundaryMarkdown] 前提：光照或CO2的改变均在饱和点之前；提温指在最适温度基础上提高。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-32-locust-pheromone-prevention
+来源: 生物讲义《第32讲 种群（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: METHOD_MODEL
+[title] 利用集群信息素防治蝗灾的设想
+[summaryMarkdown] 散居型蝗虫密度增大时释放集群信息素转为群居，可设计拮抗剂或干扰物质进行绿色防控。
+[applicabilityMarkdown] 害虫防治新情境。
+[contentMarkdown] 1. 散居型蝗虫密度增大时释放大量集群信息素。
+2. 蝗虫触角上存在感知该信息素的嗅觉受体，使蝗虫由散居转化为群居。
+3. 防治设想：根据信息素结构设计拮抗剂，阻止蝗虫聚集；或使用干扰信息素接收的化学物质。
+[boundaryMarkdown] 属于化学信息在害虫防治中的应用。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fx-gene-presence-detect-methods
+来源: 生物方法类《第18讲 基因分离定律拓展题型全扫描》（registry-kb-biology-methods:biology）
+类型: METHOD_MODEL
+[title] 检测目的基因（基因有无）的常用方法
+[summaryMarkdown] 检测基因是否存在可用测交、自交、PCR、核酸分子杂交、基因测序等方法，个体水平与分子水平互补。
+[applicabilityMarkdown] 鉴定基因型或基因有无的方案设计题。
+[contentMarkdown] 1. 个体水平：测交（后代1:1为杂合）、自交（后代3:1为杂合）。
+2. 分子水平：PCR扩增、核酸分子杂交、基因测序。
+3. 含不育基因等特殊杂合子的保存与鉴定也可用上述方法组合。
+[boundaryMarkdown] 测交自交后代比例判定需样本足够大；分子方法更直接，个体方法更经济。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fx-rubisco-dual-function
+来源: 生物方法类《高考共鸣点7 光呼吸、C4植物、CAM植物等特殊代谢类型、逆境(胁迫)对光合作用的影响》（registry-kb-biology-methods:biology）
+类型: CONCEPT_EXPLANATION
+[title] Rubisco的双功能与CO2/O2比值
+[summaryMarkdown] Rubisco既催化C5与CO2的羧化又催化与O2的加氧反应，催化方向取决于CO2与O2的比值。
+[applicabilityMarkdown] 光呼吸机制分析的核心考点。
+[contentMarkdown] 1. CO2/O2比值增大：羧化反应增强，进行正常光合作用。
+2. 比值减小（高O2、低CO2）：加氧反应增强，进入C2途径即光呼吸。
+3. 提高环境CO2浓度可明显抑制光呼吸；O2浓度升高会加强光呼吸。
+[boundaryMarkdown] Rubisco位于叶绿体基质；Mg2+是其重要激活剂，缺镁时Rubisco活性下降影响暗反应。
+候选（机械预筛，未必对）：叶绿体（名字出现）；暗反应（名字出现）；光合作用（名字出现）；光呼吸（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-kb-elements-macro-micro-classification
+来源: 生物知识清单：《第02讲 细胞中的元素和化合物（知识清单）（全国通用）（学生版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 大量元素与微量元素的种类及区分依据
+[summaryMarkdown] 按含量分为大量元素（C、H、O、N、P、S、K、Ca、Mg）和微量元素（Fe、Mn、Zn、Cu、B、Mo），依据是含量不是重要性。
+[applicabilityMarkdown] 判断元素归类与划分依据。
+[contentMarkdown] 1. 细胞中常见的化学元素有20多种。
+2. 大量元素：C、H、O、N、P、S、K、Ca、Mg等。
+3. 微量元素：Fe、Mn、Zn、Cu、B、Mo等。
+4. 区分依据是“含量”，而非“重要性”；两者都是必需元素，作用不可替代。
+[boundaryMarkdown] 生物体内含有的元素不一定都是必需元素（如Pb不是必需元素）。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb2-06-vesicle-transport
+来源: 生物知识清单：《第06讲 细胞器和生物膜系统（知识清单）（全国通用）（教师版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 囊泡的来源、去向与形成原理
+[summaryMarkdown] 囊泡可来自内质网、高尔基体和细胞膜，其形成依赖生物膜的流动性，运输需消耗能量。
+[applicabilityMarkdown] 判断囊泡来源、分析胞吞胞吐过程时使用。
+[contentMarkdown] 来源与去向：内质网产生囊泡运往高尔基体，高尔基体向细胞膜发送囊泡，胞吞时细胞膜向细胞内发送囊泡；
+形成原理：生物膜具有一定的流动性，囊泡运输需消耗能量。
+[boundaryMarkdown] 核糖体无膜结构，不能形成囊泡；以囊泡胞吐运输的物质除分泌蛋白外还有神经递质。
+候选（机械预筛，未必对）：内质网（名字出现）；核糖体（名字出现）；高尔基体（名字出现）；神经递质（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-kb2-32-j-s-curve
+来源: 生物知识清单：《第32讲 种群（知识清单）（全国通用）（教师版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 种群增长的J形曲线与S形曲线
+[summaryMarkdown] 理想条件下种群呈J形增长（Nt＝N0·λt），现实条件下呈S形增长并在K值附近稳定。
+[applicabilityMarkdown] 分析增长曲线、计算种群数量时使用。
+[contentMarkdown] J形曲线：食物空间充裕、气候适宜、没有天敌等理想条件，Nt＝N0·λt，无K值；
+S形曲线：资源空间有限、存在天敌等环境阻力，种群数量达到K/2时增长速率最大，达到K值时增长速率为0。
+[boundaryMarkdown] 两种曲线的差异主要在于环境阻力对种群数量增长的影响；λ＞1增长、λ＝1稳定、λ＜1下降。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-mo-cell-222
+来源: 生物《默写小纸条01 走近细胞（课前5分钟背默）（教师版）》（registry-kb-biology-misc:biology）
+类型: CONCEPT_EXPLANATION
+[title] 把视野调暗
+[summaryMarkdown] 把视野调暗：使用小光圈、平面镜。
+[applicabilityMarkdown] 用于“走近细胞”的课前背默检查与选择题、填空题作答。
+[contentMarkdown] 1. 把视野调暗：使用小光圈、平面镜；
+2. 把视野调亮：使用大光圈、凹面镜。
+3. 显微镜放大倍数＝目镜放大倍数×物镜放大倍数。
+4. 显微镜放大的是物像的长度或宽度，而不是面积或体积。
+[boundaryMarkdown] 该条为背默核心结论，具体数值与反应式书写以教材原文为准。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-respiration-optimal-storage-point
+来源: 《狂K重点》生物 P380 重难2·题型3（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 最适贮存点 = CO2 释放量最低点对应的 O2 浓度
+[summaryMarkdown] CO2 总释放量最低点有机物消耗最少，是最适贮存 O2 浓度。
+[applicabilityMarkdown] 确定果蔬粮食贮存条件。
+[contentMarkdown] 在低氧段，无氧呼吸被抑制而有氧呼吸尚弱，CO2 总释放量出现最低谷→该 O2 浓度下有机物消耗最少，最宜贮存。
+[boundaryMarkdown] O2 过低会诱发无氧呼吸产生酒精毒害。
+候选（机械预筛，未必对）：有氧呼吸（名字出现）；无氧呼吸（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fcc-void-count
+来源: 《狂K重点》化学 书页P364、P366，重难点8 锦囊4、延伸归纳（registry-lixiangshu-2027-bikuti-kuangk-chemistry:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 面心立方最密堆积的空隙数目与位置
+[summaryMarkdown] FCC中八面体空隙4个（体心+棱心），四面体空隙8个（体内），为微粒数的1倍和2倍。
+[applicabilityMarkdown] 填隙型晶体（如CdSe、NaCl）结构的分析与填隙率计算。
+[contentMarkdown] 面心立方最密堆积中：正八面体空隙位于体心（1个）和棱心（12×1/4=3个），共4个，与堆积微粒数相等。
+正四面体空隙位于晶胞体内，共8个，是堆积微粒数的2倍。
+如Se填入4个四面体空隙，填隙率=4/8=50%。
+[boundaryMarkdown] 八面体空隙配位数为6，四面体空隙配位数为4；计算填隙率=已填空隙数/空隙总数。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-de-fen-dian-ji-guan-jian-ci-f71x14
+来源: 化学方法类《（重点·方法·点拨）第68讲 以性质为主的探究类综合实验- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 得分点及关键词
+[summaryMarkdown] 得分点及关键词：气体：生成……色(味)气体，气体由……色变成……色，先变……后……(加深、变浅、褪色)等。
+[applicabilityMarkdown] 复习相关考点、解答对应试题时使用。
+[contentMarkdown] 得分点及关键词：气体：生成……色(味)气体，气体由……色变成……色，先变……后……(加深、变浅、褪色)等
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-fang-fa-yi-f38x06
+来源: 化学方法类《（重点·方法·点拨）第35讲 反应热的测定与计算- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: METHOD_MODEL
+[title] 方法一
+[summaryMarkdown] 方法一：图像法，画出上述两反应能量随反应过程的变化曲线。
+[applicabilityMarkdown] 热化学方程式书写与反应热计算、比较时使用。
+[contentMarkdown] 方法一：图像法，画出上述两反应能量随反应过程的变化曲线。
+由图像可知：|ΔH5|>|ΔH6|，但ΔH5<0，ΔH6<0，故ΔH5<ΔH6。
+方法二：通过盖斯定律构造新的热化学方程式。
+由反应⑤-反应⑥可得S(g)=S(s)　ΔH=ΔH5-ΔH6<0，故ΔH5<ΔH6。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：热化学方程式（名字出现）；盖斯定律（名字出现）；反应热（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-jian-ya-zheng-liu-f71x05
+来源: 化学方法类《（重点·方法·点拨）第68讲 以性质为主的探究类综合实验- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 减压蒸馏
+[summaryMarkdown] 减压蒸馏(减压蒸发)：减小压强，使液体沸点降低，防止××物质受热分解(如H2O2、浓硝酸、NH4HCO3等)。
+[applicabilityMarkdown] 物质分离提纯方案选择与操作要点判断时使用。
+[contentMarkdown] 减压蒸馏(减压蒸发)：减小压强，使液体沸点降低，防止××物质受热分解(如H2O2、浓硝酸、NH4HCO3等)
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：分离提纯（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-qian-hou-f59x04
+来源: 化学方法类《（重点·方法·点拨）第56讲 烃　化石燃料- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] V前-V后=+1
+[summaryMarkdown] V前-V后=+1，气体体积总是减小。
+[applicabilityMarkdown] 解决相关化学计算问题时使用。
+[contentMarkdown] V前-V后=+1，气体体积总是减小。
+(2)有机物完全燃烧耗氧量规律
+①等物质的量的有机物完全燃烧耗氧量计算
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：物质的量（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-tiao-jie-fa-f54x09
+来源: 化学方法类《（重点·方法·点拨）第51讲 沉淀溶解平衡- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 调节pH法
+[summaryMarkdown] 调节pH法：除去NH4Cl溶液中的FeCl3杂质，可加入 调节pH至4左右。
+[applicabilityMarkdown] 分析溶液酸碱性、比较粒子浓度大小与pH判断时使用。
+[contentMarkdown] 调节pH法：除去NH4Cl溶液中的FeCl3杂质，可加入 调节pH至4左右
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-ye-ye-cui-qu-f74x11
+来源: 化学方法类《高考化学化学实验基础(选择题)(学生版)-34页》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 液-液萃取
+[summaryMarkdown] 液-液萃取：利用待分离组分在两种不互溶的溶剂中的溶解度不同，将其从一种溶剂转移到另一种溶剂的过程。
+[applicabilityMarkdown] 物质分离提纯方案选择与操作要点判断时使用。
+[contentMarkdown] 液-液萃取：利用待分离组分在两种不互溶的溶剂中的溶解度不同，将其从一种溶剂转移到另一种溶剂的过程
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：分离提纯（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-zhi-shi-ji-ji-zhong-dian-pan-duan-f51x08
+来源: 化学方法类《（重点·方法·点拨）第48讲 酸碱中和滴定及拓展应用- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: METHOD_MODEL
+[title] 指示剂及终点判断
+[summaryMarkdown] 指示剂及终点判断:酸性KMnO4溶液本身呈紫色,不用另外选择指示剂,当滴入最后一滴酸性KMnO4溶液后,溶液刚好由无色变浅红色,且半分钟内不变色,说明到达滴定终点。
+[applicabilityMarkdown] 复习相关考点、解答对应试题时使用。
+[contentMarkdown] 指示剂及终点判断:酸性KMnO4溶液本身呈紫色,不用另外选择指示剂,当滴入最后一滴酸性KMnO4溶液后,溶液刚好由无色变浅红色,且半分钟内不变色,说明到达滴定终点。
+②用Na2S2O3溶液滴定碘液。
+原理:2Na2S2O3+I2Na2S4O6+2NaI。
+指示剂及终点判断:用淀粉作为指示剂,当滴入最后一滴Na2S2O3溶液后,溶液的蓝色刚好退去,且半分钟内不恢复原色,说明到达滴定终点。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-hj2-tangou-tie-tangou-yuanyin
+来源: 化学讲义《第01讲 化学实验的常用仪器和基本操作（复习讲义）（四川专用）（学生版）》（registry-kb-chemistry-handout:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 熔融NaOH用铁坩埚不能用瓷坩埚
+[summaryMarkdown] 熔融NaOH能与瓷坩埚中的SiO2、Al2O3反应，须用铁坩埚。
+[applicabilityMarkdown] 加热仪器选择正误判断。
+[contentMarkdown] 移动试管用试管夹，移动蒸发皿和坩埚用坩埚钳。
+瓷坩埚含SiO2，高温下SiO2+2NaOH=Na2SiO3+H2O，坩埚被腐蚀，所以熔融NaOH用铁坩埚。
+[boundaryMarkdown] 瓷蒸发皿同理不能长期盛强碱熔融液。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-fangshuo-genhao-n-xiaoyu
+来源: 《狂K重难点》数学 书页P409，重难点29（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: CONCEPT_EXPLANATION
+[title] 放缩结论：1/√n < 2(√n−√(n−1))
+[summaryMarkdown] $\frac{1}{\sqrt{n}}=\frac{2}{\sqrt{n}+\sqrt{n}}<\frac{2}{\sqrt{n-1}+\sqrt{n}}=2(-\sqrt{n-1}+\sqrt{n})$。
+[applicabilityMarkdown] $\sum\frac{1}{\sqrt{n}}$ 型上界估计。
+[contentMarkdown] $\frac{1}{\sqrt{n}}=\frac{2}{\sqrt{n}+\sqrt{n}}<\frac{2}{\sqrt{n-1}+\sqrt{n}}=2(-\sqrt{n-1}+\sqrt{n})$。
+[boundaryMarkdown] 分母变小分数变大；适用于 $n\geqslant2$。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-hj-fangwei-fangxiang-podu
+来源: 数学讲义《第9节　三角函数模型及解三角形的实际应用》（registry-kb-math-handout:math）
+类型: CONCEPT_EXPLANATION
+[title] 方位角、方向角与坡度
+[summaryMarkdown] 方位角从正北顺时针度量；方向角用南北偏东西表示。
+[applicabilityMarkdown] 测量位置关系的术语。
+[contentMarkdown] ①方位角：从正北方向起按顺时针转到目标方向线的水平夹角；②方向角：正北或正南方向线与目标方向线所成的锐角（如南偏东 30°）；③坡度：坡面与水平面所成二面角的正切值。
+[boundaryMarkdown] 方位角范围 $[0°,360°)$。
+候选（机械预筛，未必对）：二面角（名字出现）
+
+==============================================================================
+## MATH | math-hj-s94-contingency
+来源: 数学讲义《第九章 §9.4　列联表与独立性检验.docx》（registry-kb-math-handout:math）
+类型: CONCEPT_EXPLANATION
+[title] 分类变量与2×2列联表
+[summaryMarkdown] 2×2 列联表汇总两个分类变量的频数，用于初步观察两变量是否相互影响。
+[applicabilityMarkdown] 读列联表、补全表中数据。
+[contentMarkdown] 列联表按两个分类变量的取值交叉统计频数，行和、列和与总和是基本约束。
+[boundaryMarkdown] 列联表中的数据是频数，不是频率。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-mo-cheng1-daihuan-jichu
+来源: 数学《专题05 均值不等式培优归类（题型清单）（学生版）》（registry-kb-math-misc:math）
+类型: METHOD_MODEL
+[title] “1”的代换基础模型
+[summaryMarkdown] 条件 $a+b=1$ 时给目标式乘 $\frac{a+b}{ab}$ 型的“1”展开求最值。
+[applicabilityMarkdown] 条件为 $a+b=1$（或 $ab=1$）求 $\frac{m}{a}+\frac{n}{b}$ 型最值。
+[contentMarkdown] “1”的代换（常数代换法）：当条件给出 $a+b=1$ 而目标含 $\dfrac{1}{a}+\dfrac{1}{b}$ 型结构时，把目标乘以“$1=a+b$”后展开，得 $\left(1+\dfrac{b}{a}\right)$ 型结构再用基本不等式：$\left(a+b\right)\left(\dfrac1a+\dfrac1b\right)=2+\dfrac ba+\dfrac ab\ge4$。
+[boundaryMarkdown] 代换后取等条件 $a=b$（结合条件联立）；条件为 $ab=1$ 型时“1”的代换方向不同，须先识别。
+候选（机械预筛，未必对）：基本不等式（名字出现）
+
+==============================================================================
+## MATH | math-mo-wanneng-k-fa
+来源: 数学《专题05 均值不等式培优归类（题型清单）（学生版）》（registry-kb-math-misc:math）
+类型: METHOD_MODEL
+[title] 万能“K”法（设 K 法）三步
+[summaryMarkdown] 问谁设谁→代入整理为一元二次方程→用判别式非负定最值。
+[applicabilityMarkdown] 常规均值失效的目标式（如 $\frac{x^2+1}{x^2+x+1}$ 型）求最值。
+[contentMarkdown] 设 K 法的三个步骤：1. 问谁设谁：求谁（目标代数式），谁就是 $K$；2. 代入整理：把条件代入后整理成关于某个变量的一元二次方程（或不等式）；3. 确认最值：由方程有解得判别式 $\Delta\ge0$（或不等式用均值放缩），解关于 $K$ 的不等式确定最值范围。
+[boundaryMarkdown] 整理出的二次方程要求二次项系数与实根存在性匹配（实根落在变量允许范围内）；$K$ 的范围端点要验证可取性。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-apparent-height
+来源: 《狂K重难点》物理 书页P467，重难点36（光的折射和全反射的综合应用）（registry-lixiangshu-2027-bikuti-kuangk-physics:physics）
+类型: CONCEPT_EXPLANATION
+[title] 视高公式 $h'=nH$
+[summaryMarkdown] 从折射率为 $n$ 的介质中观察正上方距界面高 $H$ 的物体，视高 $h'=nH$。
+[applicabilityMarkdown] 水中观察水面上方物体的高度。
+[contentMarkdown] 如果从折射率为 $n$ 的介质中，观察正上方距界面高为 $H$ 的物体，则有 $h'=nH$（$h'$ 为视高）。
+[boundaryMarkdown] 同样要求小角度近似；与视深公式互为逆情形。
+候选（机械预筛，未必对）：折射率（名字出现）
+
+==============================================================================
+## PHYSICS | phys-hj-066-particle-model
+来源: 物理讲义《第1讲 描述运动的基本概念-（讲义）（学生版）》（registry-kb-physics-handout:physics）
+类型: CONCEPT_EXPLANATION
+[title] 质点
+[summaryMarkdown] 简化物体运动的理想化模型
+[applicabilityMarkdown] 物体形状大小可忽略的问题
+[contentMarkdown] 质点是用来代替物体的有质量的点，是理想化模型；能否视为质点由所研究的问题决定，与物体实际大小无关。
+[boundaryMarkdown] 质点有质量，不同于几何点。
+候选（机械预筛，未必对）：理想化模型（名字出现）
+
+==============================================================================
+## PHYSICS | phys-hj3-half-deflection-method
+来源: 物理讲义《第37讲 创新思维测量电阻常用的5种方法及定值电阻的妙用（复习讲义）（安徽专用）（学生版）》（registry-kb-physics-handout:physics）
+类型: METHOD_MODEL
+[title] 半偏法测电表内阻
+[summaryMarkdown] 电流表半偏法要求 $R_1\gg R_A$，测得 $R_A$ 偏小；电压表半偏法要求 $R_1\ll R_V$，测得 $R_V$ 偏大。
+[applicabilityMarkdown] 测量电流表或电压表的内阻。
+[contentMarkdown] 电流表半偏法：断开 $S_2$ 调 $R_1$ 使电流表满偏，再闭合 $S_2$ 调 $R_2$ 使电流表半偏，认为 $R_A=R_2$；条件 $R_1\gg R_A$；误差：闭合后总电流变大，$R_{A测}=R_2<R_{A真}$。
+电压表半偏法：调分压器使电压表满偏，再串入 $R_2$ 使其半偏，认为 $R_V=R_2$；条件 $R_1\ll R_V$；误差：$R_{V测}=R_2>R_{V真}$。
+电流表半偏法应选阻值较大的 $R_1$ 且在安全范围内选电动势较大的电源；电压表半偏法相反。
+[boundaryMarkdown] 半偏法均为近似测量，条件不满足时误差显著。
+候选（机械预筛，未必对）：半偏法测电表内阻（名字出现）；电动势（名字出现）
+
+==============================================================================
+## PHYSICS | phys-phi-x-graph-slope
+来源: 《狂K重难点》物理 书页P436，重难点22（registry-lixiangshu-2027-bikuti-kuangk-physics:physics）
+类型: CONCEPT_EXPLANATION
+[title] φ-x图像：切线斜率与场强信息
+[summaryMarkdown] φ-x图像中纵值表示电势高低（可定场强方向），切线斜率绝对值表示沿x方向场强大小。
+[applicabilityMarkdown] 由电势随位置变化的图像判断场强大小与方向。
+[contentMarkdown] 1. 直接判断：图线上各点电势的高低，进而确定电场强度的方向（沿电场线电势降低）；2. 间接分析：切线的斜率绝对值表示沿 $x$ 轴方向电场强度 $E$ 的大小（斜率为 0 处 $E$ 为 0；斜率绝对值越大 $E$ 越大）。
+[boundaryMarkdown] 斜率只给出沿 $x$ 方向的场强分量信息；$φ = 0$ 处 $E$ 不一定为 0。
+候选（机械预筛，未必对）：电场线（名字出现）；电场强度（名字出现）
+

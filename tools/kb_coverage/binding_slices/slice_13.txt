@@ -1,0 +1,377 @@
+# 绑定作业片 13：30 条无绑定材料
+#
+# 任务：为每条材料选定它应该绑定的知识点节点（就是讲题时该材料服务的那个点）。
+# 交付（写到 tools/kb_coverage/binding_fixes/slice_13/notes.csv）：
+#   subject,material_slug,node_slug,confidence,evidence
+#   （node_slug 用下面的节点表里的 slug；确实没有合适的写 NONE；
+#     evidence 一句话说明依据；字段内不要有 ASCII 逗号）
+#
+# 硬规矩：
+#   · 宁缺勿错：不确定就 confidence=low 或写 NONE —— 错绑会让检索喂错材料
+#   · 只能从本学科节点表里选（见 tools/kb_coverage/binding_slices/nodes/nodes_<学科>.txt）
+#   · 一条材料只绑一个节点（就是它最主要服务的那个点）
+
+==============================================================================
+## BIOLOGY | bio-closed-chamber-area-sign-convention
+来源: 《狂K重点》生物 P387 重难4·题型2（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 密闭容器积累量按'下降段面积 − 上升段面积'计算
+[summaryMarkdown] 密闭容器 CO2 浓度曲线中，积累量 = 下降段面积之和 − 上升段面积之和。
+[applicabilityMarkdown] 密闭装置定量计算。
+[contentMarkdown] 与开放环境相反：密闭容器中'下降'代表积累，故积累量 = Σ下降段面积 − Σ上升段面积；测定'终态与初始 CO2 差'可按比例换算为有机物积累量。
+[boundaryMarkdown] 先确认纵轴是'浓度'还是'吸收速率'，再决定面积符号。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-02-main-basic-core-element
+来源: 生物讲义《第02讲 细胞中的元素和化合物（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 主要元素、基本元素与最基本元素
+[summaryMarkdown] 主要元素C、H、O、N、P、S；基本元素C、H、O、N；最基本元素是C（生命核心元素）。
+[applicabilityMarkdown] 元素层级划分的识记判断。
+[contentMarkdown] 1. 主要元素：C、H、O、N、P、S。
+2. 基本元素：C、H、O、N。
+3. 最基本元素：C，因碳链构成生物大分子基本骨架。
+[boundaryMarkdown] 干重中含量最多的元素是C（最基本元素与含量最多在干重中一致）。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-07-solute-cannot-pass
+来源: 生物讲义《第07讲 物质运输（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 溶质不能通过半透膜的液面变化
+[summaryMarkdown] 溶质不能通过半透膜时，水净流向高浓度一侧，液面变化取决于两侧初始浓度差。
+[applicabilityMarkdown] 渗透装置变式分析。
+[contentMarkdown] 1. 若S1浓度大于S2，单位时间内S2→S1的水分子更多，S1液面上升。
+2. 若S1浓度小于S2，则S1液面下降。
+3. 存在液面差时即存在浓度差。
+[boundaryMarkdown] 此类装置中液面单方向变化后稳定在高液面差状态。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-15-artificial-cross-pollination
+来源: 生物讲义《第15讲 分离定律（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: METHOD_MODEL
+[title] 人工异花传粉的操作流程
+[summaryMarkdown] 人工异花传粉流程为去雄、套袋、人工授粉、再套袋，去雄在花蕾期进行。
+[applicabilityMarkdown] 杂交操作规范。
+[contentMarkdown] 1. 去雄：花蕾期除去母本未成熟花的全部雄蕊，防止自花传粉。
+2. 套袋：避免外来花粉干扰。
+3. 人工授粉：雌蕊成熟时授以父本花粉。
+4. 再套袋：保证种子来自人工授粉。；5. 玉米等雌雄同株异花或雌雄异株植物不需要去雄，直接套袋。
+[boundaryMarkdown] 去雄对象是母本，不是父本；去雄在花蕾期（雌蕊成熟前）进行。
+候选（机械预筛，未必对）：人工异花传粉的操作流程（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fj-33-ecotone-edge-effect
+来源: 生物讲义《第33讲 群落（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 生态交错区与边缘效应
+[summaryMarkdown] 生态交错区物种数目和密度增大称为边缘效应，因环境复杂为更多生物提供条件。
+[applicabilityMarkdown] 边缘效应新情境。
+[contentMarkdown] 1. 生态交错区：两个或多个生态地带（群落）之间的过渡区域。
+2. 边缘效应：交错区物种数目及一些物种密度增大的趋势。
+3. 原因：交错区环境条件复杂，能使不同生态类型的植物定居，为更多动物提供食物条件和栖息空间。
+[boundaryMarkdown] 竞争排斥原理：资源有限且利用方式相同的两个物种不能长期共存。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fx-hypothalamus-pituitary-control
+来源: 生物方法类《稳态与调节阶段排查　回扣落实（七）》（registry-kb-biology-methods:biology）
+类型: METHOD_MODEL
+[title] 用减法原理证明垂体活动受下丘脑控制
+[summaryMarkdown] 阻断垂体与下丘脑间血液联系导致生殖器官萎缩，恢复联系后功能恢复，说明垂体活动受下丘脑控制。
+[applicabilityMarkdown] 内分泌轴调控关系实验分析的题目。
+[contentMarkdown] 1. 实验处理：切断（阻断）垂体与下丘脑之间的血液联系，生殖器官萎缩。
+2. 恢复血液联系后，生殖器官功能恢复正常。
+3. 结论：垂体的活动受下丘脑控制（下丘脑通过促激素释放激素调节垂体）。
+4. 该实验依据变量控制中的减法原理（去除某一因素观察结果）。
+[boundaryMarkdown] 阻断的是血液联系而非神经联系，说明调节物质是激素（促性腺激素释放激素等）。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fx-sterilization-methods
+来源: 生物方法类《2026届高三复习：微生物培养发酵工程高考题解题技巧和高考题目类型》（registry-kb-biology-methods:biology）
+类型: METHOD_MODEL
+[title] 灭菌的三种方法与适用对象
+[summaryMarkdown] 灼烧灭菌用于接种环金属工具，干热灭菌用于玻璃器皿金属用具，高压蒸汽灭菌用于培养基等。
+[applicabilityMarkdown] 无菌操作中灭菌方法选择的题目。
+[contentMarkdown] 1. 灼烧灭菌：接种环、接种针、试管口等金属与耐燃物。
+2. 干热灭菌：玻璃器皿（吸管、培养皿）和金属用具，可放入干热灭菌箱。
+3. 高压蒸汽灭菌：培养基、无菌水等，效果最强的湿热灭菌。
+[boundaryMarkdown] 灭菌是杀死物体内外所有微生物（包括芽孢和孢子）；对待筛选的土样等活样品不能用高压蒸汽灭菌。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb-fehling-vs-biuret-reagents
+来源: 生物知识清单：《第02讲 细胞中的元素和化合物（知识清单）（全国通用）（学生版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 斐林试剂与双缩脲试剂的异同
+[summaryMarkdown] 两种试剂成分相同（NaOH和CuSO4）但CuSO4浓度、使用方法、原理不同。
+[applicabilityMarkdown] 比较两种鉴定试剂。
+[contentMarkdown] 1. 一同：都含NaOH和CuSO4两种成分，NaOH质量浓度均为0.1g/mL。
+2. CuSO4浓度不同：斐林试剂0.05g/mL，双缩脲试剂0.01g/mL。
+3. 用法不同：斐林甲乙液等量混匀后立即使用；双缩脲先A液后少量B液。
+4. 原理不同：斐林实质是新配制的Cu(OH)2；双缩脲实质是碱性环境中的Cu2+。
+[boundaryMarkdown] 检测还原糖与检测蛋白质不可混用试剂条件。
+候选（机械预筛，未必对）：蛋白质（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-kb2-10-light-compensation-saturation
+来源: 生物知识清单：《第10讲 光合作用（知识清单）（全国通用）（教师版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 光补偿点与光饱和点
+[summaryMarkdown] 光补偿点是光合速率等于呼吸速率时的光照强度，光饱和点是达到最大光合速率的最小光照强度。
+[applicabilityMarkdown] 分析光照强度曲线、比较阴阳生植物时使用。
+[contentMarkdown] A点（光照为零）只进行细胞呼吸；B点为光补偿点（光合强度＝呼吸强度）；C点为光饱和点（达到最大光合速率的最小光照强度）；
+AD段主要限制因素是光照强度，DE段主要限制因素是CO2浓度等。
+[boundaryMarkdown] 植物光合速率等于呼吸速率时，叶肉细胞的光合速率大于呼吸速率（因根等器官只呼吸）；阴生植物光补偿点和光饱和点均低于阳生植物。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb3-f4-s15-n02
+来源: 生物知识清单《2027届高三生物一轮复习知识清单4：分子与细胞基础》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 核酸的种类及其分布
+[summaryMarkdown] 分布：真核细胞DNA主要分布在细胞核中，另外线粒体、叶绿体内也含有少量的DNA。
+[applicabilityMarkdown] 复习“核酸的种类及其分布”考点或解答涉及“核酸的种类及其分布”的题目时使用。
+[contentMarkdown] 分布：真核细胞DNA主要分布在细胞核中，另外线粒体、叶绿体内也含有少量的DNA。RNA主要分布在细胞质中。
+[boundaryMarkdown] 一轮复习结论性要点，表述以人教版现行教材为准；具体数值可能因教材版本略有差异。
+候选（机械预筛，未必对）：真核细胞（名字出现）；线粒体（名字出现）；叶绿体（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-nadp-deficient-electron-to-o2
+来源: 《狂K重点》生物 P382 重难3·题型3（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: CONCEPT_EXPLANATION
+[title] NADP+ 供应不足时电子传给 O2 生成超氧自由基（ROS）
+[summaryMarkdown] 电子传递链末端 NADP+ 被耗尽的速率跟不上时，电子改传 O2 生成超氧自由基等 ROS。
+[applicabilityMarkdown] 活性氧产生机制题。
+[contentMarkdown] 光反应电子传递需要 NADP+ 作最终电子受体；暗反应滞后→NADP+ 再生不足→电子无受体→传给 O2→生成超氧阴离子等活性氧。
+[boundaryMarkdown] 该环节是光抑制的中间（第二条）环节。
+候选（机械预筛，未必对）：光反应（名字出现）；暗反应（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-rna-interference-therapy-design
+来源: 《狂K重点》生物 P403 重难9·题型2（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 基于 miRNA/circRNA 的干预设计套路
+[summaryMarkdown] 上调目标蛋白→导入 circRNA 竞争 miRNA 或沉默 miRNA；下调目标蛋白→导入 miRNA 类似物或修饰 mRNA 降低稳定性。
+[applicabilityMarkdown] 治疗/干预设计开放题。
+[contentMarkdown] 1. 上调蛋白 P：导入 circRNA（或其模拟物）竞争结合内源 miRNA→解除翻译抑制。
+2. 下调蛋白 P：导入 miRNA 类似物，与 P 蛋白 mRNA 结合使其降解或被沉默。
+3. 也可通过碱基修饰改变 mRNA 稳定性。
+[boundaryMarkdown] 设计须指明调控发生在转录、mRNA 稳定性还是翻译水平。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-bo-li-bang-f05x06
+来源: 化学方法类《（重点·方法·点拨）第02讲 物质的量浓度- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 玻璃棒
+[summaryMarkdown] 玻璃棒：(1)在溶液配制中的作用是搅拌、引流；(2)搅拌勿碰烧杯内壁，引流注意玻璃棒下端应在刻度线以下。
+[applicabilityMarkdown] 解决相关化学计算问题时使用。
+[contentMarkdown] 玻璃棒：(1)在溶液配制中的作用是搅拌、引流；(2)搅拌勿碰烧杯内壁，引流注意玻璃棒下端应在刻度线以下
+[boundaryMarkdown] 玻璃棒：(1)在溶液配制中的作用是搅拌、引流；(2)搅拌勿碰烧杯内壁，引流注意玻璃棒下端应在刻度线以下
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-di-jia-an-shui-hou-f33x09
+来源: 化学方法类《（重点·方法·点拨）第30讲 分子的性质　配合物与超分子- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 滴加氨水后
+[summaryMarkdown] 滴加氨水后，试管中首先出现 ：Cu2++2NH3·H2O=Cu(OH)2↓+2NH，氨水过量后沉淀逐渐溶解，得到深蓝色的透明溶液：Cu(OH)2+4NH3=[Cu(NH3)4]。
+[applicabilityMarkdown] 分析沉淀溶解平衡、判断沉淀生成或溶解时使用。
+[contentMarkdown] 滴加氨水后，试管中首先出现 ：Cu²⁺+2NH3·H2O=Cu(OH)2↓+2NH4⁺，氨水过量后沉淀逐渐溶解，得到深蓝色的透明溶液：Cu(OH)2+4NH3=[Cu(NH3)4]2++2OH-，滴加乙醇后析出深蓝色晶体：[Cu(NH3)4]2++SO+H2O[Cu(NH3)4]SO4·H2O↓
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：沉淀溶解平衡（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-fang-sheng-jian-f41x04
+来源: 化学方法类《（重点·方法·点拨）第38讲 电解池　金属的腐蚀与防护- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] NaCl、KCl(放H2生碱)
+[summaryMarkdown] NaCl、KCl(放H2生碱)：阳极：2Cl--2e-=Cl2↑；阴极：2H2O+2e-=H2↑+2OH-；总反应式：2Cl-+2H2OCl2↑+H2↑+2OH-；减小并生成新。
+[applicabilityMarkdown] 电极反应式书写与电化学装置分析时使用。
+[contentMarkdown] NaCl、KCl(放H2生碱)：阳极：2Cl--2e-=Cl2↑；阴极：2H2O+2e-=H2↑+2OH-；总反应式：2Cl-+2H2OCl2↑+H2↑+2OH-；减小并生成新电解质
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：电解质（名字出现）；电极反应式（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-jie-jing-cao-zuo-f67x04
+来源: 化学方法类《（重点·方法·点拨）第64讲 物质的分离与提纯- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 结晶操作
+[summaryMarkdown] 结晶操作(蒸发结晶、降温结晶、重结晶)；。
+[applicabilityMarkdown] 分析溶液酸碱性、比较粒子浓度大小与pH判断时使用。
+[contentMarkdown] 结晶操作(蒸发结晶、降温结晶、重结晶)；
+易水解阳离子对应的盐酸盐、硝酸盐，脱水和溶液配制时抑制水解的方法；
+电化学方法提纯金属时，电极材料的确定；
+其他特殊分离提纯方法的操作。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：分离提纯（名字出现）；重结晶（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-ruo-an-yuan-bi-li-tong-bei-shu-di-zeng-f45x06
+来源: 化学方法类《（重点·方法·点拨）第42讲 反应条件对化学平衡移动的影响- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 若按原比例同倍数地增加
+[summaryMarkdown] (3)若按原比例同倍数地增加(或降低)A、B的浓度，等效于压缩(或扩大)容器体积，气体反应物的转化率与化学计量数有关。
+[applicabilityMarkdown] 判断平衡状态、分析平衡移动方向与相关计算时使用。
+[contentMarkdown] (3)若按原比例同倍数地增加(或降低)A、B的浓度，等效于压缩(或扩大)容器体积，气体反应物的转化率与化学计量数有关。
+同倍数增大c(A)和c(B)
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：转化率（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-tong-si-biao-mian-huan-man-fang-chu-qi-f25x07
+来源: 化学方法类《（重点·方法·点拨）第22讲 氮及其氧化物　硝酸- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 铜丝表面缓慢放出气泡
+[summaryMarkdown] ①铜丝表面缓慢放出气泡，锥形瓶内气体呈红棕色；。
+[applicabilityMarkdown] 复习相关考点、解答对应试题时使用。
+[contentMarkdown] ①铜丝表面缓慢放出气泡，锥形瓶内气体呈红棕色；
+②铜丝表面气泡释放速度逐渐加快，气体颜色逐渐变深；
+③一段时间后气体颜色逐渐变浅，至几乎无色；
+④锥形瓶中液面下降，长颈漏斗中液面上升，最终铜丝与液面脱离接触，反应停止。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-yi-er-chun-f60x06
+来源: 化学方法类《（重点·方法·点拨）第57讲 卤代烃　醇　酚- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 乙二醇
+[summaryMarkdown] 乙二醇：无色、黏稠液体，与水以任意比例互溶；重要化工原料，制造化妆品、发动机、防冻液等。
+[applicabilityMarkdown] 有机推断、官能团性质判断与方程式书写时使用。
+[contentMarkdown] 乙二醇：无色、黏稠液体，与水以任意比例互溶；重要化工原料，制造化妆品、发动机、防冻液等
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-zhu-yao-yong-tu-f13x04
+来源: 化学方法类《（重点·方法·点拨）第10讲 碳酸钠和碳酸氢钠　碱金属- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 主要用途
+[summaryMarkdown] 主要用途：用于制玻璃、制肥皂、合成洗涤剂、造纸、纺织、石油、冶金等工业中；灭火器、治疗胃酸过多、发酵粉的主要成分之一。
+[applicabilityMarkdown] 复习“碱金属氢化物的性质及应用”相关考点、解答对应试题时使用。
+[contentMarkdown] 主要用途：用于制玻璃、制肥皂、合成洗涤剂、造纸、纺织、石油、冶金等工业中；灭火器、治疗胃酸过多、发酵粉的主要成分之一
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：金属氢化物（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-kb-electrometallurgy
+来源: 化学知识清单：《专题03 电解池、金属的腐蚀与防护（知识清单）（全国通用）（教师版）》（registry-kb-chemistry-knowledge-list:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 电冶金
+[summaryMarkdown] 用电解熔融电解质的方法冶炼钠、铝等活泼金属。
+[applicabilityMarkdown] 金属冶炼方法选择。
+[contentMarkdown] 冶炼钠：电解熔融NaCl，阴极得Na，阳极得Cl2。
+冶炼铝：电解熔融Al2O3（加冰晶石降低熔点），阴极得Al，阳极得O2。
+K、Ca、Na、Mg、Al等活泼金属不能用电解其水溶液的方法制得。
+[boundaryMarkdown] 电冶金利用电解在阴极还原金属阳离子。
+候选（机械预筛，未必对）：电解质（名字出现）；金属冶炼（名字出现）；电冶金（名字出现）
+
+==============================================================================
+## MATH | math-folding-plane-vs-solid-processing
+来源: 《狂K重难点》数学 P415，重难点34·翻折问题（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: METHOD_MODEL
+[title] 翻折处理策略：不变关系在平面图中处理，变化关系在立体图中处理
+[summaryMarkdown] 不变的关系先在平面图形中算好再迁移，变化的关系放到翻折后的立体图中处理。
+[applicabilityMarkdown] 翻折问题的整体流程安排。
+[contentMarkdown] 1. 不变的关系：在平面图形中处理，再迁移到立体图形中。
+2. 变化的关系：一般在翻折后的立体图形中处理。
+3. 平面图形与立体图形结合使用，有利于区分位置关系和数量关系。
+[boundaryMarkdown] 两个图形都要画并保留备用；只在立体图中硬算会丢失平面图中可得的数据。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-hj-hanshu-moxing-zengzhang
+来源: 数学讲义《第12节 函数模型及其应用》（registry-kb-math-handout:math）
+类型: CONCEPT_EXPLANATION
+[title] 三类函数增长模型的差异
+[summaryMarkdown] 直线上升匀速，指数增长先慢后快，对数增长先快后慢。
+[applicabilityMarkdown] 选择函数模型刻画实际问题。
+[contentMarkdown] “直线上升”是匀速增长（增长量固定）；“指数增长”先慢后快、增长量成倍增加（指数爆炸）；“对数增长”先快后慢、增长量越来越小。
+[boundaryMarkdown] 比较增长速度最终指数最快。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-hj-wudianfa-zhengxianleixing
+来源: 数学讲义《第6节　函数y＝Asin(ωx＋φ)的图象及应用》（registry-kb-math-handout:math）
+类型: METHOD_MODEL
+[title] 五点法画 y=Asin(ωx+φ) 的简图
+[summaryMarkdown] 令 $\omega x+\varphi$ 取 $0,\frac{\pi}{2},\pi,\frac{3\pi}{2},2\pi$ 定五点。
+[applicabilityMarkdown] 画正弦型函数一个周期简图。
+[contentMarkdown] 画 $y=A\sin(\omega x+\varphi)$（$A>0,\omega>0$）一个周期内的简图：令 $\omega x+\varphi=0,\ \frac{\pi}{2},\ \pi,\ \frac{3\pi}{2},\ 2\pi$，求出对应 $x$ 得五个关键点（三零点一峰一谷），光滑连线。
+[boundaryMarkdown] 五点均匀分布一个周期。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-mo-fanjie-dairu-xiaoyuan
+来源: 数学《专题05 均值不等式培优归类（题型清单）（学生版）》（registry-kb-math-misc:math）
+类型: METHOD_MODEL
+[title] 反解代入消元法
+[summaryMarkdown] 由条件方程反解出变量代入目标，消元后重新构造。
+[applicabilityMarkdown] 条件与目标难直接互化的双变量问题。
+[contentMarkdown] 条件等式和所求等式之间互化难以实现时，可以借助反解代入消元，再重新构造：当题目中有两个字母时，利用题目的方程将所求式子中的某一变量消去，把双变量问题化为单变量函数（或对勾型）求解。
+[boundaryMarkdown] 反解出的代数式要连同定义域一起代入；消元后的函数最值可用导数或对勾函数分析。
+候选（机械预筛，未必对）：对勾函数（名字出现）
+
+==============================================================================
+## MATH | math-mo-yinhan-tiaojian-huizong-gailv
+来源: 数学《教考衔接十六 教材中的易混易错杜绝再错学案》（registry-kb-math-misc:math）
+类型: METHOD_MODEL
+[title] 概率统计中的隐藏约束
+[summaryMarkdown] 离散型随机变量取非负整数、概率和为 1、直方图频率和为 1。
+[applicabilityMarkdown] 分布列、直方图的参数求解。
+[contentMarkdown] 概率统计中相关变量的隐藏约束条件：一般地，离散型随机变量（如人数、个数）需取非负整数，且取各值的概率之和为 $1$；频率分布直方图中各组频率之和为 $1$（矩形面积之和为 $1$）。
+[boundaryMarkdown] 求分布列中的参数即解“概率和为 1”的方程；由直方图求参数同样用面积和为 1。
+候选（机械预筛，未必对）：频率分布直方图（名字出现）；离散型随机变量（名字出现）
+
+==============================================================================
+## PHYSICS | phys-cyclotron-max-kinetic-energy
+来源: 《狂K重难点》物理 书页P451，重难点29（现代科学仪器）（registry-lixiangshu-2027-bikuti-kuangk-physics:physics）
+类型: CONCEPT_EXPLANATION
+[title] 回旋加速器最大动能 $E_{km}=\frac{q^2B^2R^2}{2m}$
+[summaryMarkdown] 由 $qv_mB=\frac{mv_m^2}{R}$、$E_{km}=\frac{1}{2}mv_m^2$ 得最大动能 $E_{km}=\frac{q^2B^2R^2}{2m}$。
+[applicabilityMarkdown] 求粒子从回旋加速器射出时的最大动能。
+[contentMarkdown] 粒子最大轨道半径等于D形盒半径 $R$：$qv_mB=\frac{mv_m^2}{R}$。
+$E_{km}=\frac{1}{2}mv_m^2=\frac{q^2B^2R^2}{2m}$。
+[boundaryMarkdown] 达到最大动能后粒子不能再被该装置加速，需换高能加速器。
+候选（机械预筛，未必对）：回旋加速器（名字出现）
+
+==============================================================================
+## PHYSICS | phys-hj-151-capacitance-definition
+来源: 物理讲义《第44讲 电容器 带电粒子在电场中的运动-（讲义）（学生版）》（registry-kb-physics-handout:physics）
+类型: CONCEPT_EXPLANATION
+[title] 电容
+[summaryMarkdown] 描述电容器容纳电荷本领的物理量
+[applicabilityMarkdown] 电容器计算
+[contentMarkdown] 电容 $C=Q/U$，单位法拉（$1F=10^6μF=10^{12}pF$）；电容由电容器本身的构造（大小、形状、极板间距、电介质）决定，与是否带电及电压无关。
+[boundaryMarkdown] C 反映容纳电荷本领。
+候选（机械预筛，未必对）：电容器（名字出现）
+
+==============================================================================
+## PHYSICS | phys-hj3-meter-reading-three-notes
+来源: 物理讲义《第41讲 电学实验必须熟练掌握的基本技能（复习讲义）（湖南专用）（学生版）》（registry-kb-physics-handout:physics）
+类型: CONCEPT_EXPLANATION
+[title] 电表使用的读数与量程选择
+[summaryMarkdown] 最小分度为 1 估读到下一位，为 2 或 5 估读到本位；量程使指针偏转尽量大。
+[applicabilityMarkdown] 正确使用与读取电表。
+[contentMarkdown] 量程选择：使测量时指针偏转角度尽可能大（一般超过量程的三分之二），但不能超过量程。
+读数“三注意”：①最小分度是“1、0.1、0.01…”时估读到最小分度的下一位；②最小分度是“2、0.2、0.02…”时估读到最小分度本位；③最小分度是“5、0.5、0.05…”时估读到本位。
+游标卡尺读数“三看”：看主尺、看对齐格数、看分度；不需估读，后面不能随意加零或去零。
+[boundaryMarkdown] 螺旋测微器必须估读到 0.001 mm 位。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-quanfanli-f-chuizhi-zuixiao-lali
+来源: 《狂K重难点》物理 书页P407，重难点5（registry-lixiangshu-2027-bikuti-kuangk-physics:physics）
+类型: CONCEPT_EXPLANATION
+[title] 全反力法求最小拉力（F垂直F_R时最小）
+[summaryMarkdown] 四力平衡化为三力后，当拉力 $F$ 与全反力 $F_R$ 垂直时拉力最小，最小值由矢量三角形求出。
+[applicabilityMarkdown] 斜面上拖动物块的最小拉力类问题。
+[contentMarkdown] 先合成 $F_N$ 和 $F_f$ 得全反力 $F_R$（因 $F_f=\mu F_N$，其与法线夹角恒定），四力平衡简化为三力平衡，由矢量三角形易得 $F$ 垂直于 $F_R$ 方向时达到最小值。
+[boundaryMarkdown] 结论依赖摩擦角恒定；求值时按几何关系计算具体数值。
+候选（机械预筛，未必对）：无
+

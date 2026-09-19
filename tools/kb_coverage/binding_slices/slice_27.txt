@@ -1,0 +1,377 @@
+# 绑定作业片 27：29 条无绑定材料
+#
+# 任务：为每条材料选定它应该绑定的知识点节点（就是讲题时该材料服务的那个点）。
+# 交付（写到 tools/kb_coverage/binding_fixes/slice_27/notes.csv）：
+#   subject,material_slug,node_slug,confidence,evidence
+#   （node_slug 用下面的节点表里的 slug；确实没有合适的写 NONE；
+#     evidence 一句话说明依据；字段内不要有 ASCII 逗号）
+#
+# 硬规矩：
+#   · 宁缺勿错：不确定就 confidence=low 或写 NONE —— 错绑会让检索喂错材料
+#   · 只能从本学科节点表里选（见 tools/kb_coverage/binding_slices/nodes/nodes_<学科>.txt）
+#   · 一条材料只绑一个节点（就是它最主要服务的那个点）
+
+==============================================================================
+## BIOLOGY | bio-etc-proton-gradient-establishment
+来源: 《狂K重点》生物 P379 重难2·题型2（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: CONCEPT_EXPLANATION
+[title] 电子传递释能把 H+ 泵至膜间隙，建立 H+ 浓度差
+[summaryMarkdown] 电子传递释放的能量用于把 H+ 从基质泵到膜间隙，形成膜间隙 H+ 浓度高于基质的梯度。
+[applicabilityMarkdown] 氧化磷酸化梯度建立环节。
+[contentMarkdown] 电子传递释放能量→H+ 被泵至膜间隙→维持内膜两侧 H+ 浓度差（电化学梯度）：膜间隙＞基质。
+[boundaryMarkdown] 梯度是 ATP 合成的直接能量来源。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-03-polysaccharide-functions
+来源: 生物讲义《第03讲 糖类和脂质（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 多糖的种类、分布与功能
+[summaryMarkdown] 淀粉是植物储能物质，纤维素构成植物细胞壁，糖原是动物储能物质。
+[applicabilityMarkdown] 多糖功能对应判断。
+[contentMarkdown] 1. 淀粉：植物储藏器官中，植物细胞重要储能物质。
+2. 纤维素：构成植物细胞壁的重要成分。
+3. 糖原：肝糖原（调节血糖）、肌糖原（储存供能），分布在人和动物肝脏与肌肉中。
+[boundaryMarkdown] 糖原是动物细胞特有多糖；淀粉、纤维素是植物特有多糖。
+候选（机械预筛，未必对）：细胞壁（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fj-09-yeast-seal-before-test
+来源: 生物讲义《第09讲 细胞呼吸（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: METHOD_MODEL
+[title] B瓶封口放置后再连通检测的原因
+[summaryMarkdown] B瓶应封口放置一段时间，待酵母菌消耗完瓶内氧气，再连通石灰水检测无氧呼吸产物。
+[applicabilityMarkdown] 装置细节判断。
+[contentMarkdown] 1. 封口后培养液表面上方仍残留氧气。
+2. 静置一段时间让酵母菌将这部分氧气消耗尽。
+3. 再连通澄清石灰水，确保检测到的是无氧呼吸产生的CO2。
+[boundaryMarkdown] 否则测到的CO2可能混有有氧呼吸的产物。
+候选（机械预筛，未必对）：有氧呼吸（名字出现）；无氧呼吸（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fj-21-rna-types-functions
+来源: 生物讲义《第21讲 基因的表达、基因与性状的关系（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] RNA的种类与功能
+[summaryMarkdown] RNA分mRNA（翻译模板）、tRNA（转运氨基酸）、rRNA（构成核糖体）三类，一般为单链。
+[applicabilityMarkdown] RNA种类功能判断。
+[contentMarkdown] 1. 元素C、H、O、N、P，基本单位核糖核苷酸。
+2. mRNA：合成蛋白质的直接模板，可通过核孔进入细胞质。
+3. tRNA：识别密码子、转运氨基酸；单链但内部含氢键（局部双链）。
+4. rRNA：与蛋白质构成核糖体。
+[boundaryMarkdown] tRNA不只有3个碱基；mRNA、tRNA都是单链结构。
+候选（机械预筛，未必对）：氨基酸（名字出现）；核苷酸（名字出现）；蛋白质（名字出现）；核糖体（名字出现）；密码子（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fx-bacteria-role-judgment
+来源: 生物方法类《2026届新疆高三生物三轮复习种群、群落、生态系统·完整知识点问答》（registry-kb-biology-methods:biology）
+类型: CONCEPT_EXPLANATION
+[title] 易错：细菌和动物不一定是分解者（消费者）
+[summaryMarkdown] 细菌可以是生产者（硝化细菌）、消费者（寄生细菌）或分解者（腐生细菌）；蚯蚓、蜣螂、秃鹫等动物是分解者。
+[applicabilityMarkdown] 生态系统成分归类的经典易错题。
+[contentMarkdown] 1. 硝化细菌、光合细菌是生产者（化能合成、光合作用）。
+2. 寄生细菌（如结核杆菌）是消费者。
+3. 腐生细菌是分解者。
+4. 动物大多为消费者，但蚯蚓、蜣螂、秃鹫以腐生方式取食，属于分解者。
+[boundaryMarkdown] 归类依据是营养方式与在物质循环中的功能，不是分类学上的动植物或细菌名称。
+候选（机械预筛，未必对）：光合作用（名字出现）；物质循环（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fx-megaprimer-pcr
+来源: 生物方法类《微专题15：RT－PCR、反向PCR与PCR定点诱变技术》（registry-kb-biology-methods:biology）
+类型: METHOD_MODEL
+[title] 大引物PCR定点突变
+[summaryMarkdown] 大引物PCR用三条引物进行两轮PCR：第一轮得到含突变位点的大引物，第二轮与常规引物扩增出突变基因。
+[applicabilityMarkdown] 基因定点突变、蛋白质改造类题目。
+[contentMarkdown] 1. 引物：常规上游引物、常规下游引物、突变引物（突变位点位于突变引物序列中间）。
+2. 第一轮PCR：突变上游引物＋常规下游引物→下游大引物（含突变位点）。
+3. 第二轮PCR：下游大引物＋常规上游引物→完整的突变目的基因。
+4. 大引物比常规引物长得多，已含突变序列。
+[boundaryMarkdown] 单核苷酸定点诱变仅需两轮PCR；第二轮的模板是第一轮产物，大引物取代了中间引物对。
+候选（机械预筛，未必对）：核苷酸（名字出现）；蛋白质（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-hypoxia-weakens-pump
+来源: 《狂K重点》生物 P406 重难11·题型1（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 缺氧→ATP 减少→Na+-K+ 泵活动减弱→离子梯度难以维持
+[summaryMarkdown] Na+-K+ 泵耗能，缺氧使 ATP 供应减少、泵活动减弱，离子梯度维持受阻、电位异常。
+[applicabilityMarkdown] 代谢条件对电位影响题。
+[contentMarkdown] 缺氧/代谢抑制→ATP 减少→Na+-K+ 泵活动减弱→细胞外高 Na+、内高 K+ 的梯度难以维持→静息电位与动作电位异常。
+[boundaryMarkdown] 通道介导的流动本身不耗能，受影响的是梯度维持环节。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb-tissue-edema-cause-analysis
+来源: 生物知识清单：《第24讲 内环境与稳态（知识清单）（全国通用）（学生版）》（registry-kb-biology-knowledge-list:biology）
+类型: METHOD_MODEL
+[title] 组织水肿成因的归纳分析
+[summaryMarkdown] 凡导致血浆渗透压降低或组织液渗透压升高、淋巴回流受阻的因素都可引起组织水肿。
+[applicabilityMarkdown] 水肿成因判断题。
+[contentMarkdown] 1. 血浆蛋白减少：营养不良、肾小球肾炎（蛋白尿）、肝脏损伤。
+2. 组织液渗透压升高：过敏反应（毛细血管通透性增大，血浆蛋白渗出）。
+3. 淋巴回流受阻：丝虫寄生等使组织液不能经淋巴回流。
+4. 局部代谢旺盛等使组织液生成增多。
+[boundaryMarkdown] 分析思路：水分滞留组织液的根本原因是两种液体渗透压的相对变化。
+候选（机械预筛，未必对）：渗透压（名字出现）；过敏反应（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-kb2-27-sweat-adh-exercise
+来源: 生物知识清单：《第27讲 体液调节与神经调节的关系（知识清单）（全国通用）（教师版）》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 大量出汗与运动时的水盐调节
+[summaryMarkdown] 大量出汗使细胞外液渗透压升高，抗利尿激素释放增加，尿量减少。
+[applicabilityMarkdown] 分析运动、出汗情境下的调节反应时使用。
+[contentMarkdown] 运动时肌细胞代谢产物使组织液渗透压升高，进而引起细胞外液渗透压升高；
+下丘脑渗透压感受器兴奋，抗利尿激素释放增加，促进肾小管和集合管重吸收水，使细胞外液渗透压下降。
+[boundaryMarkdown] 细胞内液可与细胞外液相互交换成分，因此细胞内液也参与细胞外液渗透压的调节。
+候选（机械预筛，未必对）：渗透压（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-kb3-f4-s55-n05
+来源: 生物知识清单《2027届高三生物一轮复习知识清单4：分子与细胞基础》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 运用模型解释细胞·8
+[summaryMarkdown] 表面积(mm2)：384。
+[applicabilityMarkdown] 复习“运用模型解释细胞不能无限”考点或解答涉及“运用模型解释细胞·8”的题目时使用。
+[contentMarkdown] 模型边长(mm)：8；表面积(mm2)：384；体积(mm3)：512；葡萄糖扩散深度(mm)：0.5；表面积/体积(相对表面积)：3/4。
+含葡萄糖的体积/“细胞”体积：169/512。
+[boundaryMarkdown] 一轮复习结论性要点，表述以人教版现行教材为准；具体数值可能因教材版本略有差异。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-polysaccharide
+来源: 《狂K重点》生物 P380 重难3（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: CONCEPT_EXPLANATION
+[title] 多糖：多分子单糖缩合（淀粉/糖原/纤维素/几丁质）
+[summaryMarkdown] 多糖由许多葡萄糖分子缩合而成：植物淀粉（储能）、糖原（动物储能）、纤维素（细胞壁）、几丁质（甲壳）。
+[applicabilityMarkdown] 糖类分类与功能。
+[contentMarkdown] 1. 淀粉：植物储能（分直链/支链），初步水解为麦芽糖。
+2. 糖原（肝/肌糖原）：动物储能。
+3. 纤维素：植物细胞壁主要成分（结构多糖）。
+4. 几丁质：昆虫外壳、虾蟹外骨骼。
+[boundaryMarkdown] 纤维素不是能源——是结构物质；糖原与淀粉的区别在分支/动物来源。
+候选（机械预筛，未必对）：细胞壁（名字出现）；几丁质（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-synaptic-abnormal-four-links
+来源: 《狂K重点》生物 P407 重难11·题型2（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 突触传递异常沿'递质—间隙—受体—后膜'四环节排查
+[summaryMarkdown] 传递异常原因按递质合成/释放、间隙清除、受体结合、后膜电位四环节逐一排查。
+[applicabilityMarkdown] 药物/毒素/自身抗体影响传递的分析题。
+[contentMarkdown] 1. 递质环节：突触小泡合成/释放异常（量不足、不释放、持续释放）。
+2. 间隙环节：递质被酶降解或回收过快/过慢。
+3. 受体环节：后膜受体数量/敏感性异常或被抗体、药物阻断。
+4. 后膜环节：离子通道开闭异常→电位变化异常。
+5. 验证：测间隙递质含量、记录后膜电位、设药物对照。
+[boundaryMarkdown] 排查范围限于突触间'传递'，神经纤维'传导'异常另查。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-chi-xue-yan-f16x06
+来源: 化学方法类《（重点·方法·点拨）第13讲 铁及其化合物的转化关系- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 赤血盐{K3[Fe(CN)6]}
+[summaryMarkdown] (3)赤血盐{K3[Fe(CN)6]}：红色晶体，能溶于水，常用于检验Fe2+，生成蓝色沉淀。
+[applicabilityMarkdown] 离子或物质检验、实验现象描述与推断题作答时使用。
+[contentMarkdown] (3)赤血盐{K3[Fe(CN)6]}：红色晶体，能溶于水，常用于检验Fe2+，生成蓝色沉淀。
+(4)高铁酸钾(K2FeO4)：暗紫色晶体，具有强氧化性，可用作水体的杀菌、消毒剂或高容量电池材料。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：物质检验（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-entry-f09x14
+来源: 化学方法类《（重点·方法·点拨）第06讲 离子共存、离子检验与推断- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] SO、HSO
+[summaryMarkdown] SO、HSO：稀H2SO4和品红溶液；加稀硫酸产生有 的气体，且气体能使 褪色。
+[applicabilityMarkdown] 复习相关考点、解答对应试题时使用。
+[contentMarkdown] SO、HSO：稀H2SO4和品红溶液；加稀硫酸产生有 的气体，且气体能使 褪色
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-han-you-zhi-ji-han-you-ben-huan-he-ci-f63x11
+来源: 化学方法类《（重点·方法·点拨）第60讲 合成高分子　有机合成路线设计- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 含有酯基　②含有苯环　③核磁共振氢谱有两组峰
+[summaryMarkdown] ①含有酯基　②含有苯环　③核磁共振氢谱有两组峰。
+[applicabilityMarkdown] 有机推断、官能团性质判断与方程式书写时使用。
+[contentMarkdown] ①含有酯基　②含有苯环　③核磁共振氢谱有两组峰
+(7)设计以为原料合成的路线(其他试剂任选)。已知：+CO2。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：核磁共振氢谱（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-pao-mo-mie-huo-qi-yuan-li-f73x09
+来源: 化学方法类《高考化学化学与传统文化及STSE(学生版)-20页》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 泡沫灭火器原理
+[summaryMarkdown] (3)泡沫灭火器原理：Al2(SO4)3和小苏打混合，发生彻底的相互促进的水解反应生成Al(OH)3沉淀和CO2气体，形成大量泡沫从而灭火。
+[applicabilityMarkdown] 分析溶液酸碱性、比较粒子浓度大小与pH判断时使用。
+[contentMarkdown] (3)泡沫灭火器原理：Al2(SO4)3和小苏打混合，发生彻底的相互促进的水解反应生成Al(OH)3沉淀和CO2气体，形成大量泡沫从而灭火。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-shi-yong-yi-qi-f74x03
+来源: 化学方法类《高考化学化学实验基础(选择题)(学生版)-34页》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 使用仪器
+[summaryMarkdown] 使用仪器：药匙或纸槽；镊子；用托盘天平称量；胶头滴管；用试剂瓶倾倒；用量筒、滴定管或移液管量取。
+[applicabilityMarkdown] 实验方案设计、评价与异常现象分析时使用。
+[contentMarkdown] 使用仪器：药匙或纸槽；镊子；用托盘天平称量；胶头滴管；用试剂瓶倾倒；用量筒、滴定管或移液管量取
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：实验方案设计（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-xin-cai-liao-de-xin-xiu-f18x06
+来源: 化学方法类《（重点·方法·点拨）第15讲 硅　无机非金属材料- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: METHOD_MODEL
+[title] 新材料的新秀
+[summaryMarkdown] 2．新材料的新秀——石墨烯和氧化石墨烯已成为物理、化学、材料科学研究的国际热点课题。
+[applicabilityMarkdown] 分析氧化还原反应、比较氧化性还原性强弱与电子转移数目时使用。
+[contentMarkdown] 2．新材料的新秀——石墨烯和氧化石墨烯已成为物理、化学、材料科学研究的国际热点课题。其结构模型如图所示
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：电子转移（名字出现）；氧化还原反应（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-yong-tu-zai-neng-yuan-xin-xi-yi-yao-de-f18x04
+来源: 化学方法类《（重点·方法·点拨）第15讲 硅　无机非金属材料- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 用途：在能源、信息、医药等领域有
+[summaryMarkdown] ②用途：在能源、信息、医药等领域有广阔的应用前景。
+[applicabilityMarkdown] 晶体结构分析与晶胞计算时使用。
+[contentMarkdown] ②用途：在能源、信息、医药等领域有广阔的应用前景。
+(3)特殊功能的含硅材料
+①碳化硅共价晶体，具有金刚石结构，可用作磨料。
+②含硅元素4%的硅钢具有导磁性。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：共价晶体（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-hj-kejiare-yiqi-shiyong-yaodian
+来源: 化学讲义《第01讲 化学实验的常用仪器和基本操作（复习讲义）（四川专用）（学生版）》（registry-kb-chemistry-handout:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 可加热仪器的使用要点
+[summaryMarkdown] 试管加热液体不超 1/3，灼烧固体用坩埚，熔融 NaOH 用铁坩埚。
+[applicabilityMarkdown] 规范使用加热仪器、辨析正误操作时使用。
+[contentMarkdown] 试管：加热液体不超过容积 1/3；加热固体时管口略向下倾斜。
+蒸发皿：蒸发浓缩时用玻璃棒搅拌；移动用坩埚钳。
+坩埚：用于固体灼烧，放在三脚架的泥三角上加热，取放用坩埚钳，加热完放在石棉网上冷却。
+熔融 NaOH 与瓷坩埚中的 SiO2 反应，须用铁坩埚。
+圆底烧瓶与蒸馏烧瓶：加热时液体不少于容积 1/3、不超过 2/3，加碎瓷片防暴沸；锥形瓶滴定时液体不超过 1/3。
+三颈烧瓶：三口可放温度计、搅拌器、分液漏斗等。
+[boundaryMarkdown] 移动试管用试管夹。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-ellipse-max-angle-at-vertex
+来源: 《狂K重难点》数学 P421，重难点38·离心率问题（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: CONCEPT_EXPLANATION
+[title] 椭圆上 ∠F₁PF₂ 最大时 P 为短轴端点
+[summaryMarkdown] 椭圆上动点对两焦点的张角在短轴端点处最大。
+[applicabilityMarkdown] 求焦点三角形顶角范围、离心率范围。
+[contentMarkdown] 若 $P$ 为椭圆上一点，$F_1,F_2$ 为椭圆的左、右焦点，则 $\angle F_1PF_2$ 最大时，点 $P$ 为短轴的端点。
+[boundaryMarkdown] 短轴端点处张角最大、长轴端点处张角为零；由最大张角可反求离心率范围（$\sin\frac{\theta_{\max}}{2}=e$）。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-fx-shulie-fangsuo-mubiao-daoyu-shidu
+来源: 数学方法类《专题1.1　子数列问题及数列放缩技巧（6 大考向）》（registry-kb-math-methods:math）
+类型: METHOD_MODEL
+[title] 数列放缩的目标导向与适度原则
+[summaryMarkdown] 数列放缩由目标不等式决定方向与幅度：放缩后必须可求和（或可化简），过度放缩使不等式失真，需调整精度。
+[applicabilityMarkdown] 证明 $S_n$ 与常数（或与 $n$ 的式子）比较的数列不等式。
+[contentMarkdown] 1. 目标导向：先看目标界（常数 $T$ 或 $\frac{3}{2}$ 等分数），选择恰好“够用”的放缩（如证 $S_n<2$ 时把 $\dfrac{1}{2^n}$ 型保留、多项部分放缩）。
+2. 可求和性：放缩后的新通项必须是可求和结构（等比、可裂项、可错位）。
+3. 适度检验：放缩过头（如 $a_n<\dfrac{1}{n}$ 使和发散）导致证不出，应换更紧的放缩（如 $\dfrac{1}{n^2}<\dfrac{1}{n(n-1)}$）。
+4. 组合策略：部分项精确求和（前几项）＋尾部放缩，是常用的折中。
+[boundaryMarkdown] 放缩方向与目标不等号必须一致；“先放缩再求和”路线中精度不足是最常见的失败原因。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-hj-s42-chord-to-tangent
+来源: 数学讲义《第四章 §4.2　同角三角函数基本关系式及诱导公式.docx》（registry-kb-math-handout:math）
+类型: METHOD_MODEL
+[title] 齐次式弦化切
+[summaryMarkdown] 关于 sinα、cosα 的齐次分式（含 asin²α+bsinαcosα+ccos²α）除以 cos²α 化为 tanα 求值。
+[applicabilityMarkdown] 已知 tanα 求齐次三角式的值。
+[contentMarkdown] 分子分母同除以 $\cos^n\alpha$（其次数与齐次次数一致），如 $\dfrac{\sin\alpha-\cos\alpha}{\sin\alpha+\cos\alpha}=\dfrac{\tan\alpha-1}{\tan\alpha+1}$。
+[boundaryMarkdown] 非齐次式先利用 sin²α+cos²α=1 补齐次数。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-isomorphic-match-product-form
+来源: 《狂K重难点》数学 P392 重难16·2(1)（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: METHOD_MODEL
+[title] 配凑同构（积商型）：$a^{x}\ln a=\mathrm{e}^{x\ln a}\cdot\ln a$ 型化为 $\mathrm{e}^{x\ln a}\cdot x\ln a>x\ln x$ 后构造 $f(t)=t\mathrm{e}^{t}$
+[summaryMarkdown] 把 $a^{x}\ln a$ 写成 $\mathrm{e}^{x\ln a}\cdot\ln a$，两端同乘 $x$ 化为 $\mathrm{e}^{x\ln a}\cdot x\ln a>x\ln x$，即可按 $F(t)=t\mathrm{e}^{t}$（与 $x\ln x=\mathrm{e}^{\ln x}\ln x$）同构比较。
+[applicabilityMarkdown] 幂函数与对数交叉、形如 $a^{x}\ln a>\ln x$ 的不等式。
+[contentMarkdown] 1. 指数化：$a^{x}\ln a=\mathrm{e}^{x\ln a}\cdot\ln a$。
+2. 两边同乘 $x$（$x>0$）配凑：$\mathrm{e}^{x\ln a}\cdot x\ln a>x\ln x=\mathrm{e}^{\ln x}\cdot\ln x$。
+3. 构造 $f(t)=t\mathrm{e}^{t}$，比较 $f(x\ln a)$ 与 $f(\ln x)$，由单调性去外层。
+[boundaryMarkdown] 同乘 $x$ 要求 $x>0$，否则不等号方向改变；$f(t)=t\mathrm{e}^{t}$ 在 $(-1,+\infty)$ 单调递增。
+候选（机械预筛，未必对）：幂函数（名字出现）
+
+==============================================================================
+## MATH | math-mo-sanjianke-zhiyiqiuer
+来源: 数学《专题01 三角函数概念及公式应用（题型清单）（学生版）》（registry-kb-math-misc:math）
+类型: METHOD_MODEL
+[title] 正余弦“三剑客”知一求二
+[summaryMarkdown] $\sin\alpha+\cos\alpha$、$\sin\alpha-\cos\alpha$、$\sin\alpha\cos\alpha$ 三者知一求二。
+[applicabilityMarkdown] 给 $\sin\alpha\pm\cos\alpha$ 之一求其余量。
+[contentMarkdown] 由 $(\sin\alpha\pm\cos\alpha)^2=1\pm2\sin\alpha\cos\alpha$，在 $\sin\alpha+\cos\alpha$、$\sin\alpha-\cos\alpha$、$\sin\alpha\cos\alpha$ 三者中知一可求其余两个。其中难点是符号：$\sin\alpha\pm\cos\alpha$ 的符号由角所在象限（化一后）确定。
+[boundaryMarkdown] 先由角的范围缩小到具体象限再开方；给值求值问题中“平方关系”是联结三者的桥。
+候选（机械预筛，未必对）：给值求值问题（名字出现）
+
+==============================================================================
+## MATH | math-period-shift-equal-different-offsets
+来源: 《狂K重难点》数学 P378 重难4·1(3)（registry-lixiangshu-2027-bikuti-kuangk-math:math）
+类型: CONCEPT_EXPLANATION
+[title] 平移等值式：$f(a+x)=f(b+x)\ (a\neq b)\Rightarrow T=|b-a|$
+[summaryMarkdown] 自变量平移不同量函数值相等，则两平移量之差的绝对值是一个周期。
+[applicabilityMarkdown] 函数方程形如 $f(a+x)=f(b+x)$ 时判定周期。
+[contentMarkdown] 由 $f(a+x)=f(b+x)$（$a\neq b$）对任意 $x$ 成立，记 $t=b+x$，得 $f(t+b-a)=f(t)$，故周期 $T=|b-a|$。
+[boundaryMarkdown] $a\neq b$ 且 $a$、$b$ 为常数；所得为一个周期。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## PHYSICS | phys-fx-volt-ampere-characteristic-curve
+来源: 物理方法类《第17讲 测量电阻的八种实验方法（学生版）（模型与方法）（全国通用）》（registry-kb-physics-methods:physics）
+类型: METHOD_MODEL
+[title] 伏安特性曲线与线性、非线性元件
+[summaryMarkdown] U-I 图线为过原点直线的元件是线性元件（电阻恒定），曲线表明电阻随电压电流变化（如小灯泡、二极管）。
+[applicabilityMarkdown] 描绘伏安特性曲线实验与元件判断。
+[contentMarkdown] 1. 线性元件：U-I 图线为直线，斜率倒数即电阻。
+2. 非线性元件：图线为曲线，某点电阻用 $\frac{U}{I}$（割线斜率的倒数）而非切线斜率表示。
+3. 小灯泡电阻随温度升高增大，二极管具有单向导电性。
+[boundaryMarkdown] 区分“割线斜率”与“切线斜率”对应的物理量。
+候选（机械预筛，未必对）：伏安特性曲线（名字出现）
+
+==============================================================================
+## PHYSICS | phys-hj2-zhidai-chuzhi-jizhi
+来源: 物理讲义《第04讲 实验：探究小车速度随时间变化的规律（复习讲义）（四川专用）》（registry-kb-physics-handout:physics）
+类型: CONCEPT_EXPLANATION
+[title] 纸带数据的舍弃与选取原则
+[summaryMarkdown] 选点迹清晰的纸带，舍掉开头密集部分，从便于测量的点开始取计数点。
+[applicabilityMarkdown] 纸带实验的数据预处理。
+[contentMarkdown] 1. 更换纸带重复实验三次，选一条点迹比较理想的。
+2. 舍弃开头过密的点（小车刚启动阶段），从后边便于测量的点开始确定计数点。
+3. 测量各相邻计数点间距，用于求瞬时速度与加速度。
+[boundaryMarkdown] 开头的密集点误差大且不稳定，参与计算反而增大误差。
+候选（机械预筛，未必对）：瞬时速度（名字出现）；加速度（名字出现）
+
+==============================================================================
+## PHYSICS | phys-kb-train-turning-model
+来源: 物理知识清单：《专题05 圆周运动（知识清单）（全国通用）（教师版）》（registry-kb-physics-knowledge-list:physics）
+类型: CONCEPT_EXPLANATION
+[title] 火车转弯与内外轨挤压判据
+[summaryMarkdown] 火车以规定速度转弯时内外轨均不受挤压，偏离规定速度时内外轨受挤压。
+[applicabilityMarkdown] 分析倾斜弯道上的圆周运动时使用。
+[contentMarkdown] 设计速度 $v_0$ 满足 $mg\tan\theta=m\frac{v_0^2}{R}$，即 $v_0=\sqrt{gR\tan\theta}$。
+速度大于 $v_0$ 时外轨受挤压；速度小于 $v_0$ 时内轨受挤压。
+[boundaryMarkdown] 适用于轨道倾角较小、内外轨等高差小的情形。
+候选（机械预筛，未必对）：圆周运动（名字出现）
+

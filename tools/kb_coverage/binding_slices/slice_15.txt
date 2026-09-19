@@ -1,0 +1,373 @@
+# 绑定作业片 15：30 条无绑定材料
+#
+# 任务：为每条材料选定它应该绑定的知识点节点（就是讲题时该材料服务的那个点）。
+# 交付（写到 tools/kb_coverage/binding_fixes/slice_15/notes.csv）：
+#   subject,material_slug,node_slug,confidence,evidence
+#   （node_slug 用下面的节点表里的 slug；确实没有合适的写 NONE；
+#     evidence 一句话说明依据；字段内不要有 ASCII 逗号）
+#
+# 硬规矩：
+#   · 宁缺勿错：不确定就 confidence=low 或写 NONE —— 错绑会让检索喂错材料
+#   · 只能从本学科节点表里选（见 tools/kb_coverage/binding_slices/nodes/nodes_<学科>.txt）
+#   · 一条材料只绑一个节点（就是它最主要服务的那个点）
+
+==============================================================================
+## BIOLOGY | bio-compensation-point-respiration-increase
+来源: 《狂K重点》生物 P386 重难4·题型2（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: METHOD_MODEL
+[title] 呼吸增强（其他不变）→ 补偿点右移
+[summaryMarkdown] 细胞呼吸速率增强时，需要更强光合才能达到净光合为 0，光/CO2 补偿点右移。
+[applicabilityMarkdown] 关键点移动判断。
+[contentMarkdown] 呼吸↑（其他条件不变）→净光合=0 的位置右移→CO2（或光）补偿点右移；呼吸减弱则左移。
+[boundaryMarkdown] '其他条件不变'是前提。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-02-phosphorus-bulk
+来源: 生物讲义《第02讲 细胞中的元素和化合物（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 磷是大量元素
+[summaryMarkdown] P是大量元素，是ATP、核苷酸、磷脂、NADP+等的组成成分。
+[applicabilityMarkdown] 元素归属判断。
+[contentMarkdown] 1. 磷属于大量元素（P在大量元素列表中）。
+2. P参与构成ATP、NADP+、核苷酸、磷脂，也是动物骨骼牙齿成分。
+[boundaryMarkdown] “磷是微量元素”错误；缺P影响核酸合成并波及蛋白质合成和糖类代谢。
+候选（机械预筛，未必对）：核苷酸（名字出现）；蛋白质（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fj-08-activation-energy-curve
+来源: 生物讲义《第08讲 酶和ATP（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 活化能曲线的各段含义
+[summaryMarkdown] AC段为无酶时活化能，BC段为有酶时活化能，AB段为酶降低的活化能。
+[applicabilityMarkdown] 酶催化曲线识图。
+[contentMarkdown] 1. AC段：无酶催化时反应所需活化能。
+2. BC段：有酶催化时反应所需活化能。
+3. AB段：酶降低的活化能（催化效果）。
+[boundaryMarkdown] 比较效率看AB段长短；判断有无催化看是否低于无酶水平。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-15-heterosis
+来源: 生物讲义《第15讲 分离定律（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 杂种优势：杂合子产量往往高于纯合子
+[summaryMarkdown] 杂合子的产量往往比纯合子高，杂交育种利用杂种优势需年年制种。
+[applicabilityMarkdown] 杂种优势判断。
+[contentMarkdown] 1. 杂合子（如AaBb）在生活力、产量上往往优于纯合子。
+2. 农业上制备杂交种子（如油菜YF1）供生产使用。
+3. 杂合子后代发生性状分离，故需每年制种。
+[boundaryMarkdown] 纯合子可以留种，杂合子不能稳定遗传。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fj-33-parasitism-vs-predation-examples
+来源: 生物讲义《第33讲 群落（复习讲义）（全国通用）（教师版）》（registry-kb-biology-handout:biology）
+类型: CONCEPT_EXPLANATION
+[title] 寄生与捕食的实例辨析
+[summaryMarkdown] 蚊子与人、蝉与树是寄生关系，蝗虫与青草、蚕与桑树是捕食关系。
+[applicabilityMarkdown] 实例归属判断。
+[contentMarkdown] 1. 寄生：蚊子吸人血、蝉刺吸树汁液——宿主结构保持完整。
+2. 捕食：蝗虫啃食青草、蚕食桑叶——被捕食者结构不完整。
+3. “螟蛉有子，蜾蠃负之”是捕食（蜾蠃捕食螟蛉幼虫）。
+[boundaryMarkdown] 以汁液、血液为食是寄生；以整体或部分身体为食是捕食。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-fx-inverse-pcr
+来源: 生物方法类《微专题15：RT－PCR、反向PCR与PCR定点诱变技术》（registry-kb-biology-methods:biology）
+类型: METHOD_MODEL
+[title] 反向PCR扩增已知序列两侧的未知序列
+[summaryMarkdown] 反向PCR用反向互补引物扩增两引物以外的未知序列，常规PCR只能扩两引物之间区段。
+[applicabilityMarkdown] 检测外源基因插入位点、获取已知序列侧翼序列的题目。
+[contentMarkdown] 1. 原理三步：酶切→连接环化→反向引物扩增。
+2. 酶切：选择在已知序列内部没有切点的限制酶切割DNA。
+3. 连接：用DNA连接酶使含已知序列的DNA片段环化。
+4. 扩增：用一对相对于已知序列反向配置的引物PCR，产物含两引物外侧的未知序列。
+[boundaryMarkdown] 限制酶若在已知序列内部有切点会破坏模板；引物方向与常规PCR相反，子链反向延伸。
+候选（机械预筛，未必对）：限制酶（名字出现）；dna连接酶（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-fx-testcross-not-dominance
+来源: 生物方法类《微专题8：分离定律重点题型的解题建模》（registry-kb-biology-methods:biology）
+类型: CONCEPT_EXPLANATION
+[title] 易错：测交不能判断显隐性关系
+[summaryMarkdown] 测交不能用于判断性状的显隐性关系，因为测交是在已知显隐性的基础上进行的杂交实验。
+[applicabilityMarkdown] 显隐性判断方法中的易错辨析。
+[contentMarkdown] 1. 测交是待测个体与隐性纯合子杂交，用于检测基因型。
+2. 隐性纯合子的确定本身以显隐性已知为前提。
+3. 因此测交后代比例只能推知待测个体基因型，不能反向确立显隐性。
+[boundaryMarkdown] 判断显隐性应选用自交法（植物）或相对性状亲本杂交法；自花传粉植物用自交最简便。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb-induction-method
+来源: 生物知识清单：《第01讲 走近细胞（知识清单）（全国通用）（学生版）》（registry-kb-biology-knowledge-list:biology）
+类型: METHOD_MODEL
+[title] 归纳法：由具体事实推出一般结论
+[summaryMarkdown] 归纳法是由一系列具体事实推出一般结论的思维方法，分完全归纳与不完全归纳。
+[applicabilityMarkdown] 考查科学方法；实验结论推理方式的判断。
+[contentMarkdown] 1. 定义：由一系列具体事实推出一般结论。
+2. 完全归纳法：考察全部对象后概括；不完全归纳法：考察部分对象后概括。
+3. 科研中常用不完全归纳法，其结论很可能是可信的，可用于预测和判断，但可能存在例外（如由部分植物细胞有细胞核推出植物细胞都有细胞核）。
+[boundaryMarkdown] 不完全归纳的结论可能存在例外，需更多实例支持。
+候选（机械预筛，未必对）：归纳法（名字出现）
+
+==============================================================================
+## BIOLOGY | bio-kb2-10-pigment-extraction
+来源: 生物知识清单：《第10讲 光合作用（知识清单）（全国通用）（教师版）》（registry-kb-biology-knowledge-list:biology）
+类型: METHOD_MODEL
+[title] 绿叶中色素的提取和分离原理与步骤
+[summaryMarkdown] 色素溶于无水乙醇被提取，因在层析液中溶解度不同而被分离。
+[applicabilityMarkdown] 设计或分析色素提取分离实验时使用。
+[contentMarkdown] 提取：绿叶剪碎研磨，加二氧化硅使研磨充分，加碳酸钙防止色素（叶绿素）被破坏，加无水乙醇溶解色素，过滤收集滤液；
+分离：用纸层析法，色素在层析液中溶解度越高，随层析液在滤纸上扩散越快；层析液不能触及滤液细线。
+[boundaryMarkdown] 无水乙醇可用体积分数95%的乙醇加适量无水碳酸钠代替；滤纸条一端剪去两角防止出现弧形色素带。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-kb3-f4-s28-n02
+来源: 生物知识清单《2027届高三生物一轮复习知识清单4：分子与细胞基础》（registry-kb-biology-knowledge-list:biology）
+类型: CONCEPT_EXPLANATION
+[title] 建构模型
+[summaryMarkdown] 类型：物理模型、数学模型、概念模型。
+[applicabilityMarkdown] 复习“建构模型”考点或解答涉及“建构模型”的题目时使用。
+[contentMarkdown] 类型：物理模型、数学模型、概念模型。
+[boundaryMarkdown] 一轮复习结论性要点，表述以人教版现行教材为准；具体数值可能因教材版本略有差异。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-pcr-prenatal-advantages
+来源: 《狂K重点》生物 P400-401 重难8·题型1（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: CONCEPT_EXPLANATION
+[title] PCR 产前诊断优点：操作简便、安全快速、不伤害胎儿
+[summaryMarkdown] PCR 产前诊断操作简便、检测安全快速、不伤害胎儿（对母体伤害小）。
+[applicabilityMarkdown] 遗传病监测简答题。
+[contentMarkdown] 优点（答 2 点）：操作简便；检测安全、快速；不伤害胎儿、对母体伤害小。取样：孕妇外周血游离胎儿 DNA、羊水细胞、绒毛细胞。
+[boundaryMarkdown] 只适用于已知突变位点的检测。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## BIOLOGY | bio-rubisco-dual-activity
+来源: 《狂K重点》生物 P381-382 重难3·题型2（registry-lixiangshu-2027-bikuti-kuangk-biology:biology）
+类型: CONCEPT_EXPLANATION
+[title] Rubisco 双重催化活性：C5+CO2（固碳）与 C5+O2（光呼吸）竞争
+[summaryMarkdown] Rubisco 既能催化 C5 与 CO2 的羧化（碳同化），也能催化 C5 与 O2 的加氧（光呼吸），两种反应竞争同一酶。
+[applicabilityMarkdown] 光呼吸机制与 C3/C4 比较题。
+[contentMarkdown] Rubisco 具有双重活性：催化 C5+CO2→进入卡尔文循环（固碳）；催化 C5+O2→进入光呼吸。CO2 与 O2 竞争 Rubisco 的活性位点，相对浓度决定反应方向。
+[boundaryMarkdown] Rubisco 位于叶绿体基质（C3）或维管束鞘细胞（C4）。
+候选（机械预筛，未必对）：叶绿体（名字出现）；光呼吸（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-bo-li-yi-qi-de-xi-di-f65x11
+来源: 化学方法类《（重点·方法·点拨）第62讲 化学实验基础知识和技能- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 玻璃仪器的洗涤
+[summaryMarkdown] 5.玻璃仪器的洗涤。
+[applicabilityMarkdown] 实验方案设计、评价与异常现象分析时使用。
+[contentMarkdown] 5.玻璃仪器的洗涤
+(1)洗净的标准：玻璃仪器内壁附着均匀的水膜，既不聚集成滴，也不成股流下。
+(2)洗涤方法：使用毛刷，用特殊试剂或蒸馏水冲洗。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：实验方案设计（名字出现）；玻璃仪器的洗涤（名字出现）；仪器的洗涤（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-di-yi-bu-f03x09
+来源: 化学方法类《第01讲 有机化合物的结构特点与研究方法（学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 第一步
+[summaryMarkdown] 1. 第一步：碳链异构：写出C5H12的3种碳架（直链、异戊烷型、新戊烷型）。
+[applicabilityMarkdown] 有机推断、官能团性质判断与方程式书写时使用。
+[contentMarkdown] 1. 第一步：碳链异构：写出C5H12的3种碳架（直链、异戊烷型、新戊烷型）。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-fang-yang-hua-f74x01
+来源: 化学方法类《高考化学化学实验基础(选择题)(学生版)-34页》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 防氧化
+[summaryMarkdown] 防氧化：①密封或用后立即盖好；②加入还原剂；③隔绝空气；①Na2SO3、Na2S、KI溶液等用后立即盖好；②向FeSO4溶液中加少量铁屑；③K、Na保存在煤油中，Li保存在石蜡中。
+[applicabilityMarkdown] 分析氧化还原反应、比较氧化性还原性强弱与电子转移数目时使用。
+[contentMarkdown] 防氧化：①密封或用后立即盖好；②加入还原剂；③隔绝空气；①Na2SO3、Na2S、KI溶液等用后立即盖好；②向FeSO4溶液中加少量铁屑；③K、Na保存在煤油中，Li保存在石蜡中
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：还原剂（名字出现）；电子转移（名字出现）；氧化还原反应（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-jing-duo-ci-yang-hua-he-xi-shou-f06x06
+来源: 化学方法类《（重点·方法·点拨）第03讲 化学计算的常用方法- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] NO经多次氧化和吸收
+[summaryMarkdown] NO经多次氧化和吸收，最终氮元素可完全转化到硝酸中，由氮元素守恒知：NH3～HNO3。
+[applicabilityMarkdown] 分析氧化还原反应、比较氧化性还原性强弱与电子转移数目时使用。
+[contentMarkdown] NO经多次氧化和吸收，最终氮元素可完全转化到硝酸中，由氮元素守恒知：NH3～HNO3。
+（3）电子转移守恒法
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：电子转移（名字出现）；氧化还原反应（名字出现）；守恒法（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-san-te-shu-f76x12
+来源: 化学方法类《高考化学离子检验、推断与共存(学生版)-26页》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 三特殊
+[summaryMarkdown] (3)三特殊——三种特殊情况。
+[applicabilityMarkdown] 判断离子能否大量共存、书写不能共存的原因时使用。
+[contentMarkdown] (3)三特殊——三种特殊情况
+①AlO与HCO不能大量共存：AlO+HCO+H2O=Al(OH)3↓+CO。
+②“NO+H+”组合具有强氧化性，能与S2-、Fe2+、I-、SO等还原性的离子发生氧化还原反应而不能大量共存。
+③NH与CH3COO-、CO，Mg2+与HCO等组合中，虽然两种离子都能水解且水解相互促进，但总的水解程度仍很小，它们在溶液中仍能大量共存。
+[boundaryMarkdown] ①AlO与HCO不能大量共存：AlO+HCO+H2O=Al(OH)3↓+CO。；②“NO+H+”组合具有强氧化性，能与S2-、Fe2+、I-、SO等还原性的离子发生氧化还原反应而不能大量共存。
+候选（机械预筛，未必对）：氧化还原反应（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-tou-xi-fen-bu-qu-xian-que-ding-si-wei-f53x02
+来源: 化学方法类《（重点·方法·点拨）第50讲 反应过程中溶液粒子浓度变化的图像分析- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 透析分布曲线　确定思维方向
+[summaryMarkdown] 1．透析分布曲线　确定思维方向。
+[applicabilityMarkdown] 判断平衡状态、分析平衡移动方向与相关计算时使用。
+[contentMarkdown] 1．透析分布曲线　确定思维方向
+分布曲线是指以pH为横坐标、分布系数(即组分的平衡浓度占总浓度的分数)为纵坐标的关系曲线。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## CHEMISTRY | chem-fx-yi-lv-cai-wei-yang-ji-f41x16
+来源: 化学方法类《（重点·方法·点拨）第38讲 电解池　金属的腐蚀与防护- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 以铝材为阳极
+[summaryMarkdown] (2)以铝材为阳极，电解H2SO4溶液，铝材表面形成氧化膜。
+[applicabilityMarkdown] 分析氧化还原反应、比较氧化性还原性强弱与电子转移数目时使用。
+[contentMarkdown] (2)以铝材为阳极，电解H2SO4溶液，铝材表面形成氧化膜。
+[boundaryMarkdown] 该结论为一般规律归纳，个别特例需结合具体物质的性质与反应条件单独判断。
+候选（机械预筛，未必对）：电子转移（名字出现）；氧化还原反应（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-fx-zhuo-shao-bei-shao-duan-shao-f56x02
+来源: 化学方法类《（重点·方法·点拨）第53讲 无机化工流程题的解题策略- （学生版）》（registry-kb-chemistry-methods:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 灼烧、焙烧、煅烧
+[summaryMarkdown] (2)灼烧、焙烧、煅烧：改变结构，使一些物质能溶解，并使一些杂质在高温下氧化、分解。
+[applicabilityMarkdown] 分析氧化还原反应、比较氧化性还原性强弱与电子转移数目时使用。
+[contentMarkdown] (2)灼烧、焙烧、煅烧：改变结构，使一些物质能溶解，并使一些杂质在高温下氧化、分解。
+(3)审题时要“瞻前顾后”，注意物质性质及反应原理的前后联系。
+[boundaryMarkdown] (3)审题时要“瞻前顾后”，注意物质性质及反应原理的前后联系。
+候选（机械预筛，未必对）：电子转移（名字出现）；氧化还原反应（名字出现）；反应原理（名字出现）
+
+==============================================================================
+## CHEMISTRY | chem-kb-volumetric-flask-usage
+来源: 化学知识清单：《专题01 物质的量（知识清单）（全国通用）（教师版）》（registry-kb-chemistry-knowledge-list:chemistry）
+类型: CONCEPT_EXPLANATION
+[title] 容量瓶的使用要点
+[summaryMarkdown] 容量瓶是标有刻度线、温度和容量的细颈梨形平底玻璃瓶，使用前须查漏。
+[applicabilityMarkdown] 配制溶液的仪器选择与操作。
+[contentMarkdown] 容量瓶为细颈、梨形、平底玻璃瓶，配磨口玻璃塞，瓶上标有刻度线、温度和容量。
+常见规格有100 mL、250 mL、500 mL、1000 mL等，选择时遵循（大而近）原则。
+使用前必须检查是否漏水。
+[boundaryMarkdown] 容量瓶不能加热，不能长期存放溶液，不能作反应容器。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-fx-fenqi-fukuan-moxing
+来源: 数学方法类《第24讲：数列的综合应用（知识梳理+题型总结）》（registry-kb-math-methods:math）
+类型: CONCEPT_EXPLANATION
+[title] 分期付款（等额本息）模型
+[summaryMarkdown] 贷款总额 $A$、期利率 $r$、每期等额还款 $x$，由余额递推 $n$ 期后清零解得 $x=\dfrac{A(1+r)^n r}{(1+r)^n-1}$。
+[applicabilityMarkdown] 房贷、车贷等分期还款类应用题。
+[contentMarkdown] 1. 递推关系：每期还款后余额 $=($上期余额$)\times(1+r)-x$，即 $A_{n+1}=(1+r)A_n-x$，$A_0=A$。
+2. 逐期迭代（或构造等比）得 $A_n=A(1+r)^n-x\cdot\dfrac{(1+r)^n-1}{r}$。
+3. $n$ 期还清即 $A_n=0$，解得每期还款 $x=\dfrac{A(1+r)^n r}{(1+r)^n-1}$。
+[boundaryMarkdown] $r$ 是每期利率（年利率除以每年期数）；模型假设期末还款且利率不变。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-hj-junzhi-dingli
+来源: 数学讲义《2.1基本不等式（讲义）（学生版）》（registry-kb-math-handout:math）
+类型: CONCEPT_EXPLANATION
+[title] 均值定理：积定和最小、和定积最大
+[summaryMarkdown] 积定则和有最小值，和定则积有最大值。
+[applicabilityMarkdown] 利用定值条件求最值。
+[contentMarkdown] 设 $x>0,\ y>0$：若 $xy=P$ 为定值，则 $x+y\ge 2\sqrt{P}$；若 $x+y=S$ 为定值，则 $xy\le\frac{S^2}{4}$；均当 $x=y$ 时取等。
+[boundaryMarkdown] 必须有定值且取等条件能取到。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-hj-yide-daihuan-fa
+来源: 数学讲义《第一章 §1.4　基本不等式》（registry-kb-math-handout:math）
+类型: METHOD_MODEL
+[title] “1”的代换
+[summaryMarkdown] 把 1 替换为已知等式（如 $x+y=1$）后整体展开凑定值。
+[applicabilityMarkdown] 已知和（积）为定值求另一组合的最值。
+[contentMarkdown] 当条件为 $x+y=1$（或 $\frac{1}{x}+\frac{1}{y}=2$ 等）时，将目标式乘以“1”的代换式后展开，凑出形如 $\frac{y}{x}+\frac{x}{y}$ 的结构，再用基本不等式求最值。
+[boundaryMarkdown] 注意取等条件与约束同时满足。
+候选（机械预筛，未必对）：基本不等式（名字出现）
+
+==============================================================================
+## MATH | math-mo-hailun-qinjiushao-gongshi
+来源: 数学《高考数学二级结论篇（核心知识背记手册）（默写版）》（registry-kb-math-misc:math）
+类型: CONCEPT_EXPLANATION
+[title] 海伦公式与秦九韶公式
+[summaryMarkdown] $S=\sqrt{p(p-a)(p-b)(p-c)}$（$p$ 为半周长），或 $S=\frac12\sqrt{c^2a^2-\left(\frac{c^2+a^2-b^2}{2}\right)^2}$。
+[applicabilityMarkdown] 仅由三边求三角形面积。
+[contentMarkdown] 海伦公式：三角形三边为 $a,b,c$，$p=\dfrac{a+b+c}{2}$（半周长），则 $S=\sqrt{p(p-a)(p-b)(p-c)}$。秦九韶公式（三斜求积）：$S=\dfrac12\sqrt{c^2a^2-\left(\dfrac{c^2+a^2-b^2}{2}\right)^2}$，与海伦公式等价。
+[boundaryMarkdown] 根号内各式必须为正（三角形不等式保证）；已知两边及夹角时直接用 $\frac12ab\sin C$ 更快。
+候选（机械预筛，未必对）：无
+
+==============================================================================
+## MATH | math-mo-yueya-dingli
+来源: 数学《专题12 以相关公式、定义、定理、模型为命题背景（附加）（全国通用）（学生版）（会一题通一类系列）》（registry-kb-math-misc:math）
+类型: CONCEPT_EXPLANATION
+[title] 月牙定理（希波克拉底月牙）
+[summaryMarkdown] 直角三角形两直角边上的月牙面积之和等于直角三角形的面积。
+[applicabilityMarkdown] 以月牙定理为背景的面积问题。
+[contentMarkdown] 月牙定理：以直角三角形的两条直角边为直径向形外作半圆，再以斜边为直径作半圆，则斜边半圆与两直角边半圆围成的两块“月牙形”的面积之和等于该直角三角形的面积。
+[boundaryMarkdown] 结论依赖“斜边半圆减去弓形”的面积差；应用时按“半圆面积＋三角形面积−弓形”分块计算。
+候选（机械预筛，未必对）：月牙定理（名字出现）
+
+==============================================================================
+## PHYSICS | phys-electromagnetic-flowmeter
+来源: 《狂K重难点》物理 书页P451，重难点29（现代科学仪器）（registry-lixiangshu-2027-bikuti-kuangk-physics:physics）
+类型: CONCEPT_EXPLANATION
+[title] 电磁流量计的流速与流量公式
+[summaryMarkdown] 导电液体过磁场，稳定时 $\frac{U}{D}q=qvB$ 得 $v=\frac{U}{DB}$，流量 $Q=vS=\frac{\pi UD}{4B}$。
+[applicabilityMarkdown] 圆形导管电磁流量计测量导电液体流量。
+[contentMarkdown] 非磁性材料制成的圆形导管处于匀强磁场中，导电液体充满导管。
+稳定时有 $\frac{U}{D}q=qvB$，所以 $v=\frac{U}{DB}$；液体流量 $Q=vS=\frac{U}{DB}\cdot\pi\left(\frac{D}{2}\right)^2=\frac{\pi UD}{4B}$。
+[boundaryMarkdown] 要求液体导电；电势高低由左手定则判断（书中情境 $\varphi_a>\varphi_b$）。
+候选（机械预筛，未必对）：电磁流量计（名字出现）
+
+==============================================================================
+## PHYSICS | phys-hj-192-ampere-rule-usage
+来源: 物理讲义《第53讲 磁场及其对电流的作用-（讲义）（学生版）》（registry-kb-physics-handout:physics）
+类型: METHOD_MODEL
+[title] 安培定则（右手螺旋定则）
+[summaryMarkdown] 判定电流磁场的方向
+[applicabilityMarkdown] 电流磁场判断
+[contentMarkdown] 直线电流：大拇指指电流方向，四指弯曲方向为磁感线绕向；环形电流和通电螺线管：四指指电流方向，大拇指所指为内部磁场方向（N 极）。
+[boundaryMarkdown] 分清因（电流）与果（磁场）。
+候选（机械预筛，未必对）：安培定则（名字出现）；磁感线（名字出现）
+
+==============================================================================
+## PHYSICS | phys-hj3-ohmmeter-usage-rules
+来源: 物理讲义《第36讲 重点实验：用多用电表测量电学中的物理量（复习讲义）（安徽专用）（学生版）》（registry-kb-physics-handout:physics）
+类型: CONCEPT_EXPLANATION
+[title] 欧姆表的使用规则
+[summaryMarkdown] 测电阻须断开原电路、换挡必调零、读数乘倍率、手指不碰表笔金属杆。
+[applicabilityMarkdown] 规范使用欧姆表（多用电表欧姆挡）。
+[contentMarkdown] 1.待测电阻与电路、电源一定要断开；两手不能同时接触两表笔金属杆。
+2.指针指中值附近较准，偏离时应换挡；每换一挡必须重新欧姆调零。
+3.读出示数要乘以倍率才为电阻阻值。
+[boundaryMarkdown] 欧姆表内部电池用旧后电动势下降会带来系统误差。
+候选（机械预筛，未必对）：电动势（名字出现）；系统误差（名字出现）
+
+==============================================================================
+## PHYSICS | phys-sheng-moxing-bu-neng-guo-zui-gao-dian
+来源: 《狂K重难点》物理 书页P417，重难点11（registry-lixiangshu-2027-bikuti-kuangk-physics:physics）
+类型: CONCEPT_EXPLANATION
+[title] 绳模型不能过最高点的结果
+[summaryMarkdown] 绳模型中 $v<\sqrt{gr}$ 时小球在到达最高点前脱离圆轨道做斜抛运动，或在圆心高度以下做往复运动。
+[applicabilityMarkdown] 判断绳系小球或内轨道小球能否完成完整圆周运动。
+[contentMarkdown] 不能过最高点时（$v<\sqrt{gr}$），在到达最高点前小球已经脱离圆轨道做斜抛运动，或在圆心高度以下做往复运动。
+[boundaryMarkdown] 能过最高点时（$v\ge\sqrt{gr}$），绳、轨道对球产生弹力 $F_N$。
+候选（机械预筛，未必对）：斜抛运动（名字出现）；圆周运动（名字出现）
+
