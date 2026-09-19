@@ -1,7 +1,7 @@
 {
  "schemaVersion": 1,
  "packId": "moe-2025-four-subjects-v1",
- "contentVersion": "8cb741ee7abf3ac3",
+ "contentVersion": "c75a95ba781ec613",
  "retired": [
   {
    "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:dna是主要的遗传物质-x1",
@@ -1816,10 +1816,22 @@
    "reason": "整句话当名称"
   },
   {
+   "nodeId": "kb:moe-2025-four-subjects-v1:math:atomic:三角形解的个数问题",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:math:atomic:三角形解的个数判断",
+   "kind": "MERGE",
+   "reason": "近重复节点：错绑嫌疑改绑后该节点已无材料，其同名节点承担全部内容（2026-09-19 错绑审计）。"
+  },
+  {
    "nodeId": "kb:moe-2025-four-subjects-v1:math:atomic:二面角-x1",
    "supersededBy": "kb:moe-2025-four-subjects-v1:math:atomic:二面角",
    "kind": "MERGE",
    "reason": "跨章同名同概念"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:math:atomic:分式不等式及其解法",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:math:atomic:分式不等式的解法",
+   "kind": "MERGE",
+   "reason": "近重复节点：错绑嫌疑改绑后该节点已无材料，其同名节点承担全部内容（2026-09-19 错绑审计）。"
   },
   {
    "nodeId": "kb:moe-2025-four-subjects-v1:math:atomic:在中-角a-的对边分别为-且",
