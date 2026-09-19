@@ -222,8 +222,12 @@ internal class RoomBatchImportRepository(
                     throw BatchOrganizationUnavailableException()
                 }
                 val provider = modelTasks.capabilities()
-                require(provider.canOrganizeBatchPages()) {
-                    "The configured model cannot compare adjacent question pages"
+                if (!provider.canOrganizeBatchPages()) {
+                    // 能力不足与"未授权出网"是同一个领域结局，都走
+                    // BatchOrganizationUnavailableException，UI 才会显示精确的"请先配置模型"，
+                    // 而不是被通用 catch 吞成笼统兜底（KD-16）。此前这里用 require(...) 抛的是
+                    // IllegalArgumentException，正好落错 catch 分支。
+                    throw BatchOrganizationUnavailableException()
                 }
                 val occurredAtEpochMillis = System.currentTimeMillis()
                 val initial = database.readBatchImportJob(jobId)

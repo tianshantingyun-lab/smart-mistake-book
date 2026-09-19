@@ -22,6 +22,7 @@ import com.tingyun.smartmistakebook.core.data.splitimport.SplitImportRepositoryF
 import com.tingyun.smartmistakebook.core.domain.BatchImportJob
 import com.tingyun.smartmistakebook.core.domain.BatchImportPageStatus
 import com.tingyun.smartmistakebook.core.domain.BatchImportStatus
+import com.tingyun.smartmistakebook.core.domain.BatchOrganizationUnavailableException
 import com.tingyun.smartmistakebook.core.domain.CaptureDraftImportRequest
 import com.tingyun.smartmistakebook.core.domain.CaptureEntryOrigin
 import com.tingyun.smartmistakebook.core.domain.CaptureInputSource
@@ -464,6 +465,77 @@ class BatchImportRepositoryInstrumentedTest {
             assertTrue(bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream))
         } finally {
             bitmap.recycle()
+        }
+    }
+
+    /**
+     * KD-16：egress 已允许（localFirst 恒真）但所配模型看不了图时，organizeBatch 必须走
+     * BatchOrganizationUnavailableException，让 UI 显示精确的"请先配置模型"——而不是像旧实现
+     * 那样用 require 抛 IllegalArgumentException、落进 UI 的通用 catch 显示笼统兜底。也绝不能
+     * 真的派发一次注定失败的模型轮次。
+     */
+    @Test
+    fun organizeBatchWithAConfiguredButImageIncapableModelReportsCapabilityUnavailable() =
+        runBlocking {
+            val selected = listOf(insertImage(Color.WHITE), insertImage(Color.LTGRAY))
+            val processingScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+            try {
+                val gateway = ImageIncapableGateway()
+                val repository = BatchImportRepositoryFactory.create(
+                    context = context,
+                    database = database,
+                    capture = captureRepository(database),
+                    processingScope = processingScope,
+                    modelTasks = ModelTaskRepositoryFactory.create(database, gateway),
+                    modelEgressAllowed = { true },
+                )
+                val created = repository.createBatchImport(
+                    CreateBatchImportRequest(
+                        requestId = "organize-no-capability",
+                        localUris = selected.map(Uri::toString),
+                        occurredAtEpochMillis = 6_000,
+                    ),
+                )
+                withTimeout(15_000) {
+                    repository.observeBatchImports().first { jobs ->
+                        jobs.firstOrNull()?.status == BatchImportStatus.COMPLETED
+                    }
+                }
+
+                val failure = runCatching { repository.organizeBatch(created.jobId) }
+                    .exceptionOrNull()
+
+                assertTrue(
+                    "Expected BatchOrganizationUnavailableException, got $failure",
+                    failure is BatchOrganizationUnavailableException,
+                )
+                assertEquals(0, gateway.executionCount)
+            } finally {
+                processingScope.cancel()
+            }
+        }
+
+    /** 已配置、能结构化输出，但看不了图——`canOrganizeBatchPages()` 为假。 */
+    private class ImageIncapableGateway : ModelGateway {
+        var executionCount: Int = 0
+            private set
+
+        override suspend fun capabilities(): ProviderCapabilitySnapshot =
+            ProviderCapabilitySnapshot(
+                providerId = "fixture-image-incapable",
+                providerDisplayName = "测试模型",
+                modelId = "fixture-text-only-v1",
+                supportedTasks = setOf(ModelTaskKind.CAPTURE_ASSESS),
+                supportsImageInput = false,
+                supportsStructuredOutput = true,
+                supportsStreaming = false,
+                executionLocation = ModelExecutionLocation.EXTERNAL_PROVIDER,
+                providerConfigurationVersion = "fixture-config-v1",
+            )
+
+        override fun execute(execution: ModelGatewayExecution) = flow<ModelGatewayEvent> {
+            executionCount += 1
+            error("organizeBatch must not dispatch a model round for an image-incapable provider")
         }
     }
 
