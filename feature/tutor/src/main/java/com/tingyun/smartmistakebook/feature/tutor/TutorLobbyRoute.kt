@@ -564,6 +564,8 @@ internal fun TutorLobbyRoute(
                 )
             } finally {
                 sendInFlight = false
+                // 生成结束：清掉实时文本，避免下一次发送在首个状态到达前闪出上一条的残留。
+                liveReplyStatus = null
             }
         }
     }
