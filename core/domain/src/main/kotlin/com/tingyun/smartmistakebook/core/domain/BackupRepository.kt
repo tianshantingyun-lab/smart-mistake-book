@@ -101,7 +101,15 @@ data class BackupManifestSummary(
 interface BackupRepository {
     suspend fun inspect(): StorageInventory
 
-    /** Deletes canonical assets that no revision or draft references. */
+    /**
+     * Deletes canonical assets that no problem revision, draft or tutor message
+     * references, and returns how many vault files were actually removed.
+     *
+     * Deciding and deleting the rows happens inside one write transaction, so a
+     * reference committed before the claim always survives. Assets younger than
+     * the 30-minute grace window are left for a later run: a freshly captured
+     * image stays unreferenced until the send that will reference it commits.
+     */
     suspend fun cleanupOrphanAssets(): Int
 
     suspend fun create(

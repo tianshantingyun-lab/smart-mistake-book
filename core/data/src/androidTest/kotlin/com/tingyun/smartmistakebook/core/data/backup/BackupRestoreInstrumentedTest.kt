@@ -5,11 +5,16 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.tingyun.smartmistakebook.core.database.AppendTutorStudentMessageDatabaseCommand
+import com.tingyun.smartmistakebook.core.database.CanonicalSourceAssetRecord
+import com.tingyun.smartmistakebook.core.database.CreateTutorConversationDatabaseCommand
 import com.tingyun.smartmistakebook.core.database.ErrorBookEntrySeedRecord
 import com.tingyun.smartmistakebook.core.database.PracticeUnitSeedRecord
 import com.tingyun.smartmistakebook.core.database.ProblemRevisionSeedRecord
 import com.tingyun.smartmistakebook.core.database.ProblemSeedRecord
 import com.tingyun.smartmistakebook.core.database.StudyDatabaseFactory
+import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
+import com.tingyun.smartmistakebook.core.database.StudyDbValue
 import com.tingyun.smartmistakebook.core.database.StudySeedBundle
 import com.tingyun.smartmistakebook.core.data.settings.AndroidKeystoreModelSecretVault
 import com.tingyun.smartmistakebook.core.data.settings.MODEL_SECRET_KEY_ALIAS
@@ -250,33 +255,265 @@ class BackupRestoreInstrumentedTest {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val databaseName = "orphan-cleanup-${System.nanoTime()}.db"
         context.deleteDatabase(databaseName)
+        val planted = mutableListOf<CanonicalSourceAssetRecord>()
         try {
             val database = StudyDatabaseFactory.open(context, databaseName)
             database.seedFixture(seed())
             val repository = AndroidBackupRepository(context, database)
-            val orphan = com.tingyun.smartmistakebook.core.database.CanonicalSourceAssetRecord(
-                sourceAssetId = "asset-orphan",
-                contentSha256 = "e".repeat(64),
-                relativePath = "source-assets/${"e".repeat(64)}.jpg",
-                mimeType = "image/jpeg",
-                byteSize = 1_024,
-                width = 100,
-                height = 200,
-                sourceType = "CAMERA",
+            val orphan = plantCanonicalAsset(
+                context = context,
+                database = database,
+                seed = "orphan",
                 createdAtEpochMillis = 2_000,
+                planted = planted,
             )
-            database.insertOrphanCanonicalAssetForTest(orphan)
+
+            val removed = repository.cleanupOrphanAssets()
+
+            // 计数是"真删掉的图"：账本里删了行、文件却没删掉时不该报成一张。
+            assertEquals(1, removed)
+            assertEquals(null, database.readCanonicalSourceAsset(orphan.sourceAssetId))
+            assertFalse(assetFile(context, orphan).exists())
+            assertEquals(1, database.countMistakes())
+            database.close()
+        } finally {
+            planted.forEach { assetFile(context, it).delete() }
+            context.deleteDatabase(databaseName)
+        }
+    }
+
+    /**
+     * 端口装饰器：把"未引用候选"固定成引用建立之前的快照，用来复现旧实现的时序
+     * （清理先按旧候选删文件、之后才重新判定并删行）。其余方法经接口委托原样透传。
+     */
+    private class StaleOrphanSnapshotPort(
+        private val delegate: StudyDatabasePort,
+        private val snapshot: List<CanonicalSourceAssetRecord>,
+    ) : StudyDatabasePort by delegate {
+        override suspend fun readUnreferencedCanonicalAssets():
+            List<CanonicalSourceAssetRecord> = snapshot
+    }
+
+    /**
+     * 原子认领的判据：清理不得依据过期的候选快照删文件。
+     *
+     * 本用例刻意让端口继续返回"引用建立之前"的旧候选。旧实现会据此删掉文件，随后那次
+     * 整表删除因引用已存在而放过该行——文件没了、行还在，于是断言文件仍在时失败；
+     * 新实现在写事务内重新判定，不读这个快照，行与文件都保得住。
+     */
+    @Test
+    fun cleanupNeverUnlinksAnAssetThatBecameReferencedAfterTheCandidateRead() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val databaseName = "orphan-stale-${System.nanoTime()}.db"
+        context.deleteDatabase(databaseName)
+        val planted = mutableListOf<CanonicalSourceAssetRecord>()
+        try {
+            val database = StudyDatabaseFactory.open(context, databaseName)
+            database.seedFixture(seed())
+            val asset = plantCanonicalAsset(
+                context = context,
+                database = database,
+                seed = "stale",
+                createdAtEpochMillis = 2_000,
+                planted = planted,
+            )
+            val staleSnapshot = database.readUnreferencedCanonicalAssets()
+            assertTrue(staleSnapshot.any { it.sourceAssetId == asset.sourceAssetId })
+
+            // 大堂的引用形态：资产行先落，引用随后在另一个事务里建立。
+            database.createTutorConversation(
+                CreateTutorConversationDatabaseCommand(
+                    conversationId = "conversation-stale",
+                    anchorKind = "TEXT_ONLY",
+                    anchorId = null,
+                    anchorRevisionId = null,
+                    title = null,
+                    createdAtEpochMillis = 1_000,
+                ),
+            )
+            database.appendTutorStudentMessage(
+                AppendTutorStudentMessageDatabaseCommand(
+                    conversationId = "conversation-stale",
+                    messageId = "message-stale",
+                    ordinal = 1,
+                    bodyMarkdown = "看看这道题",
+                    logicalOperationId = "operation-stale",
+                    createdAtEpochMillis = 1_000,
+                    sourceImageAssetIds = listOf(asset.sourceAssetId),
+                ),
+            )
+
+            val repository = AndroidBackupRepository(
+                context,
+                StaleOrphanSnapshotPort(database, staleSnapshot),
+            )
+            val removed = repository.cleanupOrphanAssets()
+
+            assertEquals(0, removed)
+            assertTrue(assetFile(context, asset).isFile)
+            assertEquals(asset, database.readCanonicalSourceAsset(asset.sourceAssetId))
+            database.close()
+        } finally {
+            planted.forEach { assetFile(context, it).delete() }
+            context.deleteDatabase(databaseName)
+        }
+    }
+
+    /**
+     * 同内容再登记必须把登记时间刷成本次调用给的值：资产 id 与文件名都由内容哈希推出，
+     * `INSERT OR IGNORE` 会保留旧时间戳，于是"会话被删 → 行成孤儿 → 学生重发同一张图"
+     * 时宽限期按旧时间戳判定，这一行会在"登记 → 建立引用"的窗口里被认领回收，随后的
+     * 写引用撞 `tutor_message_source_asset` 的 RESTRICT 外键而让发送失败。
+     */
+    @Test
+    fun reRegisteringTheSameImageRefreshesTheCleanupTimestamp() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val databaseName = "orphan-reregister-${System.nanoTime()}.db"
+        context.deleteDatabase(databaseName)
+        val planted = mutableListOf<CanonicalSourceAssetRecord>()
+        try {
+            val database = StudyDatabaseFactory.open(context, databaseName)
+            database.seedFixture(seed())
+            val repository = AndroidBackupRepository(context, database)
+            val asset = plantCanonicalAsset(
+                context = context,
+                database = database,
+                seed = "reregister",
+                createdAtEpochMillis = 2_000,
+                planted = planted,
+            )
+            database.createTutorConversation(
+                CreateTutorConversationDatabaseCommand(
+                    conversationId = "conversation-reregister",
+                    anchorKind = "TEXT_ONLY",
+                    anchorId = null,
+                    anchorRevisionId = null,
+                    title = null,
+                    createdAtEpochMillis = 1_000,
+                ),
+            )
+            database.appendTutorStudentMessage(
+                AppendTutorStudentMessageDatabaseCommand(
+                    conversationId = "conversation-reregister",
+                    messageId = "message-reregister",
+                    ordinal = 1,
+                    bodyMarkdown = "看看这道题",
+                    logicalOperationId = "operation-reregister",
+                    createdAtEpochMillis = 1_000,
+                    sourceImageAssetIds = listOf(asset.sourceAssetId),
+                ),
+            )
+            // 会话被删 → 引用级联删除，资产行留成孤儿，时间戳仍是过去那个 2_000。
+            database.deleteTutorConversation("conversation-reregister")
+            assertTrue(
+                database.readUnreferencedCanonicalAssets()
+                    .any { it.sourceAssetId == asset.sourceAssetId },
+            )
+
+            // 学生重发同一张图：同 id 再登记，时间戳应是本次的"现在"。
+            val reRegistered = asset.copy(createdAtEpochMillis = System.currentTimeMillis())
+            database.registerCanonicalSourceAsset(reRegistered)
+
+            val removed = repository.cleanupOrphanAssets()
+
+            assertEquals(0, removed)
+            assertEquals(reRegistered, database.readCanonicalSourceAsset(asset.sourceAssetId))
+            assertTrue(assetFile(context, asset).isFile)
+            database.close()
+        } finally {
+            planted.forEach { assetFile(context, it).delete() }
+            context.deleteDatabase(databaseName)
+        }
+    }
+
+    /**
+     * 宽限期：学生刚拍/刚选、引用尚未建立的图不能在下一轮清理里被回收
+     * （`tutor_message_source_asset` 对资产行是 RESTRICT 外键，删了会让发送失败）。
+     */
+    @Test
+    fun youngOrphanIsDeferredUntilItAgesPastTheGraceWindow() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val databaseName = "orphan-grace-${System.nanoTime()}.db"
+        context.deleteDatabase(databaseName)
+        val planted = mutableListOf<CanonicalSourceAssetRecord>()
+        try {
+            val database = StudyDatabaseFactory.open(context, databaseName)
+            database.seedFixture(seed())
+            val repository = AndroidBackupRepository(context, database)
+            val ancient = plantCanonicalAsset(
+                context = context,
+                database = database,
+                seed = "ancient",
+                createdAtEpochMillis = 2_000,
+                planted = planted,
+            )
+            val young = plantCanonicalAsset(
+                context = context,
+                database = database,
+                seed = "young",
+                createdAtEpochMillis = System.currentTimeMillis(),
+                planted = planted,
+            )
 
             val removed = repository.cleanupOrphanAssets()
 
             assertEquals(1, removed)
-            assertEquals(null, database.readCanonicalSourceAsset("asset-orphan"))
-            assertEquals(1, database.countMistakes())
+            assertEquals(null, database.readCanonicalSourceAsset(ancient.sourceAssetId))
+            assertFalse(assetFile(context, ancient).exists())
+            assertEquals(young, database.readCanonicalSourceAsset(young.sourceAssetId))
+            assertTrue(assetFile(context, young).isFile)
+            // 被推迟，不是被丢弃：等它老了，下一轮清理仍然会回收它。
+            assertTrue(
+                database.readUnreferencedCanonicalAssets()
+                    .any { it.sourceAssetId == young.sourceAssetId },
+            )
             database.close()
         } finally {
+            planted.forEach { assetFile(context, it).delete() }
             context.deleteDatabase(databaseName)
         }
     }
+
+    /**
+     * 按 vault 的落盘约定种一张真图：`source-assets/<sha256>.jpg` 加与之匹配的行。
+     * `vault.delete` 会核对大小与 SHA-256，只插行不落文件的夹具会让清理计数失去意义。
+     *
+     * 文件先登记进 [planted] 再插库：插入抛异常时文件不会漏在共享的 vault 目录里，
+     * 别的套件按目录名集合做断言时不会被它污染。
+     */
+    private suspend fun plantCanonicalAsset(
+        context: Context,
+        database: StudyDatabasePort,
+        seed: String,
+        createdAtEpochMillis: Long,
+        planted: MutableList<CanonicalSourceAssetRecord>,
+    ): CanonicalSourceAssetRecord {
+        val bytes = "canonical-asset-$seed".toByteArray()
+        val sha256 = MessageDigest.getInstance("SHA-256").digest(bytes)
+            .joinToString("") { byte -> "%02x".format(byte) }
+        val assetRoot = File(context.filesDir, "source-assets").apply { mkdirs() }
+        val file = File(assetRoot, "$sha256.jpg")
+        FileOutputStream(file).use { it.write(bytes) }
+        val record = CanonicalSourceAssetRecord(
+            sourceAssetId = "asset-${sha256.take(32)}",
+            contentSha256 = sha256,
+            relativePath = "source-assets/$sha256.jpg",
+            mimeType = "image/jpeg",
+            byteSize = file.length(),
+            width = 100,
+            height = 200,
+            sourceType = StudyDbValue.SourceAssetType.CAMERA,
+            createdAtEpochMillis = createdAtEpochMillis,
+        )
+        planted += record
+        database.insertOrphanCanonicalAssetForTest(record)
+        return record
+    }
+
+    private fun assetFile(
+        context: Context,
+        asset: CanonicalSourceAssetRecord,
+    ): File = File(context.filesDir, asset.relativePath)
 
     // ------------------------------------------------------------------
     // §10.4 fault injection: archive-level attacks

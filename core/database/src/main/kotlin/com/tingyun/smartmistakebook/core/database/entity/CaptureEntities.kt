@@ -6,7 +6,13 @@ import androidx.room3.ForeignKey
 import androidx.room3.Index
 import androidx.room3.PrimaryKey
 
-/** Canonicalized pixels are immutable; no DAO exposes update or delete operations. */
+/**
+ * Canonicalized pixels are immutable; the only column ever rewritten is
+ * `created_at_epoch_millis`, which re-registration refreshes (see
+ * `RoomStudyDatabase.upsertCanonicalSourceAssetRow`) so the orphan-cleanup grace
+ * window still protects a re-sent identical image. No DAO exposes update or
+ * delete of the pixel-bearing columns.
+ */
 @Entity(
     tableName = "canonical_source_asset",
     indices = [

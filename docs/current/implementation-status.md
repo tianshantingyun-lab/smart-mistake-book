@@ -244,13 +244,21 @@ Updated from the remediation plan for the Android client on `main`.
   failure, and timeout through the real gateway execution path and asserts the
   stable failure codes (`RATE_LIMITED`, retryable service failure,
   `AUTHENTICATION_FAILED`, `NETWORK_UNAVAILABLE`, `TIMEOUT`) that UI consumes.
-- Orphan cleanup: `PendingCaptureDao` finds and deletes canonical source assets
-  with no `problem_revision_source_asset` or `problem_draft_source_asset`
-  reference, `BackupRepository.cleanupOrphanAssets()` removes vault files
-  (tolerating already-missing files) before deleting the rows, and the storage
-  screen exposes a cleanup action that refreshes the inventory. A device test
-  proves unreferenced assets are removed while the referenced catalog stays
-  intact (`CAP-P1-014`, `BAK-P1-012`).
+- Orphan cleanup: `PendingCaptureDao` finds canonical source assets with no
+  `problem_revision_source_asset`, `problem_draft_source_asset`,
+  `problem_draft` or `tutor_message_source_asset` reference, and
+  `BackupRepository.cleanupOrphanAssets()` claims them — deciding and deleting
+  the rows inside a single write transaction, so a reference committed before
+  the claim always survives — then removes their vault files (tolerating
+  already-missing files) and reports how many files it actually removed. Assets
+  younger than a 30-minute grace window are deferred to a later run, because a
+  freshly captured image stays unreferenced until the send that references it
+  commits. The storage screen exposes a cleanup action that refreshes the
+  inventory. Device tests prove unreferenced assets are removed while the
+  referenced catalog stays intact, that a fresh asset is deferred rather than
+  deleted, that a cleanup still reading a pre-reference candidate list unlinks
+  nothing, and that re-registering an identical image refreshes its cleanup
+  timestamp (`CAP-P1-014`, `BAK-P1-012`).
 - Backup missing-file contracts: the codec test suite now also rejects an
   archive whose manifest lists an asset that is absent and an archive missing
   `database.sqlite`, so restore cannot proceed with an incomplete file set

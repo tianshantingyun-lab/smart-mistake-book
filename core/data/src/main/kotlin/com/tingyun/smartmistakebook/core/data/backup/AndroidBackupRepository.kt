@@ -52,6 +52,14 @@ class AndroidBackupRepository(
         const val MAX_COMPRESSION_RATIO = 100.0
         const val ASSET_DIRECTORY = "source-assets"
 
+        /**
+         * 孤儿资产回收的宽限期（30 分钟）。资产文件先落盘、引用随后才在另一个事务里
+         * 建立（大堂发送附图：登记资产行 → 写入消息引用），这段在途期里它按引用判定
+         * 确实是"孤儿"；没有宽限期，清理会把学生正要发送的那张图连行带文件删掉，
+         * 随后建立引用时会撞上 tutor_message_source_asset 的 RESTRICT 外键而让发送失败。
+         */
+        const val ORPHAN_ASSET_GRACE_MILLIS = 30L * 60L * 1_000L
+
         /** Process-wide guard making concurrent restore requests idempotent-reject. */
         val restoreInFlight = AtomicBoolean(false)
     }
@@ -77,10 +85,13 @@ class AndroidBackupRepository(
 
     override suspend fun cleanupOrphanAssets(): Int = withContext(Dispatchers.IO) {
         val vault = AndroidCanonicalAssetVault(context.applicationContext)
-        database.readUnreferencedCanonicalAssets().forEach { asset ->
-            runCatching { vault.delete(asset) }
-        }
-        database.deleteUnreferencedCanonicalAssets()
+        // 认领在数据库侧一个写事务内完成，因此认领前提交的任何新引用都会保住它的行；
+        // 这里只负责删除被认领行的文件。返回值是真正删掉的图片数，与存储页文案
+        //「已清理 N 张…题图」一致（行删掉但文件已不在时不该报成一张）。
+        val claimed = database.claimUnreferencedCanonicalAssets(
+            createdBeforeEpochMillis = System.currentTimeMillis() - ORPHAN_ASSET_GRACE_MILLIS,
+        )
+        claimed.count { asset -> runCatching { vault.delete(asset) }.isSuccess }
     }
 
     override suspend fun create(

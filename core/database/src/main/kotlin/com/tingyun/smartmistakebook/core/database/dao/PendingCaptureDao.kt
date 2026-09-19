@@ -60,28 +60,12 @@ internal interface PendingCaptureDao {
     )
     suspend fun findUnreferencedCanonicalAssets(): List<CanonicalSourceAssetRow>
 
-    @Query(
-        """
-        DELETE FROM canonical_source_asset AS asset
-        WHERE NOT EXISTS (
-            SELECT 1 FROM problem_revision_source_asset AS revision_link
-            WHERE revision_link.source_asset_id = asset.source_asset_id
-        )
-          AND NOT EXISTS (
-            SELECT 1 FROM problem_draft_source_asset AS draft_link
-            WHERE draft_link.source_asset_id = asset.source_asset_id
-        )
-          AND NOT EXISTS (
-            SELECT 1 FROM problem_draft AS draft
-            WHERE draft.source_asset_id = asset.source_asset_id
-        )
-          AND NOT EXISTS (
-            SELECT 1 FROM tutor_message_source_asset AS message_link
-            WHERE message_link.source_asset_id = asset.source_asset_id
-        )
-        """,
-    )
-    suspend fun deleteUnreferencedCanonicalAssets(): Int
+    /**
+     * 按主键删除，故意不带"未引用"谓词：由调用方在同一写事务里先用
+     * [findUnreferencedCanonicalAssets] 判定再逐行删除，"未引用"的定义只有那一处。
+     */
+    @Query("DELETE FROM canonical_source_asset WHERE source_asset_id = :sourceAssetId")
+    suspend fun deleteCanonicalSourceAssetById(sourceAssetId: String): Int
 
     @Query(
         """

@@ -2013,7 +2013,9 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
     override suspend fun readUnreferencedCanonicalAssets():
         List<CanonicalSourceAssetRecord> = emptyList()
 
-    override suspend fun deleteUnreferencedCanonicalAssets(): Int = 0
+    override suspend fun claimUnreferencedCanonicalAssets(
+        createdBeforeEpochMillis: Long,
+    ): List<CanonicalSourceAssetRecord> = emptyList()
 
     override suspend fun insertOrphanCanonicalAssetForTest(asset: CanonicalSourceAssetRecord) =
         Unit

@@ -687,18 +687,36 @@ internal class RoomStudyDatabase(
             .findUnreferencedCanonicalAssets()
             .map(CanonicalSourceAssetRow::toRecord)
 
-    override suspend fun deleteUnreferencedCanonicalAssets(): Int =
-        database.pendingCaptureDao().deleteUnreferencedCanonicalAssets()
+    override suspend fun claimUnreferencedCanonicalAssets(
+        createdBeforeEpochMillis: Long,
+    ): List<CanonicalSourceAssetRecord> = database.withWriteTransaction {
+        val dao = database.pendingCaptureDao()
+        val claimed = dao.findUnreferencedCanonicalAssets()
+            .filter { it.createdAtEpochMillis < createdBeforeEpochMillis }
+        claimed.forEach { dao.deleteCanonicalSourceAssetById(it.sourceAssetId) }
+        claimed.map(CanonicalSourceAssetRow::toRecord)
+    }
 
     override suspend fun insertOrphanCanonicalAssetForTest(asset: CanonicalSourceAssetRecord) {
-        insertCanonicalSourceAssetRow(asset)
+        upsertCanonicalSourceAssetRow(asset)
     }
 
     override suspend fun registerCanonicalSourceAsset(asset: CanonicalSourceAssetRecord) {
-        insertCanonicalSourceAssetRow(asset)
+        upsertCanonicalSourceAssetRow(asset)
     }
 
-    private suspend fun insertCanonicalSourceAssetRow(asset: CanonicalSourceAssetRecord) {
+    /**
+     * 登记资产行；同 id 行已存在时只刷新 `created_at_epoch_millis`，像素与尺寸不动。
+     *
+     * 刷新是必需的：id 与文件名都由内容哈希推出，同一张图再次登记会命中
+     * `INSERT OR IGNORE` 而保留旧时间戳，于是孤儿清理的宽限期（按该字段过滤）对
+     * "会话被删后学生重发同一张图"失效——那条行会在"登记 → 建立引用"的窗口里被认领回收。
+     *
+     * 写调用方给的值而不是当前墙钟：题图校验按"请求 occurredAt == 行内值"做相等比较
+     * （见 RoomCaptureWorkflowMappings.matchesAssessment），写新墙钟会让已持久化的请求失配。
+     * 也不用 UPSERT——`ON CONFLICT DO UPDATE` 需要 SQLite 3.24 / API 30+，本项目 minSdk 23。
+     */
+    private suspend fun upsertCanonicalSourceAssetRow(asset: CanonicalSourceAssetRecord) {
         database.withRawConnection(isReadOnly = false) { connection ->
             connection.usePrepared(
                 "INSERT OR IGNORE INTO canonical_source_asset (" +
@@ -715,6 +733,14 @@ internal class RoomStudyDatabase(
                 statement.bindLong(7, asset.height.toLong())
                 statement.bindText(8, asset.sourceType)
                 statement.bindLong(9, asset.createdAtEpochMillis)
+                statement.step()
+            }
+            connection.usePrepared(
+                "UPDATE canonical_source_asset SET created_at_epoch_millis = ? " +
+                    "WHERE source_asset_id = ?",
+            ) { statement ->
+                statement.bindLong(1, asset.createdAtEpochMillis)
+                statement.bindText(2, asset.sourceAssetId)
                 statement.step()
             }
         }
