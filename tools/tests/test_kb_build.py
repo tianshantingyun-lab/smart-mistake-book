@@ -122,9 +122,11 @@ class GateTest(unittest.TestCase):
         # 逐条裁定后改绑 92 条（含 9 条同物重复的合并）——被"错绑材料假装覆盖"的两个知识点露出来了：
         # MATH「由线、面关系误解向量关系」、CHEMISTRY「自然资源的开发利用」。它们是真内容缺口，
         # 待后续轮次补材料，不做数字上的遮掩。
-        # 同日并行入库轮（讲义/知识清单）补上了 MATH 那条的材料 → 2→1；
-        # 剩 CHEMISTRY「自然资源的开发利用」，缺料登记册（O 节）里注明"块池只有真题碎片"。
-        self.assertEqual(1, metrics["unbound_points"].value)
+        # 同日并行入库轮（讲义/知识清单）补上了 MATH 那条的材料 → 2→1。
+        # 2026-09-19 夜补料收口：CHEMISTRY「自然资源的开发利用」拿到两条改写材料
+        # （三条主线框架 + 资源加工工艺的物理/化学变化判别，各挂一个来源块）→ 1→0。
+        # 从此它是防回归哨兵（新知识点进包却带不上材料时会红）。
+        self.assertEqual(0, metrics["unbound_points"].value)
         self.assertEqual(892, metrics["unbound_materials"].value)
         # 2026-09-19 两批扫描件视觉转写入库（951 + 3,609 条材料）后：
         #   unbound_points 1→0（最后一个零材料点拿到材料）。
@@ -179,12 +181,13 @@ class GateTest(unittest.TestCase):
         # 全量对齐（1676→1307→1306→0），单元映射逐一目验过教材目录：
         # 它从此是防回归哨兵——新内容带着旧写法定位串进包时它会红。
         self.assertEqual(0, metrics["chapter_locator_mismatch"].value)
-        # unbound_points 2026-09-19 改绑后回到 2（真实内容缺口），并行入库补 1 条后剩 1，
-        # 留在"必须非零"列表里（它是内容缺口哨兵，不是可工程修的缺陷）。
+        # unbound_points 2026-09-19 夜补料后修到 0（上方 assertEqual(0,…) 充当防回归哨兵）；
+        # unbound_materials 892 仍在"必须非零"列表：它们来自早期入库批次，材料本身没有绑定，
+        # 需要逐条语义绑定（下一轮活），不是数字上能遮的。
         # duplicate_names / bad_names 已修到 0（上方专门断言），不在此"必须非零"列表。
         # undeclared_prereq / boundary_excerpt / locator_boundary 2026-09-19 内容裁定轮（R 节）
         # 修到 0，已移出此列（上方 assertEqual(0,…) 充当防回归哨兵）。
-        for key in ("unbound_points", "unbound_materials"):
+        for key in ("unbound_materials",):
             with self.subTest(metric=key):
                 self.assertFalse(metrics[key].ok, f"{key} 修复前不该是 0")
         # 章节覆盖率与归属完整性在现行包上本来就是满的，不该被当成缺陷
