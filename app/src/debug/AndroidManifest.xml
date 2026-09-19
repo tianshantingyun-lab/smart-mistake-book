@@ -10,6 +10,16 @@
         <activity
             android:name=".debug.DynamicGuiPerformanceActivity"
             android:exported="false" />
+        <!-- 模型配置注入桩：只随 <flavor>Debug 变体安装，供 QA 用 adb 播种模型配置
+             （示例见 TestSeedModelConfigReceiver 的 KDoc）。导出是 adb 驱动所必需，
+             边界靠本清单所属的 debug 源集，而不是 exported 标志。 -->
+        <receiver
+            android:name=".TestSeedModelConfigReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.tingyun.smartmistakebook.TEST_SEED_MODEL_CONFIG" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

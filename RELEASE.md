@@ -6,8 +6,10 @@ Before tagging a release:
 
 1. Run both debug flavors: assemble, unit tests, lint.
 2. Run `:app:assembleRelease` / bundle dry run with R8 enabled.
-3. Verify the merged release manifest has no debug activity and no over-broad
-   FileProvider path.
+3. Verify the merged release manifest has no debug-only component (activity,
+   receiver, service or provider declared under app/src/debug) and no
+   over-broad FileProvider path. `python tools/ci/check_release_manifest.py`
+   automates both checks.
 4. Run the complete Room migration matrix for every historical schema.
 5. Run backup create/validate/restore round trip on a device.
 6. Confirm no API key, Keystore secret, lease, or user content appears in

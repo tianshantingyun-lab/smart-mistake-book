@@ -21,10 +21,15 @@ import com.tingyun.smartmistakebook.core.model.ModelProviderProtocol
  * Lives in the `debug` source set and is declared (`android:exported="true"`)
  * by `app/src/debug/AndroidManifest.xml`, so it is compiled and installed only
  * into `<flavor>Debug` builds — never into a release artifact, where the class
- * does not exist at all. Exported because QA drives it from outside the app;
- * pass `-p <applicationId>` so an install of the other flavor does not also
- * receive the broadcast. The key goes through the normal
- * ModelConfigurationStore.save path into the Keystore-backed secret vault.
+ * does not exist at all. Exported because QA drives it from outside the app.
+ *
+ * `-p <applicationId>` is required, not cosmetic: a manifest-declared receiver
+ * never receives an implicit broadcast on API 26+, so the platform drops a
+ * command that omits it. Target the flavor actually installed
+ * (`…localfirst` / `…offline`). A force-stopped app is skipped as well — add
+ * `--include-stopped-packages` if it was stopped before seeding. The key goes
+ * through the normal ModelConfigurationStore.save path into the
+ * Keystore-backed secret vault.
  */
 class TestSeedModelConfigReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {

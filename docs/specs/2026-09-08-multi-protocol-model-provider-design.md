@@ -200,4 +200,4 @@ internal interface ModelWireProtocol {
 - OpenAI Responses：`openai/openai-python`（README、`response_output_text.py`、`response_input_text_param.py`、`response_input_image_param.py`、`response_text_delta_event.py`）。
 - Gemini：`googleapis/googleapis` 的 `generative_service.proto` 与 `content.proto`（端点、`GenerateContentRequest`、`GenerationConfig.response_mime_type`、`GenerateContentResponse.candidates`、`Blob{mime_type,data}`）。
 
-**未验证（需真实 provider）**：三家协议的真实端点端到端（需要 API key）。本环境用 MockWebServer + 合成响应验证了协议形状、解析与流式；真实连通性需按 §3.3 表格逐家实拨（`adb` 注入示例见 `TestSeedModelConfigReceiver` 的 KDoc，带 `--es protocol <wireId>`）。
+**未验证（需真实 provider）**：三家协议的真实端点端到端（需要 API key）。本环境用 MockWebServer + 合成响应验证了协议形状、解析与流式；真实连通性需按 §3.3 表格逐家实拨（`adb` 注入示例见 `TestSeedModelConfigReceiver` 的 KDoc，带 `--es protocol <wireId>`；该类现位于 `app/src/debug/`，只随 `<flavor>Debug` 变体安装）。
