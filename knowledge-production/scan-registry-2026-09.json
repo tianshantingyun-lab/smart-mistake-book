@@ -2,7 +2,7 @@
  {
   "rel_path": "02-【数学】2027版高中《解题觉醒》/数学解题觉醒-第2册 名师大招册.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_THIS_ROUND",
+  "decision": "TRANSCRIBED",
   "rule": "jjdx-dazhao",
   "reason": "方法/大招知识密集，本轮已渲染 build/render/jjdx-*-dazhao/"
  },
@@ -16,21 +16,21 @@
  {
   "rel_path": "02-【数学】2027版高中《解题觉醒》/考前急救图.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_THIS_ROUND",
+  "decision": "TRANSCRIBED",
   "rule": "jjdx-jijiu",
   "reason": "考前要点图，本轮已渲染"
  },
  {
   "rel_path": "04-【物理】2027版高中《解题觉醒》/物理要点觉醒.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_THIS_ROUND",
+  "decision": "TRANSCRIBED",
   "rule": "jjdx-yaodian",
   "reason": "要点速查，本轮已渲染"
  },
  {
   "rel_path": "04-【物理】2027版高中《解题觉醒》/物理解题觉醒-第2册 名师大招册.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_THIS_ROUND",
+  "decision": "TRANSCRIBED",
   "rule": "jjdx-dazhao",
   "reason": "方法/大招知识密集，本轮已渲染 build/render/jjdx-*-dazhao/"
  },
@@ -44,21 +44,21 @@
  {
   "rel_path": "05-【化学】2027版高中《解题觉醒》/化学要点觉醒图示.pdf",
   "subject": "CHEMISTRY",
-  "decision": "TRANSCRIBE_THIS_ROUND",
+  "decision": "TRANSCRIBED",
   "rule": "jjdx-yaodian",
   "reason": "要点速查，本轮已渲染"
  },
  {
   "rel_path": "05-【化学】2027版高中《解题觉醒》/化学解题觉醒-第1册 主书.pdf",
   "subject": "CHEMISTRY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "jjdx-zhushu",
   "reason": "主书含讲解+题，需抽样后再定"
  },
  {
   "rel_path": "05-【化学】2027版高中《解题觉醒》/化学解题觉醒-第2册 名师大招册.pdf",
   "subject": "CHEMISTRY",
-  "decision": "TRANSCRIBE_THIS_ROUND",
+  "decision": "TRANSCRIBED",
   "rule": "jjdx-dazhao",
   "reason": "方法/大招知识密集，本轮已渲染 build/render/jjdx-*-dazhao/"
  },
@@ -72,21 +72,21 @@
  {
   "rel_path": "06-【生物】2027版高中《解题觉醒》/生物要点觉醒.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_THIS_ROUND",
+  "decision": "TRANSCRIBED",
   "rule": "jjdx-yaodian",
   "reason": "要点速查，本轮已渲染"
  },
  {
   "rel_path": "06-【生物】2027版高中《解题觉醒》/生物解题觉醒-第1册 主书.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "jjdx-zhushu",
   "reason": "主书含讲解+题，需抽样后再定"
  },
  {
   "rel_path": "06-【生物】2027版高中《解题觉醒》/生物解题觉醒-第2册 名师大招册.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_THIS_ROUND",
+  "decision": "TRANSCRIBED",
   "rule": "jjdx-dazhao",
   "reason": "方法/大招知识密集，本轮已渲染 build/render/jjdx-*-dazhao/"
  },
@@ -100,21 +100,21 @@
  {
   "rel_path": "2026年新高考资料/一轮复习/2026年大一轮复习讲义数学课件讲义练习/基础版/Word版题库/第五章　平面向量、复数/课堂笔记.pdf",
   "subject": "MATH",
-  "decision": "PENDING_UNCLASSIFIED",
+  "decision": "SKIP_NO_CONTENT",
   "rule": "-",
   "reason": "规则未覆盖，需人工判定"
  },
  {
   "rel_path": "2026年新高考资料/一轮复习/2026年高考数学一轮复习知识清单（全国通用）/2026版/解三角形及其应用.pdf",
   "subject": "MATH",
-  "decision": "PENDING_UNCLASSIFIED",
+  "decision": "TRANSCRIBED",
   "rule": "-",
   "reason": "规则未覆盖，需人工判定"
  },
  {
   "rel_path": "2026年新高考资料/一轮复习/2026年高考数学一轮复习讲义+练习+课件（新教材新高考）/2026版/第四章 三角函数与解三角形/解三角形及其应用.pdf",
   "subject": "MATH",
-  "decision": "PENDING_UNCLASSIFIED",
+  "decision": "TRANSCRIBED",
   "rule": "-",
   "reason": "规则未覆盖，需人工判定"
  },
@@ -128,7 +128,7 @@
  {
   "rel_path": "2026年新高考资料(1)/二轮复习/2026版物理二轮复习/2026版物理 复习讲义扫描版【通用版】/物理大二轮【专题复习】.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "erlun-jiangyi",
   "reason": "物理大二轮专题复习讲义，方法/知识型"
  },
@@ -226,1456 +226,1456 @@
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.化学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/专题一 物质的分类及转化物质的量/专题PDF/专题一  物质的分类及转化   物质的量.pdf",
   "subject": "CHEMISTRY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.化学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/专题七化学反应与电能/专题PDF/专题七  化学反应与电能.pdf",
   "subject": "CHEMISTRY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.化学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/专题三元素及其化合物/专题PDF/专题三  元素及其化合物.pdf",
   "subject": "CHEMISTRY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.化学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/专题九水溶液中的离子反应与平衡/专题PDF/专题九  水溶液中的离子反应与平衡.pdf",
   "subject": "CHEMISTRY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.化学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/专题二离子反应氧化还原反应/专题PDF/专题二  离子反应  氧化还原反应.pdf",
   "subject": "CHEMISTRY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.化学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/专题五 化学键分子和晶体的结构与性质/专题PDF/专题五  化学键  分子和晶体的结构与性质.pdf",
   "subject": "CHEMISTRY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.化学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/专题八化学反应速率与化学平衡/专题PDF/专题八  化学反应速率与化学平衡.pdf",
   "subject": "CHEMISTRY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.化学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/专题六化学反应的热效应/专题PDF/专题六  化学反应的热效应.pdf",
   "subject": "CHEMISTRY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.化学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/专题十一生命活动的物质基础有机合成/专题PDF/专题十一  生命活动的物质基础  有机合成.pdf",
   "subject": "CHEMISTRY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.化学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/专题十二 化学实验综合/专题PDF/专题十二  化学实验综合.pdf",
   "subject": "CHEMISTRY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.化学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/专题十有机物的结构  烃和烃的衍生物/专题PDF/专题十  有机物的结构  烃和烃的衍生物.pdf",
   "subject": "CHEMISTRY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.化学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/专题四 原子结构元素周期律/专题PDF/专题四  原子结构  元素周期律.pdf",
   "subject": "CHEMISTRY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题一 集合、常用逻辑用语与不等式/1.1集合/训练册PDF/1.1　集合.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题一 集合、常用逻辑用语与不等式/1.2常用逻辑用语/训练册PDF/1.2　常用逻辑用语.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题一 集合、常用逻辑用语与不等式/1.3不等式/训练册PDF/1.3　不等式.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题一 集合、常用逻辑用语与不等式/一年创新•风向练/训练册PDF/一年创新风向练.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题七  立体几何与空间向量/7.1 空间几何体的结构特征、表面积和体积/训练册PDF/7.1　空间几何体的结构特征、表面积和体积.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题七  立体几何与空间向量/7.2 直线、平面平行的判定与性质/训练册PDF/7.2　直线、平面平行的判定与性质.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题七  立体几何与空间向量/7.3 直线、平面垂直的判定与性质/训练册PDF/7.3　直线、平面垂直的判定与性质.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题七  立体几何与空间向量/7.4空间角与距离、空间向量及其应用/训练册PDF/7.4　空间角与距离、空间向量及其应用.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题七  立体几何与空间向量/一年创新•风向练/训练册PDF/一年创新风向练.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题七  立体几何与空间向量/培优10  球的切、接问题/训练册PDF/培优10　球的切、接问题.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题七  立体几何与空间向量/培优11 空间几何体的截面与交线问题/训练册PDF/培优11　空间几何体的截面与交线问题.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题七  立体几何与空间向量/培优12 空间几何体的动态和探索问题/训练册PDF/培优12　空间几何体的动态和探索问题.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题三 导数及其应用/3.1 导数的概念及运算/训练册PDF/3.1　导数的概念及运算.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题三 导数及其应用/3.2利用导数研究函数的单调性、极值和最值/训练册PDF/3.2　利用导数研究函数的单调性、极值和最值.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题三 导数及其应用/3.3导数的综合应用/训练册PDF/3.3　导数的综合应用.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题三 导数及其应用/一年创新•风向练/训练册PDF/一年创新风向练.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题三 导数及其应用/培优1  三次函数性质综合/训练册PDF/培优1　三次函数性质综合.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题三 导数及其应用/培优2 隐零点问题/训练册PDF/培优2　隐零点问题.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题三 导数及其应用/培优3恒成立和能成立求参问题/训练册PDF/培优3　恒成立和能成立求参问题.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题三 导数及其应用/培优4导数中的双变量问题/训练册PDF/培优4　导数中的双变量问题.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题三 导数及其应用/培优5 极值点偏移问题/训练册PDF/培优5　极值点偏移问题.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题九 计数原理、概率与统计/9.1计数原理/训练册PDF/9.1　计数原理.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题九 计数原理、概率与统计/9.2 随机事件、古典概型与 条件概率/训练册PDF/9.2　随机事件、古典概型与条件概率.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题九 计数原理、概率与统计/9.3离散型随机变量及其分布列、均值与方差/训练册PDF/9.3　离散型随机变量及其分布列、均值与方差.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题九 计数原理、概率与统计/9.4 二项分布、超几何分布与正态分布/训练册PDF/9.4　二项分布、超几何分布与正态分布.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题九 计数原理、概率与统计/9.5 统计与成对数据的统计分析/训练册PDF/9.5　统计与成对数据的统计分析.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题九 计数原理、概率与统计/一年创新•风向练/训练册PDF/一年创新风向练.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题九 计数原理、概率与统计/培优18 概率与函数综合/训练册PDF/培优18　概率与函数综合.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题九 计数原理、概率与统计/培优19 概率与数列综合/训练册PDF/培优19　概率与数列综合.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题二 函数及其性质/2.1函数的概念及性质/训练册PDF/2.1　函数的概念和基本性质.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题二 函数及其性质/2.2基本初等函数/训练册PDF/2.2　基本初等函数.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题二 函数及其性质/2.3函数的图象/训练册PDF/2.3　函数的图象.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题二 函数及其性质/2.4函数的零点与方程的根/训练册PDF/2.4　函数的零点与方程的根.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题二 函数及其性质/2.5函数模型及应用/训练册PDF/2.5　函数模型及应用.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题二 函数及其性质/一年创新•风向练/训练册PDF/一年创新风向练.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题五 平面向量与复数/5.1平面向量/训练册PDF/5.1　平面向量.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题五 平面向量与复数/5.2复数/训练册PDF/5.2　复数.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题五 平面向量与复数/一年创新•风向练/训练册PDF/一年创新风向练.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题八 平面解析几何/8.1直线与圆/训练册PDF/8.1　直线和圆.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题八 平面解析几何/8.2椭圆/训练册PDF/8.2　椭圆.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题八 平面解析几何/8.3双曲线/训练册PDF/8.3　双曲线.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题八 平面解析几何/8.4抛物线/训练册PDF/8.4　抛物线.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题八 平面解析几何/8.5 圆锥曲线的综合问题/训练册PDF/8.5　圆锥曲线的综合问题.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题八 平面解析几何/一年创新•风向练/训练册PDF/一年创新风向练.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题八 平面解析几何/培优13 圆锥曲线中的弦长与面积问题/训练册PDF/培优13　圆锥曲线中的弦长与面积问题.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题八 平面解析几何/培优14 圆锥曲线中的最值和范围问题/训练册PDF/培优14　圆锥曲线中的最值或范围问题.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题八 平面解析几何/培优15 圆锥曲线中的定点、定值和定线问题/训练册PDF/培优15　圆锥曲线中的定点、定值和定线问题.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题八 平面解析几何/培优16 圆锥曲线中的角度问题/训练册PDF/培优16　圆锥曲线中的角度问题.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题八 平面解析几何/培优17 圆锥曲线中的非对称问题/训练册PDF/培优17　圆锥曲线中的非对称问题.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题六 数列/6.1数列的概念及表示/训练册PDF/6.1　数列的概念及表示.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题六 数列/6.2等差数列/训练册PDF/6.2　等差数列.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题六 数列/6.3等比数列/训练册PDF/6.3　等比数列.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题六 数列/6.4数列求和/训练册PDF/6.4　数列求和.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题六 数列/6.5数列的综合与创新/训练册PDF/6.5　数列的综合与创新.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题六 数列/一年创新•风向练/训练册PDF/一年创新风向练.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题六 数列/培优8 数列中的奇偶项问题/训练册PDF/培优8　数列中的奇偶项问题.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题六 数列/培优9  衍生数列问题/训练册PDF/培优9　衍生数列问题.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题四 三角函数与解三角形/4.1三角函数的概念、诱导公式、三角恒等变换/训练册PDF/4.1　三角函数的概念、诱导公式、三角恒等变换.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题四 三角函数与解三角形/4.2三角函数的图象与性质/训练册PDF/4.2　三角函数的图象与性质.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题四 三角函数与解三角形/4.3解三角形/训练册PDF/4.3　解三角形.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题四 三角函数与解三角形/一年创新•风向练/训练册PDF/一年创新风向练.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题四 三角函数与解三角形/培优6 三角函数中ω的范围范围/训练册PDF/培优6　三角函数中ω的范围问题.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/分层训练/专题四 三角函数与解三角形/培优7 解三角形中的最值和范围问题/训练册PDF/培优7　解三角形中的最值和范围问题.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/重难突破/专题一 集合、常用逻辑用语与不等式/题型透析/讲解册PDF/专题一 集合、常用逻辑用语与不等式.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/重难突破/专题七  立体几何与空间向量/培优10  球的切、接问题/讲解册PDF/培优10　球的切、接问题.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/重难突破/专题七  立体几何与空间向量/培优11 空间几何体的截面与交线问题/讲解册PDF/培优11　空间几何体的截面与交线问题.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/重难突破/专题七  立体几何与空间向量/培优12 空间几何体的动态和探索问题/讲解册PDF/培优12　空间几何体的动态和探索问题.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/重难突破/专题七  立体几何与空间向量/题型透析/讲解册PDF/专题七　立体几何与空间向量.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/重难突破/专题三 导数及其应用/培优1  三次函数的性质研究/讲解册PDF/培优1　三次函数性质综合.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/重难突破/专题三 导数及其应用/培优2 隐零点问题/讲解册PDF/培优2　隐零点问题.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/重难突破/专题三 导数及其应用/培优3恒成立和能成立求参问题/讲解册PDF/培优3　恒成立和能成立求参问题.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/重难突破/专题三 导数及其应用/培优4导数中的双变量问题/讲解册PDF/培优4　导数中的双变量问题.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/重难突破/专题三 导数及其应用/培优5 极值点偏移问题/讲解册PDF/培优5　极值点偏移问题.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/重难突破/专题三 导数及其应用/题型透析/讲解册PDF/专题三　导数及其应用.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/重难突破/专题九 计数原理、概率与统计/培优18 概率与函数综合/讲解册PDF/培优18　概率与函数综合.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/重难突破/专题九 计数原理、概率与统计/培优19 概率与数列综合/讲解册PDF/培优19　概率与数列综合.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/重难突破/专题九 计数原理、概率与统计/题型透析/讲解册PDF/专题九　计数原理、概率与统计.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/重难突破/专题二 函数及其性质/题型透析/讲解册PDF/专题二 函数及其性质.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/重难突破/专题五 平面向量与复数/题型透析/讲解册PDF/专题五　平面向量与复数.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/重难突破/专题八 平面解析几何/培优13 圆锥曲线中的弦长与面积问题/讲解册PDF/培优13　圆锥曲线中的弦长与面积问题.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/重难突破/专题八 平面解析几何/培优14 圆锥曲线中的最值和范围问题/讲解册PDF/培优14　圆锥曲线中的最值或范围问题.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/重难突破/专题八 平面解析几何/培优15 圆锥曲线中的定点、定值和定线问题/讲解册PDF/培优15　圆锥曲线中的定点、定值和定线问题.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/重难突破/专题八 平面解析几何/培优16 圆锥曲线中的角度问题/讲解册PDF/培优16　圆锥曲线中的角度问题.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/重难突破/专题八 平面解析几何/培优17 圆锥曲线中的非对称问题/讲解册PDF/培优17　圆锥曲线中的非对称问题.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/重难突破/专题八 平面解析几何/题型透析/讲解册PDF/专题八　平面解析几何.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/重难突破/专题六 数列/培优8 数列中的奇偶项问题/讲解册PDF/培优8　数列中的奇偶项问题.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/重难突破/专题六 数列/培优9  衍生数列问题/讲解册PDF/培优9　衍生数列问题.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/重难突破/专题六 数列/题型透析/讲解册PDF/专题六　数列.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/重难突破/专题四 三角函数与解三角形/培优6 三角函数中ω的范围范围/讲解册PDF/培优6　三角函数中ω的范围问题.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/重难突破/专题四 三角函数与解三角形/培优7 解三角形中的最值和范围问题/讲解册PDF/培优7　解三角形中的最值和范围问题.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/重难突破/专题四 三角函数与解三角形/题型透析/讲解册PDF/专题四　三角函数与解三角形.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/四、高考试卷分期推送/第一期：2024-2025高考试卷推送/2024年答案/高考真题卷/2024年答案.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/四、高考试卷分期推送/第一期：2024-2025高考试卷推送/2024年试卷/高考真题卷/2024年试卷.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/四、高考试卷分期推送/第一期：2024-2025高考试卷推送/2025年答案/高考真题卷/2025年答案.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.数学.新高考版.高三.全一册_学生用书全一册/四、高考试卷分期推送/第一期：2024-2025高考试卷推送/2025年试卷/高考真题卷/2025年试卷.pdf",
   "subject": "MATH",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/专题一  直线运动/专题PDF/01：专题一  PDF.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/专题七  动量守恒定律/专题PDF/07：专题七  PDF.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/专题三  牛顿运动定律/专题PDF/03：专题三  PDF.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/专题九  静电场/专题PDF/09：专题九  PDF.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/专题二  相互作用/专题PDF/02：专题二  PDF.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/专题五  万有引力与宇宙航行/专题PDF/05：专题五  PDF.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/专题八  机械振动  机械波/专题PDF/08：专题八  PDF.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/专题六  机械能守恒定律/专题PDF/06：专题六  PDF.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/专题十  恒定电流/专题PDF/10：专题十  PDF.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/专题十一  磁场/专题PDF/11：专题十一  PDF.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/专题十三  交变电流/专题PDF/13：专题十三  PDF.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/专题十二  电磁感应/专题PDF/12：专题十二  PDF.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/专题十五  热学/专题PDF/15：专题十五  PDF.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/专题十六  近代物理初步/专题PDF/16：专题十六  PDF.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/专题十四  光/专题PDF/14：专题十四  PDF.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/一、本书配套电子教参/专题四  曲线运动/专题PDF/04：专题四  PDF.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/1.教考衔接（100%原创题）/原创题加练1  必修第一册/提分资料包/必修第一册.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/1.教考衔接（100%原创题）/原创题加练1  必修第一册/提分资料包/教考衔接答案.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/1.教考衔接（100%原创题）/原创题加练2  必修第二册/提分资料包/必修第二册.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/1.教考衔接（100%原创题）/原创题加练2  必修第二册/提分资料包/教考衔接答案.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/1.教考衔接（100%原创题）/原创题加练3  必修第三册/提分资料包/必修第三册.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/1.教考衔接（100%原创题）/原创题加练3  必修第三册/提分资料包/教考衔接答案.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/1.教考衔接（100%原创题）/原创题加练4  选择性必修第一册/提分资料包/教考衔接答案.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/1.教考衔接（100%原创题）/原创题加练4  选择性必修第一册/提分资料包/选择性必修第一册.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/1.教考衔接（100%原创题）/原创题加练5  选择性必修第二册/提分资料包/教考衔接答案.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/1.教考衔接（100%原创题）/原创题加练5  选择性必修第二册/提分资料包/选择性必修第二册.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/1.教考衔接（100%原创题）/原创题加练6  选择性必修第三册/提分资料包/教考衔接答案.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/1.教考衔接（100%原创题）/原创题加练6  选择性必修第三册/提分资料包/选择性必修第三册.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/2.思维方法微专题：物理培优加餐/提分加练1  匀变速直线运动中的逆向思维/提分资料包/提分加练1　匀变速直线运动中的逆向思维.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/2.思维方法微专题：物理培优加餐/提分加练10  转换法/提分资料包/提分加练10　转换法.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/2.思维方法微专题：物理培优加餐/提分加练11  假设法/提分资料包/提分加练11　假设法.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/2.思维方法微专题：物理培优加餐/提分加练12  图像法/提分资料包/提分加练12　图像法.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/2.思维方法微专题：物理培优加餐/提分加练13  磁场中的动态圆模型/提分资料包/提分加练13　磁场中的动态圆模型.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/2.思维方法微专题：物理培优加餐/提分加练14  理想模型与比值定义法/提分资料包/提分加练14　理想模型与比值定义法.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/2.思维方法微专题：物理培优加餐/提分加练15  控制变量法/提分资料包/提分加练15　控制变量法.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/2.思维方法微专题：物理培优加餐/提分加练16  等效替代法/提分资料包/提分加练16　等效替代法.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/2.思维方法微专题：物理培优加餐/提分加练17  解析式法/提分资料包/提分加练17　解析式法.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/2.思维方法微专题：物理培优加餐/提分加练18  三角函数法/提分资料包/提分加练18　三角函数法.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/2.思维方法微专题：物理培优加餐/提分加练19  基本不等式法/提分资料包/提分加练19　基本不等式法.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/2.思维方法微专题：物理培优加餐/提分加练2  斜上抛运动中的逆向思维/提分资料包/提分加练2　斜上抛运动中的逆向思维.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/2.思维方法微专题：物理培优加餐/提分加练20  类比法/提分资料包/提分加练20　类比法.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/2.思维方法微专题：物理培优加餐/提分加练21  归纳递推法/提分资料包/提分加练21　归纳递推法.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/2.思维方法微专题：物理培优加餐/提分加练22  矢量图解法/提分资料包/提分加练22　矢量图解法.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/2.思维方法微专题：物理培优加餐/提分加练23  对称法/提分资料包/提分加练23　对称法.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/2.思维方法微专题：物理培优加餐/提分加练24  割补法/提分资料包/提分加练24　割补法.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/2.思维方法微专题：物理培优加餐/提分加练25  代入法/提分资料包/提分加练25　代入法.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/2.思维方法微专题：物理培优加餐/提分加练26  比例法/提分资料包/提分加练26　比例法.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/2.思维方法微专题：物理培优加餐/提分加练27  估算法/提分资料包/提分加练27　估算法.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/2.思维方法微专题：物理培优加餐/提分加练3  运动的合成与分解/提分资料包/提分加练3　运动的合成与分解.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/2.思维方法微专题：物理培优加餐/提分加练4  全程法与分段法/提分资料包/提分加练4　全程法与分段法.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/2.思维方法微专题：物理培优加餐/提分加练5  力的合成与分解/提分资料包/提分加练5　力的合成与分解.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/2.思维方法微专题：物理培优加餐/提分加练6  整体法与隔离法/提分资料包/提分加练6　整体法与隔离法.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/2.思维方法微专题：物理培优加餐/提分加练7  空间微元/提分资料包/提分加练7　空间微元.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/2.思维方法微专题：物理培优加餐/提分加练8  时间微元/提分资料包/提分加练8　时间微元.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.物理.新高考版.高三.全一册_学生用书全一册/五、53提分资料包/2.思维方法微专题：物理培优加餐/提分加练9  物理量等效/提分资料包/提分加练9　物理量等效.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/不定项和多项选择题/专题PDF/不定项和多项选择题 《分层训练》PDF.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/专题1 细胞的分子组成/专题PDF/专题1 细胞的分子组成 《分层训练》PDF.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/专题10 遗传的分子基础/专题PDF/专题10 遗传的分子基础 《分层训练》PDF.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/专题11 生物的变异与进化/专题PDF/专题11 生物的变异与进化 《分层训练》PDF.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/专题12 人体的内环境与稳态/专题PDF/专题12 人体的内环境与稳态 《分层训练》PDF.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/专题13 神经调节/专题PDF/专题13 神经调节 《分层训练》PDF.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/专题14 体液调节/专题PDF/专题14 体液调节 《分层训练》PDF.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/专题15 免疫调节/专题PDF/专题15 免疫调节 《分层训练》PDF.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/专题16 植物生命活动的调节/专题PDF/专题16 植物生命活动的调节 《分层训练》PDF.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/专题17 种群及其动态/专题PDF/专题17 种群及其动态 《分层训练》PDF.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/专题18 群落及其演替/专题PDF/专题18 群落及其演替 《分层训练》PDF.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/专题19 生态系统及其稳定性、人与环境/专题PDF/专题19 生态系统及其稳定性、人与环境 《分层训练》PDF.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/专题2 细胞的结构与功能/专题PDF/专题2 细胞的结构与功能 《分层训练》PDF.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/专题20 发酵工程/专题PDF/专题20 发酵工程 《分层训练》PDF.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/专题21 细胞工程/专题PDF/专题21 细胞工程 《分层训练》PDF.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/专题22 基因工程/专题PDF/专题22 基因工程 《分层训练》PDF.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/专题3 细胞的物质输入和输出/专题PDF/专题3 细胞的物质输入和输出 《分层训练》PDF.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/专题4 酶和ATP/专题PDF/专题4 酶和ATP 《分层训练》PDF.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/专题5 细胞呼吸/专题PDF/专题5 细胞呼吸 《分层训练》PDF.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/专题6 光合作用/专题PDF/专题6 光合作用 《分层训练》PDF.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/专题7 细胞的生命历程/专题PDF/专题7 细胞的生命历程 《分层训练》PDF.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/专题8 基因的分离定律和自由组合定律/专题PDF/专题8 基因的分离定律和自由组合定律 《分层训练》PDF.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/专题9 伴性遗传与人类遗传病/专题PDF/专题9 伴性遗传与人类遗传病 《分层训练》PDF.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/目录/目录/目录.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/知识清单/专题PDF/专题1 细胞的分子组成.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/知识清单/专题PDF/专题10 遗传的分子基础.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/知识清单/专题PDF/专题11 生物的变异与进化.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/知识清单/专题PDF/专题12 人体的内环境与稳态.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/知识清单/专题PDF/专题13 神经调节.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/知识清单/专题PDF/专题14 体液调节.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/知识清单/专题PDF/专题15 免疫调节.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/知识清单/专题PDF/专题16 植物生命活动的调节.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/知识清单/专题PDF/专题17 种群及其动态.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/知识清单/专题PDF/专题18 群落及其演替.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/知识清单/专题PDF/专题19 生态系统及其稳定性、人与环境.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/知识清单/专题PDF/专题2 细胞的结构与功能.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/知识清单/专题PDF/专题20 发酵工程.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/知识清单/专题PDF/专题21 细胞工程.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/知识清单/专题PDF/专题22 基因工程.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/知识清单/专题PDF/专题3 细胞的物质输入和输出.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/知识清单/专题PDF/专题4 酶和ATP.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/知识清单/专题PDF/专题5 细胞呼吸.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/知识清单/专题PDF/专题6 光合作用.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/知识清单/专题PDF/专题7 细胞的生命历程.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/知识清单/专题PDF/专题8 基因的分离定律和自由组合定律.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
  {
   "rel_path": "27版五三/53模拟B版（2027版）/2027版.5·3B版.新教材.生物学.新高考版.高三.全一册_学生用书全一册/本书配套电子教参/知识清单/专题PDF/专题9 伴性遗传与人类遗传病.pdf",
   "subject": "BIOLOGY",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-b-topic",
   "reason": "B版专题 PDF，另一本书，知识+题混合"
  },
@@ -2466,7 +2466,7 @@
  {
   "rel_path": "27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.物理.5·3A版/一、本书精品电子资源/第一章匀变速直线运动/1_专题资料包/1_讲册PDF 01-第一章 匀变速直线运动.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-phy-chapter-jingjiang",
   "reason": "选考总复习版按章包，实测与整本精讲册非同一版式/页码（静电场在印刷页 133），未判定重复"
  },
@@ -2480,7 +2480,7 @@
  {
   "rel_path": "27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.物理.5·3A版/一、本书精品电子资源/第七章动量守恒定律/1_专题资料包/1_讲册PDF 07-第七章 动量守恒定律.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-phy-chapter-jingjiang",
   "reason": "选考总复习版按章包，实测与整本精讲册非同一版式/页码（静电场在印刷页 133），未判定重复"
  },
@@ -2494,7 +2494,7 @@
  {
   "rel_path": "27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.物理.5·3A版/一、本书精品电子资源/第三章牛顿运动定律/1_专题资料包/1_讲册PDF 03-第三章 牛顿运动定律.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-phy-chapter-jingjiang",
   "reason": "选考总复习版按章包，实测与整本精讲册非同一版式/页码（静电场在印刷页 133），未判定重复"
  },
@@ -2508,7 +2508,7 @@
  {
   "rel_path": "27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.物理.5·3A版/一、本书精品电子资源/第九章静电场/1_专题资料包/1_讲册PDF 09-第九章 静电场.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-phy-chapter-jingjiang",
   "reason": "选考总复习版按章包，实测与整本精讲册非同一版式/页码（静电场在印刷页 133），未判定重复"
  },
@@ -2522,14 +2522,14 @@
  {
   "rel_path": "27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.物理.5·3A版/一、本书精品电子资源/第二章相互作用/1_专题资料包/1_讲册PDF 02-第二章 相互作用.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-phy-chapter-jingjiang",
   "reason": "选考总复习版按章包，实测与整本精讲册非同一版式/页码（静电场在印刷页 133），未判定重复"
  },
  {
   "rel_path": "27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.物理.5·3A版/一、本书精品电子资源/第五章万有引力与宇宙航行/1_专题资料包/1_讲册PDF 05-第五章 万有引力与宇宙航行.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-phy-chapter-jingjiang",
   "reason": "选考总复习版按章包，实测与整本精讲册非同一版式/页码（静电场在印刷页 133），未判定重复"
  },
@@ -2543,7 +2543,7 @@
  {
   "rel_path": "27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.物理.5·3A版/一、本书精品电子资源/第八章机械振动机械波/1_专题资料包/1_讲册PDF 08-第八章 机械振动　机械波.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-phy-chapter-jingjiang",
   "reason": "选考总复习版按章包，实测与整本精讲册非同一版式/页码（静电场在印刷页 133），未判定重复"
  },
@@ -2557,7 +2557,7 @@
  {
   "rel_path": "27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.物理.5·3A版/一、本书精品电子资源/第六章机械能守恒定律/1_专题资料包/1_讲册PDF 06-第六章 机械能守恒定律.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-phy-chapter-jingjiang",
   "reason": "选考总复习版按章包，实测与整本精讲册非同一版式/页码（静电场在印刷页 133），未判定重复"
  },
@@ -2571,7 +2571,7 @@
  {
   "rel_path": "27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.物理.5·3A版/一、本书精品电子资源/第十一章磁场/1_专题资料包/1_讲册PDF 11-第十一章 磁场.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-phy-chapter-jingjiang",
   "reason": "选考总复习版按章包，实测与整本精讲册非同一版式/页码（静电场在印刷页 133），未判定重复"
  },
@@ -2585,7 +2585,7 @@
  {
   "rel_path": "27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.物理.5·3A版/一、本书精品电子资源/第十三章交变电流电磁波/1_专题资料包/1_讲册PDF 13-第十三章 交变电流　电磁波.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-phy-chapter-jingjiang",
   "reason": "选考总复习版按章包，实测与整本精讲册非同一版式/页码（静电场在印刷页 133），未判定重复"
  },
@@ -2599,7 +2599,7 @@
  {
   "rel_path": "27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.物理.5·3A版/一、本书精品电子资源/第十二章电磁感应/1_专题资料包/1_讲册PDF 12-第十二章 电磁感应.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-phy-chapter-jingjiang",
   "reason": "选考总复习版按章包，实测与整本精讲册非同一版式/页码（静电场在印刷页 133），未判定重复"
  },
@@ -2613,7 +2613,7 @@
  {
   "rel_path": "27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.物理.5·3A版/一、本书精品电子资源/第十五章热学/1_专题资料包/1_讲册PDF 15-第十五章 热学.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-phy-chapter-jingjiang",
   "reason": "选考总复习版按章包，实测与整本精讲册非同一版式/页码（静电场在印刷页 133），未判定重复"
  },
@@ -2627,7 +2627,7 @@
  {
   "rel_path": "27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.物理.5·3A版/一、本书精品电子资源/第十六章近代物理初步/1_专题资料包/1_讲册PDF 16-第十六章 近代物理初步.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-phy-chapter-jingjiang",
   "reason": "选考总复习版按章包，实测与整本精讲册非同一版式/页码（静电场在印刷页 133），未判定重复"
  },
@@ -2641,7 +2641,7 @@
  {
   "rel_path": "27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.物理.5·3A版/一、本书精品电子资源/第十四章光/1_专题资料包/1_讲册PDF 14-第十四章 光.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-phy-chapter-jingjiang",
   "reason": "选考总复习版按章包，实测与整本精讲册非同一版式/页码（静电场在印刷页 133），未判定重复"
  },
@@ -2655,7 +2655,7 @@
  {
   "rel_path": "27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.物理.5·3A版/一、本书精品电子资源/第十章电路及其应用/1_专题资料包/1_讲册PDF 10-第十章 电路及其应用.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-phy-chapter-jingjiang",
   "reason": "选考总复习版按章包，实测与整本精讲册非同一版式/页码（静电场在印刷页 133），未判定重复"
  },
@@ -2669,7 +2669,7 @@
  {
   "rel_path": "27版五三/【01】2027版53 A版新高考一轮复习（PDF+word）/2027版.新高考版.选考总复习.物理.5·3A版/一、本书精品电子资源/第四章曲线运动/1_专题资料包/1_讲册PDF 04-第四章 曲线运动.pdf",
   "subject": "PHYSICS",
-  "decision": "TRANSCRIBE_LATER",
+  "decision": "TRANSCRIBED",
   "rule": "wusan-phy-chapter-jingjiang",
   "reason": "选考总复习版按章包，实测与整本精讲册非同一版式/页码（静电场在印刷页 133），未判定重复"
  },
@@ -2767,28 +2767,28 @@
  {
   "rel_path": "6. 2026生物总复习/2027年新高考资料【上新中】/2027年高考生物一轮/2027年高考生物一轮复习知识清单（全国通用）-G56/2027版/第01讲 走近细胞（图文版知识清单）.pdf",
   "subject": "BIOLOGY",
-  "decision": "PENDING_UNCLASSIFIED",
+  "decision": "TRANSCRIBED",
   "rule": "-",
   "reason": "规则未覆盖，需人工判定"
  },
  {
   "rel_path": "6. 2026生物总复习/2027年新高考资料【上新中】/2027年高考生物一轮/2027年高考生物一轮复习知识清单（全国通用）-G56/2027版/第15讲 分离定律（图文版知识清单）.pdf",
   "subject": "BIOLOGY",
-  "decision": "PENDING_UNCLASSIFIED",
+  "decision": "TRANSCRIBED",
   "rule": "-",
   "reason": "规则未覆盖，需人工判定"
  },
  {
   "rel_path": "6. 2026生物总复习/2027年新高考资料【上新中】/2027年高考生物一轮/2027年高考生物一轮复习知识清单（全国通用）-G56/2027版/第16讲 自由组合定律（图文版知识清单）.pdf",
   "subject": "BIOLOGY",
-  "decision": "PENDING_UNCLASSIFIED",
+  "decision": "TRANSCRIBED",
   "rule": "-",
   "reason": "规则未覆盖，需人工判定"
  },
  {
   "rel_path": "6. 2026生物总复习/2027年新高考资料【上新中】/2027年高考生物一轮/2027年高考生物一轮复习知识清单（全国通用）-G56/2027版/第17讲 伴性遗传和人类遗传病（图文版知识清单）.pdf",
   "subject": "BIOLOGY",
-  "decision": "PENDING_UNCLASSIFIED",
+  "decision": "TRANSCRIBED",
   "rule": "-",
   "reason": "规则未覆盖，需人工判定"
  },
