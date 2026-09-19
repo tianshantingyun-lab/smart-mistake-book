@@ -870,6 +870,9 @@ class CapturedTutorSessionInstrumentedTest : CapturedTutorSessionTestBase() {
         )
 
         override suspend fun resolveImageUri(assetId: String): String? = null
+
+        /** 这条测试不碰真实资产库，因此没有"已登记资产"的元数据可读。 */
+        override suspend fun describeImage(assetId: String): LobbyMessageImage? = null
     }
 
     @Test
