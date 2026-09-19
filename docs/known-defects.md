@@ -629,7 +629,7 @@ own open KD.
 equivalent full-coverage status) supersedes this entry with its finding
 summary; any new high/medium finding from such a run becomes its own open KD.
 
-## KD-15 (open) · Bundled teaching-material pack is rejected on import (startup banner)
+## KD-15 (fixed 2026-09-19) · Bundled teaching-material pack is rejected on import (startup banner)
 
 **Symptom.** A freshly installed `localFirstDebug` app shows the recoverable
 startup banner 「本地知识包尚未准备好 / 错题和复习可以继续使用，自动分类会暂缓。」
@@ -670,7 +670,7 @@ and the material import completes without the contract exception.
 
 **Verified fixed (2026-09-19, pack toolchain).** 三处根因一并修复并过真机：①材料 `reviewedAt < importedAt` 494 条全量对齐（并统一同 sourceId 跨卷副本的 `importedAt` 取最早值——聚合 `distinctBy` 首现口径）；②`KnowledgeTeachingMaterialContract` 的**总量上限**才是更早的阻断（材料 2048 / 绑定 16384 / 总字符 4M 实为 11302 条材料），按用户 2026-09-19 决定全部取消，只留结构不变量；③2020 旧包 2 条材料引用主包源、与主包 id/指纹撞唯一性 → 侧车补独立源。新增 `BundledTeachingMaterialsContractTest`（内置包直接过 DB 导入契约）。真机复核：clean install 无横幅，`knowledge_teaching_material` = **10412 行**（此前 0），`knowledge_node` 2605、`knowledge_source` 54。
 
-## KD-16 (open) · Batch organize shows the fallback notice instead of the configure-model one
+## KD-16 (fixed 2026-09-19) · Batch organize shows the fallback notice instead of the configure-model one
 
 **Symptom.** `localFirstDebug`, no model configured: 错题本 → 批量导入试卷照片 →
 「开始分题」 shows 「这次还没有全部分好，页面都已保留，可以稍后继续。」
@@ -687,13 +687,15 @@ gate and dies at `require(provider.canOrganizeBatchPages())`
 (`RoomBatchImportRepository.kt:219`); that `IllegalArgumentException` lands in
 the generic `catch (_: Exception)`.
 
-**Fix direction.** Make "capability unavailable" the same domain outcome, e.g.
-throw `BatchOrganizationUnavailableException()` when
-`!provider.canOrganizeBatchPages()` instead of `require` (egress semantics
-unchanged; the precise UI wording already exists).
+**Fix (2026-09-19).** `organizeBatch` 里 `require(provider.canOrganizeBatchPages())`
+换成 `if (!...) throw BatchOrganizationUnavailableException()`——能力不足与"未授权出网"
+归为同一领域结局，UI 现有的 `catch (BatchOrganizationUnavailableException)` 分支因此显示
+精确文案；egress 语义不变。新增 instrumented 用例
+`organizeBatchWithAConfiguredButImageIncapableModelReportsCapabilityUnavailable`
+钉住 egress-允许 + 能力-不足这一组合，并断言不派发任何模型轮次。
 
-**Reopen condition.** n/a — close when the no-model smoke shows the
-configure-model message.
+**Reopen condition.** 若 `organizeBatch` 的能力判定再抛 `IllegalArgumentException`
+而非 `BatchOrganizationUnavailableException`，则重新落入通用 catch。
 
 ## KD-17 (open) · A single-capture draft has no resume entry after leaving the flow
 
@@ -720,7 +722,7 @@ priority is low.
 **Reopen condition.** n/a — close by the chosen decision plus a device check
 that the draft is reachable or resolved.
 
-## KD-18 (open) · `tools/teaching_sources/epub_audit.py` 在本机 Python 3.13 下恒崩，4 条测试恒红
+## KD-18 (fixed 2026-09-19) · `tools/teaching_sources/epub_audit.py` 在本机 Python 3.13 下恒崩，4 条测试恒红
 
 **Symptom.** `PYTHONPATH=tools python -m pytest tools/tests -q` 里
 `test_teaching_sources.py` 的 4 条用例全部 ERROR，异常都是
@@ -735,15 +737,17 @@ that the draft is reachable or resolved.
 
 **全量结果（2026-09-19 本轮实测）**：`4 failed, 212 passed`，红的 4 条全部来自本缺陷。
 
-**Fix direction.** 三行改法：把 `ElementTree.XMLParser(resolve_entities=False)`
-换成兼容写法 —— 优先 `defusedxml.ElementTree`（若可引入），否则
-`try: parser = ElementTree.XMLParser(resolve_entities=False)` /
-`except TypeError: parser = ElementTree.XMLParser()`（3.8 起默认解析器不再解析外部实体，
-裸解析在这些用例的输入上是安全的）。修完必须重跑该文件并把 4 条转绿。
+**Fix direction.** ~~三行 try/except 改法~~ **实际改法（更简）**：直接去掉 `resolve_entities=False`，
+即 `ElementTree.XMLParser()`。stdlib `xml.etree.ElementTree` 本就从不解析外部 DTD 实体（XXE
+安全不依赖这个参数），`resolve_entities` 只是内部实体替换的开关，且已在 3.13 被移除——
+所以裸解析器在 3.8–3.13 全都正确。**注意有两处调用点**（`_rootfile_path` 与 `_metadata`，
+登记最初只记了 101 行），只改一处仍会在 124 行崩。
 
-**Owner.** 归 `tools/teaching_sources/` 的维护方（本轮未动该模块，避免与并行会话冲突）。
+**Resolution (2026-09-19).** 两处调用点均改为 `ElementTree.XMLParser()` 并加注释。
+`PYTHONPATH=tools python -m pytest tools/tests/test_teaching_sources.py -q` → 4 条转绿；
+全量 `python -m pytest tools/tests -q` → 全绿（当时 277 passed，0 failed）。
 
-**Reopen condition.** n/a —— 修好后 4 条用例转绿即关。
+**Reopen condition.** 若未来引入 `defusedxml` 或重新依赖外部实体解析，需复核这两处。
 
 ## KD-19 (fixed 2026-09-19) · 同一来源在多卷的时间戳不一致，导致内置包导入被拒（KD-15 同类复发）
 
