@@ -33,7 +33,7 @@ import csv
 import re
 from pathlib import Path
 
-from kb_build import pack_io, tables
+from kb_build import pack_io, tables, topic_order
 
 TABLE = "point_relocation.csv"
 COLUMNS = ("subject", "slug", "to_topic_slug", "reason")
@@ -254,6 +254,18 @@ def main(argv: list[str] | None = None) -> int:
     if not args.write:
         print("（未写盘；加 --write 生效）")
         return 0
+    # 写回前排一道父级先序：本模块是**唯一会 append topic 的写入者**
+    # （`ensure_synthesis_chain` 把新建的「综合」链无条件追加到数组尾），而加载器按数组顺序
+    # 生成节点、外键逐行检查——子级排在父级前面会让整批安装崩掉。实测这条路径造出过 4 处。
+    reordered = 0
+    for subject in pack["subjects"]:
+        ordered = topic_order.parent_first(subject["topics"])
+        if ordered != subject["topics"]:
+            subject["topics"] = ordered
+            reordered += 1
+    if reordered:
+        print(f"父级先序：{reordered} 个科目的 topic 数组被重排")
+
     pack_io.dump_json(pack, path)
     if stats["moves"]:
         print("章表同步：", sync_chapter_map(stats["moves"]))

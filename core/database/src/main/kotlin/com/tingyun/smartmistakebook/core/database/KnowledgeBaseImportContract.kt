@@ -198,8 +198,20 @@ object KnowledgeBaseImportContract {
         ) { "$errorPrefix in the same taxonomy" }
     }
 
+    /**
+     * 别名的**逐条**校验。这里**不设条数上限**。
+     *
+     * 曾经有一条 `require(aliases.size <= 32)`。它没有依据——没有 KDoc、没有具名常量、
+     * 不从任何预算推导；真正的预算在 `KnowledgeSearchFeatureExtractor`（16 个片段 /
+     * 192 个特征），而那与别名条数无关：84 条别名与 39 条别名都只产出 16 个片段。
+     *
+     * 保留它的代价却很实：实测 25 个节点（最多的生物「基因工程」84 条）被整条拒掉，
+     * 于是**这 25 个知识点进不了任何用户的库**。删掉它是有意的——上限只让内容缺失，
+     * 不换来任何安全。
+     *
+     * 逐条约束仍然保留：每条 ≤200 字、去空白、大小写不敏感唯一。
+     */
     private fun validateAliases(aliases: Set<String>) {
-        requireImport(aliases.size <= 32) { "A knowledge node has too many aliases" }
         val normalized = aliases.map { alias ->
             text(alias, "node.alias", 200)
             requireImport(alias == alias.trim()) { "Knowledge aliases must be trimmed" }

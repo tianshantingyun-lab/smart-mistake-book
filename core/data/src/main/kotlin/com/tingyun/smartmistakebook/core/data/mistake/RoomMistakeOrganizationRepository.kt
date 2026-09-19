@@ -220,12 +220,29 @@ internal class RoomMistakeOrganizationRepository(
                 { it.dependentKnowledgeNodeId },
                 { it.prerequisiteKnowledgeNodeId },
             )
+        // 适配的两种损失都要**可见**：改前 `getOrNull + mapNotNull` 静默丢节点，
+        // 538 个节点因此从未进过模型的候选菜单，而没有任何地方记下过这件事。
+        val truncatedAliasCount = knowledgeRecords.count {
+            it.aliases.size > KnowledgeBaseNodeContext.MAX_ALIASES
+        }
+        val droppedForOtherReasons = mutableListOf<String>()
         val knowledgeBaseNodes = knowledgeRecords.mapNotNull { record ->
             record.toKnowledgeBaseContext(
                 subject = current.subject.toSubjectKind(),
                 parentCanonicalName = record.parentKnowledgeNodeId?.let(parentNames::get),
                 prerequisiteKnowledgeNodeIds = prerequisitesByDependent[record.knowledgeNodeId]
                     .orEmpty(),
+            ) ?: run {
+                droppedForOtherReasons += record.knowledgeNodeId
+                null
+            }
+        }
+        if (truncatedAliasCount > 0 || droppedForOtherReasons.isNotEmpty()) {
+            android.util.Log.w(
+                "KnowledgeOrganization",
+                "candidates=${knowledgeRecords.size} offered=${knowledgeBaseNodes.size} " +
+                    "aliasTruncated=$truncatedAliasCount " +
+                    "dropped=${droppedForOtherReasons.size} ${droppedForOtherReasons.take(3)}",
             )
         }
         val input = ProblemOrganizationInput(
@@ -851,7 +868,22 @@ private fun MistakeDetailRecord.committedDocumentOrNull(): CapturedQuestionDocum
 private fun String.toSubjectKind(): SubjectKind =
     runCatching { SubjectKind.valueOf(uppercase(Locale.ROOT)) }.getOrDefault(SubjectKind.GENERAL)
 
-private fun KnowledgeNodeSeedRecord.toKnowledgeBaseContext(
+/**
+ * 把一个知识节点适配成模型可读的候选。
+ *
+ * **别名先确定性截断再构造。** `KnowledgeBaseNodeContext` 的上限是 8 条，而真实内容里最多的
+ * 节点有 84 条（别名由"每条绑定材料标题各一条"机械生成，而 1019 个节点绑了 >4 条材料）。
+ * 改前这里不截断，于是 9 条以上别名的节点在 `init` 里抛、被 `getOrNull()` 吞掉、再被调用处
+ * 的 `mapNotNull` 丢掉——**静默消失，无日志无计数**，实测 538 个节点受影响；而被藏起来的
+ * 恰恰是材料最多的那些节点（`基因工程` 86 条材料 → 84 条别名 → 永远到不了模型）。
+ *
+ * 上限本身要保住：这个上下文最多带 64 个节点进提示词，别名不设限量会让提示词膨胀。
+ * 所以改的是**适配方式**——截断而不是丢弃。主名是独立字段，不受影响，节点始终可被指认。
+ *
+ * @return null 只表示节点因**别名之外**的原因不合格（如主名超 96 字）。调用方必须计数，
+ *   否则这条路径又会变回无声。
+ */
+internal fun KnowledgeNodeSeedRecord.toKnowledgeBaseContext(
     subject: SubjectKind,
     parentCanonicalName: String?,
     prerequisiteKnowledgeNodeIds: List<String>,
@@ -860,7 +892,7 @@ private fun KnowledgeNodeSeedRecord.toKnowledgeBaseContext(
         knowledgeNodeId = knowledgeNodeId,
         subject = subject,
         canonicalName = canonicalName,
-        aliases = aliases.sorted(),
+        aliases = aliases.sorted().take(KnowledgeBaseNodeContext.MAX_ALIASES),
         kind = KnowledgeNodeKind.valueOf(nodeKind),
         granularity = KnowledgeNodeGranularity.valueOf(granularity),
         parentCanonicalName = parentCanonicalName,
