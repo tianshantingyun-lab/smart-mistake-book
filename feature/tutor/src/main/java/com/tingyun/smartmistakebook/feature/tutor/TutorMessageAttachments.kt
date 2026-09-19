@@ -3,6 +3,7 @@ package com.tingyun.smartmistakebook.feature.tutor
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -11,6 +12,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.PhotoLibrary
@@ -26,6 +28,7 @@ import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.tingyun.smartmistakebook.core.domain.LobbyMessageImageIntake
@@ -137,35 +140,77 @@ internal fun MessageImagesRow(
     }
 }
 
-/** “添加图片”二选一菜单：拍一张新照片，或从相册选择。 */
+/** 加号菜单：拍一张新照片、从相册选择，或从错题库挑一道题加进来。 */
 @Composable
 internal fun MessageAttachmentDialog(
     onDismiss: () -> Unit,
     onLaunchCamera: () -> Unit,
     onLaunchGallery: () -> Unit,
     testTagPrefix: String,
+    /** 页面没有错题库入口时留空，那一项就不出现。 */
+    onPickFromLibrary: (() -> Unit)? = null,
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("添加图片") },
-        text = { Text("拍一张新照片，或从相册选择（最多 ${MAX_TUTOR_MESSAGE_IMAGES} 张）。") },
-        confirmButton = {
-            TextButton(
-                onClick = onLaunchCamera,
-                modifier = Modifier.testTag("${testTagPrefix}_attach_camera"),
-            ) {
-                Icon(Icons.Outlined.CameraAlt, contentDescription = null)
-                Text("拍照", modifier = Modifier.padding(start = 6.dp))
+        title = { Text("添加") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                // 三个动作同权，所以都排在内容区；确认键留给"取消"。
+                AttachmentMenuRow(
+                    text = "拍照",
+                    icon = Icons.Outlined.CameraAlt,
+                    onClick = onLaunchCamera,
+                    testTag = "${testTagPrefix}_attach_camera",
+                )
+                AttachmentMenuRow(
+                    text = "从相册选择",
+                    icon = Icons.Outlined.PhotoLibrary,
+                    onClick = onLaunchGallery,
+                    testTag = "${testTagPrefix}_attach_gallery",
+                )
+                onPickFromLibrary?.let { pick ->
+                    AttachmentMenuRow(
+                        text = "从错题库选择",
+                        icon = Icons.AutoMirrored.Outlined.MenuBook,
+                        onClick = pick,
+                        testTag = "${testTagPrefix}_attach_library",
+                    )
+                }
+                Text(
+                    text = "图片最多 ${MAX_TUTOR_MESSAGE_IMAGES} 张；从错题库选中的题会作为这一轮要讲的那道题。",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = InkSecondary,
+                    modifier = Modifier.padding(top = 4.dp),
+                )
             }
         },
-        dismissButton = {
+        confirmButton = {
             TextButton(
-                onClick = onLaunchGallery,
-                modifier = Modifier.testTag("${testTagPrefix}_attach_gallery"),
+                onClick = onDismiss,
+                modifier = Modifier.testTag("${testTagPrefix}_attach_cancel"),
             ) {
-                Icon(Icons.Outlined.PhotoLibrary, contentDescription = null)
-                Text("从相册选择", modifier = Modifier.padding(start = 6.dp))
+                Text("取消")
             }
         },
     )
+}
+
+@Composable
+private fun AttachmentMenuRow(
+    text: String,
+    icon: ImageVector,
+    onClick: () -> Unit,
+    testTag: String,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 10.dp)
+            .testTag(testTag),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(icon, contentDescription = null)
+        Text(text = text, modifier = Modifier.padding(start = 10.dp))
+    }
 }

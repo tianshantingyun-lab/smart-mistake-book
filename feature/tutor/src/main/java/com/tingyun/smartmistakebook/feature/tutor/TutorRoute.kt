@@ -58,6 +58,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.tingyun.smartmistakebook.core.domain.MistakeRevisionKey
 import com.tingyun.smartmistakebook.core.domain.AdaptiveDecision
 import com.tingyun.smartmistakebook.core.domain.AdaptiveDecisionKind
 import com.tingyun.smartmistakebook.core.domain.LobbyMessageImageIntake
@@ -120,6 +121,7 @@ fun TutorRoute(
     capabilities: AppCapabilitySnapshot,
     imageIntake: LobbyMessageImageIntake? = null,
     initialConversationId: String? = null,
+    onOpenMistakeTutor: (MistakeRevisionKey) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     if (practiceUnitId.isBlank() && teachingArtifact == null) {
@@ -136,6 +138,7 @@ fun TutorRoute(
             profile = profile,
             imageIntake = imageIntake,
             initialConversationId = initialConversationId,
+            onOpenMistakeTutor = onOpenMistakeTutor,
             modifier = modifier,
         )
         return

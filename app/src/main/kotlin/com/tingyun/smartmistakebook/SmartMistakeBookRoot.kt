@@ -388,6 +388,8 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     onOpenMistakeNotebook = { navController.navigate(Routes.Library) },
                     onOpenProfile = { navController.navigate(Routes.Profile) },
                     onOpenHistory = { navController.navigate(Routes.TutorHistory) },
+                    // 加号里从错题库选中的题交给讲题会话：不离开底部"智能体"标签。
+                    onOpenMistakeTutor = { key -> navController.navigate(Routes.mistakeTutor(key)) },
                     conversations = application.tutorConversationRepository,
                     modelTasks = application.modelTaskRepository,
                     catalogEntries = experience.catalog,
@@ -465,6 +467,8 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     onOpenMistakeNotebook = { navController.navigate(Routes.Library) },
                     onOpenProfile = { navController.navigate(Routes.Profile) },
                     onOpenHistory = { navController.navigate(Routes.TutorHistory) },
+                    // 加号里从错题库选中的题交给讲题会话：不离开底部"智能体"标签。
+                    onOpenMistakeTutor = { key -> navController.navigate(Routes.mistakeTutor(key)) },
                     conversations = application.tutorConversationRepository,
                     modelTasks = application.modelTaskRepository,
                     catalogEntries = experience.catalog,

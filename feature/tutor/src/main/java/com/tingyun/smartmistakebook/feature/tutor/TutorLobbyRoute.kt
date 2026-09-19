@@ -61,6 +61,7 @@ import com.tingyun.smartmistakebook.core.domain.TutorHistoryBudget
 import com.tingyun.smartmistakebook.core.domain.TutorMessage
 import com.tingyun.smartmistakebook.core.domain.TutorMessageRole
 import com.tingyun.smartmistakebook.core.domain.TutorMessageStatus
+import com.tingyun.smartmistakebook.core.domain.MistakeRevisionKey
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
 import com.tingyun.smartmistakebook.core.model.ModelFailureCode
 import com.tingyun.smartmistakebook.core.model.ModelLiveKind
@@ -75,6 +76,7 @@ import com.tingyun.smartmistakebook.core.model.AppFailureCode
 import com.tingyun.smartmistakebook.core.model.TutorChatHistoryEntry
 import com.tingyun.smartmistakebook.core.model.TutorLobbyInput
 import com.tingyun.smartmistakebook.core.model.TutorLobbyOutput
+import com.tingyun.smartmistakebook.core.model.TutorRequestedLocalCapability
 import com.tingyun.smartmistakebook.core.model.Retryability
 import com.tingyun.smartmistakebook.core.model.appFailure
 import com.tingyun.smartmistakebook.core.model.recoverableByResending
@@ -122,6 +124,8 @@ internal fun TutorLobbyRoute(
     profile: StudyProfileOverview,
     imageIntake: LobbyMessageImageIntake? = null,
     initialConversationId: String? = null,
+    /** 加号里"从错题库选择"选中后，把这道题交给讲题会话（当前实现是进入它的会话页）。 */
+    onOpenMistakeTutor: (MistakeRevisionKey) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
@@ -195,6 +199,10 @@ internal fun TutorLobbyRoute(
         ),
     ) { mutableStateOf(emptyList()) }
     var attachMenuOpen by remember { mutableStateOf(false) }
+    // 加号里的"从错题库选择"：在本页直接挑题，而不是跳去错题本再自己找回来。
+    var mistakePickerOpen by remember { mutableStateOf(false) }
+    // 模型这一轮申请了"查错题本"：给一个能点的入口，而不是让申请无声落地。
+    var notebookLookupRequested by remember { mutableStateOf(false) }
     // 相机结果要回填到发起拍照时约定的目标 URI，跨重建也必须还在，否则拍完的照片无处安放。
     var pendingCameraImageUri by rememberSaveable { mutableStateOf<String?>(null) }
     val lobbyImageEnabled = imageIntake != null
@@ -305,10 +313,14 @@ internal fun TutorLobbyRoute(
                         liveReplyStatus = task.userMessage.takeIf {
                             it.isNotBlank() && task.status in LIVE_REPLY_STATUSES
                         }
-                        val output = task.output as? TutorLobbyOutput
-                        when {
-                            task.status == ModelTaskStatus.SUCCEEDED && output != null -> {
-                                terminalHandled = true
+            val output = task.output as? TutorLobbyOutput
+            when {
+                task.status == ModelTaskStatus.SUCCEEDED && output != null -> {
+                    terminalHandled = true
+                    // 模型申请"查错题本"时，界面必须给出可点的一步。此前这条申请被解析、被校验、
+                    // 然后被丢掉：学生看到模型说"我去看看你的错题本"，界面上没有任何入口。
+                    notebookLookupRequested = output.intentDecision.requestedLocalCapability ==
+                        TutorRequestedLocalCapability.READ_MISTAKE_NOTEBOOK
                                 conversations.appendAssistantMessage(
                                     AppendTutorAssistantMessageCommand(
                                         conversationId = conversationId,
@@ -481,6 +493,8 @@ internal fun TutorLobbyRoute(
                 val intake = imageIntake
                 draft = ""
                 sendError = null
+                // 新一轮：上一轮模型申请的查错题本提示随消息一起过期。
+                notebookLookupRequested = false
                 // 发送时登记：图片字节进私有资产库并拿到 egress 证明所需的哈希/尺寸。
                 // 资产库按内容寻址，同一张照片被选两次会拿到同一个 assetId，而请求契约
                 // 要求 assetId 互不重复；这里按 assetId 去重（保留首次出现的位置），
@@ -621,6 +635,7 @@ internal fun TutorLobbyRoute(
         if (conversationId.isBlank() || studentMessage.conversationId != conversationId) return
         sendInFlight = true
         sendError = null
+        notebookLookupRequested = false
         // 同一次用户动作取一次时钟：授权时刻与请求时刻必须同刻（见 startMessage 的说明）。
         val decidedAtEpochMillis = System.currentTimeMillis()
         scope.launch {
@@ -856,6 +871,19 @@ internal fun TutorLobbyRoute(
                     }
                 }
             }
+            if (notebookLookupRequested && !hasActiveTask) {
+                item(key = "lobby-notebook-lookup") {
+                    OutlineActionChip(
+                        text = "打开错题本",
+                        icon = Icons.AutoMirrored.Outlined.MenuBook,
+                        onClick = onOpenMistakeNotebook,
+                        modifier = Modifier
+                            .padding(top = 10.dp)
+                            .testTag("tutor_lobby_open_notebook"),
+                        contentDescription = "打开错题本，查看模型提到的题",
+                    )
+                }
+            }
         }
         PaperDivider()
         Box(
@@ -937,6 +965,25 @@ internal fun TutorLobbyRoute(
                     PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
                 )
             },
+            testTagPrefix = "lobby",
+            onPickFromLibrary = if (catalogEntries.isNotEmpty()) {
+                {
+                    attachMenuOpen = false
+                    mistakePickerOpen = true
+                }
+            } else {
+                null
+            },
+        )
+    }
+    if (mistakePickerOpen) {
+        TutorMistakePickerDialog(
+            entries = catalogEntries,
+            onPick = { entry ->
+                mistakePickerOpen = false
+                onOpenMistakeTutor(entry.toMistakeRevisionKey())
+            },
+            onDismiss = { mistakePickerOpen = false },
             testTagPrefix = "lobby",
         )
     }
