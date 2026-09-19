@@ -732,3 +732,25 @@ bmath_6 缺 p591–660、bbio_3 缺 40 页、phyjc_1 缺 28–133。其中 3 个
 **结论.** 407 个扫描 PDF 现在分布为：TRANSCRIBE_LATER 227、SKIP_EXERCISES 100、
 DUPLICATE_OF_BOOK 56、TRANSCRIBED 10、TRANSCRIBE_THIS_ROUND 9（本轮批次，已随批次做成 TRANSCRIBED）、
 SKIP_ANSWERS 5、SKIP_NO_CONTENT 1，**无待判定**。
+
+### K-06 · 真机（模拟器）冒烟：15,862 条内置材料导入成功、无横幅 【P1 · 已实测 2026-09-19】
+
+**命令与结果**（emulator-5554 / API34，设备时钟比主机慢 8 小时）：
+
+```bash
+./gradlew :app:assembleLocalFirstDebug                     # BUILD SUCCESSFUL（APK 143,021,822 字节，09:39）
+adb install -r app/build/outputs/apk/localFirst/debug/...  # Success
+adb shell pm clear com.tingyun.smartmistakebook.localfirst # Success（强制首启导入）
+adb shell am start -W -n .../MainActivity                  # COLD，TotalTime 3660ms
+adb shell run-as ... sqlite3 .../smart-mistake-book.db "select count(*) from knowledge_teaching_material;"
+```
+
+| 查询 | 设备值 | 与包对照 |
+|---|---|---|
+| `knowledge_teaching_material` | **14,972** | 包内 15,862 − 892 条无绑定残渣 = 14,970（±2，聚合层剔除口径）|
+| `knowledge_node` | **2,933** | 包内 2,905（462 topic + 2,443 point）+ 2020 旧包节点 |
+| `knowledge_source` | 58 | 6 卷来源去重后 |
+
+**副作用与结论.** `logcat` 里没有 `FATAL` / `AndroidRuntime` / `DatabaseContractViolation` /
+知识包导入失败记录；截图（`build/device-smoke-0919.png`）显示首页正常、**无启动横幅**。
+KD-15 那类"整批被拒 → 横幅"的失败在 15,862 条规模下不复现。
