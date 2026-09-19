@@ -1,0 +1,20 @@
+subject,slug,field,status,evidence
+CHEMISTRY,ext-che-00be305a22-050b,contentMarkdown,FIXED,损坏前判定行 build/agent-input/merged_batch.csv（同标题同块）与本字段仅差 20 处残迹位；修后与它逐字节相同；20 处依次还原为 v（v_1 与 v_2 比较两处）、B（中间产物）、X 与 Y 与 Z（X→Y→Z 连串示例）、C（C10H18 两步脱氢）、B（定量关系三处）、A 与 B 与 C（竞争反应）、mol（2 mol 与 3 mol 投料）；卷 v06 的 ext-che-1880b6dbb6-141（CLEAN）独立写有「中间产物B的含量」「某时刻中间产物B的浓度等于第一步反应生成的B浓度减去第二步反应消耗的B浓度」
+CHEMISTRY,ext-che-181247b2ab-002,contentMarkdown,FIXED,损坏前判定行 .agent_t2_02.csv 与本字段仅差 8 处残迹位；修后与它逐字节相同；8 处还原为 mol（0.05 mol/L、0.2 mol/L、10^-5 mol/L、5×10^-3 mol/L、9×10^-6 mol/L）、pH（算例二标题与溶液 pH 范围）、Fe（FeS+H+ 可逆 Fe2+ 加 HS-）；源头切块 181247b2ab-002 原文写 mol/L 与 pH
+CHEMISTRY,ext-che-181247b2ab-002,boundaryMarkdown,FIXED,同一判定行 .agent_t2_02.csv 的对应字段写「10^-5 mol/L」；修后与它逐字节相同
+CHEMISTRY,ext-che-51e309bf0b-002b,contentMarkdown,FIXED,损坏前判定行 .agent_t2_18.csv 与本字段仅差 4 处残迹位；修后与它逐字节相同；两处还原为「1 mol Cl_2」；源头切块 51e309bf0b-002 原文写「1 mol Cl2与水反应时(可逆反应)」「1 mol Cl2与足量冷的NaOH溶液(或石灰乳)反应时」
+CHEMISTRY,ext-che-b823b36192-002,contentMarkdown,FIXED,损坏前判定行 .agent_t2_26.csv 与本字段仅差 3 处残迹位；修后与它逐字节相同；还原为 Hg（Hg 除外）与 m（1.42×10^-10 m、1.54×10^-10 m）；源头切块 b823b36192-002 原文写「(Hg除外)」「键长为1.42×10－10 m」
+CHEMISTRY,ext-che-e05314cc33-041,contentMarkdown,FIXED,pid_repeat 判据：同一 6 位数字 305020 在公式两端各出现一次（即行间公式定界符被 shell 展开成 PID）；按本卷同族材料的写法（换行后双定界符包住公式再换行）还原为双定界符；修后数学定界符由 20 个增至 24 个（仍为偶数）；源头切块 e05314cc33-041 为扫描页图无文本可复核
+CHEMISTRY,ext-che-e1f44db337-031b,contentMarkdown,FIXED,损坏前判定行 build/agent-input/merged_batch.csv 与本字段仅差 5 处残迹位；修后与它逐字节相同；还原为 L（1 L 水溶液）与 4 处 pH（分数随 pH 的变化、按 pH 增大、在 pH 较小时、随着 pH 减小）
+MATH,ext-mat-9c65092122-006,contentMarkdown,FIXED,损坏前判定行 .agent_mp_01.csv 与 merged_text_batch.csv 一致且与本字段仅差 8 处残迹位；修后与它逐字节相同；还原为 b（a 与 b 属于 R、Z(a 与 b)）、R（\mathbf R）、z（\bar z 两处、z_1±z_2）、r（r_1≤|z|≤r_2）
+MATH,ext-mat-c0a639908a-002c,contentMarkdown,FIXED,dollar_unbalanced 判据：全字段数学定界符共 51 个（奇数）；逐段切分显示非公式段全是纯中文、公式段全是完整式子（不存在「正文与公式粘连」的段）故别处没有丢定界符；唯一异常是句末解答式后连着两个定界符再接句号；本字段三处行间公式一律写作「换行+双定界符…双定界符+换行」而句末与同段「S_ACD=sinα。」一样属行内公式接句号；据此删去多出的那一个定界符（51 变 50）；b 批 .agent_b_bmath_7.csv 同标题行仍是 51 个定界符（同为损坏副本、不能作复原依据）
+MATH,ext-mat-eb06dd91c4-005,contentMarkdown,FIXED,损坏前判定行 build/agent-input/merged_batch.csv 与本字段仅差 1 处残迹位；修后与它逐字节相同；残迹夹在「推出」与下标 _{2m} 之间且本字段上下文用 S_m 记片段和故还原为 S；该行本身写「S_m+(S_3m−S_2m)=2(S_2m−S_m)」作旁证
+MATH,math-fx-dengcha-duicheng-xingzhi,contentMarkdown,FIXED,两处残迹后紧接下标 _{2k} 与 _{3k} 故被替换的是 S；同片 ext-mat-eb06dd91c4-005（有 CLEAN 前身）把同一性质写成「S_m、S_2m−S_m、S_3m−S_2m、…成等差数列」；本材料 summary 亦写「连续片段和仍成等差」；该族材料只在本卷出现、仓库内无前身副本
+MATH,math-fx-zhengqie-xingzhi,contentMarkdown,FIXED,定义域残迹还原为 x（x 不等于 π/2+kπ）与 k（k 属于 Z）——与同句渐近线 x=kπ+π/2 的 k 一致；值域残迹按本材料 summary「值域 R，周期 π」与 boundary「在 R 上递增」的写法还原为裸体 R 并补回被吃掉的前置空格（同批 12 个字段已独立证实「残迹吃掉前置空格」这一模式）；该族材料无前身副本
+MATH,math-kb-arithmetic-mean-term,contentMarkdown,FIXED,三数还原为 a 与 A 与 b、末句为「A 叫 a 与 b 的等差中项」；依据本材料 summary「a、A、b 成等差时 A 叫等差中项，满足 2A=a+b」；卷 03 的 ext-mat-0e56aad79f-036（CLEAN）写「若a、A、b成等差数列，则A是a与b的等差中项，满足2A=a+b」；两处前置空格按已证实模式补回
+MATH,math-kb-inequality-basic-properties,contentMarkdown,FIXED,六处残迹逐项还原为 b 与 a 与 a 与 c 与 a（对称性 a>b 等价 b<a；传递性 a>b 且 b>c 推出 a>c；可加性 a>b 等价 a+c>b+c；同向可加性 a>b 且 c>d 推出 a+c>b+d）；卷 04 的 ext-mat-62ae019851-002（CLEAN）逐条写有同样的对称性、传递性、可加性、同向可加结论；本材料 summary 亦列出同名性质
+MATH,math-period-shift-opposite-different-offsets,title,FIXED,两处残迹还原为 a 不等于 b 与 T=2|b-a|；同族 CLEAN 标题（半周期反号式、倒数关系周期式、自变量差 2a 等值式）一律在推出号后写 T 故此处是 T；本材料 boundary 写「a 不等于 b」、content 写「故 T=2|b-a|」
+PHYSICS,ext-phy-94ce022dcc-001e,contentMarkdown,FIXED,损坏前判定行 .agent_mp2_44.csv 与 merged_text_batch.csv 一致且与本字段仅差 3 处残迹位；修后与它逐字节相同；还原为 E（ΔE）、mc（Δmc²）、MeV（以 MeV 为单位）
+PHYSICS,ext-phy-94ce022dcc-001e,boundaryMarkdown,FIXED,同一判定行的对应字段写「Δm 必须与 ΔE 使用同一套单位」；修后与它逐字节相同
+PHYSICS,ext-phy-e5cb809e21-002,contentMarkdown,FIXED,.agent_mp2_15.csv 与 merged_text_batch.csv 对应行与本字段仅差 1 处残迹位；修后与它逐字节相同；还原为 m（N·m²/kg²）；同标题另有 3 个改写版本（长度与句式均不同）与本材料不符故不采用；源头切块 e5cb809e21-002 原文写「6.67×10－11 N·m2/kg2」
+PHYSICS,ext-phy-e8adc999e6-003,contentMarkdown,FIXED,损坏前判定行 .agent_mp_06.csv 与 merged_text_batch.csv 一致且与本字段仅差 1 处残迹位；修后与它逐字节相同；还原为 E（E 大于等于 E_m 减 E_n）；源头切块 e8adc999e6-003 原文写「E外≥Em－En」

@@ -127,6 +127,18 @@ class LatexRepairTest(unittest.TestCase):
         self.assertEqual(BS + "vec{a}", fix("ec{a}"))
         self.assertEqual(BS + "alpha", fix("lpha"))
 
+    def test_form4_space_lost_backslash(self):
+        r"""形态 4：细空 `\ ` 后面的命令丢了反斜杠（`$9.8\ text{m/s}^2$`）。
+
+        这一形态是修完 `\1` 残迹后才露出来的（此前 `\ text` 被 `\1` 吃掉，判据看不见）。
+        补回的是细空后面的反斜杠，所以 `\ \text{...}` 是目标形态；而
+        `$1\ \text{mol}$`（本来就有反斜杠）与 `\ mol`（细空＋普通单词）都不能被改。
+        """
+        self.assertEqual(BS + " " + BS + "text{m/s}^2", fix(BS + " text{m/s}^2"))
+        self.assertEqual("a=c" + BS + " " + BS + "text{且}", fix("a=c" + BS + " text{且}"))
+        self.assertEqual(BS + " " + BS + "text{mol}", fix(BS + " " + BS + "text{mol}"))
+        self.assertEqual(BS + " mol", fix(BS + " mol"))
+
     def test_form3_after_variable(self):
         r"""前缀是变量而不是命令时也要修（$x\vec{i}$ -> $xec{i}$）。"""
         self.assertEqual("x" + BS + "vec{i}", fix("xec{i}"))

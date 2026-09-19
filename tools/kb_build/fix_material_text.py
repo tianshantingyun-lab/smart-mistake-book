@@ -33,6 +33,7 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 from pathlib import Path
 
@@ -93,10 +94,65 @@ def repair_document(doc: dict) -> dict:
     return stats
 
 
+JUDGE_TABLE = Path("tools") / "kb_coverage" / "tables" / "material_judgments.csv"
+JUDGE_COLUMN = {"title": "title", "summaryMarkdown": "summary",
+                "applicabilityMarkdown": "applicability",
+                "contentMarkdown": "content", "boundaryMarkdown": "boundary"}
+
+
+def mirror_judgments(write: bool) -> tuple[int, int]:
+    """把**同一套修复**镜像回判定表（入库上游），否则下次 materialize 会把老毛病带回来。
+
+    与材料侧的区别：CSV 没有 slug，因此不能按"某字段等于某文本"定位，
+    而是对每一行的 5 个文本列**独立**跑一次修复（修复是字段局部的、确定的）。
+    无损校验：非文本列逐列指纹不变、修后含损坏的行数归零、重放 0 改动。
+    """
+    if not JUDGE_TABLE.exists():
+        return 0, 0
+    commands = gate._REAL_LATEX_COMMANDS
+    raw = JUDGE_TABLE.read_bytes()
+    crlf = raw.count(b"\r\n") > raw.count(b"\n") - raw.count(b"\r\n")
+    with JUDGE_TABLE.open(encoding="utf-8", newline="") as fh:
+        reader = csv.DictReader(fh)
+        rows = list(reader)
+        fields = list(reader.fieldnames or [])
+    others_before = [json.dumps({k: v for k, v in r.items() if k not in JUDGE_COLUMN.values()},
+                                sort_keys=True, ensure_ascii=False) for r in rows]
+    changed = damaged_rows = 0
+    for row in rows:
+        row_damaged = False
+        for column in JUDGE_COLUMN.values():
+            value = row.get(column) or ""
+            if not gate._latex_damaged(value) and not _is_junk(value):
+                continue
+            fixed = textfix.strip_control_junk(
+                textfix.repair_latex_commands(value, commands))
+            if fixed != value:
+                row[column] = fixed
+                changed += 1
+        if any(gate._latex_damaged(row.get(c) or "") or _is_junk(row.get(c) or "")
+               for c in JUDGE_COLUMN.values()):
+            row_damaged = True
+        damaged_rows += 1 if row_damaged else 0
+    others_after = [json.dumps({k: v for k, v in r.items() if k not in JUDGE_COLUMN.values()},
+                               sort_keys=True, ensure_ascii=False) for r in rows]
+    if others_before != others_after:
+        raise ValueError("判定表镜像：非文本列被改动，拒绝写回")
+    if write and changed:
+        with JUDGE_TABLE.open("w", encoding="utf-8", newline="") as fh:
+            writer = csv.DictWriter(fh, fieldnames=fields,
+                                    lineterminator="\r\n" if crlf else "\n")
+            writer.writeheader()
+            writer.writerows(rows)
+    return changed, damaged_rows
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="修材料文本的 LaTeX 与控制字符残迹")
     parser.add_argument("--write", action="store_true", help="写回 sidecar（默认只报告）")
     parser.add_argument("--root", type=Path, default=None)
+    parser.add_argument("--judgments", action="store_true",
+                        help="把同一套修复镜像回判定表（入库上游）")
     args = parser.parse_args(argv)
 
     if args.root:
@@ -144,6 +200,12 @@ def main(argv: list[str] | None = None) -> int:
         print(f"\n→ 已写回 {len(docs)} 个 sidecar")
     else:
         print("（未写盘；加 --write 生效）")
+    if args.judgments:
+        changed, damaged_rows = mirror_judgments(write=args.write)
+        print(f"→ 判定表：改写 {changed} 个文本列；仍受损行 {damaged_rows}")
+        if damaged_rows:
+            print("   ! 判定表仍有受损行，检查上游产物")
+            return 1
     return 0
 
 

@@ -797,3 +797,63 @@ that the draft is reachable or resolved.
 下次动 `gate.py` 时应当直接从契约抄集合，否则同类缺陷仍只能靠 Kotlin 用例在最后一刻发现。
 
 **Reopen condition.** n/a —— 由 `BundledTeachingMaterialsContractTest` 持续守门。
+
+## KD-21 (fixed 2026-09-19) · 2,265 处 `\1` 回指残迹随包分发，门没有任何判据看得见
+
+**Symptom.** 数学材料标题里出现 `$f(x)=f(x+a)\Rightarrow\1=a$`。全包普查：473 条材料 / 2,265 处
+`\1`，另有 6 处行尾孤立反斜杠、3 处 `\，`、9 处 `f\'(x)`。这些字段是**讲题时模型直接读到的文本**：
+`\1` 进去，公式语义就断了；`title` 还进别名表参与检索。
+
+**Root cause.** 残迹形态是「一个空白 + 一串 ASCII 词元」被整体替换成 2 字符 `\1`（原文本用 LaTeX
+细空 `\` 时反斜杠残留，于是出现 `\1`）。`gate.latex_damage` 只查"真命令丢了反斜杠"
+（`\cos\alpha` → `\coslpha`），**反方向（反斜杠后跟了不该跟的字符）没有任何判据**，
+于是整类残迹静默出厂。
+
+**Evidence.** 30 个子代理逐字段修复时取到的独立证据：485 条字段的修复结果与
+`cffda989^`（损坏前提交）/ 该卷历史版本 / 入库前 `.agent_*.csv` 产物**逐字节相等**——
+即残迹确实是"曾经正确、后来被替换"。53 条无干净前身（首次入库即坏）按材料内互证重建。
+`material_judgments.csv` 侧 1,762 处同源（入库上游）一并镜像修好。
+
+**Fix.** 门新增 `invalid_escape` 指标（allowlist 由全包"反斜杠+非字母"普查定：
+`\`、`\ `、`\{`、`\}`、`\%`、`\,`、`\_`、`\|`、`\;`、`\:`、`\(` 都是真写法）；
+修复工具 `fix_invalid_escapes`（三类机械 + 表驱动语义）；写回器 `apply_text_fixes` 的三层独立复核。
+
+**Reopen condition.** `invalid_escape` 指标非 0（门里的哨兵 + `test_gate_reports_real_defects_not_zero`）。
+
+## KD-22 (fixed 2026-09-19) · `$$` 被 shell 展开成 PID、`$0` 变成 /usr/bin/bash
+
+**Symptom.** 材料正文里出现 `310243n = \frac{a-xb}{2}310243`（同一 6 位数夹住一条公式）、
+`只能读到 /usr/bin/bash.1\ \mathrm{g}$`、`必须控制在 .5\sim10.5$`（`$` 计数为奇数）。
+
+**Root cause.** 文本在某一环被丢进 **shell 上下文**：`$$`（行间公式定界符）→ 进程号、
+`$0` → 脚本名 `/usr/bin/bash`、`$1`/`$c`/`$p` 这类"$ + 名字"连名字一起被展开掉。
+`gate` 既没有 PID 判据也没有 `$` 奇偶判据，所以没有任何一项会红。
+
+**Evidence.** 9 个字段的 PID 残迹（6 位数两端各一）、13 处 `/usr/bin/bash`、20 个字段 `$` 不成对；
+其中化学数值类残迹可用材料自身算术反证（`0.05×99/6=82.5%` ⇒ 取样量 `$6\ \mathrm{g}$`、
+莫尔法 `pH 6.5~10.5`、`$p-\pi$ 共轭`）。
+
+**Fix.** 门新增 `shell_expansion`（`$0` 残迹 + PID 双重判据）与 `dollar_unbalanced`（`$` 奇偶）两项指标；
+判据的三条限定（6–7 位、窗口 ≤120 字、中间夹公式记号）由"真残迹全是 6 位数、两例误报全是 5 位换算系数
+（10000/40000）"实测倒逼，并写进单测正反两侧钉住。
+
+**未指认环节（如实记录）.** 当时的命令记录没留下，无法指认是哪个脚本/代理把文本丢进了 shell；
+因此防线放在门的判据上，而不是指认单个工具。
+
+**Reopen condition.** `shell_expansion` 或 `dollar_unbalanced` 非 0。
+
+## KD-23 (fixed 2026-09-19) · `\ text{` 被 `\1` 残迹掩盖：修好一类才露出另一类
+
+**Symptom.** 修完 `\1` 后门 `latex_damage` 从 0 变 5（`$9.8\ text{m/s}^2$`、`$a=c\ text{且}\ b=d$` 等）。
+
+**Root cause.** 两处损坏叠在同一个位置：`\ text{` 的坏点特征是 `ext{` 尾部没有反斜杠，
+而同一字段里的 `\1` 恰好把 `\ text` 吃成了 `\1`，判据于是看不见它。**修得掉看得见的，才露出被掩盖的。**
+
+**Evidence.** 逐字段比对 HEAD 版与写回后：HEAD 版 `_latex_damaged` 为 False、写回后为 True，
+且命中的 tail 全是 `ext`（`text`）；全包 `\ \text{` 140 处（合法写法）vs `\ text{` 7 处（坏）。
+
+**Fix.** `textfix` 新增形态 4（`\ 空格 命令名{` → 补回反斜杠，命令名必须紧跟 `{`，
+故合法的 `\ mol` 细空不受影响）；`fix_material_text --judgments` 把同一套修复镜像回判定表
+（46 个文本列；非文本列指纹比对不变、仍受损行 0）。
+
+**Reopen condition.** 门 `latex_damage` 非 0。

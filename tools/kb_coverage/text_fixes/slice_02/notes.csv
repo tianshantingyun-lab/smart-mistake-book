@@ -1,0 +1,19 @@
+subject,slug,field,status,evidence
+CHEMISTRY,ext-che-00be305a22-008b,contentMarkdown,FIXED,共 1 处：r0→「 gG」；依据：同字段 K° 表达式用 p_G 与指数 g（产物为 G、计量数为 g）；同卷 ext-che-988f19d372-015 写 \rightleftharpoons gG(g)+hH(g)
+CHEMISTRY,ext-che-1422ee20c2-049,contentMarkdown,FIXED,共 6 处：r0/r1/r4/r5→「 mol」（落在 \mathrm{g\cdot…^{-1}} 内）；r2/r3→「 mol」（正文“1 mol 苯酚生成 1 mol 乙苯醚”）；依据：同字段已有 0.05\ \mathrm{mol} 的写法；同卷 ext-che-70f6560213-001b 写 \mathrm{kJ\cdot mol^{-1}}（同一构造）
+CHEMISTRY,ext-che-2982b3ef36-013,contentMarkdown,FIXED,共 10 处：r0/r1/r3…r8→「 \mathrm{mol}」；r2→「 n」；r9→「 p」；依据：源头切块 2982b3ef36-013 的三行数据逐字对应——n(始) 1 mol 3 mol 0、Δn 0.5 mol 1.5 mol 1 mol、模板2 的 Δp p′ 3p′ 2p′
+MATH,ext-mat-6b1676363c-001,contentMarkdown,FIXED,共 9 处：r0→「 k」；r1→「\mathbf Z」；r2/r3→「 rad」；r4…r8→「 R」；依据：源头切块 6b1676363c-001 写 S＝{β|β＝α＋k·360°，k∈Z}、记作1 rad、半径为R；同批材料（ext-mat-98e813b184-001 等）写 k\in\mathbf Z
+MATH,ext-mat-8ae4bcba5e-005,contentMarkdown,FIXED,共 1 处：r0→「 n」；依据：同材料 boundary 写 $m=n$ 时表示圆、summary 写 m、n 同号且不等；同字段下文写“由 $m$、$n$ 的大小关系直接读出焦点”
+MATH,ext-mat-918c07587b-004,contentMarkdown,FIXED,共 1 处：r0→「 y」；依据：同字段上一式写 \dfrac{2p}{y_{n+1}-y_n}=p+1；该式左边只能是 y_{n+1}-y_n
+MATH,ext-mat-991fbb472d-008,contentMarkdown,WIDER_FIX,共 2 处：r0→「 Z」（补回被吃掉内容中的集合符号）；r1→「 OMP」（补回被吃掉的 △ 顶点名）；依据：r0 同批材料（ext-mat-98e813b184-001 等）写 k\in\mathbf Z；r1 的三个字母由同句 |OP|、|MP|、|OM| 与“过 P 作 x 轴垂线、垂足为 M”确定为 O、M、P；顶点书写顺序 O-M-P 属推断（缺源头切块原文佐证）
+MATH,ext-mat-991fbb472d-013,contentMarkdown,FIXED,共 2 处：r0→「 k」；r1→「 Z」；依据：同字段下文已写“写成含 $k\cdot180^\circ$（或 $k\pi$）的形式”；集合写法与 ext-mat-6b1676363c-001 的同一公式一致；同批材料写 k\in\mathbf Z
+MATH,math-hj-s15-always-exist,contentMarkdown,FIXED,共 24 处：四组 ∀/∃ 式各 6 处；依次补回 x、D、f、a；依据：同材料 summary 写 ∀f(x)≥a ⇔ f(x)min≥a、∃f(x)≥a ⇔ f(x)max≥a；同批 material math-hj-s21-abstract-domain 与 math-always-true-two-function-extremum 写 $\forall x\in D$
+MATH,math-hj-s16-always-true-quad,contentMarkdown,FIXED,共 1 处：r0→「 c」；依据：同句公式 $ax^2+bx+c>0$ 的常数项为 c；a=0 且 b=0 时不等式化为 c>0（同材料 boundary 要求讨论退化情形）
+MATH,math-hj-wudianfa-zhengxianleixing,contentMarkdown,FIXED,共 2 处：r0/r1→「 x」；依据：同材料 summary 写令 $\omega x+\varphi$ 取 0、π/2、π、3π/2、2π 定五点
+MATH,math-kb-arithmetic-sum-blocks,summaryMarkdown,FIXED,共 3 处：r0/r1→「 S」；r2→「 k」；依据：同材料 contentMarkdown 写公差为 $k^2d$；同卷 math-mo-dengcha-sn-xingzhi-sanjieshi 写同一公式（依次 k 项之和 S_k、S_{2k}-S_k、S_{3k}-S_{2k} 成等差）
+MATH,math-kb-arithmetic-sum-blocks,contentMarkdown,FIXED,共 2 处：r0/r1→「 S」；依据：同字段内 -S_k 与 S_{3k}-S_{2k} 的另外几个 S 完好可确认为 S；同卷 math-mo-dengcha-sn-xingzhi-sanjieshi 写同一公式
+MATH,math-kb-vector-dihedral-angle,contentMarkdown,FIXED,共 6 处：全部→「 n」；依据：同批材料 math-kb-vector-representation-parallel-vertical 写 \vec n_1\parallel\vec n_2、math-kb-vector-line-plane-angle 写 \vec n 为法向量；ext-mat-c3a46f150b-004 的同一公式写法一致
+MATH,math-kb-vector-skew-line-angle,contentMarkdown,FIXED,共 4 处：全部→「 u」；依据：同材料 summary 写 $\cos\theta$ 取 $u_1$ 与 $u_2$ 夹角余弦的绝对值（方向向量记作 u_1、u_2）；同批材料用 \vec u 表示方向向量
+MATH,math-lingdian-shengjiang-fenlei-dairu,contentMarkdown,FIXED,共 1 处：r0→「 x」；依据：同材料 boundary 写下降零点对应 $\omega x+\varphi=(2k+1)\pi$ 型
+PHYSICS,ext-phy-154f35f7e3-002c,contentMarkdown,FIXED,共 1 处：r0→「 m」；依据：源头切块 154f35f7e3-002 写 k＝9.0×109 N·m2/C2；同卷 phys-kb-coulomb-law 写 \mathrm{N\cdot m^2/C^2}
+PHYSICS,ext-phy-b7fee3d991-003,contentMarkdown,FIXED,共 1 处：r0→「 m」；依据：源头切块 b7fee3d991-003 写 G＝6.67×10－11 N·m2/kg2；同卷 phys-kb-universal-gravitation-law 写 \mathrm{N\cdot m^2/kg^2}

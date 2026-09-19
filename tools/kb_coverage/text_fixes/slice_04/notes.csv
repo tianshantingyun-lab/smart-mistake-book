@@ -1,0 +1,19 @@
+subject,slug,field,status,evidence
+CHEMISTRY,ext-che-1422ee20c2-029,contentMarkdown,WIDER_FIX,5 处非法转义按入库提交 54c6220b 原文还原（L / SCN / I / c / NaF）；/usr/bin/bash 按 shell 展开还原为 $0；另补回被 $ 展开吃掉的正文 c 共 7 处（$c(…)$）与 1 个纯定界符 $——依据同材料 summary 与 boundary 都写 c(Fe3+) 且入库提交同句写「由颜色变化推 c(Fe3+)」
+CHEMISTRY,ext-che-2982b3ef36-011,contentMarkdown,FIXED,10 处非法转义逐位等于入库提交 4787fb49 的原文（pC / mol / A / mol / A / mol / L / A / A / A）；agent CSV .agent_t2_05.csv 同文佐证
+CHEMISTRY,ext-che-4dd2e79693-030,contentMarkdown,FIXED,18 处非法转义按入库提交 b7861e00 还原（pH / mol / L / c）；与 agent CSV .agent_jjdx_chem_a.csv 逐处一致
+CHEMISTRY,ext-che-4dd2e79693-030,boundaryMarkdown,FIXED,4 处非法转义按入库提交 b7861e00 还原为 mol / L / pH / pOH；agent CSV .agent_jjdx_chem_a.csv 同文
+CHEMISTRY,ext-che-58b83436a6-009,contentMarkdown,FIXED,4 处非法转义按入库提交 4787fb49 还原为 n / a / M / m（密度公式与 μm）；agent CSV .agent_t_03.csv 同文
+MATH,ext-mat-4e258ba37b-001c,contentMarkdown,WIDER_FIX,该处 \1 实为 cases 的行分隔符被吃掉一个反斜杠（\\1\cdot 脱落成 \1\cdot）；因门禁禁止「反斜杠后跟数字」故写成 \\ 加一个空格（LaTeX 数学模式忽略该空格）；入库提交与 agent CSV 此处都已损坏 判据是 cases 必须换行且第二行为 1\cdot x_0=c/(3a)
+MATH,ext-mat-618a9e5fe2-009,contentMarkdown,FIXED,3 处非法转义按 agent CSV .agent_mp_22.csv 还原为 \ y（A(x_1 y_1) 与 B(x_2 y_2)）
+MATH,ext-mat-8303bd2cea-001b,contentMarkdown,FIXED,2 处非法转义按 agent CSV .agent_mp2_54.csv 还原为 \ y
+MATH,ext-mat-991fbb472d-017,contentMarkdown,FIXED,1 处非法转义按 agent CSV .agent_mp_01.csv 还原为 \ y（在直线上取一点 P(x y)）
+MATH,ext-mat-eb06dd91c4-001,contentMarkdown,FIXED,1 处非法转义按入库提交 54c6220b 与 agent CSV .agent_b_bmath_4.csv 还原为 \ S（S_n 公式）
+MATH,math-fx-zhongbian-weizhi-queding-fa,contentMarkdown,FIXED,1 处非法转义按入库提交 7de06fa3 还原为 \ k（k∈Z）；同提交与另一分支 worktree 副本同文
+MATH,math-hj-sanjiao-hanshu-xingzhi-biao,contentMarkdown,FIXED,3 处非法转义按入库提交 7de06fa3 还原为 x（sin x / cos x / tan x）；HEAD 的 \frac 比入库提交更完整 故保留 HEAD 写法
+MATH,math-kb-basic-inequality-am-gm,contentMarkdown,FIXED,1 处非法转义按入库提交 7de06fa3 还原为 \ b（b>0）
+MATH,math-kb-inequality-multiply-negative-flip,contentMarkdown,FIXED,4 处非法转义按入库提交 7de06fa3 还原为 \ c 与 ac
+MATH,math-kb-monotonicity-definition,contentMarkdown,FIXED,6 处非法转义按入库提交 7de06fa3 还原为 D / x / f（区间 D 与 f(x)）
+MATH,math-kb-three-quadratics-relation,contentMarkdown,FIXED,5 处非法转义按入库提交 7de06fa3 还原为 x 与 R（Δ<0 时解集为 R）
+PHYSICS,ext-phy-83aaecb372-001b,contentMarkdown,FIXED,1 处非法转义按 agent CSV .agent_mp_21.csv 还原为 \ s（普朗克常量单位 J·s）
+PHYSICS,ext-phy-f42dc02f15-004,contentMarkdown,FIXED,8 处非法转义按 agent CSV .agent_mp_25.csv 还原为 V / A；源头切块同文（0~3 V 电压表 0~3 A 电流表）

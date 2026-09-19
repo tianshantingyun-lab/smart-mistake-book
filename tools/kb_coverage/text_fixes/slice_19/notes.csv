@@ -1,0 +1,19 @@
+subject,slug,field,status,evidence
+CHEMISTRY,ext-che-071d406960-001b,contentMarkdown,FIXED,2 处 \1 恢复为「 nm」与「 m」；依据：与 cffda989 的父提交同字段逐字一致（差异恰为这 2 处；原文用 LaTeX 细空 \ 故残迹前多一个反斜杠）；源头切块同处写 1～100 nm；修后 $ 共 4 个成对
+CHEMISTRY,ext-che-1422ee20c2-024,contentMarkdown,WIDER_FIX,2 处 353043 还原为 $$（同一 6 位数夹住一条独立成行的公式＝PID 判据；同系列 ext-che-1422ee20c2-049c 的行间公式写作 $$\mathrm{…}$$）；另补回被 shell 吃掉的正文「$c」3 处（残迹形状 (\mathrm{H^+})$ 正是 $c 展开成空串留下的）；$c(\mathrm{H^+})$ 是本库通行写法（全库 21 处/15 字段；同系列 ext-che-1422ee20c2-054b 同式）且同材料 applicabilityMarkdown 写「通过颜色变化探究 c(H+) 对平衡的影响」、boundaryMarkdown 写「这里靠的是 c(H+)」；该材料无上游干净副本（.agent_b_bchem_4.csv 与父提交 cffda989^ 同错）故按材料内互证修；修后 $ 由 11 个增至 18 个成对、门判据全清
+CHEMISTRY,ext-che-181247b2ab-001b,contentMarkdown,FIXED,6 处 \1 恢复为「 mol」×4 与「 pH」×2；依据：与父提交 cffda989^ 同字段逐字一致（差异恰为这 6 处）；源头切块同句写 0.001 mol/L AgNO3 与离子浓度比值；修后 $ 共 64 个成对
+CHEMISTRY,ext-che-224a47c1a9-004,contentMarkdown,FIXED,12 处 \1 恢复为「 H」×4「 K」×4「 kJ」×4；依据：与父提交 cffda989^ 同字段逐字一致（差异恰为这 12 处＝清单 12 条）；源头切块写 ΔH(298 K)＝＋178.2 kJ/mol 与 ΔH(1 200 K)＝＋176.5 kJ/mol；修后 $ 共 14 个成对
+CHEMISTRY,ext-che-4dd2e79693-142b,contentMarkdown,FIXED,5 处 \1 恢复为「 mol」×3「 S」「 L」；依据：与父提交 cffda989^ 同字段逐字一致（差异恰为这 5 处）；同材料 boundaryMarkdown 亦写 S 元素守恒、\mathrm{g\cdot L^{-1}}；修后 $ 共 38 个成对
+CHEMISTRY,ext-che-7c680fe585-001,contentMarkdown,FIXED,7 处 \1 恢复为「 n」×2「 mol」「 N」×2「 g」×2；依据：与父提交 cffda989^ 同字段逐字一致（差异恰为这 7 处）；源头切块写「符号为 n」「1 mol 任何粒子的粒子数」「单位：g/mol」「N＝n·NA」；修后 $ 共 12 个成对
+MATH,ext-mat-62744ff0cf-002b,contentMarkdown,FIXED,1 处 \1 恢复为「 f」（cases 环境第二行 \\ f(x_1) 的 f）；依据：与父提交 cffda989^ 同字段逐字一致（差异恰为这 1 处）；两式成对（f'(x_1)=g'(x_2) 与 f(x_1)-f'(x_1)x_1=g(x_2)-g'(x_2)x_2）；修后 $ 共 32 个成对
+MATH,ext-mat-9e06c77f62-001c,contentMarkdown,FIXED,3 处 \1 恢复为「 y」；依据：入库前判定产物 .agent_mp_14.csv 同块（9e06c77f62-001）同标题行逐字一致（差异恰为这 3 处；该行是入库前原文故可逐字回填）；源头切块写 A(x1，y1)、B(x2，y2)、M(x0，y0)；修后 $ 共 30 个成对
+MATH,ext-mat-bf80885e4a-001b,contentMarkdown,FIXED,9 处 \1 恢复为「 R」与「 x」×8；依据：入库前判定产物 .agent_mp_25.csv 同块（bf80885e4a-001）逐字一致（差异恰为这 9 处）；同块即泰勒/超越不等式讲义；修后 $ 共 30 个成对
+MATH,ext-mat-db497c001d-001,contentMarkdown,FIXED,4 处 \1 恢复为「 R」×2 与「 x」×2；依据：入库前判定产物 .agent_mp_01.csv 同块（db497c001d-001）逐字一致（差异恰为这 4 处）；源头切块「三次函数的单调性」同处写 R 与 x_1、x_2；修后 $ 共 64 个成对
+MATH,math-kb-geometric-sum-structure,contentMarkdown,FIXED,1 处 \1 恢复为「 q」；依据：与父提交 cffda989^ 同字段逐字一致（差异恰为这 1 处）；同材料 summaryMarkdown 写 q≠1 的前 n 项和式；修后 $ 共 12 个成对
+MATH,math-kb-space-dot-product-coordinate,contentMarkdown,FIXED,15 处 \1 恢复为「 a」×6「 b」×5「 y」×2「 z」×2；依据：与父提交 cffda989^ 同字段逐字一致（差异恰为这 15 处＝清单 15 条）；同材料 summaryMarkdown 写 $\vec a\cdot\vec b=|\vec a||\vec b|\cos\theta$；修后 $ 共 10 个成对
+MATH,math-leichengfa-qiu-tongxiang,contentMarkdown,FIXED,3 处 \1 恢复为「 f」；依据：与父提交 cffda989^ 同字段逐字一致（差异恰为这 3 处）；同材料 applicabilityMarkdown 写 \frac{a_{n+1}}{a_n}=f(n)；修后 $ 共 6 个成对
+MATH,math-period-mobius-fraction-iteration,title,FIXED,1 处 \1 恢复为「 T」；依据：与父提交 cffda989^ 同字段逐字一致（差异恰为这 1 处）；同材料 contentMarkdown 写 f(x+2a)=g(g(f(x)))=f(x) 与周期 T=2a；修后 $ 共 2 个成对
+PHYSICS,ext-phy-206fb04353-027b,applicabilityMarkdown,FIXED,尾部孤立反斜杠 1 处删去（修后字段以「。」收尾）；依据：本项目 tools/kb_build/fix_invalid_escapes.py 明文规则「行尾孤立反斜杠：直接去掉」；.agent_b_phyerlun_1.csv 与父提交 cffda989^ 同字段同样带该反斜杠故无干净副本可逐字回填；同一 PDF 同批另有 5 个 applicability 字段同样以孤立反斜杠收尾（同一代理产物事故）；修后无非法转义、$ 个数不变（0 个）
+PHYSICS,ext-phy-21d4982874-042,contentMarkdown,FIXED,3 处 \1 恢复为「 L」×2「 R」；依据：与父提交 cffda989^ 同字段逐字一致（差异恰为这 3 处）；修回 $\frac L2\le R\le L$ 与情景里棱长 L=0.9 m 自洽；修后 $ 共 50 个成对
+PHYSICS,ext-phy-467c9996db-002,contentMarkdown,FIXED,2 处 \1 恢复为「 m」与「 F」；依据：入库前判定产物 .agent_mp_13.csv 同块（467c9996db-002）逐字一致（差异恰为这 2 处）；源头切块写 G＝6.67×10－11 N·m2/kg2 与 ∑F引＝0；修后 $ 共 26 个成对
+PHYSICS,ext-phy-6a3cac01b2-002,contentMarkdown,FIXED,1 处 \1 恢复为「 l」；依据：入库前判定产物 .agent_mp2_46.csv 同块（6a3cac01b2-002）逐字一致（差异恰为这 1 处）；源头切块写 g＝4π²l/T² 型公式与摆长 l＝l′＋D/2；修后 $ 共 18 个成对

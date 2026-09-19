@@ -1,0 +1,19 @@
+subject,slug,field,status,evidence
+CHEMISTRY,ext-che-4dd2e79693-079,contentMarkdown,FIXED,同卷同书（《化学解题觉醒》名师大招册 p78-79）姊妹材料写 $\Delta p=p_0-p=p(SO_2Cl_2)$；同卷分压类材料写 $p$ kPa／1.6p$ kPa／**求 Kp**；故 \Delta 后补 p、7 处 $ 后补「 kPa」、标题补「 Kp」
+CHEMISTRY,ext-che-53f2f9e2f7-002,contentMarkdown,FIXED,源头切块写「(4)阿伏加德罗常数：指1 mol任何粒子的粒子数，符号为NA」；同卷未损姊妹材料写「符号为 n，单位是摩尔（mol）」「指 1 mol 任何粒子的粒子数」；n\cdot N_A 与本字段 $N_A$ 一致
+CHEMISTRY,ext-che-7c680fe585-003,contentMarkdown,FIXED,源头切块写「单位为L/mol(或L·mol-1)和m3/mol」「标准状况(0__℃，101__kPa)下，Vm约为22.4__L·mol-1」；同卷气体摩尔体积材料写「101 kPa」
+CHEMISTRY,ext-che-e1f44db337-002,contentMarkdown,FIXED,五三精讲册 P100 同源材料（wusan-che-v-ed37bb72）给出同一张表：HA／pH／分别中和NaOH；21 处残迹全在拉丁标记位（前后带空格）故补 HA／pH／NaOH；第 3 行首词按精讲册「相同pH」补（若原作写「相同浓度」则仅此 1 处措辞不同）
+MATH,ext-mat-7c011eb70c-001c,contentMarkdown,WIDER_FIX,须补回被吃掉的正文 3 处 {m}{n 与 2 个单字母（m／n）；依据源头切块「(a>0，m，n∈N*，n>1)」与同库材料 $a^{\frac{m}{n}}=\sqrt[n]{a^m}$、$a^{-\frac{m}{n}}=\dfrac{1}{\sqrt[n]{a^m}}$；两处残迹写作 \\1（多一个 \）须一并删掉
+MATH,ext-mat-991fbb472d-002,contentMarkdown,WIDER_FIX,4 条集合都缺「逗号+k」；同源同族材料写 $\{\beta\mid\beta=\alpha+k\cdot360°\\1\in\mathbb{Z}\}$（残迹即 k）；4 处残迹写作 \\1 须删掉多余的 \
+MATH,ext-mat-c0a639908a-002,contentMarkdown,FIXED,逐对核验 63 个 $：前 62 个两两成对且每对都是完整公式；末段 4\sqrt3$$。 处公式已闭合后又多一个 $；删其一即恢复成对
+MATH,ext-mat-eb06dd91c4-003,contentMarkdown,FIXED,前式 (n+1)a_{n+1}-na_n=1 给出 {na_n} 的公差 1；本材料 boundary 写「首项要用 $n=1$ 代入算出并写清（本题为 $3$）」故 1\times\1_1=3 补 a 成 1\times a_1=3
+MATH,math-fx-sincos-dingyv-zhiyv-duizhao,contentMarkdown,WIDER_FIX,同源同族材料写 $t=\sin x\in[-1，1]$、值域 $[k-|A|\\1+|A|]$（即 k+|A|）、正切定义域 $x\ne\dfrac{\pi}{2}+k\pi，k\in\mathbb{Z}$；补 5 处 x 与 2 处 k；2 处 \\1 的多余 \ 一并删掉
+MATH,math-hj-s13-prop-multiply,contentMarkdown,WIDER_FIX,本材料 summary 与同库不等式性质材料写 $a>b>0，c>d>0\Longrightarrow ac>bd$；两处补 c；2 处 \\1 的多余 \ 一并删掉
+MATH,math-hj-s62-ap-props,contentMarkdown,WIDER_FIX,3 处分别为下标和性质 a_k 与片段和性质 $S_m，S_{2m}-S_m，S_{3m}-S_{2m}$（本材料 summary 写「片段和数列仍是等差数列」、公差 m^2d）；2 处 \\1 的多余 \ 一并删掉
+MATH,math-kb-inequality-same-direction-multiply,contentMarkdown,WIDER_FIX,本材料 summary 写「a>b>0，c>d>0 时 ac>bd；a>b>0 时 aⁿ>bⁿ（n≥2）」；补 c／ac／a／n；2 处 \\1 的多余 \ 一并删掉
+MATH,math-period-shift-equal-different-offsets,title,FIXED,同材料 contentMarkdown 写「（$a\neq b$）」与「故周期 $T=|b-a|$」
+MATH,math-shulie-fenduan-tongxiang-chuzhi,summaryMarkdown,WIDER_FIX,同材料 contentMarkdown 的分段式为 $f(n)，&n\text{ 为奇数}\\g(n)，&n\text{ 为偶数}$；3 处 \\1 分别补 &n／\\g／&n（含被吃掉的 & 与 \\）；第二分支函数名按 f／g 配对惯例补 g
+MATH,math-shulie-fenduan-tongxiang-chuzhi,contentMarkdown,FIXED,同上；3 处各补一个字母（n／g／n）——& 与 \\ 原文都在；第二分支函数名按 f／g 配对惯例补 g
+PHYSICS,ext-phy-98d17fab60-001b,contentMarkdown,WIDER_FIX,源头切块写「分子直径大多为10−10m数量级」；2 处 \\1 应还原为 \ \mathrm（即 $10^{-10}\ \mathrm{m}$ 与 $10^{-26}\ \mathrm{kg}$）；多出的 \ 须一并处理
+PHYSICS,ext-phy-a15b40d7cc-011,contentMarkdown,FIXED,单位推导式为 $1\ \mathrm{N}=1\ \mathrm{kg\cdot m/s^2}$（同字段已写 1\ \mathrm{N} 与 \mathrm{kg\cdot}）；补 m
+PHYSICS,phys-bu-lianxu-wei-yi-cha-m-n,contentMarkdown,FIXED,同材料 summary 写 $x_m-x_n=(m-n)aT^2$；同库材料写「第 m 个 T 内与第 n 个 T 内」故补「 m」成「为第 m、n 个相等时间间隔内的位移」

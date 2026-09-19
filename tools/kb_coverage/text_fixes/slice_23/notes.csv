@@ -1,0 +1,19 @@
+subject,slug,field,status,evidence
+CHEMISTRY,ext-che-1422ee20c2-042b,contentMarkdown,WIDER_FIX,补回被 shell 吃掉的正文「$c」（不只是「$」）：坏点报 $ 共 9 个（奇数）且剩余片段恰是「(\mathrm{H^+})$」——$c 展开成空串正好留下它；本材料通篇用 \mathrm{} 记法（如 $\mathrm{pH}(\mathrm{CH_3COOH})$ 与 \mathrm{H^+}）；同书同系列材料（如 ext-che-1422ee20c2-054b）共 11 处都写 $c(\mathrm{H^+})$；除这 2 个字符外未动一字
+CHEMISTRY,ext-che-e1f44db337-005,contentMarkdown,FIXED,`\1` 恢复为「 pH」（表内写作「调节 pH 法」）；依据：未损坏副本 .agent_b_bchem_2.csv 同块（e1f44db337-005）同标题行原文逐字如此；还原后整字段与该副本逐字一致（905 字符、48 个 $）
+CHEMISTRY,ext-che-e1f44db337-005,boundaryMarkdown,FIXED,`\1` 恢复为「 pH」（末句「调节 pH 时加入的试剂不能引入新的杂质离子」）；依据：同上未损坏副本 .agent_b_bchem_2.csv 同块同标题行逐字一致（175 字符、6 个 $）
+MATH,ext-mat-221256755a-002,contentMarkdown,FIXED,2 处 `\1` 恢复为「 x」（即 $\sin x$ 与 $\cos x$）；依据：未损坏副本 .agent_b_bmath_4.csv 同块同标题行逐字一致（423 字符、16 个 $）；同材料 summary 即写 $a\sin x+b\cos x$
+MATH,ext-mat-2fc4d7ddd5-004b,contentMarkdown,FIXED,14 处依次恢复为「 m」「 m」「 m」「 n」「 n」「 n」「 m」「 n」「 m」「 n」「 m」「 n」「 m」「 n」；依据：未损坏副本 .agent_b_bmath_1.csv 同块同标题行逐字一致（630 字符、28 个 $）；例值自洽 20/(√5×√125)=4/5
+MATH,ext-mat-847100604b-007,boundaryMarkdown,FIXED,开头公式 `\omega$` 补上被吃掉的「$」得「$\omega$」；依据：坏点只报「$ 共 3 个（奇数）——分隔符被吃掉」而剩余文本仅此一处可能缺 $（补后 4 个）；同批材料 math-mo-sanjiao-zhouqi-jielun 的边界也用独立的 $\omega$ 写「加绝对值处理负 $\omega$」；替代读法 $|\omega|$ 需另有 2 个「|」丢失而坏点清单不覆盖「|」——无法证实故未采用
+MATH,ext-mat-95e236319c-009b,contentMarkdown,FIXED,6 处都恢复为「 m」（即 $\boldsymbol m_1$ 与 $\boldsymbol m_2$）；依据：未损坏副本 .agent_b_bmath_1.csv 同块同标题行逐字一致（453 字符、12 个 $）；例值自洽 √3/√6=√2/2
+MATH,ext-mat-9e06c77f62-002c,contentMarkdown,FIXED,2 处 `\1` 恢复为「 y」（即 $P(x_0\ y_0)$）；依据：未损坏副本 .agent_mp_14.csv 同块同标题行逐字一致（333 字符、30 个 $）；注：该字段原文通篇把反斜杠写成两个（如 \\dfrac 与 \\frac）——副本即如此、不在坏点清单内、按「只修坏点」保留原样
+MATH,ext-mat-a56cce28f2-002,contentMarkdown,FIXED,`\1` 恢复为「 a」（即 $\Longrightarrow\ a_n$ 处的 a）；依据：未损坏副本 .agent_b_bmath_4.csv 同块同标题行逐字一致（645 字符、32 个 $）；幸存的下标 _n 与两侧式子自洽
+MATH,ext-mat-cf4749602e-015,contentMarkdown,FIXED,2 处恢复为「 F」（即 $\angle F_1PF_2$ 与 $\triangle F_1PF_2$）；依据：未损坏副本 .agent_mp2_34.csv 同块同标题行逐字一致（482 字符、28 个 $）；同材料 summary 写 $\angle F_1PF_2$、源头切块写 ∠F1PF2
+PHYSICS,ext-phy-a3aa3661ce-011,contentMarkdown,FIXED,4 处依次恢复为「 text」「 text」「 h」「 v」（即 $9.8\ text{m/s}^2$ 与 $v=gt\ h=\frac{1}{2}gt^2\ v^2=2gh$）；依据：未损坏副本 .agent_mp_01.csv 同块同标题行逐字一致（382 字符、14 个 $）；注：副本原文本身把 `\ \text` 写成 `\ text`（少一个反斜杠）、不属本次坏点、按「只修坏点」未动
+MATH,math-abstract-model-exponential,summaryMarkdown,FIXED,`\1` 恢复为「 a」；依据：build/kb-staging 与 build/kb-assess 与 .worktrees/kb-bench 三处未损坏旧快照逐字一致（与现文本的差集仅此一处）；还原为 $f(x)=a^{x}$（$a>0$ 且 $a\neq 1$）这一标准写法
+MATH,math-fx-dandiao-dingyi-dengjia,contentMarkdown,FIXED,6 处依次恢复为「 D」「 x」「 D」「 f」「 M」「 x」；依据：与三处未损坏旧快照逐字一致；还原成 $\forall x\in D$ 与 $f(x)\le M$ 型、以及 $\exists x_0$ 使 $f(x_0)=M$ 与定义域记法 $I\subseteq D$ 彼此自洽
+MATH,math-fx-sanjiao-wudianfa-zuotu,contentMarkdown,FIXED,4 处依次恢复为「 x」「 x」「 x」「 k」；依据：与三处未损坏旧快照逐字一致；还原成 $y=\sin x$、$y=\cos x$、$y=\tan x$ 与正切定义域（$k\pi-\pi/2$ 到 $k\pi+\pi/2$）
+MATH,math-fx-shuangcan-zuizhi-dingwei,contentMarkdown,FIXED,8 处依次恢复为「 x」「 x」「 g」「 f」「 g」「 x」「 x」「 f」；依据：与三处未损坏旧快照逐字一致；同材料 applicability 即写 $\exists x_1$ 与 $\exists x_2$ 使 $f(x_1)\le g(x_2)$
+MATH,math-hj-jiben-budengshi,contentMarkdown,FIXED,`\1` 恢复为「 b」；依据：build/kb-staging 与 build/kb-assess 两处快照逐字一致（同字段的 kb-bench 快照另有一处 `$rac` 缺 \f 而 staging/assess 已修好）；同材料 summary 写正数 $a$、$b$
+MATH,math-kb-negation-of-quantified-proposition,contentMarkdown,FIXED,12 处依次恢复为「 x」「 M」「 p」循环 4 组；依据：与三处未损坏旧快照逐字一致；还原为人教A版写法（全称命题 $\forall x\in M$ 下 $p(x)$ 的否定是 $\exists x\in M$ 下 $\neg p(x)$）
+MATH,math-kb-vector-parallel-vertical-coordinate,contentMarkdown,FIXED,10 处依次恢复为「 a」「 b」「 b」「 x」「 y」「 y」「 z」「 z」「 a」「 b」；依据：与三处未损坏旧快照逐字一致（$\vec a$ 与 $\vec b$ 用空格形式、不加花括号）；与平行条件的坐标形式 $x_1=\lambda x_2$、$y_1=\lambda y_2$、$z_1=\lambda z_2$ 自洽

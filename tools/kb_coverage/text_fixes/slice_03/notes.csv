@@ -1,0 +1,19 @@
+subject,slug,field,status,evidence
+CHEMISTRY,ext-che-1422ee20c2-011b,contentMarkdown,WIDER_FIX,补回 `$1`（定界符 $ 与其吞掉的首个数字 1）；原句应为「配位比为 $1:1$」——残迹 `:1$` 正是 `$1` 被 shell 展开为空后的形状；EDTA 与金属离子普遍按 1:1 配位；判定 CSV .agent_b_bchem_4.csv 同字段同样缺 $ 无可对证
+CHEMISTRY,ext-che-1422ee20c2-011b,boundaryMarkdown,WIDER_FIX,补回 `$6`（定界符 $ 与其吞掉的数字 6）；`必须控制在 .5\sim10.5$` 之前被吃；莫尔法（K2CrO4 指示剂滴定 Cl^-）要求 pH 6.5~10.5 且与材料自述（pH 过低生成 Cr2O7^2-、过高生成 Ag2O/AgOH）吻合；残迹本身分不出 6.5 与 5.5 两个候选
+CHEMISTRY,ext-che-1422ee20c2-049c,contentMarkdown,FIXED,判定 CSV .agent_b_bchem_4x.csv 同字段即 mangling 前的原文；6 处残迹依次为 ` mol`×5 与 ` V`；与源头切块的两步反应式、0.191cV 一致
+CHEMISTRY,ext-che-53f2f9e2f7-011,contentMarkdown,FIXED,判定 CSV .agent_t2_23.csv 同字段即 mangling 前的原文；11 处残迹依次为 ` m`/` n`/` m`/` N`/` N`/` D`/` M`/` a`/` b`/` c`/` a`；与源头切块「(m)和(n)」「(N)和(NA)」「(D＝)」「＝M1×a%＋M2×b%＋M3×c%」逐项对应
+CHEMISTRY,ext-che-fd24554fd4-002,contentMarkdown,FIXED,判定 CSV .agent_t2_02.csv 同字段即 mangling 前的原文；23 处残迹为 ` H`/` kJ`/` mol`/` kPa`/` s`/` CO` 等；与源头切块 ΔH＝－184.6 kJ/mol、101 kPa 一致
+MATH,ext-mat-016b8d47a6-001b,contentMarkdown,FIXED,判定 CSV .agent_mp_14.csv 同字段即 mangling 前的原文；残迹复原为 ` b`（成品 `$(a\\\1)$` → `$(a\\ b)$`）；CSV 该处用 LaTeX 换行 `\\` 而源头切块写 `(a，b)` 的逗号——按「只修坏点」保留 CSV 原样未改
+MATH,ext-mat-62ae019851-002e,contentMarkdown,FIXED,判定 CSV .agent_b_bmath_5.csv 同字段即 mangling 前的原文；2 处残迹为 ` R`（$\mathbf R$）与 ` ab`（$a^2+b^2+c^2\ge ab+bc+ca$）
+MATH,ext-mat-d526b3fb2b-001,contentMarkdown,FIXED,判定 CSV .agent_mp2_44.csv 同字段即 mangling 前的原文；8 处残迹为 ` N`×3 与 ` x` 与 ` a`×3；CSV 写作 `\text{且}\ a\neq1` 印证「残迹前保留反斜杠＝原处是 LaTeX 空格」
+MATH,ext-mat-d994fcb41d-004,contentMarkdown,FIXED,判定 CSV .agent_b_bmath_4.csv 同字段即 mangling 前的原文；残迹复原为 ` ABC`（$\triangle ABC$）；同字段其余部分（$A(-1，0)$ 等）两版逐字相同
+MATH,ext-mat-db497c001d-001b,contentMarkdown,FIXED,判定 CSV .agent_mp_01.csv 同字段即 mangling 前的原文；3 处残迹为 ` f`（对称中心 $(-b/3a\ f(-b/3a))$）、` n`（$(m\ n)$）、` f`（$(m\ f(m))$）；残迹前的反斜杠为原文所有故保留
+MATH,math-fx-sanjiao-biaozhunhua-fenxi,contentMarkdown,FIXED,无判定 CSV；同材料 title 的 $y=A\sin(\omega x+arphi)+k$ 与同卷 math-hj-zhengxingleixing-liangzhong-bianhuan 的 $y=A\sin(\omega x+\varphi)$ 证实 4 处 `\omega x+\varphi`；`$\sin x\cos x$` 见同卷 ext-mat-d68ad97a21-023「降幂公式处理 $\sin x\cos x$」；值域的 k 由 $A\sin+k$ 的值域两端 k±|A| 定；残迹前有保留反斜杠者按原文补 LaTeX 空格
+MATH,math-fx-zhongbian-xiangtongjiao,contentMarkdown,FIXED,无判定 CSV；同材料 summary 的 $\beta=\alpha+k\cdot 360°$（$k\in\mathbb{Z}$）与 v2-09 卷 ext-mat-ec064fb170-002 的集合式证实字母 k；残迹前有保留反斜杠故按原文补 LaTeX 空格后接 k
+MATH,math-hj-xianmian-chuizhi-xingzhi,contentMarkdown,FIXED,无判定 CSV；v2-01 卷 math-kb-line-plane-perp-property「若 $a\perp\alpha$ 且 $b\perp\alpha$ 则 $a\parallel b$」证实 `$a\parallel b$`；定义逆用按材料给定次序（先 $a\perp\alpha$ 再 $b\subset\alpha$）补成 a⊥b（写成 b⊥a 亦成立）
+MATH,math-hj-zhengxingleixing-gainian,contentMarkdown,FIXED,无判定 CSV；同材料 applicability 的 $A\sin(\omega x+arphi)$ 与同卷 math-fx-a-omega-phi-yiyi 的 $y=A\sin(\omega x+arphi)+k$ 证实 2 处 `\omega x+\varphi`
+MATH,math-kb-derivative-exp-log-formulas,contentMarkdown,FIXED,无判定 CSV；同卷 math-hj-jiben-hanshu-daoshu-gongshi 逐条给出 $(a^x)'=a^x\ln a$、$(e^x)'=e^x$、$(\log_a x)'=1/(x\ln a)$、$(\ln x)'=1/x$ 与 5 处残迹一一对应
+MATH,math-omega-dantiao-siyu1-chubu-gusuan,contentMarkdown,FIXED,无判定 CSV；同材料 applicability 的 $y=\sin(\omega x+\varphi)$ 与 summary 的小于等于半周期结论证实残迹为 ` x`
+PHYSICS,ext-phy-91ff66998d-005,contentMarkdown,FIXED,判定 CSV .agent_mp2_31.csv 同字段即 mangling 前的原文；残迹复原为 ` f`（$v=\lambda f$）；与源头切块 v＝λf 一致
+PHYSICS,ext-phy-95778b6681-003,contentMarkdown,FIXED,判定 CSV .agent_mp_01.csv 同字段即 mangling 前的原文；残迹为保留反斜杠的 `\ text` 与 ` m`（$10^{-11}\ text{N\cdot m}^2/\text{kg}^2$）；与源头切块 G＝6.67×10－11 N·m2/kg2 一致；CSV 该处 `\ text` 疑另有缺陷按「只修坏点」未动

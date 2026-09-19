@@ -155,34 +155,59 @@ def plan(judgments: list[dict]) -> dict:
             "skip_count": skips, "states": states, "pack": pack, "chunks": chunks}
 
 
-def _pick_sidecar(pack: dict, subject: str) -> tuple[Path, dict | None]:
-    """选目标卷：同科材料最少的；预计超 2.5M 字符则开新卷并**立刻登记索引**。
+def _sidecar_state() -> dict:
+    """一次读齐各卷，并算好「每卷字符数 + 每科材料数」；之后靠增量维护。
 
-    曾经踩过的坑（静默丢数据）：滚动只返回新路径、不登记索引，于是**每一行都重新滚动**
-    到同一个"未登记的新卷名"、并各自新建空 doc —— 4,606 条材料只有最后 1 条落盘，
-    而状态机照样推进（报 materialized 4,606）。现在开卷即登记，后续行会选中这份新卷。
+    为什么必须增量：写入是按行循环的，而"选目标卷"原先每行都要把全部卷的**所有材料**
+    重新加载与计数（实测 16,623 行 × 20,456 条 ≈ 每秒几十行的爬行速度，一轮跑不完）。
+    改成一次装载 + 追加时增量记账，选卷退化为 O(卷数)。
     """
-    sizes: dict[Path, int] = {}
-    counts: dict[Path, dict[str, int]] = {}
-    paths = list(pack_io.sidecar_paths())
-    for p in paths:
-        if not p.exists():           # 刚登记进索引、还没落盘的新卷
-            sizes[p] = 0
-            counts[p] = {}
+    state: dict = {"paths": [], "docs": {}, "counts": {}, "sizes": {}}
+    for p in pack_io.sidecar_paths():
+        state["paths"].append(p)
+        if not p.exists():           # 已登记进索引、还没落盘的空卷
+            state["docs"][p] = {"schemaVersion": 2, "packId": "moe-2025-four-subjects-v1",
+                                "sources": [], "materials": []}
+            state["counts"][p] = {}
+            state["sizes"][p] = 0
             continue
         doc = pack_io.load_json(p)
-        sizes[p] = len(pack_io.serialize(doc))
-        c = counts[p] = {}
+        state["docs"][p] = doc
+        c: dict[str, int] = {}
         for m in doc["materials"]:
             c[m["subject"]] = c.get(m["subject"], 0) + 1
-    target = min(paths, key=lambda p: counts[p].get(subject, 0))
-    if not target.exists():
-        return target, None          # 刚登记还没落盘的空卷：交给调用方建 doc
-    if sizes[target] + 5000 > ROLL_AT_CHARS:
-        new = pack_io.next_sidecar_path()
-        pack_io.write_sidecar_index([*paths, new])
-        return new, None
-    return target, pack_io.load_json(target)
+        state["counts"][p] = c
+        state["sizes"][p] = len(pack_io.serialize(doc))
+    return state
+
+
+def _pick_sidecar(state: dict, subject: str) -> Path:
+    """选目标卷：**在未超限的卷里**取同科材料最少的；全都超限才开新卷并登记索引。
+
+    两个曾经踩过的坑：
+    1. 静默丢数据：滚动只返回新路径、不登记索引 → 每行都滚到同一个"未登记的新卷名"并各自
+       新建空 doc（4,606 条只活下来 1 条）。
+    2. **索引污染**：只在"并列最小"里挑第一个，会把已超 2.5M 的老卷选回来 → 每行都触发滚动，
+       一轮登出 2,971 个从未落盘的空卷名。现在先过滤掉超限卷，只有全超限才真的开新卷。
+    """
+    usable = [p for p in state["paths"] if state["sizes"][p] + 5000 <= ROLL_AT_CHARS]
+    if usable:
+        return min(usable, key=lambda p: state["counts"][p].get(subject, 0))
+    new = pack_io.next_sidecar_path()
+    pack_io.write_sidecar_index([*state["paths"], new])
+    state["paths"].append(new)
+    state["docs"][new] = {"schemaVersion": 2, "packId": "moe-2025-four-subjects-v1",
+                          "sources": [], "materials": []}
+    state["counts"][new] = {}
+    state["sizes"][new] = 0
+    return new
+
+
+def _note_appended(state: dict, target: Path, material: dict, subject: str) -> None:
+    """增量记账：追加一条材料后更新该卷的字符数与同科计数（选卷依据）。"""
+    state["sizes"][target] += len(pack_io.serialize(material))
+    counts = state["counts"][target]
+    counts[subject] = counts.get(subject, 0) + 1
 
 
 def write(judgments: list[dict]) -> dict:
@@ -193,16 +218,20 @@ def write(judgments: list[dict]) -> dict:
     chunks = pl["chunks"]
     states = pl["states"]
     refs: dict[str, str] = {rel: st.get("output_ref", "") for rel, st in states.items()}
+    state = _sidecar_state()
+    # 已入库 slug 与它们的绑定目标：直接读 state 里已加载的卷，避免再读一遍磁盘
+    # （也顺带容忍"索引里有、文件还没落盘"的空卷）。
     existing_slugs: set[str] = set()
     existing_targets: dict[str, str] = {}
-    for sp in pack_io.sidecar_paths():
-        for m in pack_io.load_json(sp)["materials"]:
+    for doc in state["docs"].values():
+        for m in doc["materials"]:
             existing_slugs.add(m["slug"])
             for b in m.get("bindings") or []:
                 existing_targets.setdefault(m["slug"], b["knowledgeNodeId"].split(":")[-1])
     known_sources = _existing_source_entries()
     changed_sidecars: dict[Path, dict] = {}
     sources_added: dict[str, list[str]] = {}
+    touched: set[str] = set()
     done = 0
     now = _now_ms()
     for r in judgments:
@@ -224,17 +253,9 @@ def write(judgments: list[dict]) -> dict:
             continue  # 幂等：材料已实际入库（以 sidecar 实况为准，状态漂移也能自愈）
         top_dir = r["chunk_rel"].split("/", 1)[0] if "/" in r["chunk_rel"] else r["chunk_rel"]
         sid = _source_id(top_dir, subject)
-        target, doc = _pick_sidecar(pl["pack"], subject)
-        if doc is None:
-            # 新卷（或已登记未落盘）：本批之前在内存里累积的部分必须继续沿用，
-            # 否则每行都会新建空 doc —— 实测曾因此丢掉 4,605 条材料。
-            doc = changed_sidecars.get(target) or {
-                "schemaVersion": 2, "packId": "moe-2025-four-subjects-v1",
-                "sources": [], "materials": []}
-            changed_sidecars[target] = doc
-        else:
-            doc = changed_sidecars.get(target) or pack_io.load_json(target)
-            changed_sidecars[target] = doc
+        target = _pick_sidecar(state, subject)
+        doc = state["docs"][target]
+        changed_sidecars[target] = doc
         if not any(s["sourceId"] == sid for s in doc["sources"]):
             entry = known_sources.get(sid) or _source_entry(top_dir, subject)
             doc["sources"].append(dict(entry))
@@ -253,15 +274,21 @@ def write(judgments: list[dict]) -> dict:
             "reviewedAtEpochMillis": now,
             "bindings": [{"knowledgeNodeId": node, "role": "PRIMARY"}],
         })
+        _note_appended(state, target, doc["materials"][-1], subject)
         existing_slugs.add(slug)
         ref = refs.get(r["chunk_rel"], "")
         if slug not in ref:
             refs[r["chunk_rel"]] = (ref + "," if ref else "") + slug
-            es.mark({r["chunk_rel"]: ("EXTRACTED", refs[r["chunk_rel"]])}, "materialize")
+            touched.add(r["chunk_rel"])
         done += 1
+    # 先把材料落盘，再一次性推进状态机 —— 反过来的话，落盘失败就会留下"状态说已入库、
+    # 磁盘上没有"的悬空（verify 的 output_ref 门会抓，但那时已经晚了）。
     for p, doc in changed_sidecars.items():
         pack_io.dump_json(doc, p)
-    rolled = [p for p in changed_sidecars if not p.exists() or True]
+    if touched:
+        # 一次写完：es.mark 会重写整张状态表（10k+ 行），逐行调用等于每行重写一次 CSV
+        # —— 实测这会把一轮 16,623 行的写入拖到几十分钟，并在 Windows 上把文件写坏。
+        es.mark({rel: ("EXTRACTED", refs[rel]) for rel in sorted(touched)}, "materialize")
     return {"materialized": done, "sidecars": {p.name: len(d["materials"]) for p, d in changed_sidecars.items()},
             "sources_added": sources_added}
 

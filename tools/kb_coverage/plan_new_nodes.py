@@ -34,6 +34,46 @@ OUT = REPO / "build" / "agent-input" / "new_nodes_plan.json"
 def rules() -> dict[str, list[tuple[str, str]]]:
     """(正则, 目标主题 slug)。按顺序取第一个命中；没有命中走兜底（各科综合桶/数学兜底主题）。"""
     return {
+        "MATH": [
+            (r"圆锥曲线|椭圆|双曲线|抛物线|焦点|焦半径|切点弦|极点|极线|动点轨迹|隐圆|阿波罗尼斯|"
+             r"直线系|弦中点|点差法|硬解|非对称|两圆|切线方程|公共弦|弦长|定值|定点|定线|离心率|"
+             r"对称|曼哈顿|托勒密", "数学选择性必修第一册·第二三章·解析几何"),
+            (r"数列|递推|放缩|裂项|并项|通项|公共项|插项|去项|斐波那契|倒序", "数学选择性必修第二册·第四章·数列"),
+            (r"导数|洛必达|泰勒|同构|切线放缩|主元|端点效应|拐点|隐函数|必要|对数平均|齐次化|三次函数|"
+             r"双变量|凹凸|帕德|切线夹|零点|恒成立|整数解", "数学选择性必修第二册·第五章·函数与导数"),
+            (r"概率|贝叶斯|马尔可夫|正态|分布列|期望|方差|成对数据|统计|百分位|抽样|独立性检验|回归",
+             "数学必修第二册·第九十章（条件概率与正态分布见选择性必修第三册）·概率统计"),
+            (r"向量|算两次|等和线|极化|奔驰|定比分点|投影|建系", "数学必修第二册·第六章·平面向量"),
+            (r"立体|多面体|外接球|内切球|棱切球|三余弦|正方体|长方体|截面|轨迹|空间|棱柱|棱锥|棱台|旋转体|"
+             r"线面|面面|线线|异面|体积|表面积", "数学必修第二册·第八章（空间向量见选择性必修第一册）·立体几何"),
+            (r"三角|解三角形|射影定理|角平分线|张角|爪形|正弦|余弦|恒等变换|积化和差|半角|辅助角|扇形|弧长|"
+             r"诱导公式|和差|正切", "数学必修第一册·第五章·三角函数"),
+            (r"柯西|权方和|不等式|均值|糖水|放缩|比较大小", "数学必修第一册·第二章·不等式"),
+            (r"计数|排列|组合|二项式|分组|隔板|捆绑|插空|染色|杨辉|球放盒子", "数学选择性必修第三册·第六章·计数原理"),
+            (r"集合|命题|充要|量词|逻辑", "数学必修第一册·第一章·集合与常用逻辑用语"),
+            (r"复数|辐角", "数学必修第二册·第七章·复数"),
+        ],
+        "PHYSICS": [
+            (r"匀变速|刹车|自由落体|竖直上抛|追及|相遇|纸带|逐差|速度比", "物理必修第一册·第二章·匀变速直线运动"),
+            (r"弹力|摩擦|受力分析|共点力|平衡|合力|力的合成|力的分解|正交分解|绳|杆|弹簧|摩擦角|活结|"
+             r"死结|悬挂|摩|力学单位", "物理必修第一册·第三章·相互作用"),
+            (r"牛顿|惯性|超重|失重|传送带|板块|连接体|动力学|单位制", "物理必修第一册·第四章·牛顿运动定律"),
+            (r"平抛|斜抛|类平抛|圆周|向心|曲线运动|合运动|渡河|离心|抛体", "物理必修第二册·第五六章·抛体运动与圆周运动"),
+            (r"万有引力|卫星|双星|天体|宇宙速度|重力加速度|开普勒|黑洞|引力势能|轨道", "物理必修第二册·第七章·万有引力与宇宙航行"),
+            (r"动能|机械能|功|功率|能量守恒|变力做功|势能|功能关系", "物理必修第二册·第八章·机械能与能量守恒"),
+            (r"动量|冲量|碰撞|爆炸|反冲|人船|弹性碰撞", "物理选择性必修第一册·第一章·动量"),
+            (r"简谐|单摆|振动|波|多普勒|受迫|共振", "物理选择性必修第一册·第二三章·机械振动与机械波"),
+            (r"折射|全反射|干涉|衍射|偏振|光|透镜|玻璃砖|双缝", "物理选择性必修第一册·第四章·光学"),
+            (r"电场|电势|电容|带电粒子|库仑|等势面|示波管|电场强度", "物理必修第三册·第九十章·静电场"),
+            (r"电流|电路|电阻|欧姆|电表|电源|电动势|电桥|半偏|伏安|多用电表|滑动变阻器|游标卡尺|"
+             r"螺旋测微器|电功率|串联|并联", "物理必修第三册·第十一十二章·恒定电流"),
+            (r"磁场|左手定则|洛伦兹|安培|电磁感应|感应电流|楞次|法拉第|涡流|自感|回旋加速器|霍尔|"
+             r"电磁流量|磁通量|磁聚焦|切割磁感线|感应电动", "物理必修第三册·第十三章（安培力/洛伦兹力/感应定律见选择性必修第二册）·磁场与电磁感应"),
+            (r"交变|变压器|远距离|互感|自耦|传感器|电磁波|电磁振荡", "物理选择性必修第二册·第三四章·交变电流与电磁波"),
+            (r"分子|内能|热力学|气体|温度|浸润|毛细|液晶|饱和汽|分子动理论|压强|体积", "物理选择性必修第三册·第一至三章·热学"),
+            (r"光电效应|原子|核|衰变|相对论|波粒二象性|能级|光谱|黑体|康普顿|质量亏损|能量子",
+             "物理选择性必修第三册·第四五章·近代物理"),
+        ],
         "CHEMISTRY": [
             (r"晶胞|晶体|晶格", "化学选择性必修2·物质结构与性质·晶胞与均摊法"),
             (r"杂化|空间构型|vsepr|价层电子对|键角|分子结构|极性|手性", "化学选择性必修2·物质结构与性质·分子的空间结构"),
@@ -106,6 +146,17 @@ def norm(x: str) -> str:
     return re.sub(r"[\s·,，。、（）()：:\-—/]", "", x).lower()
 
 
+def canonical(name: str) -> str:
+    """近重复名的规范形：抹掉「实验：」「探究」等前后缀后再 norm。
+
+    实测需要它：同一件事被不同代理写成「验证机械能守恒定律实验」与「实验：验证机械能守恒定律」，
+    不归并就会建出两个同义节点。
+    """
+    t = re.sub(r"^(实验[：: ]*|探究|测量)", "", name.strip())
+    t = re.sub(r"(实验|探究|的测定|的测量)$", "", t)
+    return norm(t)
+
+
 def main(argv: list[str] | None = None) -> int:
     argparse.ArgumentParser(description=__doc__).parse_args(argv)
     pack = pack_io.load_json(pack_io.pack_path())
@@ -131,7 +182,22 @@ def main(argv: list[str] | None = None) -> int:
         return None
 
     plan, rebind, bad = [], {}, []
+    # 新节点之间的近重复归并：同科内 canonical 相同的一组，取最短名为代表，其余指向代表
+    groups: dict[tuple[str, str], list[str]] = {}
     for name in new:
+        ev = evidence.get(name)
+        subj = subject_of(ev["chunk_rel"]) if ev else ""
+        groups.setdefault((subj, canonical(name)), []).append(name)
+    alias: dict[str, str] = {}
+    for names in groups.values():
+        if len(names) > 1:
+            rep = min(names, key=lambda n: (len(n), n))
+            for n in names:
+                if n != rep:
+                    alias[n] = rep
+    for name in new:
+        if name in alias:
+            continue                      # 别名行在主循环里跟随代表处理
         ev = evidence.get(name)
         if ev is None:
             bad.append((name, "无证据行"))
@@ -140,9 +206,11 @@ def main(argv: list[str] | None = None) -> int:
         if subj is None:
             bad.append((name, "学科未识别"))
             continue
+        # 该组的全部写法（含代表自己）都要改绑到同一目标
+        members = [n for n in [name] + [k for k, v in alias.items() if v == name]]
         existing = name_by.get(subj, {}).get(norm(name))
         if existing:
-            rebind[name] = existing
+            rebind.update({m: existing for m in members})
             continue
         # 包含匹配兜底：既有节点名与候选名互为包含且长度差很小（如「…反应在不同的介质中…」vs
         # 「…反应式在不同的介质中…」）——同物，改绑而非新建。
@@ -150,7 +218,7 @@ def main(argv: list[str] | None = None) -> int:
         near = [slug for key, slug in name_by.get(subj, {}).items()
                 if abs(len(key) - len(cand)) <= 4 and (key in cand or cand in key)]
         if len(set(near)) == 1:
-            rebind[name] = near[0]
+            rebind.update({m: near[0] for m in members})
             continue
         verdict = gate._is_bad_name(name)
         if verdict:
@@ -159,6 +227,8 @@ def main(argv: list[str] | None = None) -> int:
         if len(name) > 24:
             bad.append((name, f"超长 {len(name)}"))
             continue
+        # 组内别名指向代表（代表会被建点，slug 就是代表名）
+        rebind.update({m: name for m in members if m != name})
         target = None
         for pat, slug in rules().get(subj, []):
             # 目标至少要两段（册·章…）：单段顶层主题推不出"册 章"定位串，

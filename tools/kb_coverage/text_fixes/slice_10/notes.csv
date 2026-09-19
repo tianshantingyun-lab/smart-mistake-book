@@ -1,0 +1,21 @@
+subject,slug,field,status,evidence
+CHEMISTRY,ext-che-1422ee20c2-001,contentMarkdown,FIXED,9 处 /usr/bin/bash 还原为 $0；另补回 4 个被吃掉的 $ 开界符（称量 5.50 与量取 5.00 各一；结论里（5.00$）与（5.50$）各一）；依据是同表同类写法为 $0.1\ \mathrm{g}$、\mathrm 必须落在成对 $ 之间；修后字段 $ 共 26 个为偶数；该材料无上游干净副本（.agent_b_bchem_4.csv 与判定表同错）故按材料内互证修
+CHEMISTRY,ext-che-1422ee20c2-001,boundaryMarkdown,FIXED,1 处 /usr/bin/bash 还原为 $0；并在「，5.0\ \mathrm{mL}$」前补回被吃掉的 $ 开界符；只还原 $0 会剩 3 个 $（奇数）与硬规矩冲突；修后共 4 个 $ 恰好两对；该材料无上游干净副本故按材料内互证修
+CHEMISTRY,ext-che-4dd2e79693-087,contentMarkdown,FIXED,19 处 \1 按 .agent_jjdx_chem_b.csv 中同一 chunk 同标题那一行的 content 逐处对回：起点 pH／0.100 mol·L⁻¹／HX 溶液／pH=4.3／\mathrm{mol\cdot L^{-1}}／溶质为 NaX／10 mL NaOH／NaY 与 HY／40.00 mL 与 30 mL 与 NaX 与 HX；该上游行与现状只在这 19 处不同（长度 618 对 590）
+CHEMISTRY,ext-che-51e65d8cb6-013,contentMarkdown,FIXED,5 处 \1 按 .agent_t2_05.csv 同一材料行的 content 对回：$4\ mol\ e^-$、$Q=I\cdot t$、\times N_A、10^{-19}\ C；与源头切块「以电路中通过4 mol e－为桥梁」「Q＝n(e－)×NA×1.60×10－19C」一致
+CHEMISTRY,ext-che-51e65d8cb6-013,boundaryMarkdown,FIXED,1 处 \\1 按 .agent_t2_05.csv 同一材料行的 boundary 对回为 \ C（库仑）；与源头切块 1.60×10－19C 一致
+CHEMISTRY,ext-che-afd9748dd0-003,contentMarkdown,FIXED,3 处 \1 按 .agent_t2_27.csv 同一材料行对回为 L（即 \mathrm{mol\cdot L^{-1}}）；与源头切块 c(H＋)＞10－7 mol·L－1 一致
+CHEMISTRY,ext-che-ce8d78405a-006,contentMarkdown,FIXED,6 处 \1 按 .agent_t2_27.csv 同一材料行对回：\Delta H／\mathrm{kJ\cdot mol^{-1}}／92.4 kJ／1 mol／3 mol／2 mol；与源头切块「ΔH＝－92.4 kJ·mol－1 中的92.4 kJ是1 mol N2(g)与3 mol H2(g)完全反应生成2 mol NH3(g)」一致
+CHEMISTRY,ext-che-e1f44db337-030b,contentMarkdown,FIXED,1 处 \1 按 .agent_b_bchem_2.csv 同一材料行对回为 pH；与同字段前文「溶液温度、pH 随氨水体积的变化关系图」「只能是温度—氨水体积图像」的并列结构一致
+MATH,ext-mat-06e58c85d2-002,applicabilityMarkdown,FIXED,删去字段开头多出的一个 $；同材料 content 的同一表述「分式上下不对称型即 $\frac{…}$ 或 $\frac{…}$ 为定值」没有该 $；删后剩 4 个 $ 恰好配成两个行内公式（若把首个 $ 留作开界符会把「分式上下不对称型如」这段中文圈进数学模式）
+MATH,ext-mat-95e236319c-003b,contentMarkdown,FIXED,8 处 \1 按 .agent_b_bmath_1.csv 同一材料行对回为 n（$\boldsymbol n_1$ 与 $\boldsymbol n_2$ 两个平面的法向量）；材料标题即「法向量夹角与二面角的正弦值」
+MATH,math-always-true-single-function-extremum,applicabilityMarkdown,FIXED,3 处按 .worktrees/kb-bench 卷内同名材料行对回：\forall x\in I 与 \ f(x)；标题写 $f(x)>0$ 恒成立、boundary 写 $I$ 为开区间
+MATH,math-always-true-single-function-extremum,contentMarkdown,FIXED,4 处按 .worktrees/kb-bench 卷内同名材料行对回为 x 与 I（若 $\forall x\in I$）；与同字段两行结论式 $f(x)_{\min}$ 与 $f(x)_{\max}$ 的变量一致
+MATH,math-fx-yuan-canshu-fangcheng,summaryMarkdown,FIXED,3 处按 .worktrees/kb-bench 同名材料行对回：两处 \theta（上游写作 <TAB>heta 即 textfix 记载的 \theta 形态 2 损坏）与一处「\ y」；同材料 content 写的就是 $x=a+r\cos\theta$ 与 $y=b+r\sin\theta$（$\theta$ 为参数）
+MATH,math-han-fuyihao-dengbi-fenduan-qiuhes,contentMarkdown,FIXED,2 处 \1 按 .worktrees/kb-bench 同名材料行对回为 n（cases 两行分别是 n 为奇数与 n 为偶数）；summary 也写「$S_n$ 随 n 奇偶呈不同表达式」；另：该字段两版都写作「为奇数}\ 1-\left(」即 cases 的行分隔符只剩一个 \ 不在本片坏点清单内故未改动
+MATH,math-hj-s13-ineq-properties,contentMarkdown,FIXED,11 处按 .worktrees/kb-bench 同名材料行对回为 b／a／c；与同节点其它材料（.agent_mp_05.csv 与 .agent_mp2_30.csv 的「不等式的基本性质」）写法一致：$a>b\Leftrightarrow b<a$、$a+c>b+c$、$ac>bc$、$a+c>b+d$、$ac>bd$、$a^n>b^n$
+PHYSICS,ext-phy-2aea59cfe3-023,contentMarkdown,FIXED,2 处 \1 按 .agent_b_bphy_4.csv 同一材料行对回为 U 与 I：$r=\left|\frac{\Delta U}{\Delta I}\right|$；同字段已写 $U-I$ 图线的斜率为电源内阻
+PHYSICS,ext-phy-964a525282-002,contentMarkdown,FIXED,5 处 \1 按 .agent_mp_27.csv 同一材料行对回：1 mL 油酸／500 mL 溶液／2 cm 深的水／$d=\dfrac VS$／1 cm 以内；源头切块写「针头高出水面的高度应在1cm之内」
+PHYSICS,ext-phy-98d17fab60-001,contentMarkdown,FIXED,2 处按 .agent_mp_01.csv 同一材料行对回：\\1{mol}^{-1} 处为「\ text{mol}^{-1}」、「（符号\1）」处为「（符号 mol）」；上游该行本身在 \ text 一处的 LaTeX 略欠规范但按「只修坏点、照抄有据的上游」未擅自改写
+PHYSICS,ext-phy-b758f2214b-002,contentMarkdown,FIXED,1 处 \1 按 .agent_mp2_31.csv 同一材料行对回为 m：$1\ \mathrm{J}=1\ \mathrm{N\cdot m}$；两版的其余文字逐字一致（424 对 424）
+PHYSICS,ext-phy-fbb0189017-002,contentMarkdown,FIXED,1 处 \1 按 .agent_mp2_32.csv 同一材料行对回为 m：$1\ \mathrm{J}=1\ \mathrm{N\cdot m}$；两版的其余文字逐字一致（388 对 388）

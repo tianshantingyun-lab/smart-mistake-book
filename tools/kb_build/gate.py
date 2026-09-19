@@ -173,6 +173,93 @@ def _is_latex_damaged(text: str) -> bool:
 
 _CONTROL_CHARS = "\x0c\t\r\x08\x07\x0b"
 
+# ---------------------------------------------------------------------------
+# 非法转义：反斜杠后面跟的不是合法命令名、也不是合法转义符
+#
+# `latex_damage` 只管"真命令丢了反斜杠"（\cos\alpha 被写成 \coslpha），
+# 管不到反向的事：反斜杠后面跟了一个根本不该跟的字符。2026-09-19 实测成品包里
+# **2,265 处 `\1`**（外加 6 处行尾孤立反斜杠、3 处 `\，`、9 处 `f\'(x)`）——
+# 两种判据互不覆盖，缺一种就会有一整类残迹静默随包分发。
+#
+# allowlist 不是拍脑袋：它来自成品包 5 个文本字段上"反斜杠 + 非字母"的
+# **全量普查**（2026-09-19），带括号内是实测次数：
+#   \\ 1567 换行/显示换行 | 空格 1169 细空 | \{ \} 560+560 | \% 270 | \, 48 |
+#   \_ 44 | \| 36 | \; 5 | \: 2 | \( 1
+# 这些都是真写法，判成残迹会天天飘红。未被证实的（数字、行尾、全角标点、
+# 以及 `\'`——语料里它一律以 `f\'(x)` 出现，是无参数的孤立重音命令）算残迹。
+# ---------------------------------------------------------------------------
+_INVALID_ESCAPE_ALLOWED = frozenset("\\ {}$%&_|,;:()[]!/-~^<>.=")
+
+
+def find_invalid_escapes(text: str) -> list[tuple[int, str]]:
+    """返回 (位置, 片段) —— 反斜杠后不是字母也不在 allowlist 的位置。
+
+    片段取 3 个字符宽（`\\1_` 这类），便于人眼复核；调用方不必依赖宽度。
+    """
+    out: list[tuple[int, str]] = []
+    for i, ch in enumerate(text):
+        if ch != "\\":
+            continue
+        nxt = text[i + 1] if i + 1 < len(text) else ""
+        if nxt and nxt.isascii() and nxt.isalpha():
+            continue
+        if nxt in _INVALID_ESCAPE_ALLOWED:
+            continue
+        out.append((i, text[i:i + 3]))
+    return out
+
+
+def _has_invalid_escape(text: str) -> bool:
+    return bool(find_invalid_escapes(text))
+
+
+# `$$` 被 shell 展开成 PID 的证据：同一个 6–7 位数在**一小段公式**里出现两次
+# （`$$...$$` 展开后同一 PID 落在公式两端，形如 `310243n = \frac{a-xb}{2}310243`）。
+#
+# 三条限定都是**实测倒逼**出来的，不是审美选择（2026-09-19 全包普查）：
+#   · 子代理实查确认的真残迹全是 6 位数：310243 / 330877 / 305020 / 358819 / 355504 /
+#     360919 / 339735 / 322028 / 353043；
+#   · 被误报的两例全是 5 位数：生物「发病率 1/10000 与 q²=1/10000」、统计「(m+n)²/40000」
+#     —— 它们是换算系数，同一数字本来就该出现两次；
+#   · 两次出现必须落在同一公式内（相距 ≤120 字且中间夹着公式记号），
+#     否则 `100个小方格…×100×400` 这类行文也会被算成公式。
+_PID_REPEAT = re.compile(r"(?<![\d.])(\d{6,7})(?![\d.])")
+_PID_MATH_MARKS = ("\\frac", "\\text{", "\\mathrm", "\\sqrt", "=", "_{", "^{")
+_PID_WINDOW = 120
+_BASH_LITERAL = re.compile(r"/usr/bin/bash|/bin/bash")
+
+
+def _has_pid_repeat(text: str) -> bool:
+    seen: dict[str, int] = {}
+    for match in _PID_REPEAT.finditer(text):
+        number = match.group(1)
+        if number in seen:
+            gap = text[seen[number]:match.start()]
+            if len(gap) <= _PID_WINDOW and any(mark in gap for mark in _PID_MATH_MARKS):
+                return True
+        seen.setdefault(number, match.start())
+    return False
+
+
+def field_text_defects(text: str) -> list[str]:
+    """一个文本字段的全部机械可判缺陷名（供门与工具共用同一套判据）。
+
+    - `invalid_escape`：反斜杠后跟非法字符（`\\1` 这类回指残迹）
+    - `dollar_unbalanced`：`$` 个数为奇数 → 数学分隔符被吃掉（材料文本里 `$` 必须成对）
+    - `shell_expanded_script_name`：出现字面 `/usr/bin/bash` → `$0` 被 shell 展开成脚本名
+    - `pid_repeat`：同一 5–7 位数重复出现 → `$$` 被 shell 展开成 PID
+    """
+    out = []
+    if find_invalid_escapes(text):
+        out.append("invalid_escape")
+    if text.count("$") % 2:
+        out.append("dollar_unbalanced")
+    if _BASH_LITERAL.search(text):
+        out.append("shell_expanded_script_name")
+    if _has_pid_repeat(text):
+        out.append("pid_repeat")
+    return out
+
 
 @dataclass
 class Metric:
@@ -377,6 +464,45 @@ def evaluate() -> list[Metric]:
             if len(m9.detail) < 40:
                 m9.detail.append(f"[{material.get('subject')}] {material.get('slug', '')[:60]}")
     metrics.append(m9)
+
+    # 9b) 非法转义（反斜杠 + 非命令字符）：latex_damage 的补集，见 _INVALID_ESCAPE_ALLOWED
+    m9b = Metric("invalid_escape", "材料含非法转义（反斜杠后不是合法命令或符号）")
+    for _path, material in materials:
+        fields = ("title", "summaryMarkdown", "applicabilityMarkdown",
+                  "contentMarkdown", "boundaryMarkdown")
+        hits = [(k, find_invalid_escapes(material.get(k) or "")) for k in fields]
+        hits = [(k, h) for k, h in hits if h]
+        if not hits:
+            continue
+        m9b.value += sum(len(h) for _k, h in hits)
+        if len(m9b.detail) < 40:
+            k, h = hits[0]
+            m9b.detail.append(
+                f"[{material.get('subject')}] {material.get('slug', '')[:48]}"
+                f".{k}: {h[0][1]!r} ×{sum(len(x) for _k2, x in hits)}")
+    metrics.append(m9b)
+
+    # 9c) shell 展开残迹：`$0` → /usr/bin/bash、`$$` → PID、`$` 被吃成奇数个
+    #     这三条与 m9b 是同一类事故（文本被丢进 shell 上下文）的不同症状，
+    #     分成独立指标是为了让"哪一环坏了"一眼可读。
+    field_names = ("title", "summaryMarkdown", "applicabilityMarkdown",
+                   "contentMarkdown", "boundaryMarkdown")
+    m9c = Metric("shell_expansion", "材料文本含 shell 展开残迹（$0/$$/$ 不成对）")
+    m9d = Metric("dollar_unbalanced", "材料文本的 $ 不成对（数学分隔符被吃掉）")
+    for _path, material in materials:
+        defects: set[str] = set()
+        for k in field_names:
+            defects.update(field_text_defects(material.get(k) or ""))
+        if "shell_expanded_script_name" in defects or "pid_repeat" in defects:
+            m9c.value += 1
+            if len(m9c.detail) < 40:
+                m9c.detail.append(f"[{material.get('subject')}] {material.get('slug', '')[:56]}")
+        if "dollar_unbalanced" in defects:
+            m9d.value += 1
+            if len(m9d.detail) < 40:
+                m9d.detail.append(f"[{material.get('subject')}] {material.get('slug', '')[:56]}")
+    metrics.append(m9c)
+    metrics.append(m9d)
 
     # 10) 控制字符
     m10 = Metric("control_chars", "材料含控制字符")

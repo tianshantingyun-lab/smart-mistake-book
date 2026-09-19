@@ -1,0 +1,20 @@
+subject,slug,field,status,evidence
+CHEMISTRY,ext-che-02e43d3aeb-005,contentMarkdown,FIXED,15 处 \1 恢复为 t、N、F、C、MnO×2、H、e、MnOOH、OH、MnO、ZnMn、mol、MnOOH、mol（含每处被吃掉的空格）；依据：与卷 02 提交 98919887 的同字段逐字一致（差异 15 处＝坏点 15 个）；正极为 MnO2 的副反应示例与该体系自洽
+CHEMISTRY,ext-che-1422ee20c2-035,contentMarkdown,WIDER_FIX,两处 358819 还原为 $$（行间公式定界符）；“$ mL 处补回被吃掉的正文 $V_1$（shell 展开 $V_1 时连符号带定界符一起消失 只剩孤立的 $）；依据：同题（2025 河南 16 药用硫黄测硫）53 教参精练册 PPT 块 15684159f4-106 原话「步骤Ⅳ中的空白实验相当于是用HCl标准溶液测定 V1 mL KOH乙醇溶液中KOH的物质的量」与同题题干（块 a6e0a73a7c-031）「准确加入V1 mL KOH 乙醇溶液(过量)」；另注：该字段 `即**试剂本底所消耗的标准液体积 *。` 里的孤立 `*` 不在切片坏点清单内 未改
+CHEMISTRY,ext-che-4aca25a694-004,contentMarkdown,FIXED,7 处 \1 恢复为 \mathrm{mol}×3、\mathrm{L}×3、pH；依据：与卷 07 提交 4787fb49 的同字段逐字一致（差异 7 处＝坏点 7 个）；例中 pH＝5 与 $c(H^+)=1\times10^{-5}$ 自洽
+CHEMISTRY,ext-che-4aca25a694-009,contentMarkdown,FIXED,13 处 \1 恢复为 \mathrm{mol}×4、\mathrm{L}×4、pH×5；依据：与卷 07 提交 4787fb49 的同字段逐字一致（差异 13 处＝坏点 13 个）；源头切块写「设浓度为c mol·L－1」「pH＝14＋lg (nc)」
+CHEMISTRY,ext-che-51e65d8cb6-014,contentMarkdown,FIXED,6 处 \1 恢复为 Cu、Fe、Cu、O（溶液复原补 Cu 和 O 元素）、\mathrm{C}、t；依据：与卷 07 提交 4787fb49 的同字段逐字一致（差异 6 处＝坏点 6 个）；源头切块思维建模写「n(e-)=Q/F(F≈96500 C/mol) 其中 Q 为电量」「Q=I⋅t」
+CHEMISTRY,ext-che-bda41ccccc-006,contentMarkdown,FIXED,8 处 \1 恢复为 M、pH×3、\mathrm{mol}、\mathrm{L}、pH×2；依据：与卷 07 提交 4787fb49 的同字段逐字一致（差异 8 处＝坏点 8 个）；源头切块写「①开始沉淀时的pH求法」「1.0×10－5 mol·L－1」
+CHEMISTRY,ext-che-bda41ccccc-006,boundaryMarkdown,FIXED,2 处 \1 恢复为 \mathrm{mol}、\mathrm{L}；依据：与卷 07 提交 4787fb49 的同字段逐字一致（差异 2 处＝坏点 2 个）
+MATH,ext-mat-10f8d75726-006,contentMarkdown,FIXED,cases 第二行 b 与第三行 cx 被吃（含前导空格）；依据：与卷 04 提交 84cc6467 的同字段逐字一致（差异 2 处＝坏点 2 个）；与同材料后文「所以 $b=0$」「则 $c=1$、$a=-2$」自洽
+MATH,ext-mat-37119cada9-001,contentMarkdown,FIXED,3 处 \1 恢复为 i、j（基底单位向量）与 \ y；依据：源头代理产物 .agent_mp_16.csv 同块 37119cada9-001 原文写 $a=x i+y j$ 与 $\vec{AB}=(x_2-x_1，\ y_2-y_1)$（差异 3 处＝坏点 3 个）
+MATH,ext-mat-95e236319c-015b,contentMarkdown,FIXED,2 处 \1 恢复为 \boldsymbol p 的 p（面法向量）；依据：与卷 04 提交 84cc6467 的同字段逐字一致（差异 2 处＝坏点 2 个）；该式为 |OD·p|/(|OD||p|)
+MATH,ext-mat-bc51e4fe6d-002b,contentMarkdown,FIXED,5 处 \1 恢复为 z×3、b、r；依据：源头代理产物 .agent_mp_01.csv 同块 bc51e4fe6d-002 原文写 $z\cdot\bar z=|z|^2=|\bar z|^2$、$(a\ b)$、$r_1\le|z|\le r_2$、$z\bar z=|z|^2$（差异 5 处＝坏点 5 个）
+MATH,ext-mat-efcda6ad77-008,contentMarkdown,FIXED,1 处 \1 恢复为 \ b（点 M 的纵坐标）；依据：源头代理产物 .agent_mp2_54.csv 同块 efcda6ad77-008 原文写 $M(a\ b)$（差异 1 处＝坏点 1 个）；与同材料距离式 $|Aa+Bb+C|$ 自洽
+MATH,math-kb-geometric-subsequence-property,contentMarkdown,FIXED,3 处 \1 恢复为 a（含前导空格）；依据：与卷 01 提交 98919887 的同字段逐字一致（差异 3 处＝坏点 3 个）；子数列 $a_{k+m}$、$a_{k+2m}$ 与 $\{\lambda a_n\}$ 记号一致
+MATH,math-kb-tangent-through-point-steps,contentMarkdown,FIXED,1 处 \1 恢复为 f（切点纵坐标 $f(x_0)$）；依据：与卷 01 提交 98919887 的同字段逐字一致（差异 1 处＝坏点 1 个）；切线方程 $y-f(x_0)=f′(x_0)(x-x_0)$ 自洽
+MATH,math-period-two-symmetric-centers,title,FIXED,1 处 \1 恢复为 b；依据：与卷 01 提交 98919887 的同字段逐字一致（差异 1 处＝坏点 1 个）；同材料 contentMarkdown 写「（$a\neq b$）」
+PHYSICS,ext-phy-1438ff090d-001,contentMarkdown,FIXED,3 处 \1 恢复为 m（视深 1 m）与 i×2（$\tan i_1$、$\tan i_2$）；依据：与卷 06 提交 98919887 的同字段逐字一致（差异 3 处＝坏点 3 个）；同字段后文写 $h=nh'=1.33\times 1\ \mathrm{m}$ 与 $i_{1}$、$i_{2}$
+PHYSICS,ext-phy-206fb04353-121,contentMarkdown,FIXED,1 处 \1 恢复为 J（普朗克常量单位 J·s）；依据：与卷 06 提交 98919887 的同字段逐字一致（差异 1 处＝坏点 1 个）
+PHYSICS,ext-phy-99820bfc30-003,contentMarkdown,FIXED,1 处 \1 恢复为 m（$\mathrm{N\cdot m^2/kg^2}$）；依据：源头代理产物 .agent_mp_06.csv 同块 99820bfc30-003 原文写 $G=6.67\times10^{-11}\ \mathrm{N\cdot m^2/kg^2}$（差异 1 处＝坏点 1 个）；源头切块写「G＝6.67×10－11 N·m2/kg2」
+PHYSICS,ext-phy-dedc65d07c-003,contentMarkdown,FIXED,4 处 \1 恢复为 k、cm、\ text×2；依据：源头代理产物 .agent_mp_01.csv 同块 dedc65d07c-003 原文写 $V=\frac{V_0\cdot k}{N}$、边长为 1 cm、$10^{-10}\ text{m}$（差异 4 处＝坏点 4 个）；源头切块写「以边长为1 cm的正方形为单位」；\ text 按其原文逐字恢复 未擅自改成 \text

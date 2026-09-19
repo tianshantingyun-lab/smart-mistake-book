@@ -1,0 +1,18 @@
+subject,slug,field,status,evidence
+CHEMISTRY,ext-che-00be305a22-004,contentMarkdown,FIXED,6 处 \1 回指按原文补回 N、H 与 X×4；依据：交作业文本与 cffda989 之前一版（98919887）同卷同 slug 同字段逐字一致（该字段正是在 cffda989 被吃字）；补回后 $\mathrm{2NO_2(g)\rightleftharpoons N_2O_4(g)}$ 与 $\Delta H<0$ 与同材料 boundaryMarkdown「$\Delta H$ 的符号」自洽
+CHEMISTRY,ext-che-1422ee20c2-057c,contentMarkdown,FIXED,4 处 \1 补回 L、M、mol、L；依据：交作业文本与 cffda989 之前一版（98919887）同字段逐字一致；与同材料 boundaryMarkdown 讲单位换算漏乘 $10^{3}$ 的链条自洽（mol/L × g/mol × 10³ = mg/L）
+CHEMISTRY,ext-che-1422ee20c2-058b,contentMarkdown,FIXED,5 处 \1 补回 I 与 L×4；依据：交作业文本与 cffda989 之前一版（98919887）同字段逐字一致；对照组原文写作「对照 I」（ASCII 大写 I）与同表 Ⅳ/Ⅴ/Ⅵ 并列
+CHEMISTRY,ext-che-58b83436a6-004b,contentMarkdown,FIXED,1 处 \1 补回 m；依据：交作业文本与 cffda989 之前一版（4787fb49）同字段逐字一致；源头切块原文写 (3)1μm＝10－6m＝10－4cm
+CHEMISTRY,ext-che-c8f0c72345-024,contentMarkdown,FIXED,2 处 \1 补回 VSEPR；依据：交作业文本与 cffda989 之前一版（98919887）同字段逐字一致；同句后半「的 VSEPR 模型相同」未受损 可作句内互证
+CHEMISTRY,ext-che-f4686ae2ac-011b,contentMarkdown,FIXED,14 处 \1 补回 L×9、HCl×2、NH、NO、O；依据：交作业文本与 cffda989 之前一版（4787fb49）同字段逐字一致；源头切块原文写「当是NO2和O2的混合气体且体积比为4∶1时」与 c(HNO3)＝…mol·L－1
+MATH,ext-mat-62ae019851-002c,contentMarkdown,FIXED,3 处 \1 补回 f、g、g；依据：交作业文本与 cffda989 之前一版（84cc6467）同字段逐字一致；同材料 summaryMarkdown 写 $\frac{f(x)}{g(x)}>0$ 与 $f(x)g(x)>0$
+MATH,ext-mat-a56cce28f2-006b,contentMarkdown,FIXED,2 处 \1 补回 a×2；依据：交作业文本与 cffda989 之前一版（84cc6467）同字段逐字一致；同式首项写作 $a_2=2a_1-1$ 末项写作 $a_{2026}=a_1$
+MATH,ext-mat-d06a1e260a-005b,contentMarkdown,FIXED,6 处 \1 补回 f、f、x、t、t、t；依据：交作业文本与 cffda989 之前一版（84cc6467）同字段逐字一致；同材料 applicabilityMarkdown 写 $2f^2(x)-(2+\sqrt3)f(x)+\sqrt3=0$；补回后 $t=\omega x+\frac\pi3$ 与 $y=\sin t$ 自洽
+MATH,math-hj-junzhi-dingli,contentMarkdown,FIXED,1 处 \1 补回 y；依据：交作业文本与 cffda989 之前一版（98919887）同字段逐字一致；同字段后文 $xy=P$ 与「均当 $x=y$ 时取等」都用 y
+MATH,math-hj-s12-negation,contentMarkdown,FIXED,12 处 \1 补回 x、M、p 各 4 次；依据：交作业文本与 cffda989 之前一版（98919887）同字段逐字一致；同材料 summaryMarkdown 写「改量词（∀↔∃）并否定结论」与补回后的 $\forall x\in M$ / $p(x)$ 结构一致
+MATH,math-hj-s52-coordinate-ops,contentMarkdown,FIXED,10 处 \1 补回 b、x、y、y、a、x、y、y、b、x；依据：交作业文本与 cffda989 之前一版（98919887）同字段逐字一致；同字段中未被吃掉的 $\overrightarrow{AB}$ 坐标差式可作句内互证
+MATH,math-inverse-construct-minus-lambda-power,title,FIXED,1 处 \1 补回 f；依据：交作业文本与 cffda989 之前一版（98919887）同字段逐字一致；同材料 summaryMarkdown 写 $xf'(x)-\lambda f(x)>0$ 与 $h(x)=\dfrac{f(x)}{x^{\lambda}}$
+PHYSICS,ext-phy-b7fee3d991-012,contentMarkdown,FIXED,3 处 \1 补回 h、r、km；依据：源头代理产物 .agent_mp2_31.csv 同块（b7fee3d991-012）content 原文写 24 h、$v=\omega r$、3.1 km/s（本卷首次入库即在 cffda989 带残迹 无更早成品可对）；同材料 boundaryMarkdown 也写 3.1 km/s 与 24 h
+PHYSICS,ext-phy-d11ca45ee5-001,contentMarkdown,FIXED,3 处 \' 删反斜杠得 $p'=m_1v_1'+m_2v_2'$；依据：gate.py 注释记载 \' 是「无参数的孤立重音命令」判为残迹（前片 ext-mat-555709725e-001 已按同类修法处置）；源头切块原文写 p′＝m1v1′＋m2v2′；本字段只有 \' 没有 \1
+PHYSICS,ext-phy-e09d35409e-002,contentMarkdown,FIXED,1 处 \1 补回 Hz；依据：源头代理产物 .agent_mp_21.csv 同块 content 原文写（电源频率为 50 Hz）；源头切块原文写（电源频率为50 Hz）
+PHYSICS,phys-tp-energy-quantum-hnu,contentMarkdown,FIXED,1 处 \1 补回 s；依据：交作业文本与 cffda989 之前一版（dcaf932f）同字段逐字一致；补回后为 $\mathrm{J\cdot s}$ 与 $h=6.626\times10^{-34}$ 搭配

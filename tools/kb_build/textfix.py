@@ -154,6 +154,24 @@ _KEPT_ESCAPES = {"a": None, "b": None, "f": None, "v": None,
 
 _TOKEN = re.compile(r"\\([A-Za-z]+)")
 
+# 形态 4（2026-09-19 补）：`\ 空格 命令名{` —— 细空 `\ ` 后面那条命令丢了反斜杠。
+#
+# 起因：材料文本里 `$9.8\ text{m/s}^2$`（应为 `$9.8\ \text{m/s}^2$`）。这一形态此前
+# 一直躲着门：同一字段里往往同时有 `\1` 残迹把 `ext{` 这个尾部特征吃掉了，等 `\1`
+# 修好，`latex_damage` 才露出来（写回 538 个字段后露出 7 处）。
+# 判据要求命令名**紧跟 `{`**，这样 `\ mol`（合法细空＋单词）不会被误改；
+# 而 `\ \text{` 因紧跟反斜杠，也不会被二次加工。
+_SPACE_LOST_BACKSLASH = re.compile(r"\\ ([A-Za-z]+)\{")
+
+
+def _repair_space_lost_backslash(text: str, real_commands) -> str:
+    def fix(match: re.Match) -> str:
+        name = match.group(1)
+        if name in real_commands:
+            return "\\ \\" + name + "{"
+        return match.group(0)
+    return _SPACE_LOST_BACKSLASH.sub(fix, text)
+
 
 def _merged_targets(real_commands) -> dict[str, str]:
     """形态 1：tail -> 完整命令。tail 是命令去掉首字母后的部分。"""
@@ -191,6 +209,10 @@ def repair_latex_commands(text: str, real_commands) -> str:
     bare = _bare_tail_repairs(real_commands)
     safe_bare = {k: v for k, v in bare.items() if k not in _MATH_ONLY_TAILS}
     math_bare = {k: v for k, v in bare.items() if k in _MATH_ONLY_TAILS}
+
+    # 形态 4：`\ text{`（细空后的命令丢了反斜杠）—— 必须在形态 3 之前做，
+    # 否则 `ext{` 会被形态 3 当成裸残片补成 `\text{`，把细空也吃掉。
+    text = _repair_space_lost_backslash(text, real_commands)
 
     rebuilt = []
     for in_math, chunk in _split_math(text):

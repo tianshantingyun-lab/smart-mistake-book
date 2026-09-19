@@ -1,0 +1,19 @@
+subject,slug,field,status,evidence
+CHEMISTRY,ext-che-13d9ae606b-001b,contentMarkdown,FIXED,依据：合并前的原始代理输出（.agent_t2_03.csv 中同名材料）保存着未损坏原文；5 处回指残迹在该原文中依次为「 H」「 H」「 H」「 kPa」「 mol」（即 ΔH＝、H—H、ΔH＝、101 kPa、1 mol）；除这 5 处外两版逐字相同
+CHEMISTRY,ext-che-1422ee20c2-056,contentMarkdown,FIXED,依据：原始代理输出（.agent_b_bchem_4x.csv）同材料原文写有「洗气瓶 B」「管式炉（装 Ge 粉）」「干燥管/收集装置 F」「尾气处理装置 G」；10 处回指残迹依次为「 B」「 Ge」「 F」「 G」「 Ge」「 Ge」「 B」「 F」「 G」「 F」
+CHEMISTRY,ext-che-4aca25a694-002b,contentMarkdown,FIXED,依据：原始代理输出（.agent_t2_26.csv）该处原文为 1\times10^{-7} 之后的「\ mol\cdot L^{-1}」；4 处回指残迹依次为「 mol」「 L」「 mol」「 L」；并与源头切块的「c(H＋)<1×10－7 mol·L－1」一致
+CHEMISTRY,ext-che-4dd2e79693-006,contentMarkdown,FIXED,依据：原始代理输出（.agent_jjdx_chem_a.csv）原文 20 处依次为「 M」「 M」（ΔM）与「 mol」「 g」「 O」等；数值自洽（228−6×17＝126；126÷18＝7；24＋4−7＝21）
+CHEMISTRY,ext-che-e05314cc33-046b,contentMarkdown,WIDER_FIX,补回被吃掉的正文：「$p」被 shell 展开成空串（$p 是变量名）故原文应为「形成 $p-\pi$ 共轭」；依据：坏点只说 $ 为奇数（9 个）且剩余片段是「-\pi$ 共轭」——被吃掉的正是 $ 与其后的 p 两个字符；补回后 $ 成对（10 个）；「p-π 共轭」是该材料讲酰胺氮碱性的标准表述（同材料 boundary 亦写「与羰基共轭」）；除补回这 2 个字符外未动一字
+CHEMISTRY,ext-che-e1f44db337-002b,contentMarkdown,FIXED,依据：原始代理输出（.agent_b_bchem_2.csv）该处原文为「 V」即 V_{标}；同材料后文亦用 V_{待}
+CHEMISTRY,ext-che-fd24554fd4-004,contentMarkdown,FIXED,依据：原始代理输出（.agent_t2_02.csv）9 处依次为「 H」「 E」「 E」「 mol」「 mol」「 mol」「 H」「 kJ」「 kJ」；与源头切块的「ΔH＝∑E(反应物的键能)－∑E(生成物的键能)」及「kJ/mol」一致
+MATH,ext-mat-65c905cea7-002b,contentMarkdown,FIXED,依据：原始代理输出（.agent_b_bmath_4.csv）该处原文为「 a」（第二式 a_{2n}+a_{2n-1}＝4n−3）
+MATH,ext-mat-9c65092122-004,contentMarkdown,FIXED,依据：原始代理输出（.agent_mp_01.csv）该处原文为 z＝a+bi 后的「\ (a\ b\in\mathbf R)」；两处回指残迹分别为「 b」「 R」
+MATH,math-atan-duichen-zhongxin,contentMarkdown,FIXED,依据：.worktrees/kb-bench 未损坏旧快照该字段两处均作「 x」；与同材料 title 的 y＝Atan(ωx+φ)、summary 的 $\omega x+\varphi=\frac{k\pi}{2}$、applicability 的 $y=A\tan(\omega x+\varphi)$ 一致
+MATH,math-fx-dengbi-sn-xingzhi,summaryMarkdown,FIXED,依据：旧快照（.worktrees/kb-bench 未损坏副本）该字段的回指残迹处作「 S」；与同材料 content 及 KB 内同类材料（ext-mat-d1097fb408-007「$S_n$、$S_{2n}-S_n$」）一致；字段中原有的换行按原样保留
+MATH,math-fx-dengbi-sn-xingzhi,contentMarkdown,FIXED,依据：旧快照该字段两处均作「 S」（S_{2n}、S_{3n}）；与同材料 summary 写法及 KB 内同类材料（ext-mat-1097fb408-007 与 ext-mat-66cdd05410-008）一致
+MATH,math-fx-xiangliang-zuobiao-yunsuan,contentMarkdown,FIXED,依据：旧快照该字段 7 处依次为「 y」「 x」「 y」「 y」「 x」「 y」「 x」；与同材料 summary 的 $x_1y_2-x_2y_1=0$ 及 boundary 的「交叉相乘相等」一致
+MATH,math-omega-dantiao-siyu2-zhengti-fa,contentMarkdown,FIXED,依据：旧快照该字段 6 处依次为「 x」「 m」「 n」「 t」「 m」「 n」；与同材料 summary 的「$(\omega m+\varphi$ 与 $\omega n+\varphi)$ 落入 $y=\sin t$」完全对应
+PHYSICS,ext-phy-454a86eab0-002,contentMarkdown,FIXED,依据：原始代理输出（.agent_mp_26.csv）5 处依次为「 s」「 V」「 V」「 Hz」「 s」；与同材料 boundary「电磁式为 4 至 6 V、电火花式为 220 V」「不能一律按 0.02 s 计算」一致
+PHYSICS,ext-phy-58156e4fa1-004,contentMarkdown,FIXED,依据：原始代理输出（.agent_b_bphy_1.csv）该处原文为「 t」即极短作用时间 $\Delta t$
+PHYSICS,ext-phy-7a8d42b6f9-002,contentMarkdown,FIXED,依据：原始代理输出（.agent_mp2_29.csv）该处原文为「 m」即 \mathrm{N\cdot m^2/kg^2}；与源头切块「G＝6.67×10－11 N·m2/kg2」及 KB 同类材料 phys-kb-universal-gravitation-law 的 \mathrm{N\cdot m^2/kg^2} 一致
+PHYSICS,ext-phy-7a8d42b6f9-005,contentMarkdown,FIXED,依据：原始代理输出（.agent_mp2_29.csv）两处原文为「 m」「 R」即 \ge m\frac{4\pi^2}{T^2}R 与 \pi R^3；与源头切块「万有引力大于或等于……向心力」「根据质量与密度的关系」一致

@@ -99,6 +99,7 @@ class GateTest(unittest.TestCase):
             {"bad_names", "starred_names", "duplicate_names", "unbound_points",
              "unbound_materials", "ghost_aliases", "alias_collision", "undeclared_prereq",
              "boundary_excerpt", "locator_boundary", "latex_damage", "control_chars",
+             "invalid_escape", "shell_expansion", "dollar_unbalanced",
              "chapter_uncovered_units", "chapter_locator_mismatch", "chapter_no_book",
              "chapter_split_missing_override", "topic_name_carries_path",
              "chapter_layer_has_points", "topic_parent_after_child"},
@@ -138,6 +139,15 @@ class GateTest(unittest.TestCase):
         # 带无损三查与幂等）后归零。两项从此充当防回归哨兵。
         self.assertEqual(0, metrics["latex_damage"].value)
         self.assertEqual(0, metrics["control_chars"].value)
+        # 2026-09-19 文本损坏普查（本条登记 M-06 / KD-21、KD-22）：三类共 2,283 处
+        #   invalid_escape 2,283（其中 `\1` 回指残迹 2,265）→ 归零
+        #   shell_expansion 19（`$0`→/usr/bin/bash、`$$`→PID）→ 归零
+        #   dollar_unbalanced 20（`$` 被吃成奇数）→ 归零
+        # 修复路径：30 个子代理逐字段修（517 条材料），写回前用"与历史版本/入库前产物
+        # 逐字一致"做独立复核（485 条复原、53 条重建逐条人工过）。三项从此充当防回归哨兵。
+        self.assertEqual(0, metrics["invalid_escape"].value)
+        self.assertEqual(0, metrics["shell_expansion"].value)
+        self.assertEqual(0, metrics["dollar_unbalanced"].value)
         # 2026-09-19 内容裁定轮（R 节）：boundary_excerpt 675→0（675 条含第三方原文摘录的边界
         # 全部按合规要求重写为自己的归纳，不再保存原文段落）、locator_boundary 579→0
         # （579 条只有定位串/占位的边界全部补写了真边界正文）。两项从此充当防回归哨兵。
@@ -180,6 +190,35 @@ class GateTest(unittest.TestCase):
         # 章节覆盖率与归属完整性在现行包上本来就是满的，不该被当成缺陷
         self.assertTrue(metrics["chapter_uncovered_units"].ok)
         self.assertTrue(metrics["chapter_no_book"].ok)
+
+    def test_field_text_defects_classifies_damage_shapes(self):
+        """材料文本损坏的判据：四类各自命中，且不误伤合法写法。
+
+        判据的 allowlist 与 PID 三条限定都不是审美选择，是从语料实测倒逼的
+        （见 gate.py 对应注释）：这里把"必须命中"和"必须不命中"两侧都钉住，
+        否则放宽一格就会静默放过整类残迹、收紧一格就会天天飘红。
+        """
+        must_flag = {
+            r"周期判定基础式：$f(x)=f(x+a)\ (a>0)\Rightarrow\1=a$": ["invalid_escape"],
+            r"只能读到 /usr/bin/bash.1\ \mathrm{g}$": ["dollar_unbalanced",
+                                                      "shell_expanded_script_name"],
+            r"\n310243n = \frac{a - xb}{2}310243\n": ["pid_repeat"],
+            r"必须控制在 .5\sim10.5$": ["dollar_unbalanced"],
+        }
+        for text, expected in must_flag.items():
+            with self.subTest(text=text[:24]):
+                for defect in expected:
+                    self.assertIn(defect, gate.field_text_defects(text))
+        must_pass = (
+            r"$9.8\ \text{m/s}^2$ 与 $1\ \mathrm{mol}$",       # 合法细空 + 命令
+            r"$\{a_n\}$、$\%$、$\|AB\|$、$a\,b$",              # 合法转义
+            r"1mL细胞个数＝100×400×10000×稀释倍数；同法再乘 10000。",  # 5 位换算系数
+            r"$f'(x)>0$",                                      # 撇号不是重音命令
+            r"$S_m,S_{2m}-S_m$；$a\parallel b$",               # 正常公式
+        )
+        for text in must_pass:
+            with self.subTest(text=text[:24]):
+                self.assertEqual([], gate.field_text_defects(text))
 
     def test_bad_name_detector_classifies_known_shapes(self):
         cases = {

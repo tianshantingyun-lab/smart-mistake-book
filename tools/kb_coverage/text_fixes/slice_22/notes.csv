@@ -1,0 +1,19 @@
+subject,slug,field,status,evidence
+CHEMISTRY,ext-che-1422ee20c2-037,contentMarkdown,WIDER_FIX,PID 360919×2 还原为 $$（坏点清单直接判定）；另补回被 shell 吃掉的 10 处 $ 加变量名（全仓无净本：4 个 git 版本与 .agent_b_bchem_4.csv:82、material_judgments.csv 第 2997 行同 sha 5e61df60）：故 $V_1 = V_2$；$V_1 = 0$；$V_2 > 0$；$V_1 < V_2$；$V_1 > V_2$；**$V_1$ 增大、$V_2$ 减小**；即 $V_2' > V_1$；$V_1$ 与 $V_2$ 的比较；变量名由幸存串定死（= V_2 前被吃的是 V_1；= 0 只可能是 V_1；增大/减小的顺序与 boundaryMarkdown 的「V1 偏大、V2 偏小」一致；即 ' > V_1 只余上标与右操作数 V_1 故被吃的只能是 $V_2）；补后 $ 由 36→50 且逐对闭合；相对现文的差异只有 2 处 PID 替换与 10 处插入、无其他改动
+CHEMISTRY,ext-che-4aca25a694-007,contentMarkdown,FIXED,8 处 \1 恢复为 \ mol、\ L、 pH×6；依据：与 v2-07 的 4787fb49 版同字段逐字一致（cffda989 引入残迹）；同源产物 .agent_t2_26.csv:18 同 sha 57be4a93；改动只落在 8 处残迹；$ 数 22 不变
+CHEMISTRY,ext-che-7645e88401-003b,contentMarkdown,FIXED,12 处 \1 恢复为 C×4、Si、O、Si、O、O、Si、NaCl、CsCl；依据：与 v2-02 的 98919887 版同字段逐字一致；同源产物 .agent_b_bchem_2.csv:53 与 merged_batch.csv:1138 同 sha 8ced26f2；$ 数 116 不变
+CHEMISTRY,ext-che-ce8d78405a-001,contentMarkdown,FIXED,6 处 \1 恢复为 kPa、mol、H、mol、C、mol；依据：与 v2-07 的 4787fb49 版同字段逐字一致；.agent_t2_27.csv:90 同 sha 81878224；源头切块写 101 kPa 与生成 1 mol 水
+CHEMISTRY,ext-che-ce8d78405a-004,contentMarkdown,FIXED,12 处 \1 恢复为 ΔH 的 H×8、C、CO、H、H；依据：与 v2-07 的 4787fb49 版同字段逐字一致；.agent_t2_27.csv:92 同 sha 4e39af57；与同材料 boundaryMarkdown 通篇写 ΔH 自洽
+CHEMISTRY,ext-che-fa5c662311-010b,contentMarkdown,FIXED,5 处 \1 恢复为 J、kJ、g、mol、mol；依据：与 v2-07 的 4787fb49 版同字段逐字一致；.agent_t_11.csv:33 同 sha 6ba4ec2e；源头切块写 4.18 J·g－1·℃－1＝4.18×10－3 kJ·g－1·℃－1 与生成 1 mol 水
+MATH,ext-mat-38c02d65c5-001c,contentMarkdown,FIXED,9 处 \1 恢复为 x（$e^x\ge x+1$；$e^x\ge ex$；$\ln x\le x-1$；$\ln x\ge1-\frac{1}{x}$；$\ln x$；$\sin x<x<\tan x$；$\cos x$）；依据：v2-08 无净本（首版即带残迹）；同源产物 .agent_mp_01.csv:47 与 merged_text_batch.csv:47 同 sha 47acefb7；与三组切线放缩标准式自洽
+MATH,ext-mat-618a9e5fe2-005,contentMarkdown,FIXED,3 处 \1 恢复为 y（$A(x_1\ y_1)$；$B(x_2\ y_2)$；$(x_2-x_1\ y_2-y_1)$）；依据：.agent_mp_22.csv:65 与 merged_text_batch.csv:2178 同 sha 672bc1b7；源头切块写 设点A(x1，y1)，B(x2，y2)
+MATH,ext-mat-8ae4bcba5e-008,contentMarkdown,FIXED,1 处 \1 恢复为 k（$$k_{OM}\cdot k_{PQ}=-\dfrac{b^2}{a^2}$$）；依据：与 v2-04 的 84cc6467 版同字段逐字一致；.agent_b_bmath_4.csv:28 同 sha 7b3f15d9；同材料 summaryMarkdown 与 boundaryMarkdown 都用 $k_{OM}$ 这套记号
+MATH,ext-mat-95e236319c-016b,contentMarkdown,FIXED,3 处 \1 恢复为 AC、n、m（$OB\bot AC$；$\cos\left\langle\boldsymbol n;\boldsymbol m\right\rangle$）；依据：与 v2-04 的 84cc6467 版同字段逐字一致；.agent_b_bmath_1.csv:135 同 sha d45cb2b5
+MATH,ext-mat-9e06c77f62-001b,contentMarkdown,FIXED,2 处 \1 恢复为 y（$A(x_1\\ y_1)$；$B(x_2\\ y_2)$）；依据：.agent_mp_14.csv:112 与 merged_text_batch.csv:1315 同 sha b72d22ce；源头切块写 交点坐标为A(x1，y1)，B(x2，y2)；全字段沿用双反斜杠写法（\\sqrt 等同现文）
+MATH,math-kb-multi-tangent-lines-condition,contentMarkdown,FIXED,3 处 \1 恢复为 f、y、P（分别是切点写法里的 f(x_0)、定点坐标里的 x_P 与 y_P）；依据：与 v2-01 的 98919887 版同字段逐字一致；boundaryMarkdown 写「切点横坐标的方程」与 f(x_0) 自洽
+MATH,math-kb-vector-line-plane-angle,boundaryMarkdown,FIXED,1 处 \1 恢复为 cos；依据：与 v2-01 的 98919887 版逐字一致；同材料 contentMarkdown 的线面角公式正是方向向量与法向量夹角余弦的绝对值
+MATH,math-period-axis-plus-center,title,FIXED,1 处 \1 恢复为 b；依据：与 v2-01 的 98919887 版逐字一致；同材料 contentMarkdown 与 boundaryMarkdown 都写 $a\neq b$
+PHYSICS,ext-phy-479e2cb57f-005,contentMarkdown,FIXED,1 处 \1 恢复为 h（周期不是 24 h 的卫星）；依据：与 v2-06 的 98919887 版同字段逐字一致；.agent_b_phyjc_1xb.csv:17 同 sha ca1f71d2；同字段开头写 $T=24\ \mathrm{h}$
+PHYSICS,ext-phy-9ade384fa8-003,contentMarkdown,FIXED,1 处 \1 恢复为 m（$\mathrm{N\cdot m^2/kg^2}$）；依据：.agent_mp2_57.csv:56 与 merged_text_batch.csv:6555 同 sha 52b86aa5；源头切块写 G＝6.67×10－11 N·m2/kg2
+PHYSICS,ext-phy-baf18087a8-004,contentMarkdown,FIXED,4 处 \1 恢复为 E、n、n、E（$h\nu＝\Delta E$；量子数为 n 的能级；n＝∞ 且 E＝0）；依据：.agent_mp_04.csv:24 与 merged_text_batch.csv:278 同 sha c3dfc418；源头切块写 hν＝ΔE 与 电离态：n＝∞，E＝0
+PHYSICS,ext-phy-d625775dcf-014,contentMarkdown,FIXED,3 处 \1 恢复为 kd、kd、S（$C=\frac{\varepsilon_rS}{4\pi kd}$×2；$C\propto S$）；依据：与 v2-06 的 98919887 版同字段逐字一致；.agent_b_phyjc_1xa.csv:72 同 sha d38b5555；同材料 summaryMarkdown 与 boundaryMarkdown 都写 $C=\frac{\varepsilon_rS}{4\pi kd}$

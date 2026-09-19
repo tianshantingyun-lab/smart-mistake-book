@@ -1,0 +1,17 @@
+subject,slug,field,status,evidence
+CHEMISTRY,ext-che-4dd2e79693-049b,contentMarkdown,FIXED,6 处 \1 恢复为 cm×4、pm、nm；依据：与本卷 cffda989 的父提交 84cc6467 同字段逐字一致（cffda989 即引入残迹的那次提交）；$1\ pm=10^{-10}\ cm$ 与缩写提示“纳 7 皮 10”自洽；同材料 boundaryMarkdown 也写 $pm$ 与 $nm$
+CHEMISTRY,ext-che-4dd2e79693-088,contentMarkdown,FIXED,7 处恢复为 HA、c、c、L、L、pH、H；依据：与父提交 84cc6467 同字段逐字一致；7 处均落在这几种记号的固定搭配上（$A^{2-}+H_2O\rightleftharpoons HA^-$、$c(OH^-)$、$\mathrm{mol\cdot L^{-1}}$、初始 pH、$NH_3\cdot H_2O$）
+CHEMISTRY,ext-che-70f6560213-001d,contentMarkdown,FIXED,27 处全为 $\Delta H$ 的 H；依据：与父提交 98919887 同字段逐字一致；同材料 boundaryMarkdown 通篇写 $\Delta H$（代数值比较）
+CHEMISTRY,ext-che-fcb3194bcf-002b,contentMarkdown,FIXED,4 处恢复为 $a\ mol·L^{-1}$、$b\ mol·L^{-1}$、$t_1\ s$、$x\ mol·L^{-1}$；依据：与父提交 4787fb49 同字段逐字一致；源头切块原文写 a mol·L－1、b mol·L－1、反应进行至 t1s
+MATH,ext-mat-221256755a-010b,contentMarkdown,FIXED,3 处恢复为 $\omega x$、$\lambda f(x)$×2；依据：与父提交 84cc6467 同字段逐字一致；同材料 summaryMarkdown 写 $f(x+2\lambda)=\lambda f(x)$
+MATH,ext-mat-555709725e-001,boundaryMarkdown,FIXED,2 处多余转义 \' 删去反斜杠得 $f'(x)>0$ 与 $f'(x)\ge0$；依据：该字段无更早副本（卷 08 首次入库即带残迹）——成品包普查 f'(x) 837 处/343 字段 而 f\'(x) 仅 4 处/3 字段且同属这一轮边界重写；同材料 contentMarkdown 与源头切块都写 f′(x)；gate.py 注释记载 \' 属无参数孤立重音残迹
+MATH,ext-mat-62744ff0cf-006,contentMarkdown,FIXED,cases 环境第二行 \\ f(x_1) 的 f 被吃；依据：与父提交 84cc6467 同字段逐字一致；斜率相等式与截距相等式成对（f'(x_1)=g'(x_2) 与 f(x_1)-f'(x_1)x_1=g(x_2)-g'(x_2)x_2）
+MATH,ext-mat-918c07587b-002,contentMarkdown,FIXED,$\text{（对任意 } n \text{ 恒成立）}$ 缺 n；依据：与父提交 84cc6467 同字段逐字一致；同材料 boundaryMarkdown 的 $(-4)^n$ 与 n 的奇偶讨论一致
+MATH,ext-mat-d994fcb41d-008,contentMarkdown,FIXED,9 处恢复为 ∠A₁…×3、∠F₁…×5、$k_{F_2M}$；依据：与父提交 84cc6467 同字段逐字一致；同材料 summaryMarkdown 与 boundaryMarkdown 都用 A₁x₁y₂ 这套记号
+MATH,ext-mat-efcda6ad77-021,contentMarkdown,FIXED,3 处恢复为 $P(x_0\ y_0)$、$M(a\ b)$、$P'(x'\ y')$；依据：源头代理产物 .agent_mp2_54.csv 同块（efcda6ad77-021）原文如此；同材料 boundaryMarkdown 写中点公式 $a=\dfrac{x_0+x'}{2}$
+MATH,math-acos-duichen-xing-gongshi,contentMarkdown,FIXED,$\cos(\omega x+\varphi)$ 的 x；依据：与父提交 98919887 同字段逐字一致；同材料 summaryMarkdown 的对称轴与对称中心式同形
+MATH,math-hj-s14-basic-ineq,contentMarkdown,FIXED,$a>0\ b>0$ 的 b；依据：与父提交 98919887 同字段逐字一致；同材料 summaryMarkdown 写 a>0 b>0
+PHYSICS,ext-phy-12180f1216-001,contentMarkdown,FIXED,动能公式中的 v 是速率；依据：源头代理产物 .agent_mp_11.csv 同块原文写 v；同材料 summaryMarkdown 写 Ek=½mv²
+PHYSICS,ext-phy-479e2cb57f-005b,contentMarkdown,FIXED,2 处恢复为 7.9 km/s；依据：与父提交 98919887 同字段逐字一致；同材料 boundaryMarkdown 写 7.9 km/s
+PHYSICS,ext-phy-924170e5b1-032,contentMarkdown,FIXED,6 处恢复为 $\mu_s mg$、$\mu_s g R^2$×2、0.1 mm；依据：与父提交 98919887 同字段逐字一致；与后文 $\mu_s=\dfrac{kd^2}{R^2g}$ 及向心力式自洽；游标卡尺精度只能是 0.1 mm
+PHYSICS,ext-phy-cc009368ca-005,contentMarkdown,FIXED,3 处恢复为 50 Hz、A、B；依据：源头代理产物 .agent_mp2_16.csv 同块原文写（电源频率为 50 Hz）与任取两点 A 与 B；同材料 boundaryMarkdown 写 2 mm 纸带

@@ -1,0 +1,18 @@
+subject,slug,field,status,evidence
+CHEMISTRY,ext-che-4dd2e79693-077,contentMarkdown,FIXED,依据：合并前的原始代理输出 .agent_jjdx_chem_b.csv 中同块同标题（四段式法计算Kp）保存着未损坏原文；7 处回指残迹依次为「 mol」「 mol」「 MPa」「 mol」「 mol」「 mol」「 mol」（即 1 mol、3 mol、起始压强 100 MPa、平衡量 0.5 mol 与 1.5 mol 与 1 mol、总物质的量 3 mol）；除这 7 处外两版逐字相同（591→605 字）
+CHEMISTRY,ext-che-5d65ccc112-010,contentMarkdown,FIXED,依据：原始代理输出 .agent_t2_03.csv（块 5d65ccc112-010）该字段原文 5 处均为「 mol」；与源头切块的「1mol氧化剂得电子的物质的量或者1mol还原剂失电子的物质的量」一致；除残迹外两版逐字相同（339→349 字）
+CHEMISTRY,ext-che-947add6b4a-016,contentMarkdown,FIXED,依据：原始代理输出 .agent_t2_02.csv（块 947add6b4a-016）原文 13 处依次为「 mol」「 Al」「 mol」「 Al」「 mol」「 OH」「 mol」「 Al」「 mol」「 OH」「 A」「 B」「 C」；图 A 与图 B 与图 C 与源头切块「图A中…图B中…图C中…」一致；$1\ mol\ Al^{3+}$ 等 5 处与生成沉淀耗碱比 $3:1$ 自洽（387→402 字）
+CHEMISTRY,ext-che-bda41ccccc-012,contentMarkdown,FIXED,依据：原始代理输出 .agent_t2_05.csv（块 bda41ccccc-012）该处原文为「 mol」即 $1\ mol$；除残迹外两版逐字相同（350→352 字）
+MATH,ext-mat-2fc4d7ddd5-003b,contentMarkdown,FIXED,依据：原始代理输出 .agent_b_bmath_1.csv 中同标题（由两两垂直的三条线建立空间直角坐标系）原文 5 处依次为「 CD」「 n」「 n」「 n」「 n」（$EF\parallel CD$ 与法向量 $\boldsymbol n$ 共 4 处）；除残迹外两版逐字相同（500→501 字）
+MATH,ext-mat-498fe37868-001,contentMarkdown,FIXED,依据：原始代理输出 .agent_b_bmath_4.csv（块 498fe37868-001）该处原文为「 S」即 $\sum S_k=240\left(3-\dfrac{n+3}{2^n}\right)$；除残迹外两版逐字相同（538 字不变）
+MATH,ext-mat-65c905cea7-001,contentMarkdown,FIXED,依据：原始代理输出 .agent_b_bmath_4.csv（块 65c905cea7-001）3 处依次为「 f」「 f」「 a」（和为 f(n) 型与积为 f(n) 型与 $a_n\cdot a_{n+1}=f(n)$）；除残迹外两版逐字相同（515 字不变）
+MATH,ext-mat-95e236319c-006b,contentMarkdown,FIXED,依据：原始代理输出 .agent_b_bmath_1.csv 中同标题（由三线两两垂直建系求二面角的正弦值）原文 9 处依次为「 AM」「 AM」「 OF」「 n」「 n」「 n」「 n」「 n」「 n」（$OB\bot AM$ 与 $OF\bot AM$ 与 $OB\bot OF$ 与法向量 $\boldsymbol n_1$ 及 $\boldsymbol n_2$ 的 6 处）；除残迹外两版逐字相同（590→593 字）
+MATH,ext-mat-9e06c77f62-003,contentMarkdown,FIXED,依据：原始代理输出 .agent_mp_14.csv（块 9e06c77f62-003）3 处均为「 y」（$f(x\ y)=0$ 与 $A(x_1\ y_1)$ 与 $B(x_2\ y_2)$）；与源头切块「f(x，y)＝0」「A(x1，y1)，B(x2，y2)」一致（491 字不变）
+MATH,ext-mat-efcda6ad77-006,contentMarkdown,FIXED,依据：原始代理输出 .agent_mp2_54.csv（块 efcda6ad77-006）3 处依次为「 y」「 b」「 y」（即 $P(x\ y)$ 与 $M(a\ b)$ 与 $P'(x'\ y')$）；与后文解 $x'=2a-x$、$y'=2b-y$ 所需的 x 与 y 与 a 与 b 两组坐标自洽（297 字不变）
+MATH,math-atan-qiou-xing-panding,contentMarkdown,FIXED,依据：.worktrees/kb-bench 未损坏旧快照该处原文为「 x」；与同材料 applicability 的 $y=A\tan(\omega x+\varphi)$ 及 title 的 y=Atan(ωx+φ) 一致（132 字不变）
+MATH,math-hj-fenshi-budengshi-xingzhi,contentMarkdown,FIXED,依据：.worktrees/kb-bench 未损坏旧快照该处原文为「 m」即「若 $a>b>0$ 且 $m>0$ 则 $\frac{a}{b}<\frac{a+m}{b+m}$」；注意该旧快照另有 \frac 丢失反斜杠 f 的旧伤（写成 rac）而 HEAD 已修好；故只在现行原文上替换这一处残迹、其余一字未动（103 字不变）
+PHYSICS,ext-phy-2248b2c9f7-014c,contentMarkdown,FIXED,依据：原始代理输出 .agent_b_bphy_2.csv 中同标题（侦查卫星与同步卫星的间距与扫过面积之比）原文 6 处依次为「 r」「 h」「 h」「 h」「 t」「 t」（最近距离为 r 与 $T_2=24\ h$ 与 $6\sqrt{2}\ h$ 与 $t=\dfrac{24(2\sqrt{2}+1)}{7}\ h$ 与 $\Delta t$ 两处）；与 boundary「同步卫星的周期是 24 h」一致（733 字不变）
+PHYSICS,ext-phy-6067202e2e-006b,contentMarkdown,FIXED,依据：原始代理输出 .agent_mp_14.csv 中同标题（用质量亏损与结合能计算核能）原文 14 处依次为「 E」「 mc」「 m」「 kg」「 m」「 E」「 J」「 m」「 u」「 E」「 m」「 E」「 MeV」「 MeV」（补全 $\Delta E=\Delta mc^2$ 与 kg 与 m/s 与 J 与 u 与 MeV 等）；与源头切块「ΔE＝Δmc2」「931.5 MeV/u」一致（354→360 字）
+PHYSICS,ext-phy-8842b13030-033,contentMarkdown,FIXED,依据：原始代理输出 .agent_b_bphy_2.csv（块 8842b13030-033）3 处均为「 t」（即挡光时间 $\Delta t$）；除残迹外两版逐字相同（233 字不变）
+PHYSICS,ext-phy-d72335472d-003,contentMarkdown,FIXED,依据：原始代理输出 .agent_mp_15.csv（块 d72335472d-003）该处原文为「 m」即 $\mathrm{N\cdot m^2/C^2}$；与源头切块「k＝9.0×109 N·m2/C2」及 boundary 的 $k\frac{q_1q_2}{r^2}$ 一致（270 字不变）
+PHYSICS,ext-phy-eede7ba2b8-016,contentMarkdown,FIXED,依据：原始代理输出 .agent_mp_26.csv（块 eede7ba2b8-016）该处原文为「 E」即 $E_{\text{外}}\ge E_n-E_m$；与源头切块「E外≥En－Em」一致（443 字不变）

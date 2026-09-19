@@ -1,0 +1,18 @@
+subject,slug,field,status,evidence
+CHEMISTRY,ext-che-1422ee20c2-006,contentMarkdown,WIDER_FIX,2 处 322028 还原为 $$（行间公式定界符）；同一 6 位数恰好落在行间公式首尾两端（原文形如：则产品的产率为\n$$产率=\frac{实际产量}{理论产量}\times100\%$$）且 322028 不可能是产率数值；同材料 summaryMarkdown 与 boundaryMarkdown 都只讲产率＝实际产量／理论产量；git 923a13db 与 cffda989 以及入库前 .agent_b_bchem_4.csv 块 1422ee20c2-006 此处同样损坏 无逐字净本可对；补后 $ 计数 4 成对；除这 2 处替换外一字未动
+CHEMISTRY,ext-che-1422ee20c2-012,contentMarkdown,WIDER_FIX,全字段除两处外与 cffda989 的父提交 923a13db 同字段逐字一致；结论句残迹 1\1 样品 按该处原文还原为 1 mol 样品；托盘天平精度 /usr/bin/bash.1 按坏点清单还原为 $0.1（/usr/bin/bash 即 $0 被 shell 展开的脚本名 且该字段原文 $ 计数为奇数 1 两证相合）；补后 $ 计数 2 成对
+CHEMISTRY,ext-che-18ec7b8669-006,contentMarkdown,FIXED,5 处回指残迹按父提交 923a13db 同字段逐字还原（mol／mol／H／H／H 即 0.1000 mol/L 两处与 NH3·H2O 三处）；除这 5 处外与 923a13db 逐字一致
+CHEMISTRY,ext-che-4dd2e79693-020c,contentMarkdown,FIXED,8 处回指残迹按父提交 923a13db 同字段逐字还原（pH<7；pH 试纸；与 Al 反应；1×10^-10 mol·L^-1 两处；活泼金属如 Al、Zn、Fe）；除这 8 处外与 923a13db 逐字一致
+CHEMISTRY,ext-che-4dd2e79693-058,contentMarkdown,FIXED,17 处回指残迹按父提交 923a13db 同字段逐字还原（ΔH 的 H 共 9 处含 ΔH_1；单位 kJ·mol^-1 的 kJ 与 mol 各 4 处）；除这 17 处外与 923a13db 逐字一致
+CHEMISTRY,ext-che-4dd2e79693-071,contentMarkdown,FIXED,TS5→TS6 中的 TS 按父提交 923a13db 同字段逐字还原；除这 1 处外与 923a13db 逐字一致
+CHEMISTRY,ext-che-6b9ae33803-002,contentMarkdown,FIXED,3 处回指残迹按父提交 923a13db 同字段逐字还原（ΔH；HS^-；Ba^2+）；除这 3 处外与 923a13db 逐字一致
+MATH,ext-mat-cf4749602e-013b,contentMarkdown,FIXED,6 处按入库前代理产物 .agent_mp2_34.csv 同块 cf4749602e-013 同标题行的 content 逐字还原（准线 x=-p/2 与两处焦半径 x+p/2 共 3 处 p；三个垂直 CF⊥FD、NF⊥AB、AN⊥BN）；卷 08 首次入库即带残迹（923a13db 无此文件）故取该 CSV；与源头切块「三个垂直CF⊥FD、NF⊥AB、AN⊥BN」一致
+MATH,ext-mat-cf4749602e-016,contentMarkdown,FIXED,5 处按 .agent_mp2_34.csv 同块 cf4749602e-016 同标题行的 content 逐字还原（∠F1PF2；tan(θmax/2)=c/b 与 θmax=2arctan(c/b)；∠AQB；∠F1QF2）；卷 09 首次入库即带残迹；同材料 boundaryMarkdown 区分焦点张角与长轴顶点张角 与还原一致
+MATH,math-fx-yuan-shang-dian-dingzhi-dian,contentMarkdown,FIXED,3 处回指残迹按父提交 923a13db 同字段逐字还原（t∈(d-r、 d+r)；t≠d；平行线 l±t）；除这 3 处外与 923a13db 逐字一致（字段内 2 个真换行亦保持原样）
+MATH,math-kb-arithmetic-sum-extremum,contentMarkdown,FIXED,2 处回指残迹按父提交 923a13db 同字段逐字还原（a1>0、 d<0；的 n 使 Sn 最大）；除这 2 处外与 923a13db 逐字一致
+MATH,math-kb-space-collinear-vector-theorem,contentMarkdown,FIXED,7 处回指残迹按父提交 923a13db 同字段逐字还原（向量 a 共 4 处与向量 b 共 3 处）；除这 7 处外与 923a13db 逐字一致
+PHYSICS,ext-phy-0f28bb82ae-002,contentMarkdown,FIXED,动能变化量 ΔEk 的 E 按 .agent_mp2_35.csv 同块 0f28bb82ae-002 同标题行的 content 逐字还原；同材料 summaryMarkdown 写 Ek＝½mv² 与源头切块一致；卷 09 首次入库即带残迹
+PHYSICS,ext-phy-202a7903f4-006,contentMarkdown,FIXED,相邻两点时间间隔 0.02 s 的 s 按 .agent_mp2_40.csv 同块 202a7903f4-006 同标题行的 content 逐字还原；同材料 summaryMarkdown 写 0.02 s；卷 08 首次入库即带残迹
+PHYSICS,ext-phy-479e2cb57f-001b,contentMarkdown,FIXED,引力常量单位 N·m^2/kg^2 中的 m 按父提交 923a13db 同字段逐字还原；除这 1 处外与 923a13db 逐字一致
+PHYSICS,ext-phy-c1f096722a-005,contentMarkdown,FIXED,3 处按 .agent_mp2_13.csv 同块 c1f096722a-005 同标题行的 content 逐字还原（1 N 的物理意义；质量为 1 kg 的物体；就是 1 N）；源头切块写「1 N力的物理意义是使质量为m=1kg的物体产生…加速度的力」与还原一致；卷 08 首次入库即带残迹
+PHYSICS,ext-phy-c491e1cc4d-001b,contentMarkdown,FIXED,10 处回指残迹按父提交 923a13db 同字段逐字还原（20 m 一处；距抛出点 15 m 共八处；2 s 时一处）；除这 10 处外与 923a13db 逐字一致

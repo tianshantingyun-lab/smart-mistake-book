@@ -1,0 +1,19 @@
+subject,slug,field,status,evidence
+BIOLOGY,ext-bio-26746c92ba-104b,contentMarkdown,FIXED,pid_repeat 系检测器误报：10000 是发病率真实数值（$1/10000$ 与 $aa=q^2=1/10000$、$q=1/100$、$p=99/100$ 自洽）；与损坏前的判定表产物 .agent_jjdx_bio_b.csv（块 26746c92ba-104 midx=b 标题「遗传平衡定律的正推与逆推」）原文逐字一致；$ 共 18 个成对；本字段净改动 0（未动一字）——门禁 pid_repeat 仍会命中 属误报
+CHEMISTRY,ext-che-00be305a22-006,contentMarkdown,FIXED,8 处 \1 恢复为 CH（反应①的 CH_3OH）／H（反应①②的 ΔH 下标 1 与 2）／CO×5（反应②的 CO 与「已知 CO 的选择性」「由 CO 的选择性」「平衡时 CO 和」「曲线③对应 CO 的选择性」）；依据 98919887 同字段原文与 .agent_b_bchem_3.csv 同块原文一致
+CHEMISTRY,ext-che-1422ee20c2-047b,contentMarkdown,FIXED,7 处 \1 恢复为 mol（1 mol 乙醛含 1 mol 醛基、只生成 1 mol Ag（不是 2 mol）；1 mol 葡萄糖含 1 mol 醛基、生成 2 mol Ag）；依据 98919887 同字段原文与 .agent_b_bchem_4x.csv 同块同题（midx=b）原文一致
+CHEMISTRY,ext-che-1422ee20c2-060,contentMarkdown,FIXED,2 处 \1 恢复为 L（$0.1\ \mathrm{mol\cdot L^{-1}}$ 与 $0.2\ \mathrm{mol\cdot L^{-1}}$）；依据 98919887 同字段原文与 .agent_b_bchem_4x.csv 同块同题原文；同材料 boundaryMarkdown 也写 $\mathrm{mol\cdot L^{-1}}$
+CHEMISTRY,ext-che-1422ee20c2-060,boundaryMarkdown,FIXED,2 处 \1 恢复为 L（按电荷守恒配平的两处浓度）；依据 98919887 同字段原文与 .agent_b_bchem_4x.csv 同块同题 boundary 原文
+CHEMISTRY,ext-che-1422ee20c2-067b,contentMarkdown,FIXED,4 处 \1 恢复为 L×2（$\mathrm{mol\cdot L^{-1}}$）与 H×2（H⁺ 型阳离子交换树脂／$\mathrm{NH_3\cdot H_2O}$）；依据 98919887 同字段原文（该版无残迹；同字段后文 NH_3 交换出 1 mol H⁺ 与 H 记号自洽）
+CHEMISTRY,ext-che-4dd2e79693-051b,contentMarkdown,FIXED,3 处 \1 恢复为 nm（$a\ nm$／$\dfrac{\sqrt{2}a}{2}\ nm$／$\dfrac{\sqrt{3}a}{4}\ nm$）；依据 84cc6467 同字段原文（残迹由 cffda989 内容裁定轮引入）
+CHEMISTRY,ext-che-4dd2e79693-077b,contentMarkdown,FIXED,6 处 \1 恢复为 kPa（4 kPa／1$ kPa／3$ kPa／0 kPa／1 kPa／1 kPa）；依据 84cc6467 同字段原文；同材料 boundaryMarkdown 亦写 kPa
+CHEMISTRY,ext-che-947add6b4a-003b,contentMarkdown,FIXED,1 处 \1 恢复为 g（$2.7\ g·cm^{-3}$）；依据 4787fb49 同字段原文（该版无残迹）；源头切块「铝的物理性质」条目与铝密度 2.7 g·cm⁻³ 自洽
+MATH,ext-mat-618a9e5fe2-010,contentMarkdown,FIXED,2 处 \1 恢复为 y（$a=(x_1\ y_1)$ 与 $b=(x_2\ y_2)$）；依据 .agent_mp_22.csv 同块同题原文；同字段 $x_1y_2-x_2y_1=0$ 用 y 作纵坐标记号
+MATH,ext-mat-95e236319c-004b,contentMarkdown,FIXED,3 处 \1 恢复为 A×2（$B_2C_2\parallel A_2D_2$）与 BB（$AA_2\parallel BB_2$）；依据 84cc6467 同字段原文；同段已写 $\overrightarrow{A_2D_2}$ 与 $AA_2=BB_2$
+MATH,ext-mat-95f2ccd476-002,contentMarkdown,FIXED,3 处 \1 恢复为 b×2（$a\parallel b$）与 a（$\Rightarrow\ a\parallel\alpha$）；依据 .agent_mp2_33.csv 同块同题原文；本字段符号语言先设「直线 $a$ 在平面 $\alpha$ 外、直线 $b$ 在平面 $\alpha$ 内」
+MATH,ext-mat-b830c9903d-003,contentMarkdown,FIXED,15 处 \1 恢复为 B／A／x；依据 .agent_mp2_51.csv 同块同题原文与源头切块「①A∩B＝B∩A．②A∩∅＝∅．③A∩A＝A．④A∩B⊆A，A∩B⊆B．」逐条对应；末处「画\1 图」依切块「无限集用数轴、韦恩图」补为 Venn
+MATH,ext-mat-eb06dd91c4-001b,contentMarkdown,FIXED,2 处 \1 恢复为 a（$\Longrightarrow\ a_{m+1}$）与 n（两个前 n 项和相等）；依据 84cc6467 同字段原文
+MATH,ext-mat-f53b1f065b-017,contentMarkdown,FIXED,3 处 \1 恢复为 n（$k=0\ 1\ 2\ \cdots\ n$）与 B×2（$X\sim B(n，p)$）；依据 .agent_mp2_54.csv 同块同题原文；B(n，p) 是二项分布标准记法
+MATH,math-asin-qiou-xing-panding,contentMarkdown,FIXED,1 处 \1 恢复为 x（$y=A\sin(\omega x+\varphi)$）；依据 98919887 及之后各版同字段原文；同材料 boundaryMarkdown 讨论 $\omega>0$ 与该写法自洽
+MATH,math-fx-liangzhixian-pingxing-chuizhi,contentMarkdown,FIXED,12 处 \1 恢复为 l×2（$l_1\parallel l_2$ 与 $l_1\perp l_2$）／k×2（$k_1=k_2$ 与 $k_1k_2=-1$）／b（$b_1\ne b_2$）／A×2／B×2／C×2（一般式 $A_1C_2\ne A_2C_1$、$B_1C_2\ne B_2C_1$ 与重合条件 $A_1=\lambda A_2$／$B_1=\lambda B_2$／$C_1=\lambda C_2$）；依据 98919887 同字段原文逐字一致
+MATH,math-hj-zhengxian-hanshu-xingzhi,contentMarkdown,FIXED,1 处 \1 恢复为 x（$y=\sin x$）；依据 98919887 同字段原文；同材料 summaryMarkdown 写 $y=\sin x$

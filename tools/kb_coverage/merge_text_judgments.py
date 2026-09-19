@@ -62,9 +62,16 @@ def load_chunk_registry() -> tuple[set[tuple[str, str]], dict[str, str]]:
     return known, by_hash
 
 
-def collect_files() -> list[Path]:
-    """两批判定产物（仓库根下的隐藏 CSV），逐个过包含性校验。"""
-    found = sorted(REPO.glob(".agent_t_*.csv")) + sorted(REPO.glob(".agent_t2_*.csv"))
+def collect_files(only: str = "") -> list[Path]:
+    """文本判定产物：`.agent_t_*`（化学/生物第一批）、`.agent_t2_*`（其第二批）、
+    `.agent_mp_*`（数学/物理第一批）、`.agent_mp2_*`（数学/物理第二批），都在仓库根。
+    `only` 非空时只收名字里含该片段的前缀（避免把上一批已入库的产物再合并一遍）。"""
+    prefixes = [".agent_t_*.csv", ".agent_t2_*.csv", ".agent_mp_*.csv", ".agent_mp2_*.csv"]
+    if only:
+        prefixes = [p for p in prefixes if only in p]
+    found: list[Path] = []
+    for prefix in prefixes:
+        found += sorted(REPO.glob(prefix))
     return [within_repo(p) for p in found if p.is_file()]
 
 
@@ -75,7 +82,7 @@ def subject_of(rel: str) -> str | None:
     return None
 
 
-def merge() -> dict:
+def merge(only: str = "") -> dict:
     known, by_hash = load_chunk_registry()
     pack = pack_io.load_json(pack_io.pack_path())
     slug_by = {s["subject"]: {kp["slug"] for t in s["topics"] for kp in (t.get("knowledgePoints") or [])}
@@ -88,7 +95,7 @@ def merge() -> dict:
     problems: list[str] = []
     repairs: Counter[str] = Counter()
     rows: list[dict] = []
-    files = collect_files()
+    files = collect_files(only)
     for f in files:
         with f.open(encoding="utf-8") as fh:
             data = list(csv.reader(fh))
@@ -162,8 +169,10 @@ def merge() -> dict:
 
 
 def main(argv: list[str] | None = None) -> int:
-    argparse.ArgumentParser(description=__doc__).parse_args(argv)
-    res = merge()
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--only", default="", help="只收文件名含该片段的前缀，例如 mp")
+    args = ap.parse_args(argv)
+    res = merge(args.only)
     print(f"输入文件 {res['files']} 个；输入行 {res['stats']['rows_in']}；块 {res['stats']['chunks']}；"
           f"合并行 {res['stats']['rows_after_dedupe']}")
     print("修复：", dict(res["repairs"]))

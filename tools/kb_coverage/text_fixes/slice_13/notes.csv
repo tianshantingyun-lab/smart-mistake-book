@@ -1,0 +1,20 @@
+subject,slug,field,status,evidence
+CHEMISTRY,ext-che-1422ee20c2-010,contentMarkdown,WIDER_FIX,该材料在 cffda989^ 与 .agent_b_bchem_4.csv 中同错（损伤发生在生成环节）故无逐字上游；按 shell 展开规则还原 /usr/bin/bash→$0 与两处 330877→$$；被吃掉的 $ 开界符按材料自身算术回填——称量得 4.35 与后文 0.1 mol 相配（0.1×143.5=14.35）故为 $14.35；生成的 (AgCl) 前补 $n；纯度分母 6 g 且 0.05×99/6=82.5% 故取样量 $6（此数字是推得不是抄得）；修后 $ 共 20 个成对
+CHEMISTRY,ext-che-1422ee20c2-048b,contentMarkdown,FIXED,2 处 \1 与 cffda989^ 同字段逐字一致：仪器 a 与仪器 b；两版只在这 2 处不同（377 对 377 字）
+CHEMISTRY,ext-che-4dd2e79693-052,contentMarkdown,FIXED,9 处 \1 与 cffda989^ 同字段逐字一致：A／b／c／d／nm／nm 即 $(a\ b\ c)$ 与 $(a'\ b'\ c')$ 与 $d\ nm$；两版只在这 9 处不同（299→301）
+CHEMISTRY,ext-che-4dd2e79693-084b,contentMarkdown,FIXED,18 处 \1 与 cffda989^ 同字段逐字一致：DMF／DMA／mol／L（如 0.06 mol 与 \mathrm{mol\cdot L^{-1}}）；另取 .agent_jjdx_chem_b.csv 同 chunk 行互证逐字相同（588→620）
+CHEMISTRY,ext-che-4dd2e79693-141b,contentMarkdown,FIXED,1 处 \1 与 cffda989^ 同字段逐字一致为 mol（\mathrm{L\cdot mol^{-1}}）；两版只在这 1 处不同（370→372）
+CHEMISTRY,ext-che-e1f44db337-004,contentMarkdown,FIXED,1 处 \1 与 cffda989^ 同字段逐字一致为 c（\cdot c(\text{H}^+)）；两版只在这 1 处不同（970 对 970）
+MATH,ext-mat-991fbb472d-001b,contentMarkdown,FIXED,11 处 \1 按 .agent_mp_01.csv 同 chunk 同标题行逐字对回：k 与 Z（\ k\in\mathbf Z 出现于四类象限角集合）；两版只在这 11 处不同（739 对 739）
+MATH,ext-mat-991fbb472d-002b,contentMarkdown,FIXED,6 处 \1 按 .agent_mp_01.csv 同 chunk 同标题行逐字对回：rad／Z／k／Z／k／Z（记作 1 rad 与 \ k\in\mathbf Z）；两版只在这 6 处不同（735→737）
+MATH,ext-mat-991fbb472d-003,contentMarkdown,FIXED,3 处 \1 按 .agent_mp_01.csv 同 chunk 同标题行逐字对回：r／S／r（$$l=\alpha r\quad S=\frac{1}{2}lr=\frac{1}{2}\alpha r^2$$）；两版只在这 3 处不同（447 对 447）
+MATH,ext-mat-a00d3bd73f-007b,contentMarkdown,FIXED,2 处 \1 按 .agent_mp_25.csv 同 chunk 同标题行逐字对回：m 与 n（$n\ge m\ge0$ 且 $m\ n$ 为整数）；与源头切块「注意与定义域n≥m≥0 且 n、m∈N*」一致（395 对 395）
+MATH,ext-mat-b30577bc40-001b,contentMarkdown,FIXED,坏点是反斜杠后的全角逗号：半角逗号被 build/agent-input/_mp2_40_lib.py 的 _sanitize 整体换成全角（该函数把半角逗号换成全角逗号）；同目录 _mp2_40_batch3.py 同材料原文在该处逐字用的是半角逗号形式的 LaTeX 细空；改后 $ 共 40 个成对
+MATH,ext-mat-b30577bc40-003,contentMarkdown,FIXED,同上（同一生成链与同一 _sanitize）：_mp2_40_batch3.py 同材料原文在该处逐字用的是半角逗号形式的 LaTeX 细空；同页公式为把 $q^n$ 用该细空式替换的写法；改后 $ 共 46 个成对
+MATH,ext-mat-bc51e4fe6d-001b,contentMarkdown,FIXED,5 处 \1 按 .agent_mp_01.csv 同 chunk 同标题行逐字对回：(a\ b\ c\ d\in\mathbf R) 与 (1\pm i)^2；与源头切块「设z1＝a＋bi，z2＝c＋di(a，b，c，d∈R)」及「i4n＋1＝i」一致（526 对 526）
+MATH,math-hj-ms1-quantifier-param,contentMarkdown,FIXED,7 处 \1 与 cffda989^ 同字段逐字一致：x／x／x／x／a／a／x（$\exists x$ 与 $\forall x$ 取自 -1 到 1 的闭区间 与 $a\ge\max x^2=1$）；两版只在这 7 处不同（155 对 155）
+MATH,math-kb-geometric-mean-term,contentMarkdown,FIXED,2 处 \1 与 cffda989^ 同字段逐字一致：G 与 b（若 $a$、$G$、$b$ 成等比数列）；两版只在这 2 处不同（65 对 65）
+PHYSICS,ext-phy-94ce022dcc-001d,contentMarkdown,FIXED,4 处 \1 按 .agent_mp2_44.csv 同 chunk 同标题行逐字对回：m／E／m／c（质量亏损 $\Delta m$ 与 $\Delta E=\Delta m c^2$）；两版只在这 4 处不同（468 对 468）
+PHYSICS,ext-phy-9e8c1b71f4-012,summaryMarkdown,FIXED,1 处 \1 回填为波浪线加 1（60°~120°）：源头切块逐字为「以60°~120°之间为宜」；同库角度范围写法普查只有 °～ 与 °~ 两类共 15 处、没有一例写成「度符号 空格 数字」；与同材料另两字段同点同修（46 对 46）
+PHYSICS,ext-phy-9e8c1b71f4-012,contentMarkdown,FIXED,同 summary：\1 回填为波浪线加 1（以 60°~120° 之间为宜）；该字段坏点清单只此一处；源头切块「以60°~120°之间为宜」逐字一致（311 对 311）
+PHYSICS,ext-phy-9e8c1b71f4-012,boundaryMarkdown,FIXED,同 summary：\1 回填为波浪线加 1（60°~120° 是经验范围）；该字段坏点清单只此一处（131 对 131）

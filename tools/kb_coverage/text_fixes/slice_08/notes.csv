@@ -1,0 +1,21 @@
+subject,slug,field,status,evidence
+CHEMISTRY,ext-che-4aca25a694-002,contentMarkdown,FIXED,源头切块写「电离方程式为H2O＋H2OH3O＋＋OH－简写为」与「25 ℃时纯水中c(H＋)＝c(OH－)＝1×10－7 mol·L－1」⇒ 两处缺的分别是 H3O＋ 与 H＋ 中的 H；单位处补回 \mathrm{mol}\cdot\mathrm{L}^{-1}；仅在 \rightleftharpoons 之后补一个空格以免控制字与后面的符号粘连
+CHEMISTRY,ext-che-4dd2e79693-004,contentMarkdown,WIDER_FIX,19 处残迹分别是 \Delta m 与单位 \mathrm{g}\cdot\mathrm{mol}^{-1}（原始字节里残留的多余反斜杠说明原文用的是 \ 加空格）；18／17／35／44 与 H2O／NH3／H2O＋NH3／CO2 的摩尔质量逐一对应 可交叉验证；另补回被吃掉的 4 个 $ 定界符 写成 $1\ \mathrm{g}$ 与 $100\ \mathrm{g}$（源头切块为扫描页 无法逐字核对）
+CHEMISTRY,ext-che-4dd2e79693-096b,contentMarkdown,WIDER_FIX,补回被吃掉的短语「lg值」：同段随后即以该 lg 值比较 c(HY－) 与 c(H2Y) 的大小；源头切块为扫描页不可用 具体措辞无法逐字核实
+CHEMISTRY,ext-che-bd9b97b326-002,contentMarkdown,FIXED,源头切块给出「mA(g) + nB(g) pC(g)」与三段式表格（起始／转化／某时刻浓度 mol/L）⇒ 缺的是 pC；三处单位按源块 mol/L 写成 \mathrm{mol}·L^{-1}；v 的式子是速率定义式 Δc／Δt；仅在 \rightleftharpoons 后补一个空格
+CHEMISTRY,ext-che-ca6bac23c7-009,contentMarkdown,FIXED,该处 \mathrm{mol\cdot\1^{-1}} 缺的是 L：同字段前文已写 \mathrm{mol} 且离子浓度单位为 mol/L
+CHEMISTRY,ext-che-e05314cc33-046,contentMarkdown,FIXED,310243 出现两次且成对 ⇒ 原文是行间公式定界符 $$（n=(a-xb)/2 单独成行）；三处「$ 」缺的是同一公式里的 a（价电子数）／x（配位原子数）／b（配位原子接受电子能力）⇒ $ 由 21 个变为 24 个（偶数）
+CHEMISTRY,ext-che-e05314cc33-046,boundaryMarkdown,FIXED,缺的变量与内容字段一致（b＝配位原子接受电子的能力）⇒ 补成「取错 $b$ 会算错」
+CHEMISTRY,ext-che-e1f44db337-005c,contentMarkdown,FIXED,三处缺 $\text{pH}$（本字段他处即写 $\text{pH}=4.7$ 与 $\text{pH}=7.1$）；一处缺 c：同材料 boundary 明写 $\text{Al(OH)}_3$ 的表达式里是 $c^3(\text{OH}^-)$
+CHEMISTRY,ext-che-e1f44db337-005c,boundaryMarkdown,FIXED,两处缺 $K_{sp}$（同类型沉淀比较与写表达式）两处缺 $\text{pH}$（计算范围与上限） 与同材料 content 的用法一致
+MATH,ext-mat-555709725e-003,boundaryMarkdown,FIXED,该处反斜杠使 \' 变成重音记号；同材料 content 字段写作 $f'(x)=0$ ⇒ 去掉反斜杠
+MATH,ext-mat-65c905cea7-002,boundaryMarkdown,FIXED,前 2n+1 项＝(n+1) 个奇数项＋n 个偶数项（奇数下标 1…2n+1 共 n+1 个）⇒ 缺的是 n；原始字节在该处残留一个多余反斜杠 说明原文用的是 \ 加空格 ⇒ 还原成 $+\ n$
+MATH,ext-mat-bc51e4fe6d-001,contentMarkdown,FIXED,源头切块给出「形如a＋bi(a，b∈R)」「a＋bi＝c＋di⇔a＝c且b＝d」「点Z(a，b)」⇒ 八处缺的是 a／b／\text{且} 及点的第二个坐标；公式里的「且」带着花括号 说明原文是 \text{且}
+MATH,math-abstract-model-logarithmic,summaryMarkdown,FIXED,对应对数函数模型 $f(x)=\log_a x$（同材料 content 字段写作「设模型 $f(x)=\log_a x$」）；另一处缺 a ⇒ 写成 a>0 且 a\neq 1
+MATH,math-duishu-junzhi-budengshi,summaryMarkdown,FIXED,对数均值不等式标准式 $\frac{a-b}{\ln a-\ln b}$；第三处缺 b ⇒ 写成 a\neq b 与同材料 boundary「使用前提 $a\neq b$」一致
+MATH,math-duishu-junzhi-budengshi,contentMarkdown,FIXED,同上：$\ln a-\ln b$ 与 $a\neq b$（共 3 处同类缺损）
+MATH,math-fx-an-yu-sn-guanxi,summaryMarkdown,FIXED,分段式应为 S_1（n=1）与 S_n-S_{n-1}（n≥2） 同材料 content 明写「用 $a_n=S_n-S_{n-1}$ 消去 $S$ 项」；另外 egin{cases} 是被吃掉反斜杠的 \begin{cases}（\b 被当转义吃掉）一并补回
+MATH,math-fx-sanjiao-zhiyu-sanlei,contentMarkdown,FIXED,七处缺的是内层 x（\omega x＋\varphi、\sin x、t=\sin x、a\tan x）／k（值域端点 k±|A|）／R（同材料 summary 写「正切型值域恒为 R」）
+MATH,math-mo-zhongbian-xiangtong-panding,contentMarkdown,FIXED,$k\cdot360°+\alpha$ 之后接整数集 ⇒ 缺 k 与 Z（同材料 boundary 写 $k\in Z$ 不可省）；原始字节残留的多余反斜杠说明原文用的是 \ 加空格
+PHYSICS,ext-phy-0c5e7dfb66-002,contentMarkdown,FIXED,源块写「单位：法拉（F）、微法（μF）、皮法（pF）。1 F＝ μF＝ pF」⇒ 两处缺 F（其中一处是 \mathrm{\mu F}）
+PHYSICS,ext-phy-4425390676-002c,contentMarkdown,FIXED,源块给出「国际单位制的基本单位」且力学基本单位含米（符号 m）；1 N＝1 kg·m/s² ⇒ 四处缺 m／N

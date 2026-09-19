@@ -1,0 +1,18 @@
+subject,slug,field,status,evidence
+BIOLOGY,ext-bio-46ec017dac-016,contentMarkdown,FIXED,11 处坏点均为「空白＋ASCII 词」被写成 \1；取修复前同卷快照（git 058417c2）逐字对齐（修前字段与快照仅在这 11 处不同）；补回 PS／ATP／NADPH／C 后与同材料 summary「ATP 继续合成而 NADPH 减少」及 boundary「C₃ 还原」一致；改后门判 clean；另注：该字段内还有既有的双反斜杠写法（$\\rm{NADP}^{+}$ 的 \\rm）不在本片坏点清单内、按「只修坏点」未改
+CHEMISTRY,ext-che-4dd2e79693-078,contentMarkdown,FIXED,唯一坏点补回 C；与 git 058417c2 同字段快照逐字一致（C_6H_6(g)+CH_4(g)→C_7H_8(g)+H_2(g) 反应前后气体分子数均为 2）；改后门判 clean
+CHEMISTRY,ext-che-70f6560213-001e,contentMarkdown,FIXED,20 处坏点补回 H／B／C；与 git 058417c2 同字段快照逐字一致（ΔH_1 与 ΔH_2、A→B→C 的 ΔH）；改后门判 clean
+CHEMISTRY,ext-che-afd9748dd0-002,contentMarkdown,FIXED,3 处坏点补回 H／H／L；与 git 058417c2 同字段快照逐字一致（H_3O^+、H^+、mol·L^-1）；改后门判 clean
+CHEMISTRY,ext-che-e05314cc33-043,contentMarkdown,FIXED,同一个 310243 夹住一条独立成行的公式、两端同号即 shell 展开的 $$；按切片坏点清单判定恢复为 $$；全库行间公式一律写作 $$…$$（同书 .agent_b_bchem_3.csv 的其它材料同格式）；改后门判 clean（pid_repeat 清零）
+CHEMISTRY,ext-che-f2609763fa-003,contentMarkdown,FIXED,4 处坏点补回 pH／c／pH／pH；与 git 058417c2 同字段快照逐字一致（pH 的计算、$pH=-lg\ c(H^+)$、pH 试纸法、pH 计测定）；改后门判 clean
+MATH,ext-mat-b5910b42d5-001,contentMarkdown,FIXED,1 处坏点补回 q；与 git 058417c2 同字段快照逐字一致（4q^2-4q+1=0 ⟹ q=1/2）；改后门判 clean
+MATH,ext-mat-fbaf2a917e-010c,contentMarkdown,FIXED,新建材料（git 历史无）；取生成期输出表 .agent_mp_25.csv 同 chunk 原文逐字对齐（仅 6 处不同）；补回 C：$$C_2^0\ C_2^1\ C_2^2\quad\text{与}\quad C_3^0\ C_3^1\ C_3^2\ C_3^3.$$ 与源头切块探究 5 的 (a+b)^2、(a+b)^3 展开式一致；改后门判 clean
+MATH,math-abstract-model-proportional,summaryMarkdown,FIXED,2 处坏点补回 y／f；与 git 058417c2 同字段快照逐字一致；与同材料 contentMarkdown 的 $f(x\pm y)=f(x)\pm f(y)$ 一致；改后门判 clean
+MATH,math-fx-a-omega-phi-yiyi,contentMarkdown,FIXED,3 处坏点补回 k／x／x；与 git 058417c2 同字段快照逐字一致（值域 [k-A、k+A]、相位 ωx+φ、y=sin x）；改后门判 clean
+MATH,math-fx-dengbi-xiaoyuan-jicheng,contentMarkdown,FIXED,2 处坏点补回 S；与 git 058417c2 同字段快照逐字一致（S_{2n}-S_n、S_{3n}-S_{2n}）；改后门判 clean
+MATH,math-fx-erbeijiao-jiangmi-gongshi,contentMarkdown,FIXED,7 处坏点补回 x；与 git 058417c2 同字段快照逐字一致（sin x、cos x、tan x 的自变量与 x≠kπ/2）；改后门判 clean
+MATH,math-monotonicity-strip-outer-f,contentMarkdown,FIXED,5 处坏点补回 x／I／x／A／A；与 git 058417c2 同字段快照逐字一致（∀x_1、x_2∈I、f(A)<f(B)⟺A<B）；改后门判 clean
+PHYSICS,ext-phy-2248b2c9f7-001,contentMarkdown,FIXED,8 处坏点补回 h／h／h／r／t／r／t／r；与 git 058417c2 同字段快照逐字一致（24 h 与 1.5 h、r 是轨道半径、Δ t·r）；改后门判 clean
+PHYSICS,ext-phy-5366b173ae-001,contentMarkdown,FIXED,新建材料（git 历史无）；取生成期输出表 .agent_mp_06.csv 同 chunk 原文逐字对齐（仅 5 处不同）；补回 BIL／dt／I／dt／t：$\int BIL\ dt=BLq$ 与 $q=\int I\ dt$；改后门判 clean
+PHYSICS,ext-phy-db15b62862-001,contentMarkdown,FIXED,新建材料（git 历史无）；取生成期输出表 .agent_mp2_25.csv 同 chunk 原文逐字对齐（仅 1 处不同）；补回 V：$V=\eta V_{0}$；与同字段 $V_{0}=\dfrac{V_{总}}{n}$ 及「η 为溶液的体积浓度」自洽；源头切块此处公式在 docx 抽取时丢失（只剩「一滴油酸酒精溶液中含纯油酸的体积」一行）；改后门判 clean
+PHYSICS,ext-phy-e5cb809e21-004b,contentMarkdown,FIXED,新建材料（git 历史无）；取生成期输出表 .agent_mp2_15.csv 同 chunk 原文逐字对齐（仅 1 处不同）；补回 min：85 min；与源头切块「T＝85 min（人造地球卫星的最小周期）」一致；改后门判 clean
