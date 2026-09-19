@@ -57,6 +57,18 @@ internal class RoomLobbyMessageImageIntake(
         if (file.isFile) "file://${file.absolutePath}" else null
     }
 
+    override suspend fun describeImage(assetId: String): LobbyMessageImage? =
+        withContext(Dispatchers.IO) {
+            val record = database.readCanonicalSourceAsset(assetId) ?: return@withContext null
+            LobbyMessageImage(
+                assetId = record.sourceAssetId,
+                sha256 = record.contentSha256,
+                byteSize = record.byteSize,
+                width = record.width,
+                height = record.height,
+            )
+        }
+
     private fun isVaultImportable(localUri: String): Boolean {
         val uri = Uri.parse(localUri)
         return uri.scheme == "content" &&

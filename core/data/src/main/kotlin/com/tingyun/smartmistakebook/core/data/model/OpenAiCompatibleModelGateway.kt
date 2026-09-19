@@ -378,9 +378,13 @@ internal class OpenAiCompatibleModelGateway(
                                 throw SecurityException("Approved model asset size changed after preflight")
                             }
                         }
-                        if (consented) consentedSizes += actualSize
                         val bytes = asset.stream.readExactlyBounded(actualSize)
-                        add(ApprovedImage(asset.mimeType, bytes))
+                        // 出网前压成有界副本（见 EgressImageBudget）：12MP 原图会让一次多图
+                        // 请求顶到传输上限而被上游整条拒收；只有超预算的才重编码，够小的原样发。
+                        val egress = EgressImageTranscoder.transcodeForEgress(asset.mimeType, bytes)
+                        // 预算按真正要出网的体积记账：原图体积只对授权校验有意义。
+                        if (consented) consentedSizes += egress.bytes.size.toLong()
+                        add(ApprovedImage(egress.mimeType, egress.bytes))
                     }
                 }
                 if (consented) {

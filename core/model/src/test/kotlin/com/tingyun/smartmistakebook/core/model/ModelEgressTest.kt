@@ -279,6 +279,36 @@ class ModelEgressTest {
         assertTrue(execution.permit is ModelExecutionPermit.External)
     }
 
+    @Test
+    fun lobbyApprovalFromTheSameSendDecisionAuthorizesTheMessage() {
+        val execution = ModelEgressPolicy.authorize(
+            tutorLobbyRequest(tutorLobbyManifest(approvedAtEpochMillis = 100))
+                .copy(occurredAtEpochMillis = 100),
+            tutorProvider(ModelTaskKind.TUTOR_LOBBY),
+            100,
+        )
+
+        assertTrue(execution.permit is ModelExecutionPermit.External)
+    }
+
+    @Test
+    fun lobbyApprovalOneMillisecondOlderThanTheMessageIsRejected() {
+        // 大厅发送一度各自读一次时钟：授权时刻与请求时刻只要错开一毫秒，请求就在任何网络
+        // 动作之前被本地拒掉（stage=PREPARING、attempt=0），学生看到"刚发出去一秒就说
+        // 没准备好"。这条要求本身是对的——过期的授权不得给新请求背书——所以修法只能是
+        // 让两个时刻来自同一次用户动作，而不是放宽这条校验。
+        val rejected = runCatching {
+            ModelEgressPolicy.authorize(
+                tutorLobbyRequest(tutorLobbyManifest(approvedAtEpochMillis = 99))
+                    .copy(occurredAtEpochMillis = 100),
+                tutorProvider(ModelTaskKind.TUTOR_LOBBY),
+                100,
+            )
+        }.exceptionOrNull() as ModelEgressAuthorizationException
+
+        assertEquals(ModelFailureCode.EGRESS_AUTHORIZATION_INVALID, rejected.failureCode)
+    }
+
     private fun request(manifest: ModelEgressManifest?) = ModelTaskRequest(
         requestId = "capture-assess:request-1",
         input = CaptureAssessmentInput(
@@ -455,6 +485,32 @@ class ModelEgressTest {
         assets = emptyList(),
         disclosedData = ModelEgressManifest.TUTOR_RESPOND_DISCLOSURE,
         prohibitedData = ModelEgressManifest.TUTOR_RESPOND_PROHIBITED_DATA,
+    )
+
+    private fun tutorLobbyRequest(manifest: ModelEgressManifest) = ModelTaskRequest(
+        requestId = "tutor-lobby:request-1",
+        input = TutorLobbyInput(
+            conversationId = "tutor-conv-1",
+            messageOrdinal = 1,
+            studentMessage = "解一下这个题吧",
+        ),
+        occurredAtEpochMillis = 100,
+        egressManifest = manifest,
+    )
+
+    private fun tutorLobbyManifest(approvedAtEpochMillis: Long = 101) = ModelEgressManifest(
+        authorizationId = "tutor-lobby-approval",
+        subjectId = "tutor-conv-1",
+        purpose = ModelEgressPurpose.TUTORING,
+        authorizedTaskKinds = setOf(ModelTaskKind.TUTOR_LOBBY),
+        providerId = "provider-1",
+        modelId = "vision-model-1",
+        providerConfigurationVersion = "provider-config-v1",
+        promptPolicyVersion = ModelPromptPolicyVersions.TUTOR_LOBBY,
+        approvedAtEpochMillis = approvedAtEpochMillis,
+        assets = emptyList(),
+        disclosedData = ModelEgressManifest.TUTOR_LOBBY_DISCLOSURE,
+        prohibitedData = ModelEgressManifest.TUTOR_LOBBY_PROHIBITED_DATA,
     )
 
     private fun confirmedQuestion() = QuestionDocument(
