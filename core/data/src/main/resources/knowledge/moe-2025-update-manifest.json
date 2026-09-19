@@ -1,7 +1,7 @@
 {
  "schemaVersion": 1,
  "packId": "moe-2025-four-subjects-v1",
- "contentVersion": "b0766f3426d1c8de",
+ "contentVersion": "a2d29e46e4b2c592",
  "retired": [
   {
    "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:dna是主要的遗传物质-x1",
@@ -386,6 +386,18 @@
    "supersededBy": null,
    "kind": "DELETE",
    "reason": "同名主题的空壳副本（0 点 0 子，2026-09-19 主题去重第二批）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:topic:生物学选择性必修3·生物技术与工程·协同进化与生物多样性的形成",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "空壳主题挂在选必3（2026-09-19 主题树修复：删旧壳后在正确位置补建）"
+  },
+  {
+   "nodeId": "kb:moe-2025-four-subjects-v1:biology:topic:生物学选择性必修3·生物技术与工程·生物有共同祖先的证据",
+   "supersededBy": null,
+   "kind": "DELETE",
+   "reason": "空壳主题挂在选必3（2026-09-19 主题树修复：删旧壳后在正确位置补建）"
   },
   {
    "nodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:0-1-mol-l-1的nahso3溶液ph-7-各离子浓度的关系",
