@@ -55,13 +55,21 @@ class ShippedPackTest(unittest.TestCase):
         expected = {m.key: m.value for m in gate.evaluate()}["chapter_locator_mismatch"]
         self.assertEqual(expected, len(rows))
 
-    def test_both_classes_are_present_on_the_shipped_pack(self):
-        """两类都要非零——只有一类就说明判据退化了（要么全当同章、要么全当真错）。"""
-        rows = R.collect(pack_io.load_json(pack_io.pack_path()))
-        mechanical = [r for r in rows if r["kind"] in ("prefix_only", "same_chapter_alias")]
-        hard = [r for r in rows if r["kind"] in ("same_book_other_chapter", "cross_book")]
-        self.assertTrue(mechanical, "同章两种写法的一类不该为空")
-        self.assertTrue(hard, "归属真的不同的一类不该为空")
+    def test_classifier_kinds_are_distinct(self):
+        """四类判据必须互斥地落在不同分支（防判据退化：全判一类就没法处置了）。
+
+        用合成输入而不是成品——2026-09-19 之后成品已全部对齐（`collect` 返回空），
+        判据本身的健康度靠 `ClassifyTest` 与本用例钉住。
+        """
+        kinds = {
+            R.classify(("物理必修第一册", "运动的描述"), ("物理必修第一册", "第一章 运动的描述")),
+            R.classify(("化学必修第一册", "铁与金属材料"), ("化学必修第一册", "第三章 铁 金属材料")),
+            R.classify(("数学必修第一册", "函数的概念与性质"), ("数学必修第一册", "第四章 指数函数与对数函数")),
+            R.classify(("数学必修第二册", "平面向量"), ("数学选择性必修第一册", "第一章 空间向量与立体几何")),
+            R.classify(("数学必修第一册", "第三章 函数的概念与性质"), ("数学必修第一册", "第三章 函数的概念与性质")),
+        }
+        self.assertEqual({"prefix_only", "same_chapter_alias", "same_book_other_chapter",
+                          "cross_book", "same"}, kinds)
 
 
 if __name__ == "__main__":

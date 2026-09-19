@@ -21783,7 +21783,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:实验-探究抗生素对细菌的选择作用",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:传统发酵技术",
      "role": "PRIMARY"
     }
    ]
@@ -21958,7 +21958,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:实验-探究抗生素对细菌的选择作用",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:结束后-应将耐药菌-培养基-纸片等进行高温灭菌处理-防止对环境造成污染",
      "role": "PRIMARY"
     }
    ]

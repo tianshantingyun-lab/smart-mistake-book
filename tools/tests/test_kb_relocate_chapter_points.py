@@ -110,7 +110,7 @@ class RealPackTest(unittest.TestCase):
         reloc = rel.load_relocations()
         self.assertEqual(0, rel.relocate(pack, reloc), "重放必须幂等")
 
-    def test_shipped_chapter_layer_is_3(self):
+    def test_shipped_chapter_layer_is_2(self):
         """成品章层挂点的当前快照。
 
         167（原始）→ 64（归位真知识点）→ 33（删 31 无材料残渣）→ 20
@@ -130,9 +130,15 @@ class RealPackTest(unittest.TestCase):
           要先看它绑的材料。
 
         2026-09-19 用户批准那条删除后执行 → **3**（点数 2425→2424，材料随删 1 条）。
+        同日读 `结束后…` 绑的材料（《培养基的分类》《鉴别培养基与指示剂的使用》，成体系知识）→
+        改名 `培养基的分类与使用` 并归位到 `微生物的培养技术及应用` → **2**：
+        剩下两条（`隔离在物种形成中的作用`、`实验：探究抗生素对细菌的选择作用`）**刻意留在章层**——
+        它们的定位串已按章表对齐到必修2 第六章「生物的进化」，但树结构上挂在选必3 的
+        「生物技术与工程」子树里（该子树混着必修2 第六章的主题），硬归位只是把错误固定，
+        要等主题树归属整理那一轮。
         """
         pack = pack_io.load_json(pack_io.pack_path())
-        self.assertEqual(3, rel.chapter_layer_count(pack))
+        self.assertEqual(2, rel.chapter_layer_count(pack))
 
     def test_new_themes_have_local_names(self):
         """下移新建的主题名必须是层内名（不含 ·），否则会重新引入 I-01 的冗余。"""

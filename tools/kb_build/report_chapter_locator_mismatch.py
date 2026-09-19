@@ -86,7 +86,8 @@ def collect(pack: dict) -> list[dict]:
         if kind == "same":
             continue
         rows.append({"subject": subject, "slug": point["slug"], "name": point["name"],
-                     "kind": kind, "current_book": current[0], "current_chapter": current[1],
+                     "kind": kind, "unit": unit,
+                     "current_book": current[0], "current_chapter": current[1],
                      "declared_book": declared[0], "declared_chapter": declared[1]})
     return rows
 
@@ -122,8 +123,11 @@ def main(argv: list[str] | None = None) -> int:
               f"，章表为 {r['declared_book']} {r['declared_chapter']}")
 
     if args.csv:
+        # 显式列名（不取 rows[0]）：对齐之后 rows 会是空的，取首行会 IndexError。
+        fields = ["subject", "slug", "name", "kind", "unit",
+                  "current_book", "current_chapter", "declared_book", "declared_chapter"]
         with OUT.open("w", encoding="utf-8", newline="") as fh:
-            writer = csv.DictWriter(fh, fieldnames=list(rows[0].keys()))
+            writer = csv.DictWriter(fh, fieldnames=fields, extrasaction="ignore")
             writer.writeheader()
             writer.writerows(rows)
         print(f"\n→ 已写出 {OUT}（{len(rows)} 行，含 kind 列）")

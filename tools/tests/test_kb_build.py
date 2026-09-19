@@ -161,11 +161,14 @@ class GateTest(unittest.TestCase):
         # （starred_names 已修到 0，移出此列；上方 assertEqual(0,…) 现充当防回归哨兵。）
         # （ghost_aliases 2026-09-19 别名重建后修到 0，同上。）
         # （latex_damage / control_chars 2026-09-19 文本修复写回成品后修到 0，同上。）
+        # chapter_locator_mismatch 2026-09-19 裁定"章表权威"后由 align_chapter_locators
+        # 全量对齐（1676→1307→1306→0），单元映射逐一目验过教材目录：
+        # 它从此是防回归哨兵——新内容带着旧写法定位串进包时它会红。
+        self.assertEqual(0, metrics["chapter_locator_mismatch"].value)
         # unbound_points 2026-09-19 改绑后回到 2（真实内容缺口），留在"必须非零"列表里。
         # duplicate_names / bad_names 已修到 0（上方专门断言），不在此"必须非零"列表
         for key in ("unbound_points", "unbound_materials", "undeclared_prereq",
-                    "boundary_excerpt", "locator_boundary",
-                    "chapter_locator_mismatch"):
+                    "boundary_excerpt", "locator_boundary"):
             with self.subTest(metric=key):
                 self.assertFalse(metrics[key].ok, f"{key} 修复前不该是 0")
         # 章节覆盖率与归属完整性在现行包上本来就是满的，不该被当成缺陷

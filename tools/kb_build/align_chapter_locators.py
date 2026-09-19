@@ -1,31 +1,40 @@
 # -*- coding: utf-8 -*-
-"""把"同章、两种写法"的定位串按章表对齐（只动 `定位：` 那一段）。
+"""把节点 `定位：` 串与章表不一致的全部条目按章表对齐。
 
-## 它消灭的失败
+## 背景与裁定
 
-门指标 `chapter_locator_mismatch` 1676 条里，**413 条不是归属分歧而是写法分歧**：
-节点写 `物理必修第一册 第一章·运动的描述·1 质点…`，章表声明 `物理必修第一册 / 第一章 运动的描述`
-——同一章，只是"章号"落在不同的位置上（节点写在册后面、章表并进章名里），
-而门的判据（`gate._place_of`）在有 `·` 时取**第二个** `·` 段当章名，于是两边永远对不上。
+门指标 `chapter_locator_mismatch` 起初报 1676。拆开后（见
+`report_chapter_locator_mismatch.py`）= 413 条"同章两种写法" + 1263 条"归属分歧"。
+用户裁定（2026-09-19）：**章表权威**。于是本工具从"只对齐写法类"扩展为
+**对齐全部有章表声明的不一致条目**。
 
-## 对齐后的形态（是 `_place_of` 明文承认的两种老写法之一）
+1263 条归属分歧看着吓人，实测是 **116 个来源单元**（同一个单元的所有节点共享同一个
+章表声明）——决策单位是单元，不是节点。抽查最大的 12 个单元（约 350 条），章表全部
+对、节点的定位串全部错（节点写的是册名/章节俗称/别的章）。
 
-`定位：{册}·{章号 章名}[·{节…}]`——把章号并进章名、不再单独成段。
+## 对齐后的形态
 
-**为什么保留 `·{节}`**：那是抽出来时的节级定位（`·1　质点　参考系和坐标系`），是有用的信息；
-丢掉它等于为了对齐而删内容。对齐只改"册/章"那两段。
+`定位：{册}·{章号 章名}[·{节…}]`——节级定位（第三段起）原样保留。
+`gate._place_of` 对两种写法（`册 章` 空格式 / `册·章` 点式）解析结果相同，所以这是
+安全的收敛。
+
+## 为什么不动主题（topic）的 sourceLocator
+
+主题的 sourceLocator 是**章表做单元匹配用的键**（无《》时整串就是单元名），改了它
+章表 join 就断。主题定位串与节点不一致是展示瑕疵，且 199 条"三方不一致"里
+有些正是主题结构本身要重划的——留到主题结构那一轮处理，登记为观察。
 
 ## 无损（全过才写回）
 
-1. 只改第一个 `。` 之前的那一段；`。` 之后逐字节不变（`（见知识清单/教材）` 这类占位也在此列）。
+1. 只改第一个 `。` 之前那一段；`。` 之后逐字节不变（`（见知识清单/教材）` 占位也在此列）。
 2. 每个点的其它字段逐字节不变；点数与 slug 集合不变。
-3. **不丢信息**：原来的章名（去章号与虚词后）必须被新章名包含；不满足的**跳过并报出**，
-   不硬改——那种多半是 `report_chapter_locator_mismatch` 里"归属真不同"的簇，不是本工具的事。
-4. 幂等：改完再跑 0 改动（对齐后的点不再落在不一致集合里）。
+3. 写回前报告**全部单元 → 章表声明的映射**（116 行）——这是本次改动的判定依据，
+   留档可复核；章表错了就是在这里看出来，而不是改完 1306 个节点后才发现。
+4. 幂等：对齐后的条目不再落在不一致集合里，重跑 0 改动。
 
 ## 用法
 
-    PYTHONPATH=tools python -m kb_build.align_chapter_locators            # 报告
+    PYTHONPATH=tools python -m kb_build.align_chapter_locators            # 报告（含单元映射）
     PYTHONPATH=tools python -m kb_build.align_chapter_locators --write    # 写回成品包
 """
 
@@ -33,12 +42,12 @@ from __future__ import annotations
 
 import argparse
 import re
+from collections import defaultdict
 from pathlib import Path
 
 from kb_build import pack_io, report_chapter_locator_mismatch as R, update_manifest
 
 LOCATOR = re.compile(r"^定位：(?P<body>[^。]*)")
-MECHANICAL = ("prefix_only", "same_chapter_alias")
 
 
 def _segments(body: str) -> list[str]:
@@ -51,11 +60,14 @@ def _kept_tail(segments: list[str]) -> list[str]:
 
 
 def plan(pack: dict, rows: list[dict], boundaries: dict[tuple[str, str], str]) -> dict:
-    """算出每条要对齐成什么，并逐条做无损判定。不改任何东西。"""
+    """算出每条要对齐成什么。不改任何东西。
+
+    覆盖**全部**有章表声明的不一致条目（写法类与归属类）——裁定是"章表权威"，
+    不再按"章名是否被包含"挑着改：归属类里章表声明就是该单元人工定稿的教材章，
+    节点定位串写的是抽取时留下的俗称/册名/别的章。
+    """
     out = {"changes": [], "skipped": []}
     for row in rows:
-        if row["kind"] not in MECHANICAL:
-            continue
         key = (row["subject"], row["slug"])
         boundary = boundaries[key]
         match = LOCATOR.match(boundary)
@@ -63,16 +75,14 @@ def plan(pack: dict, rows: list[dict], boundaries: dict[tuple[str, str], str]) -
             out["skipped"].append((key, "边界没有 `定位：` 前缀"))
             continue
         segments = _segments(match.group("body"))
-        # 不丢信息：原章名的实义字必须被新章名包含
-        if R._norm(row["current_chapter"]) not in R._norm(row["declared_chapter"]):
-            out["skipped"].append(
-                (key, f"章名改写幅度大：{row['current_chapter']} ⊄ {row['declared_chapter']}"))
-            continue
         tail = "".join(f"·{seg}" for seg in _kept_tail(segments))
         new_body = f"{row['declared_book']}·{row['declared_chapter']}{tail}"
         new_boundary = boundary[:match.start("body")] + new_body + boundary[match.end("body"):]
+        if new_boundary == boundary:
+            continue
         out["changes"].append({"key": key, "old": boundary, "new": new_boundary,
-                               "kept_tail": _kept_tail(segments)})
+                               "kept_tail": _kept_tail(segments),
+                               "unit": row.get("unit", ""), "kind": row["kind"]})
     return out
 
 
@@ -102,10 +112,19 @@ def main(argv: list[str] | None = None) -> int:
     planned = plan(pack, rows, boundaries)
     changes = planned["changes"]
 
-    print(f"不一致 {len(rows)} 条：可机械对齐 {len(changes)}，跳过 {len(planned['skipped'])}，"
-          f"其余 {len(rows) - len(changes) - len(planned['skipped'])} 条属归属分歧（另一支工具的事）")
+    print(f"不一致 {len(rows)} 条：将对齐 {len(changes)}，跳过 {len(planned['skipped'])}，"
+          f"按单元分组 {len({(c['unit'], c['new']) for c in changes})} 个映射")
     for key, why in planned["skipped"][:6]:
         print(f"   ! 跳过 {key[1][:40]}：{why}")
+    # 单元级映射是本次改动的**判定依据**：同一来源单元的所有节点被改成同一个声明。
+    # 章表错了只能在这里看出来（改完 1300 多个节点再发现就晚了）。
+    by_unit: dict[tuple, list[dict]] = defaultdict(list)
+    for change in changes:
+        by_unit[(change["unit"], change["new"].split("。")[0])].append(change)
+    print(f"\n单元 → 章表声明（{len(by_unit)} 组，按条数降序）：")
+    for (unit, target), group in sorted(by_unit.items(), key=lambda kv: -len(kv[1])):
+        sample = group[0]
+        print(f"   {len(group):4d}  {unit[:44]:46s} ⇒ {target[3:]}")
     print("\n对齐样例（旧 → 新）：")
     for change in changes[:6]:
         print(f"   {change['old'][:52]:54s}")

@@ -54,50 +54,40 @@ class PlanTest(unittest.TestCase):
         new = A.plan({}, rows, {("MATH", "p"): raw})["changes"][0]["new"]
         self.assertTrue(new.endswith("。（见知识清单/教材）"))
 
-    def test_a_bigger_rename_is_skipped_not_forced(self):
-        """章名改写幅度大（`概率统计` ⊄ `第十章 概率`）时跳过——那多半是归属问题，交给人。"""
-        rows = [{"subject": "MATH", "slug": "p", "name": "p", "kind": "same_chapter_alias",
-                 "current_book": "数学必修第一册", "current_chapter": "概率统计",
-                 "declared_book": "数学必修第一册", "declared_chapter": "第十章 概率"}]
-        planned = A.plan({}, rows, {("MATH", "p"): "定位：数学必修第一册 第十章·概率统计。x"})
-        self.assertEqual([], planned["changes"])
-        self.assertEqual(1, len(planned["skipped"]))
+    def test_attribution_difference_is_aligned_to_the_table(self):
+        """归属类也照章表对齐——2026-09-19 裁定"章表权威"。
 
-    def test_attribution_rows_are_not_touched(self):
+        判据是人工定稿的单元级章表（`chapter_by_source.csv`），不是"章名是否被包含"：
+        节点写 `概率统计`、章表声明 `第十章 概率`，对齐到章表（抽查最大的 12 个单元，
+        章表全部对、节点串全部错）。
+        """
         rows = [{"subject": "MATH", "slug": "p", "name": "p", "kind": "same_book_other_chapter",
+                 "unit": "专题02 指对幂函数及函数的应用",
                  "current_book": "数学必修第一册", "current_chapter": "函数的概念与性质",
                  "declared_book": "数学必修第一册", "declared_chapter": "第四章 指数函数与对数函数"}]
-        planned = A.plan({}, rows, {("MATH", "p"): "定位：数学必修第一册 第三章·函数的概念与性质。x"})
-        self.assertEqual([], planned["changes"])
-        self.assertEqual([], planned["skipped"])
+        planned = A.plan({}, rows, {("MATH", "p"): "定位：数学必修第一册 函数的概念与性质。x"})
+        self.assertEqual(1, len(planned["changes"]))
+        self.assertEqual("定位：数学必修第一册·第四章 指数函数与对数函数。x", planned["changes"][0]["new"])
+
+    def test_cross_book_difference_is_aligned_to_the_table(self):
+        rows = [{"subject": "MATH", "slug": "p", "name": "p", "kind": "cross_book",
+                 "unit": "专题02 空间向量与立体几何",
+                 "current_book": "数学必修第二册", "current_chapter": "平面向量",
+                 "declared_book": "数学选择性必修第一册", "declared_chapter": "第一章 空间向量与立体几何"}]
+        planned = A.plan({}, rows, {("MATH", "p"): "定位：数学必修第二册 平面向量。x"})
+        self.assertEqual("定位：数学选择性必修第一册·第一章 空间向量与立体几何。x",
+                         planned["changes"][0]["new"])
 
 
 class ShippedPackTest(unittest.TestCase):
-    def _plan(self):
-        pack = pack_io.load_json(pack_io.pack_path())
-        rows = R.collect(pack)
-        boundaries = {(s, p["slug"]): (p.get("boundary") or "")
-                      for s, _t, p in pack_io.iter_points(pack)}
-        return rows, A.plan(pack, rows, boundaries)
+    def test_shipped_pack_is_fully_aligned(self):
+        """哨兵：对齐之后成品里**不该再有**与章表不一致的节点定位串。
 
-    def test_shipped_pack_needs_no_further_alignment(self):
-        """哨兵：成品里"机器能对齐"的一条都不剩。
-
-        剩下的写法类必须**全部**落在"跳过"那一列（章名改写幅度大、判据不敢认），
-        一个都不许还是"待改"——那才是没做完。
+        门指标 `chapter_locator_mismatch` 必须为 0——若这条红了，说明有新内容带着
+        旧写法定位串进了包（或章表被改），要么重新对齐、要么把章表修回来。
         """
-        rows, planned = self._plan()
-        mechanical = [r for r in rows if r["kind"] in A.MECHANICAL]
-        self.assertEqual([], [c["key"] for c in planned["changes"]], "还有没对齐的写法类")
-        self.assertEqual({(r["subject"], r["slug"]) for r in mechanical},
-                         {key for key, _why in planned["skipped"]},
-                         "写法类里有些既没对齐、也没被跳过（分类器与工具脱节）")
-
-    def test_attribution_class_is_still_untouched_and_non_empty(self):
-        """归零的只能是写法类；"归属真不同"必须原样留着（工具不许越界替人判）。"""
-        rows, _planned = self._plan()
-        hard = [r for r in rows if r["kind"] in ("same_book_other_chapter", "cross_book")]
-        self.assertTrue(hard, "归属分歧类不该为空")
+        pack = pack_io.load_json(pack_io.pack_path())
+        self.assertEqual([], R.collect(pack))
 
 
 if __name__ == "__main__":
