@@ -734,3 +734,27 @@ that the draft is reachable or resolved.
 
 **Reopen condition.** n/a —— 由 `BundledTeachingMaterialsContractTest` 持续守门；
 任何再引入该缺陷的写入都会让该用例直接变红。
+
+## KD-20 (fixed 2026-09-19) · 门禁的控制字符集比 App 契约窄，C1/双向控制符只能靠 Kotlin 用例兜住
+
+**Symptom.** 五三 B版批次（3,609 条材料）入库后，
+`BundledTeachingMaterialsContractTest` 报
+`DatabaseContractViolationException: material.contentMarkdown contains unsupported control characters`，
+427 条用例 1 条红。
+
+**Root cause.** `gate.py` 的 `control_chars` 指标只查少量控制符（本轮实测仍报 80，与回修前一致），
+而 App 契约（`KnowledgeTeachingMaterialContract.text`）拒的是
+**全部 ISO 控制符（Cc，排除 \n\r\t）＋双向控制符**（U+061C、U+200E/F、U+202A–202E、U+2066–2069）。
+两条判据不同源，于是"Python 门全绿、App 直接崩"。
+
+**Evidence.** 按契约语义重扫 15,862 条材料：命中 3 个字段 / 2 条材料，均为 C1 控制符
+（0x80、0x81、0x88、0x89、0x9C、0x9D —— PDF 编码事故残留）：
+`ext-che-e1f44db337-030.contentMarkdown`、`ext-che-1ff1c78002-001c.boundaryMarkdown`、
+`ext-che-1ff1c78002-003.contentMarkdown`。清理后重扫 0 命中；`:core:data` 427 条全绿
+（结果时间 09:34，晚于清理 09:33）。
+
+**Fix.** 清理脚本 `build/clean_contract_chars.py`（按契约语义清 Cc + 双向控制符，写回卷）。
+**未做**：把 gate 的 control_chars 换成与契约同源的判据 —— 这是漏修，记在此处；
+下次动 `gate.py` 时应当直接从契约抄集合，否则同类缺陷仍只能靠 Kotlin 用例在最后一刻发现。
+
+**Reopen condition.** n/a —— 由 `BundledTeachingMaterialsContractTest` 持续守门。

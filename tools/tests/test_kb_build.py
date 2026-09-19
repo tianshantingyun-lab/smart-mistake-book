@@ -115,9 +115,11 @@ class GateTest(unittest.TestCase):
         self.assertEqual(0, metrics["starred_names"].value)
         self.assertEqual(0, metrics["bad_names"].value)
         self.assertEqual(0, metrics["duplicate_names"].value)
-        self.assertEqual(1, metrics["unbound_points"].value)
+        self.assertEqual(0, metrics["unbound_points"].value)
         self.assertEqual(892, metrics["unbound_materials"].value)
-        self.assertEqual(920, metrics["ghost_aliases"].value)
+        # 2026-09-19 两批扫描件视觉转写入库（951 + 3,609 条材料）后：
+        #   unbound_points 1→0（最后一个零材料点拿到材料）、ghost_aliases 920→919。
+        self.assertEqual(919, metrics["ghost_aliases"].value)
         self.assertEqual(194, metrics["latex_damage"].value)
         self.assertEqual(80, metrics["control_chars"].value)
         self.assertEqual(677, metrics["boundary_excerpt"].value)
@@ -140,9 +142,9 @@ class GateTest(unittest.TestCase):
         self.assertEqual(set(), excerpt_ids & locator_ids)
         # 缺陷类指标修复前必须非零——否则门禁不是在测真东西。
         # （starred_names 已修到 0，移出此列；上方 assertEqual(0,…) 现充当防回归哨兵。）
+        # （unbound_points 2026-09-19 也修到 0，同样移出此列。）
         # duplicate_names / bad_names 已修到 0（上方专门断言），不在此"必须非零"列表
-        for key in ("unbound_points",
-                    "unbound_materials", "ghost_aliases", "undeclared_prereq",
+        for key in ("unbound_materials", "ghost_aliases", "undeclared_prereq",
                     "boundary_excerpt", "locator_boundary", "latex_damage",
                     "control_chars", "chapter_locator_mismatch"):
             with self.subTest(metric=key):

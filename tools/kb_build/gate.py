@@ -84,6 +84,8 @@ _REAL_LATEX_COMMANDS = {
     "le", "ge", "ne", "leq", "geq", "neq", "ll", "gg",
     "leqslant", "eqslantless", "nleqslant",
     "in", "notin", "ni", "subset", "subseteq", "supset", "supseteq",
+    # 二元算符（otimes 以 "imes" 结尾，会被 \\times 丢反斜杠的模式误伤，必须显式登记）
+    "otimes", "oplus", "ominus", "odot", "oslash", "sqcup", "sqcap", "uplus", "amalg",
     "cap", "cup", "mid", "parallel", "nparallel", "nshortparallel", "perp",
     "forall", "exists", "emptyset", "varnothing", "complement",
     # 括号、角与向量
