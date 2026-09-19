@@ -424,7 +424,9 @@ data class ModelTaskRequest(
         const val AGENT_CONSENT_SCHEMA_VERSION = 8
         /** Schema at which lobby messages may carry student-selected images. */
         const val LOBBY_IMAGE_SCHEMA_VERSION = 9
-        const val CURRENT_SCHEMA_VERSION = LOBBY_IMAGE_SCHEMA_VERSION
+        /** Schema at which lobby messages may also carry earlier images and a history digest. */
+        const val LOBBY_CONTEXT_SCHEMA_VERSION = 10
+        const val CURRENT_SCHEMA_VERSION = LOBBY_CONTEXT_SCHEMA_VERSION
         const val MAX_ID_CHARS = 256
     }
 }
@@ -683,7 +685,8 @@ object ModelTaskLogicalOperationFingerprint {
                 logicalOperationJson.encodeToString(ModelTaskInput.serializer(), input)
                     .withoutEmptyPageComparison(input)
                     .withoutEmptyToolCarrier(input)
-                    .withoutEmptyLobbyImageRefs(input),
+                    .withoutEmptyLobbyImageRefs(input)
+                    .withoutEmptyLobbyContext(input),
             )
         }
 }
@@ -757,6 +760,13 @@ private fun ModelTaskRequest.fingerprintPayload(): String =
                         it
                     }
                 }
+                .let {
+                    if (schemaVersion < ModelTaskRequest.LOBBY_CONTEXT_SCHEMA_VERSION) {
+                        it.withoutEmptyLobbyContext(input)
+                    } else {
+                        it
+                    }
+                }
         }
     }
 
@@ -814,6 +824,22 @@ private fun String.withoutEmptyLobbyImageRefs(input: ModelTaskInput): String =
     } else {
         this
     }
+
+/**
+ * 去掉 Lobby/Respond 的"上文图片 + 早期摘要"空载体键（schema 10 引入）。
+ *
+ * 旧 v9 行编码不含这两键，而两个指纹路径都以 `encodeDefaults = true` 编码当前输入——不抹平
+ * 空载体，升级后读回旧行就会算出与存库不同的哈希，`toSnapshot` 直接抛
+ * `LearningLedgerIntegrityException`（实测：升级后进智能体页即刻崩溃，因为首页要读最近的
+ * Lobby 任务行）。非空值只可能出现在 v10 行，所以 strip 不会削弱新行的指纹区分度。
+ */
+private fun String.withoutEmptyLobbyContext(input: ModelTaskInput): String = when (input) {
+    is TutorLobbyInput -> replace(",\"contextImageAssetRefs\":[]", "")
+        .replace(",\"priorDigest\":null", "")
+
+    is TutorRespondInput -> replace(",\"priorDigest\":null", "")
+    else -> this
+}
 
 internal fun NormalizedSourceRegion.isValidModelRegion(): Boolean =
     left.isFinite() && top.isFinite() && right.isFinite() && bottom.isFinite() &&

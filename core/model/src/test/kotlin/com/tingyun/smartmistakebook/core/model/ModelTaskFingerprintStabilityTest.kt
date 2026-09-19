@@ -92,6 +92,100 @@ class ModelTaskFingerprintStabilityTest {
     }
 
     @Test
+    fun lobbyContextCarriersKeepTheOperationFingerprintStableAcrossSchemaVersions() {
+        // 上文图片与早期摘要这两个载体字段（schema 10）在空值下不得改变逻辑指纹：
+        // 升级后要能读回旧行，而旧行的哈希是当年按"没有这两个键"算出来的。
+        val v9 = ModelTaskRequest(
+            schemaVersion = ModelTaskRequest.LOBBY_IMAGE_SCHEMA_VERSION,
+            requestId = "lobby:v9",
+            input = lobbyInput(),
+            occurredAtEpochMillis = 1_000,
+        )
+        val v10 = ModelTaskRequest(
+            schemaVersion = ModelTaskRequest.CURRENT_SCHEMA_VERSION,
+            requestId = "lobby:v10",
+            input = lobbyInput(),
+            occurredAtEpochMillis = 1_000,
+        )
+
+        assertEquals(
+            ModelTaskLogicalOperationFingerprint.of(v9.input),
+            ModelTaskLogicalOperationFingerprint.of(v10.input),
+        )
+    }
+
+    @Test
+    fun respondContextCarrierKeepsTheOperationFingerprintStableAcrossSchemaVersions() {
+        val v9 = ModelTaskRequest(
+            schemaVersion = ModelTaskRequest.LOBBY_IMAGE_SCHEMA_VERSION,
+            requestId = "respond:v9",
+            input = respondInput(),
+            occurredAtEpochMillis = 1_000,
+        )
+        val v10 = ModelTaskRequest(
+            schemaVersion = ModelTaskRequest.CURRENT_SCHEMA_VERSION,
+            requestId = "respond:v10",
+            input = respondInput(),
+            occurredAtEpochMillis = 1_000,
+        )
+
+        assertEquals(
+            ModelTaskLogicalOperationFingerprint.of(v9.input),
+            ModelTaskLogicalOperationFingerprint.of(v10.input),
+        )
+    }
+
+    @Test
+    fun aLobbyRowWrittenBeforeTheContextCarriersStillValidatesAfterUpgrade() {
+        // 实测到的崩溃路径：升级后进智能体页要读最近的 Lobby 任务行，旧行不含这两个键，
+        // decode 取默认值后重算逻辑指纹必须与存库值一致，否则 toSnapshot 直接抛完整性异常。
+        val legacyJson = ModelTaskCodec.encodeRequest(
+            ModelTaskRequest(
+                schemaVersion = ModelTaskRequest.LOBBY_IMAGE_SCHEMA_VERSION,
+                requestId = "lobby:legacy-row",
+                input = lobbyInput(),
+                occurredAtEpochMillis = 1_000,
+            ),
+        )
+            .replace(",\"contextImageAssetRefs\":[]", "")
+            .replace(",\"priorDigest\":null", "")
+        val decoded = ModelTaskCodec.decodeRequest(legacyJson)
+
+        assertEquals(ModelTaskRequest.LOBBY_IMAGE_SCHEMA_VERSION, decoded.schemaVersion)
+        assertEquals(
+            ModelTaskLogicalOperationFingerprint.of(lobbyInput()),
+            ModelTaskLogicalOperationFingerprint.of(decoded.input),
+        )
+    }
+
+    @Test
+    fun aRealContextCarrierStillChangesTheOperationFingerprint() {
+        // 反向要求：strip 只抹平空载体。真的带了上文图片或摘要，就是另一次输入，
+        // 指纹必须变——否则重放会命中旧请求，把上一次的图当成这一次的。
+        val withContextImage = lobbyInput().copy(
+            contextImageAssetRefs = listOf(
+                CaptureSourceAssetRef(
+                    assetId = "asset-old",
+                    sha256 = "a".repeat(64),
+                    width = 1_080,
+                    height = 1_440,
+                    pageIndex = 0,
+                ),
+            ),
+        )
+        val withDigest = lobbyInput().copy(priorDigest = "第1轮 学生：定义域怎么写？")
+
+        assertNotEquals(
+            ModelTaskLogicalOperationFingerprint.of(lobbyInput()),
+            ModelTaskLogicalOperationFingerprint.of(withContextImage),
+        )
+        assertNotEquals(
+            ModelTaskLogicalOperationFingerprint.of(lobbyInput()),
+            ModelTaskLogicalOperationFingerprint.of(withDigest),
+        )
+    }
+
+    @Test
     fun legacyV5RequestFingerprintSurvivesCodecRoundTrip() {
         // 旧 v5 行 decode 后 schemaVersion=5 保留；重新指纹必须与存库值一致
         val chat = TutorChatHistoryEntry(
