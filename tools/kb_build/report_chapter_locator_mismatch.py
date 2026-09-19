@@ -41,6 +41,7 @@ from pathlib import Path
 from kb_build import gate, gen_chapter_table, pack_io, tables
 
 OUT = Path(__file__).resolve().parent / "tables" / "chapter_locator_disputes.csv"
+CLUSTERS = Path(__file__).resolve().parent / "tables" / "chapter_locator_clusters.csv"
 CHAPTER_NO = re.compile(r"^第[一二三四五六七八九十百]+章[\s·]*")
 NOISE = re.compile(r"[与和及·\s、,，]|实验|探究")
 PREFIX_ONLY = re.compile(r"^第[一二三四五六七八九十百]+章[\s·]*")
@@ -93,6 +94,8 @@ def collect(pack: dict) -> list[dict]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--csv", action="store_true", help=f"把待判清单写到 {OUT.name}")
+    parser.add_argument("--clusters", action="store_true",
+                        help=f"把待判清单按决策单位（簇）汇总写到 {CLUSTERS.name}")
     args = parser.parse_args(argv)
 
     rows = collect(pack_io.load_json(pack_io.pack_path()))
@@ -124,6 +127,22 @@ def main(argv: list[str] | None = None) -> int:
             writer.writeheader()
             writer.writerows(rows)
         print(f"\n→ 已写出 {OUT}（{len(rows)} 行，含 kind 列）")
+
+    if args.clusters:
+        # 决策单位是**簇**不是条目：同一个"章表章 → 节点写法"对只需判一次。
+        groups: dict[tuple, list[dict]] = {}
+        for r in hard:
+            key = (r["subject"], r["declared_book"], r["declared_chapter"],
+                   r["current_book"], r["current_chapter"])
+            groups.setdefault(key, []).append(r)
+        with CLUSTERS.open("w", encoding="utf-8", newline="") as fh:
+            writer = csv.writer(fh)
+            writer.writerow(["subject", "count", "declared_book", "declared_chapter",
+                             "current_book", "current_chapter", "samples"])
+            for key, items in sorted(groups.items(), key=lambda kv: -len(kv[1])):
+                writer.writerow([key[0], len(items), key[1], key[2], key[3], key[4],
+                                 " / ".join(r["name"][:24] for r in items[:3])])
+        print(f"→ 已写出 {CLUSTERS}（{len(groups)} 个簇，覆盖 {len(hard)} 条）")
     return 0
 
 
