@@ -34,6 +34,9 @@ internal class RoomStudyDatabase(
     private val masteryOverview = RoomMasteryOverviewStore(database)
     private val librarySearch = RoomLibrarySearchStore(database)
     private val knowledgeBase = RoomKnowledgeBaseStore(database, knowledgeResearchReviewStore)
+
+    /** 内容调和是独立关注点，与读取/导入分开（见 `RoomKnowledgeContentReconciler` 的 KDoc）。 */
+    private val contentReconciler = RoomKnowledgeContentReconciler(database)
     private val backupSupport = RoomBackupSupportStore(database)
     private val studentModel = RoomStudentModelStore(database)
     private val pendingCaptures = RoomPendingCaptureStore(database)
@@ -515,13 +518,13 @@ internal class RoomStudyDatabase(
 
     override suspend fun applyKnowledgeContentUpdate(
         command: KnowledgeContentUpdateCommand,
-    ): KnowledgeContentUpdateResult = knowledgeBase.applyKnowledgeContentUpdate(command)
+    ): KnowledgeContentUpdateResult = contentReconciler.applyKnowledgeContentUpdate(command)
 
     override suspend fun readContentInstallState(packId: String): ContentInstallStateRecord? =
-        knowledgeBase.readContentInstallState(packId)
+        contentReconciler.readContentInstallState(packId)
 
     override suspend fun recordContentInstallState(record: ContentInstallStateRecord) =
-        knowledgeBase.recordContentInstallState(record)
+        contentReconciler.recordContentInstallState(record)
 
     override suspend fun applyReviewedKnowledgePack(
         command: ApplyReviewedKnowledgePackCommand,
