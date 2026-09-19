@@ -70,6 +70,14 @@ object ModelTaskRemoteDispatchPolicy {
 /** Hard backstop used by every external model HTTP transport. */
 const val MODEL_EXTERNAL_TRANSPORT_REQUEST_LIMIT_BYTES: Long = 36L * 1_024L * 1_024L
 
+/**
+ * Upper bound for a model task's user-facing status message, which the streaming path reuses as
+ * the running reply prefix shown while the answer is still arriving. The gateway must truncate
+ * its prefix to this budget: real tutor answers pass it quickly, and an unbounded prefix used to
+ * abort the entire task on the database contract that enforces this bound.
+ */
+const val MODEL_TASK_STATUS_MESSAGE_MAX_CHARS: Int = 500
+
 @Serializable
 enum class ModelTaskStage {
     WAITING,
