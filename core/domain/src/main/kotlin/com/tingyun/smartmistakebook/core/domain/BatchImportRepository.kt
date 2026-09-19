@@ -156,6 +156,21 @@ interface BatchImportRepository {
      * approval step: configuring the model is itself the grant.
      */
     suspend fun organizeBatch(jobId: String)
+
+    /**
+     * Advances every import that is still PROCESSING and reports whether any is
+     * left, for a driver that owns no UI session — the WorkManager worker that
+     * keeps an import moving after the process was reclaimed.
+     *
+     * Progress is durable page by page, so a driver that is stopped part-way (by
+     * the system's execution limit, say) loses nothing: the next drive re-reads
+     * the ledger and continues. That is also why repeated or concurrent drives
+     * are safe — the repository serializes its passes and each page transition is
+     * a committed transaction.
+     *
+     * Returns true when no import is left PROCESSING.
+     */
+    suspend fun drivePendingImports(): Boolean
 }
 
 /** Thrown when batch organization needs a model and none is configured. */

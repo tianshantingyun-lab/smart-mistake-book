@@ -61,6 +61,25 @@ class KnowledgeContextRetrieverTest {
     }
 
     @Test
+    fun `discloses a student-authored node so an earlier correction stays reusable`() {
+        val corrected = node(
+            id = "knowledge-user-monotonicity",
+            name = "从图象判断函数增减性",
+            granularity = KnowledgeNodeGranularity.ATOMIC,
+            parentId = "topic-function",
+            verificationStatus = KnowledgeNodeVerificationStatus.USER_CONFIRMED,
+        )
+
+        val selected = KnowledgeContextRetriever.select(
+            candidates = listOf(corrected),
+            questionText = "从图象判断函数增减性",
+            limit = 64,
+        )
+
+        assertEquals(listOf(corrected.knowledgeNodeId), selected.map { it.knowledgeNodeId })
+    }
+
+    @Test
     fun `adds a trusted prerequisite beside a recalled dependent point`() {
         val topic = node("topic-weather", "天气系统", KnowledgeNodeGranularity.TOPIC)
         val prerequisite = node(

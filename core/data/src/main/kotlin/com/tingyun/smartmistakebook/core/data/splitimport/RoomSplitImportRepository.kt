@@ -6,9 +6,11 @@ import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.domain.SplitImportJobSummary
 import com.tingyun.smartmistakebook.core.domain.SplitImportQuestionSummary
 import com.tingyun.smartmistakebook.core.domain.SplitImportRepository
+import com.tingyun.smartmistakebook.core.domain.SplitImportRecovery
 import com.tingyun.smartmistakebook.core.domain.SplitRegion
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
@@ -23,6 +25,32 @@ class RoomSplitImportRepository(
 
     internal suspend fun markReady(jobId: String, questionCount: Int, occurredAtEpochMillis: Long): Boolean =
         database.markSplitImportReady(jobId, questionCount, occurredAtEpochMillis)
+
+    /**
+     * Completes split jobs that were created but never flipped to READY, so the
+     * review screen stops offering work it refuses to operate on. See
+     * [SplitImportRecovery] for why a PREPARING job always has its questions and
+     * why the grace window is needed. Returns how many jobs were promoted.
+     *
+     * Promotion reuses the stored `questionCount` rather than recomputing it, so
+     * a job whose count is already wrong keeps that count instead of gaining a
+     * second, different one.
+     *
+     * Public (unlike [createSplitJob] and [markReady], which only this module
+     * needs) because the repair is driven from application startup.
+     */
+    suspend fun reconcileStuckJobs(nowEpochMillis: Long): Int =
+        withContext(Dispatchers.IO) {
+            database.observeActiveSplitImports().first()
+                .filter { job ->
+                    SplitImportRecovery.isStuckPreparing(
+                        status = job.status,
+                        createdAtEpochMillis = job.createdAtEpochMillis,
+                        nowEpochMillis = nowEpochMillis,
+                    )
+                }
+                .count { job -> markReady(job.jobId, job.questionCount, nowEpochMillis) }
+        }
     override fun observeActiveImports(): Flow<List<SplitImportJobSummary>> =
         database.observeActiveSplitImports().map { jobs -> jobs.map(SplitImportJobSummaryMapper::toSummary) }
 

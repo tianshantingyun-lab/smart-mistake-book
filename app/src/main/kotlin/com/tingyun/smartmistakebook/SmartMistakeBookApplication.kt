@@ -3,7 +3,6 @@ package com.tingyun.smartmistakebook
 import android.app.Activity
 import android.app.Application
 import android.os.StrictMode
-import androidx.core.content.ContextCompat
 import com.tingyun.smartmistakebook.core.data.capture.CaptureWorkflowRepositoryFactory
 import com.tingyun.smartmistakebook.core.data.capture.ConfiguredCleanImageGeneratorFactory
 import com.tingyun.smartmistakebook.core.data.capture.BatchImportRepositoryFactory
@@ -267,16 +266,45 @@ class SmartMistakeBookApplication : Application() {
                 // Batch page organization egresses page images; same single condition as the
                 // capture save path above (configured model).
                 modelEgressAllowed = { modelConfigurationStore != null },
+                // The in-process pass dies with the process; this makes the durable
+                // driving request exist before it is needed.
+                onWorkScheduled = { BatchImportDriver.enqueue(this) },
             )
             backupRepository = BackupRepositoryFactory.create(this, database)
             OrphanAssetGc.enqueue(this)
-            registerDebugHarness()
+            // An import interrupted by a process kill is resumed without waiting
+            // for the student to reopen the screen; the worker no-ops quickly when
+            // nothing is PROCESSING.
+            BatchImportDriver.enqueue(this)
             startupState.value = StartupState.Ready
             // Applied after Ready so a successful open is still reported as
             // usable: the book works, the student just has to know that a
             // restore did not land.
             restoreRecoveryFailure(restoreRecovery)?.let { failure ->
                 startupState.value = failure
+            }
+            // A split job left in PREPARING by an interrupted create→ready sequence
+            // is visible in the review screen but refuses every operation on it,
+            // leaving the student only the option of discarding the model's work.
+            // Repaired here, inside the block that owns an opened database, so an
+            // unopenable database (FatalFailure, below) skips it by construction.
+            applicationScope.launch {
+                runCatching {
+                    roomSplitImportRepository.reconcileStuckJobs(System.currentTimeMillis())
+                }.onSuccess { promoted ->
+                    if (promoted > 0) {
+                        android.util.Log.i(
+                            "SmartMistakeBook",
+                            "Recovered $promoted split import job(s) stuck in PREPARING",
+                        )
+                    }
+                }.onFailure { failure ->
+                    android.util.Log.w(
+                        "SmartMistakeBook",
+                        "Split import recovery failed",
+                        failure,
+                    )
+                }
             }
         } catch (cancelled: CancellationException) {
             throw cancelled
@@ -385,9 +413,6 @@ class SmartMistakeBookApplication : Application() {
         }
     }
 
-    /** Debug-only model-config seed harness (never present in release). */
-    private val testSeedReceiver = TestSeedModelConfigReceiver()
-
     val modelCapabilityTester: ModelCapabilityTester? by lazy {
         modelConfigurationStore?.let(ConfiguredModelCapabilityTesterFactory::create)
     }
@@ -397,22 +422,6 @@ class SmartMistakeBookApplication : Application() {
         database.close()
         applicationScope.cancel()
         super.onTerminate()
-    }
-
-    /** Registers the debug-only seed receiver so `adb am broadcast` can configure the model. */
-    private fun registerDebugHarness() {
-        if (!BuildConfig.DEBUG) return
-        // API 33+ requires an explicit export flag for dynamically registered
-        // receivers; exported only because QA drives it via adb from outside the
-        // app. ContextCompat maps the flag to the right platform overload on every
-        // API level (masked to 0 before 33, two-argument before 26), so minSdk 23
-        // stays safe without a lint suppression.
-        ContextCompat.registerReceiver(
-            this,
-            testSeedReceiver,
-            android.content.IntentFilter(TestSeedModelConfigReceiver.ACTION_TEST_SEED_MODEL_CONFIG),
-            ContextCompat.RECEIVER_EXPORTED,
-        )
     }
 }
 

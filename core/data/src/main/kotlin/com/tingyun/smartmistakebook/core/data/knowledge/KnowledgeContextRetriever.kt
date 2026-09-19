@@ -6,8 +6,40 @@ import com.tingyun.smartmistakebook.core.model.KnowledgeNodeGranularity
 import com.tingyun.smartmistakebook.core.model.KnowledgeNodeVerificationStatus
 import java.util.Locale
 
-/** Selects the small trusted ontology slice disclosed to the organization model. */
+/**
+ * Selects the small trusted ontology slice disclosed to the organization model.
+ *
+ * The admission set is deliberately narrow — only nodes a human has stood
+ * behind may steer how a new problem gets classified — but it is not the
+ * narrowest set that compiles, because the selected nodes become the candidate
+ * menu the model is allowed to bind to: the bind parser rejects any node outside
+ * the menu, so a node excluded here can never be reached again.
+ *
+ * - [KnowledgeNodeVerificationStatus.CURATED] and
+ *   [KnowledgeNodeVerificationStatus.SOURCE_GROUNDED] come from the reviewed
+ *   bundled pack.
+ * - [KnowledgeNodeVerificationStatus.USER_CONFIRMED] is a topic the student
+ *   typed or corrected by hand in an earlier classification. Its own contract
+ *   says it "must be reusable as a classification candidate", so it has to be
+ *   admitted here for that promise to hold. Leaving it out made every
+ *   student-authored node permanently unreachable — recall SQL selected it and
+ *   this filter then dropped it — which is the state the defect register
+ *   records as D-07.
+ * - [KnowledgeNodeVerificationStatus.MODEL_CANDIDATE] stays out: an unconfirmed
+ *   model guess must not join the menu the next model round binds against.
+ */
 internal object KnowledgeContextRetriever {
+
+    /**
+     * Verification tiers whose nodes may be disclosed to the organization model
+     * as binding candidates. See the object KDoc for why each tier is in or out.
+     */
+    private val TRUSTED_STATUSES = setOf(
+        KnowledgeNodeVerificationStatus.CURATED.name,
+        KnowledgeNodeVerificationStatus.SOURCE_GROUNDED.name,
+        KnowledgeNodeVerificationStatus.USER_CONFIRMED.name,
+    )
+
     fun select(
         candidates: List<KnowledgeNodeSeedRecord>,
         relations: List<KnowledgeNodeRelationRecord> = emptyList(),
@@ -17,10 +49,7 @@ internal object KnowledgeContextRetriever {
         require(limit > 0) { "Knowledge context limit must be positive" }
         if (candidates.isEmpty()) return emptyList()
 
-        val trusted = candidates.filter { node ->
-            node.verificationStatus == KnowledgeNodeVerificationStatus.CURATED.name ||
-                node.verificationStatus == KnowledgeNodeVerificationStatus.SOURCE_GROUNDED.name
-        }
+        val trusted = candidates.filter { node -> node.verificationStatus in TRUSTED_STATUSES }
         val byId = trusted.associateBy(KnowledgeNodeSeedRecord::knowledgeNodeId)
         val prerequisitesByDependent = relations.groupBy(
             KnowledgeNodeRelationRecord::dependentKnowledgeNodeId,

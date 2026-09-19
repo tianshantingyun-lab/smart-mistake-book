@@ -62,6 +62,12 @@ internal class RoomBatchImportRepository(
     private val modelTasks: ModelTaskRepository = BatchOrganizationUnavailableModelTasks,
     private val splitImports: com.tingyun.smartmistakebook.core.data.splitimport.RoomSplitImportRepository? = null,
     private val modelEgressAllowed: () -> Boolean = { false },
+    /**
+     * Invoked when a job is (re)scheduled in-process. The application uses it to
+     * enqueue the WorkManager driver: the in-process pass cannot outlive the
+     * process, so the durable request has to exist before it is needed.
+     */
+    private val onWorkScheduled: () -> Unit = {},
 ) : BatchImportRepository {
     private val processingMutex = Mutex()
     private val organizationMutex = Mutex()
@@ -308,7 +314,16 @@ internal class RoomBatchImportRepository(
         }
 
     private fun schedule(jobId: String) {
+        onWorkScheduled()
         processingScope.launch { process(jobId) }
+    }
+
+    override suspend fun drivePendingImports(): Boolean {
+        database.observeBatchImportJobs().first()
+            .filter { job -> job.status == StudyDbValue.BatchImportStatus.PROCESSING }
+            .forEach { job -> process(job.jobId) }
+        return database.observeBatchImportJobs().first()
+            .none { job -> job.status == StudyDbValue.BatchImportStatus.PROCESSING }
     }
 
     private suspend fun process(jobId: String) = processingMutex.withLock {
@@ -535,6 +550,7 @@ object BatchImportRepositoryFactory {
         modelTasks: ModelTaskRepository = BatchOrganizationUnavailableModelTasks,
         splitImports: com.tingyun.smartmistakebook.core.data.splitimport.RoomSplitImportRepository? = null,
         modelEgressAllowed: () -> Boolean = { false },
+        onWorkScheduled: () -> Unit = {},
     ): BatchImportRepository = RoomBatchImportRepository(
         database = database,
         capture = capture,
@@ -543,6 +559,7 @@ object BatchImportRepositoryFactory {
         modelTasks = modelTasks,
         splitImports = splitImports,
         modelEgressAllowed = modelEgressAllowed,
+        onWorkScheduled = onWorkScheduled,
     )
 }
 

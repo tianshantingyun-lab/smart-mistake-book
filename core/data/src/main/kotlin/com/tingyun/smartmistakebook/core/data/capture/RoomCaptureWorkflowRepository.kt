@@ -365,6 +365,11 @@ class RoomCaptureWorkflowRepository internal constructor(
             )
         }
         splitImports.createSplitJob(command, questions)
+        // A false result means the job was already past PREPARING (a replay
+        // promoted it, or the student discarded it first), so it is not worth
+        // escalating. The case that does matter — a crash between these two
+        // writes — is repaired by the startup pass in
+        // RoomSplitImportRepository.reconcileStuckJobs.
         splitImports.markReady(jobId, questions.size, request.occurredAtEpochMillis)
         return jobId
     }

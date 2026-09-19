@@ -109,6 +109,10 @@ internal suspend fun recognizeAndSplitBatchPage(
             )
         },
     )
+    // A false result means the job was already past PREPARING (a replay promoted
+    // it, or the student discarded it first), so it is not worth escalating. The
+    // case that does matter — a crash before this call — is repaired by the
+    // startup pass in RoomSplitImportRepository.reconcileStuckJobs.
     splitImports.markReady(job.jobId, job.questions.size, occurrenceTime)
     return BatchSplitOutcome.SplitReady(job.jobId)
 }
