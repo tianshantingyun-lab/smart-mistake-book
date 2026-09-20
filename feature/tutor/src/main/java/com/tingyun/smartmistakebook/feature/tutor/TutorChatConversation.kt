@@ -1,58 +1,30 @@
 package com.tingyun.smartmistakebook.feature.tutor
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.automirrored.outlined.Send
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
-import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.tingyun.smartmistakebook.core.domain.LobbyMessageImageIntake
 import com.tingyun.smartmistakebook.core.domain.TutorAnswerExposureKey
 import com.tingyun.smartmistakebook.core.domain.TutorHistoryBudget
+import com.tingyun.smartmistakebook.core.model.AttachedImage
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
 import com.tingyun.smartmistakebook.core.model.TutorChatHistoryEntry
-import com.tingyun.smartmistakebook.core.model.TutorLobbyInput
 import com.tingyun.smartmistakebook.core.model.TutorMoveType
 import com.tingyun.smartmistakebook.core.model.TutorPlanInput
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
@@ -61,7 +33,7 @@ import com.tingyun.smartmistakebook.core.model.TutorSuggestedMove
 import com.tingyun.smartmistakebook.core.model.TutorVisualDocumentScene
 import com.tingyun.smartmistakebook.core.model.canExposeSolutionFor
 import com.tingyun.smartmistakebook.core.model.requiresModelSettings
-import com.tingyun.smartmistakebook.core.ui.ErrorWarm
+import com.tingyun.smartmistakebook.core.ui.AttachedImagesSection
 import com.tingyun.smartmistakebook.core.ui.Ink
 import com.tingyun.smartmistakebook.core.ui.InkSecondary
 import com.tingyun.smartmistakebook.core.ui.JadeActive
@@ -70,16 +42,9 @@ import com.tingyun.smartmistakebook.core.ui.Outline
 import com.tingyun.smartmistakebook.core.ui.OutlineActionChip
 import com.tingyun.smartmistakebook.core.ui.Paper
 import com.tingyun.smartmistakebook.core.ui.SafeMarkdownText
-import com.tingyun.smartmistakebook.core.ui.SmartDimens
-import com.tingyun.smartmistakebook.core.ui.TutorMarkdownTokens
-import com.tingyun.smartmistakebook.core.ui.AiReplyRichMarkdown
-import com.tingyun.smartmistakebook.core.ui.AttachedImagesSection
 import com.tingyun.smartmistakebook.core.ui.ThinkingCollapsibleCard
 import com.tingyun.smartmistakebook.core.ui.TutorReplyMarkdown
 import com.tingyun.smartmistakebook.core.ui.TutorVisualSceneRenderer
-import com.tingyun.smartmistakebook.core.model.AttachedImage
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 
 private data class TutorRespondExchangeKey(
     val sessionId: String,
@@ -123,25 +88,6 @@ internal fun latestTutorRespondTasks(tasks: List<ModelTaskSnapshot>): List<Model
 
 internal fun ModelTaskSnapshot.canRetryTutorResponse(): Boolean =
     request.input is TutorRespondInput && status == ModelTaskStatus.RETRYABLE_FAILURE
-
-/**
- * Incremental reply body to render while a tutor response is still streaming. The provider is
- * replaying the reply in deltas; matching a STREAMING snapshot exposes the running prefix the UI can
- * show before the terminal [ModelTaskStatus.SUCCEEDED] lands. Any other status (or a blank body)
- * means there is nothing half-typed to display, so the UI keeps its idle/progress state.
- */
-/**
- * Incremental body to render while a tutor reply is still streaming. The provider replays the
- * reply in deltas — and a reasoning model streams its chain-of-thought first, before the answer —
- * so both surfaces show the running status message as the half-typed body.
- */
-internal fun ModelTaskSnapshot.streamingReplyBody(): String? {
-    if (status != ModelTaskStatus.STREAMING) return null
-    return when (request.input) {
-        is TutorRespondInput, is TutorLobbyInput -> userMessage.takeIf { it.isNotBlank() }
-        else -> null
-    }
-}
 
 private fun ModelTaskSnapshot.requiresTutorModelSettings(): Boolean {
     val code = failure?.code ?: return false
@@ -356,7 +302,7 @@ private fun TutorAssistantReplyBubble(
                 when (task.status) {
                     ModelTaskStatus.SUCCEEDED -> {
                         if (output == null) {
-                            TutorReplyFailure()
+                            TutorTurnFailureCard(detail = TUTOR_REPLY_INCOMPLETE_DETAIL)
                         } else if (
                             output.solutionRevealed &&
                             !output.canExposeSolutionFor(input)
@@ -450,18 +396,22 @@ private fun TutorAssistantReplyBubble(
                             showActions && task.canRetryTutorResponse() -> "重试"
                             else -> null
                         }
-                        TutorReplyFailure(
+                        TutorTurnFailureCard(
                             detail = when {
                                 !executionMatchesCurrentProvider -> "旧配置中的回复没有完成。"
                                 settingsRequired -> "模型设置需要更新，题目已经保存。"
-                                else -> "这次回复没有完成。"
+                                else -> TUTOR_REPLY_INCOMPLETE_DETAIL
                             },
-                            actionLabel = actionLabel,
-                            onAction = if (settingsRequired) onOpenModelSettings else onRetry,
-                            actionTestTag = if (settingsRequired) {
+                            primaryActionLabel = actionLabel,
+                            primaryActionTestTag = if (settingsRequired) {
                                 "tutor_chat_model_settings"
                             } else {
                                 "tutor_chat_retry"
+                            },
+                            onPrimaryAction = if (settingsRequired) {
+                                onOpenModelSettings
+                            } else {
+                                onRetry
                             },
                         )
                     }
@@ -474,51 +424,24 @@ private fun TutorAssistantReplyBubble(
                             modifier = Modifier.testTag("tutor_chat_reply_paused"),
                         )
                     } else if (executionMatchesCurrentProvider) {
-                        val streamingBody = task.streamingReplyBody()
-                        if (streamingBody != null) {
-                            // Streaming reply: render the running prefix as it arrives, and keep a
-                            // compact generating indicator so the student knows it is not finished.
-                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                SafeMarkdownText(
-                                    markdown = streamingBody,
-                                    style = TutorMarkdownTokens.body,
-                                    modifier = Modifier.testTag("tutor_chat_reply_streaming"),
-                                    streaming = true,
-                                )
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                ) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(14.dp),
-                                        color = JadeActive,
-                                        strokeWidth = 2.dp,
-                                    )
-                                    Text(
-                                        "正在继续生成…",
-                                        color = InkSecondary,
-                                        style = MaterialTheme.typography.bodySmall,
-                                    )
-                                }
-                            }
-                        } else {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                            ) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier
-                                        .size(20.dp)
-                                        .testTag("tutor_chat_reply_progress"),
-                                    color = JadeActive,
-                                    strokeWidth = 2.dp,
-                                )
-                                Text(
-                                    "正在回复…",
-                                    color = InkSecondary,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                )
-                            }
+                        // 逐 token 的思考链与回答正文由屏幕组件的在途区统一渲染（同一条实时流，
+                        // 与大厅同一套）：这里只留一个"还在生成"的紧凑指示，同一段文本不渲染两次。
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier
+                                    .size(20.dp)
+                                    .testTag("tutor_chat_reply_progress"),
+                                color = JadeActive,
+                                strokeWidth = 2.dp,
+                            )
+                            Text(
+                                TUTOR_LIVE_PLACEHOLDER,
+                                color = InkSecondary,
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
                         }
                     } else {
                         Text(
@@ -534,241 +457,7 @@ private fun TutorAssistantReplyBubble(
     }
 }
 
-@Composable
-private fun TutorReplyFailure(
-    detail: String = "这次回复没有完成。",
-    actionLabel: String? = null,
-    onAction: () -> Unit = {},
-    actionTestTag: String = "tutor_chat_retry",
-) {
-    Text(detail, color = ErrorWarm, style = MaterialTheme.typography.bodyMedium)
-    if (actionLabel != null) {
-        OutlineActionChip(
-            text = actionLabel,
-            onClick = onAction,
-            modifier = Modifier.testTag(actionTestTag),
-        )
-    }
-}
-
-@Composable
-internal fun TutorConversationFrame(
-    header: @Composable () -> Unit,
-    autoScrollVersion: Any?,
-    forceFollowToken: Any? = null,
-    blockAutoFollowToken: Any? = null,
-    modifier: Modifier = Modifier,
-    listState: LazyListState = rememberLazyListState(),
-    listViewportModifier: Modifier = Modifier,
-    composer: (@Composable () -> Unit)? = null,
-    content: LazyListScope.() -> Unit,
-) {
-    var initialTailPositioned by remember(listState) { mutableStateOf(false) }
-    var followsTail by remember(listState) { mutableStateOf(true) }
-    var handledForceToken by remember(listState) { mutableStateOf<Any?>(null) }
-    var handledBlockToken by remember(listState) { mutableStateOf<Any?>(null) }
-
-    LaunchedEffect(listState) {
-        snapshotFlow {
-            val layout = listState.layoutInfo
-            val lastVisible = layout.visibleItemsInfo.lastOrNull()?.index
-            val atEnd = layout.totalItemsCount == 0 || lastVisible == layout.totalItemsCount - 1
-            listState.isScrollInProgress to atEnd
-        }.collect { (scrolling, atEnd) ->
-            if (scrolling) {
-                followsTail = atEnd
-            } else if (atEnd) {
-                followsTail = true
-            }
-        }
-    }
-    LaunchedEffect(autoScrollVersion, forceFollowToken, blockAutoFollowToken, listState) {
-        val forceFollow = forceFollowToken != null && forceFollowToken != handledForceToken
-        val blockAutoFollow = initialTailPositioned &&
-            blockAutoFollowToken != null &&
-            blockAutoFollowToken != handledBlockToken
-        val shouldFollow = !initialTailPositioned ||
-            !blockAutoFollow && (followsTail || forceFollow)
-        withFrameNanos { }
-        val itemCount = snapshotFlow { listState.layoutInfo.totalItemsCount }
-            .first { it > 0 }
-        if (shouldFollow) {
-            listState.scrollToItem(itemCount - 1)
-            followsTail = true
-        } else if (blockAutoFollow) {
-            followsTail = false
-        }
-        initialTailPositioned = true
-        if (forceFollowToken != null) handledForceToken = forceFollowToken
-        if (blockAutoFollowToken != null) handledBlockToken = blockAutoFollowToken
-    }
-
-    val coroutineScope = rememberCoroutineScope()
-
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(Paper),
-        contentAlignment = Alignment.TopCenter,
-    ) {
-        Column(
-            modifier = Modifier
-                .widthIn(max = SmartDimens.MaximumContentWidth)
-                .fillMaxSize()
-                .imePadding(),
-        ) {
-            Column(
-                modifier = Modifier.padding(
-                    start = SmartDimens.ContentHorizontalPadding,
-                    top = 8.dp,
-                    end = SmartDimens.ContentHorizontalPadding,
-                ),
-            ) {
-                header()
-            }
-            LazyColumn(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .testTag("tutor_conversation_list")
-                    .then(listViewportModifier),
-                state = listState,
-                contentPadding = PaddingValues(
-                    start = SmartDimens.ContentHorizontalPadding,
-                    top = 12.dp,
-                    end = SmartDimens.ContentHorizontalPadding,
-                    bottom = 12.dp,
-                ),
-                verticalArrangement = Arrangement.spacedBy(14.dp),
-                content = content,
-            )
-            composer?.let {
-                Surface(color = Paper, shadowElevation = 4.dp) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(
-                                horizontal = SmartDimens.ContentHorizontalPadding,
-                                vertical = 8.dp,
-                            ),
-                    ) {
-                        it()
-                    }
-                }
-            }
-        }
-        if (!followsTail && initialTailPositioned) {
-            ScrollToBottomButton(
-                onClick = {
-                    followsTail = true
-                    forceFollowToken?.let { handledForceToken = it }
-                    coroutineScope.launch {
-                        listState.scrollToItem(listState.layoutInfo.totalItemsCount - 1)
-                    }
-                },
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(end = 16.dp, bottom = 80.dp)
-                    .testTag("tutor_scroll_to_bottom"),
-            )
-        }
-    }
-}
-
-@Composable
-private fun ScrollToBottomButton(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    FloatingActionButton(
-        onClick = onClick,
-        modifier = modifier,
-        containerColor = JadeActive,
-        contentColor = Paper,
-    ) {
-        Icon(
-            imageVector = Icons.Filled.KeyboardArrowDown,
-            contentDescription = "回到最新",
-        )
-    }
-}
-
-@Composable
-internal fun TutorChatComposer(
-    value: String,
-    enabled: Boolean,
-    sending: Boolean,
-    onValueChange: (String) -> Unit,
-    onSend: () -> Unit,
-    modifier: Modifier = Modifier,
-    /** 非 null 时显示左侧“+”按钮并调用它打开添加菜单（拍照 / 相册二选一）。 */
-    onOpenAttachMenu: (() -> Unit)? = null,
-    /** 输入框上方的附件预览行（微信式，可选）。 */
-    attachmentPreview: (@Composable () -> Unit)? = null,
-    /** 已选好待发送的附件数：纯图消息也能发出（正文由调用方补一句兜底文本）。 */
-    attachmentCount: Int = 0,
-) {
-    val canSend = enabled && !sending && (value.isNotBlank() || attachmentCount > 0)
-    Column(modifier = modifier.fillMaxWidth()) {
-        attachmentPreview?.invoke()
-        OutlinedTextField(
-            value = value,
-            onValueChange = { changed ->
-                onValueChange(changed.take(TutorRespondInput.MAX_STUDENT_MESSAGE_CHARS))
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .testTag("tutor_chat_composer"),
-            enabled = enabled,
-            placeholder = { Text("问这道题，或说出你卡住的步骤") },
-            minLines = 1,
-            maxLines = 4,
-            leadingIcon = onOpenAttachMenu?.let { openAttachMenu ->
-                {
-                    IconButton(
-                        onClick = openAttachMenu,
-                        enabled = enabled,
-                        modifier = Modifier.testTag("tutor_chat_attach"),
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Add,
-                            contentDescription = "添加图片",
-                            tint = JadeActive,
-                        )
-                    }
-                }
-            },
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
-            keyboardActions = KeyboardActions(
-                onSend = { if (canSend) onSend() },
-            ),
-            trailingIcon = {
-                IconButton(
-                    onClick = onSend,
-                    enabled = canSend,
-                    modifier = Modifier.testTag("tutor_chat_send"),
-                ) {
-                    if (sending) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
-                            color = JadeActive,
-                            strokeWidth = 2.dp,
-                        )
-                    } else {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.Send,
-                            contentDescription = "发送这条消息",
-                            tint = JadeActive,
-                        )
-                    }
-                }
-            },
-            supportingText = if (value.length >= 1_000) {
-                { Text("${value.length}/${TutorRespondInput.MAX_STUDENT_MESSAGE_CHARS}") }
-            } else {
-                null
-            },
-            shape = RoundedCornerShape(14.dp),
-        )
-    }
-}
+/**
+ * 失败卡的正文：内容不在快照里（输出缺失）或模型没给出可用的回复时，学生看到的就是这一句。
+ */
+private const val TUTOR_REPLY_INCOMPLETE_DETAIL = "这次回复没有完成。"

@@ -1,5 +1,6 @@
 package com.tingyun.smartmistakebook.feature.tutor
 
+import com.tingyun.smartmistakebook.core.domain.TutorContextComposer
 import com.tingyun.smartmistakebook.core.domain.TutorMessage
 import com.tingyun.smartmistakebook.core.domain.TutorMessageRole
 import com.tingyun.smartmistakebook.core.domain.TutorMessageStatus
@@ -83,7 +84,7 @@ class TutorLobbyHistoryTest {
         // Three 12000-character exchanges: 36000 characters against a 24000 budget.
         val messages = (1..3).flatMap(::halfBudgetExchange)
 
-        val history = messages.toLobbyHistory()
+        val history = TutorContextComposer.compose(messages).recent
 
         // The regression assertion: constructing the input used to throw here.
         val input = TutorLobbyInput(
@@ -100,7 +101,7 @@ class TutorLobbyHistoryTest {
     fun `the trim drops the oldest exchange and keeps chronological order`() {
         val messages = (1..3).flatMap(::halfBudgetExchange)
 
-        val history = messages.toLobbyHistory()
+        val history = TutorContextComposer.compose(messages).recent
 
         assertEquals(2, history.size)
         assertEquals(listOf("s3", "s5"), ordinals(history))
@@ -110,7 +111,7 @@ class TutorLobbyHistoryTest {
     fun `a conversation at the character budget is carried whole`() {
         val messages = (1..2).flatMap(::halfBudgetExchange)
 
-        val history = messages.toLobbyHistory()
+        val history = TutorContextComposer.compose(messages).recent
 
         assertEquals(2, history.size)
         assertEquals(listOf("s1", "s3"), ordinals(history))
@@ -120,7 +121,7 @@ class TutorLobbyHistoryTest {
     fun `a short conversation is carried whole`() {
         val messages = (1..3).flatMap { ordinal -> exchangeOf(ordinal, 20, 30) }
 
-        val history = messages.toLobbyHistory()
+        val history = TutorContextComposer.compose(messages).recent
 
         assertEquals(3, history.size)
         assertEquals(listOf("s1", "s3", "s5"), ordinals(history))

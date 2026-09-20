@@ -61,7 +61,7 @@ class TutorChatConversationTest {
     }
 
     @Test
-    fun streamingRespondTaskSurfacesItsIncrementalBody() {
+    fun streamingRespondTaskSurfacesItsLiveStatusText() {
         val streaming = succeededResponse(responseOrdinal = 1, requestId = "response-1-attempt-1")
             .copy(
                 status = ModelTaskStatus.STREAMING,
@@ -71,11 +71,11 @@ class TutorChatConversationTest {
                 output = null,
             )
 
-        assertEquals("这道题先看导数变号", streaming.streamingReplyBody())
+        assertEquals("这道题先看导数变号", streaming.tutorLiveStatusText())
     }
 
     @Test
-    fun streamingLobbyTaskSurfacesItsIncrementalBodyToo() {
+    fun generatingLobbyTaskSurfacesItsLiveStatusTextToo() {
         // The lobby streams like the tutor page, and a reasoning model sends its chain-of-thought
         // here first — the student watches it think before the answer lands.
         val lobbyProvider = provider().copy(
@@ -105,18 +105,32 @@ class TutorChatConversationTest {
             updatedAtEpochMillis = 2,
         )
 
-        assertEquals("先确认题目问的是哪一个量。", streaming.streamingReplyBody())
+        assertEquals("先确认题目问的是哪一个量。", streaming.tutorLiveStatusText())
     }
 
     @Test
-    fun nonStreamingRespondTaskHasNoIncrementalBodyToRender() {
-        // A task that is not yet saving progress, or already finished, must not render a
-        // half-typed streaming body.
-        assertNull(succeededResponse(responseOrdinal = 1).streamingReplyBody())
+    fun onlyAStillGeneratingTaskHasALiveStatusText() {
+        // 终态任务不再有"在途"文案：正文已经落库（或失败卡接管），再显示一行状态只会是残留。
+        assertNull(succeededResponse(responseOrdinal = 1).tutorLiveStatusText())
+        // 生成中的几个状态都有状态行。这两处的状态集此前不一样（大厅认 WAITING/QUEUED/RUNNING/
+        // STREAMING，会话只认 STREAMING，还把这一行当回答正文渲染）；合并成一条实时流之后
+        // 正文只来自实时通道，快照只提供这一行兜底文案，所以状态集取并集。
         assertNull(
             succeededResponse(responseOrdinal = 2)
+                .copy(status = ModelTaskStatus.CANCELLED, output = null, userMessage = "已取消")
+                .tutorLiveStatusText(),
+        )
+        assertEquals(
+            "正在准备",
+            succeededResponse(responseOrdinal = 2)
                 .copy(status = ModelTaskStatus.RUNNING, userMessage = "正在准备")
-                .streamingReplyBody(),
+                .tutorLiveStatusText(),
+        )
+        assertEquals(
+            "排队中",
+            succeededResponse(responseOrdinal = 3)
+                .copy(status = ModelTaskStatus.QUEUED, userMessage = "排队中")
+                .tutorLiveStatusText(),
         )
     }
 

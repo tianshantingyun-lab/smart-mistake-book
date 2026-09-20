@@ -17,6 +17,9 @@ import com.tingyun.smartmistakebook.core.model.TutorRespondInput
  */
 object TutorContextComposer {
 
+    /**
+     * 装配入口（轮次源）：讲题会话侧的上下文来自模型任务快照，它已经是一轮一轮的形状。
+     */
     fun compose(entries: List<TutorChatHistoryEntry>): TutorContextWindow {
         val kept = TutorHistoryBudget.bounded(entries)
         val droppedCount = entries.size - kept.size
@@ -27,6 +30,45 @@ object TutorContextComposer {
             droppedExchanges = droppedCount,
         )
     }
+
+    /**
+     * 装配入口（消息源）：大厅的上下文来自 `tutor_message` 消息行。
+     *
+     * 两个表面在这里合成一个入口：它们存的东西不同（消息行 / 任务快照），但"模型能看到什么"
+     * 只有一个答案——同一个 [compose] 名字、同一份裁剪与摘要规则。此前两处各有一个 feature 层
+     * 的入口函数，规则再多一版就没人说得清哪一版是真的。
+     */
+    @JvmName("composeMessages")
+    fun compose(messages: List<TutorMessage>): TutorContextWindow = compose(messages.toTutorChatExchanges())
+}
+
+/**
+ * 消息行 → 未裁剪的整轮列表：每一条学生消息与紧随其后那条**已成功**的助教回复配成一整轮。
+ *
+ * 刻意不裁剪：装配器要拿到未裁剪的列表，才能把被挤出原样窗口的轮次压成摘要；先裁剪再摘要
+ * 就等于让它们无声消失，那正是要修的失败（见 [TutorContextComposer.compose]）。
+ */
+fun List<TutorMessage>.toTutorChatExchanges(): List<TutorChatHistoryEntry> {
+    val entries = mutableListOf<TutorChatHistoryEntry>()
+    var pendingStudent: TutorMessage? = null
+    sortedBy { it.ordinal }.forEach { message ->
+        when (message.role) {
+            TutorMessageRole.STUDENT -> pendingStudent = message
+            TutorMessageRole.ASSISTANT -> {
+                pendingStudent?.let { student ->
+                    if (message.status == TutorMessageStatus.SUCCEEDED) {
+                        entries += TutorChatHistoryEntry(
+                            studentMessage = student.bodyMarkdown,
+                            assistantMarkdown = message.bodyMarkdown,
+                        )
+                    }
+                }
+                pendingStudent = null
+            }
+            TutorMessageRole.LOCAL_EVENT -> Unit
+        }
+    }
+    return entries
 }
 
 /** 装配结果：原样保留的最近轮次 + 更早轮次的摘要（没有丢弃时摘要为 null）。 */

@@ -117,7 +117,9 @@ class TutorContextComposerTest {
 
     @Test
     fun anEmptyConversationHasNoDigest() {
-        val window = TutorContextComposer.compose(emptyList())
+        // 显式指名轮次源那一支：装配入口现在同时接受消息行（`compose(List<TutorMessage>)`），
+        // 空列表不再能自己推断出是哪一支。
+        val window = TutorContextComposer.compose(emptyList<TutorChatHistoryEntry>())
 
         assertTrue(window.recent.isEmpty())
         assertNull(window.digest)

@@ -2,9 +2,11 @@ package com.tingyun.smartmistakebook.feature.tutor
 
 import com.tingyun.smartmistakebook.core.domain.LobbyMessageImage
 import com.tingyun.smartmistakebook.core.domain.LobbyMessageImageIntake
+import com.tingyun.smartmistakebook.core.domain.TutorContextComposer
 import com.tingyun.smartmistakebook.core.domain.TutorMessage
 import com.tingyun.smartmistakebook.core.domain.TutorMessageRole
 import com.tingyun.smartmistakebook.core.domain.TutorMessageStatus
+import com.tingyun.smartmistakebook.core.domain.toTutorChatExchanges
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -150,10 +152,11 @@ class TutorLobbyContextImagesTest {
             }
         }
 
-        assertEquals(TutorRespondInput.MAX_PRIOR_MESSAGES + 2, messages.toLobbyExchanges().size)
+        assertEquals(TutorRespondInput.MAX_PRIOR_MESSAGES + 2, messages.toTutorChatExchanges().size)
         assertTrue(
             "裁剪仍然只发生在 bounded 这一层",
-            messages.toLobbyHistory().size < messages.toLobbyExchanges().size,
+            TutorContextComposer.compose(messages).recent.size <
+                messages.toTutorChatExchanges().size,
         )
     }
 }

@@ -446,6 +446,13 @@ internal fun TutorModelPanel(
         currentProvider?.let(task::matchesTutorProvider) == true &&
             task.status.isTutorExecutionPending()
     }
+    // 在途的一轮：正常派发、失败重试、恢复未完成任务三条路径落在同一个请求标识上，
+    // 所以实时流只订阅这一个（订阅写在组合里，不会漏掉任何一条派发路径）。
+    val recoverableRespondTask = latestRespondTasks.lastOrNull { task ->
+        currentProvider?.let(task::matchesTutorProvider) == true &&
+            task.status.isTutorExecutionPending()
+    }
+    val liveTurn = rememberTutorLiveTurn(modelTasks, recoverableRespondTask?.request?.requestId)
     val visualWorkSeeds = remember(tutorTasks, tutorRespondTasks) {
         // 2D/3D 结构化场景已隔离：不再生成视觉任务。改 TutorVisualIsolation.STRUCTURED_SCENE_ISOLATED 恢复。
         if (TutorVisualIsolation.STRUCTURED_SCENE_ISOLATED) {
@@ -692,10 +699,6 @@ internal fun TutorModelPanel(
     }
 
 
-    val recoverableRespondTask = latestRespondTasks.lastOrNull { task ->
-        currentProvider?.let(task::matchesTutorProvider) == true &&
-            task.status.isTutorExecutionPending()
-    }
     LaunchedEffect(
         recoverableRespondTask?.request?.requestId,
         respondAgentAuthorized,
@@ -887,7 +890,12 @@ internal fun TutorModelPanel(
 
     TutorConversationFrame(
         header = headerContent,
-        autoScrollVersion = listOf(autoScrollVersion, respondAgentAuthorized, chatStartError),
+        autoScrollVersion = listOf(
+            autoScrollVersion,
+            respondAgentAuthorized,
+            chatStartError,
+            liveTurn,
+        ),
         forceFollowToken = locallyStartedRespondRequestId,
         blockAutoFollowToken = solutionExposureTracker.blockAutoFollowToken,
         modifier = modifier,
@@ -897,6 +905,10 @@ internal fun TutorModelPanel(
                 coordinates.boundsInWindow(clipBounds = false),
             )
         },
+        // 同一套在途区（思考卡 / 逐 token 回答 / 工具进度），与大厅共用一条实时流。
+        liveTurn = liveTurn.takeIf { recoverableRespondTask != null },
+        liveStatusText = recoverableRespondTask?.tutorLiveStatusText(),
+        liveAnswerTestTag = "tutor_chat_reply_streaming",
         composer = composerContent,
     ) {
         item("tutor_question_context") {
