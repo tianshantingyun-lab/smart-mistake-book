@@ -47,8 +47,14 @@ import org.junit.runner.RunWith
  * 缺陷现场（真机截图确认）：大厅此前用 `RootPageLazyColumn` 自己拼列表，没有任何贴尾逻辑——
  * 学生发完消息、模型回答落地，列表仍停在旧位置，新回复在屏幕外。P1-c 把大厅换成共用屏幕组件
  * `TutorConversationFrame`，贴尾逻辑随之落地（`autoScrollVersion` 覆盖消息条数 / 最后一条的
- * 状态 / 在途实时流）。这两条用例把它钉住：新回答必须进视野；学生自己滚上去看旧内容时，
- * 新回答不许把他拽回底部（出口是「回到最新」按钮）。
+ * 状态 / 在途实时流）；本轮再修掉它的落点偏差（估算高度，见 `followTutorTail`）。
+ * 这两条用例钉住：新回答必须进视野；学生自己滚上去看旧内容时，新回答不许把他拽回底部
+ * （出口是「回到最新」按钮，且它真的到得了底）。
+ *
+ * **用 v1 规则（`createComposeRule`，UnconfinedTestDispatcher）而不是 v2**：v2 用
+ * StandardTestDispatcher，组合里排队的贴尾效果会晚于测试的手势/内容变更执行，
+ * 于是"学生滚上去"这一步会被抢回底部 —— 那是测试调度器的时序，不是产品行为；
+ * 本模块里依赖滚动的既有用例（`CapturedTutorSessionTestBase`）同样是 v1。
  */
 @RunWith(AndroidJUnit4::class)
 class TutorLobbyScrollInstrumentedTest {
