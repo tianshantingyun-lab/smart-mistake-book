@@ -1567,3 +1567,25 @@ B/C/D 的实锤来自成品包本身：`/usr/bin/bash` 与 6 位 PID 都不可�
 合并需语义判断，登记为下一轮。
 
 剩余 204 条（PHYSICS 108 / CHEMISTRY 75 / BIOLOGY 21）需读材料内容逐条裁定，属下一轮。
+
+## V. 旧资料树清空（2026-09-20 · 用户裁定"扫描过的删掉、未扫描的也删掉"）
+
+**裁定**：旧 2026 资料树（`C:\Users\听云\Desktop\知识库原始数据资料`，10,482 个文件）整体清空——
+"已经扫描出来内容的不要舍弃"指**内容**（全部在仓内：sidecar 材料 + `extracted_chunks.jsonl`
+177,761 块 / 252MB），源文件本身扫描过的直接删（09-20 上午），未扫描的随后追加裁定也删。
+
+**执行**：两批共删 **10,482 个文件 / 65.68 GB**，源树现存文件 0（空目录 2,636 个已清）。
+- 批 1（9,679 / 54.80 GB）：EXTRACTED 2,295 + CHUNKED 6,185 + EMPTY 1,139 + 已转写扫描件 60；
+  删除前逐文件核过：无缺失、15 分钟内无改动（不碰对方在写的文件）。
+- 批 2（803 / 10.88 GB）：REJECTED 392 + SKIPPED_NO_CONTENT 411，全在 inventory 内、无意外文件。
+- 审计清单：`knowledge-production/source-deletion-log-2026-09.tsv`（10,482 行，
+  rel/state/location/sha16/size/action）。
+
+**状态机终态**（`--verify` 账本完整）：EXTRACTED 2,295 / CHUNKED 6,185（冻结不再读取，
+块文本保留可捡回）/ EMPTY 1,139 / SKIPPED_NO_CONTENT 411 / REJECTED 452；ERROR 0。
+旧轮次的隔离脚本（`isolate_processed.sh --undo` 等）对已删文件只会记 missing，**不可用于恢复**；
+恢复能力只存在于仓内内容（材料 + 块）。
+
+**后果声明**：W-3"块判定主线"正式关闭（详见 `docs/kb-outstanding-work-2026-09-20.md`）；
+后续补料唯一新源 = 桌面 `最全知识库原始资料`（2027 版《53知识清单》四科，已登记、未启用，
+启用前三道前置：来源登记 / 2019 版次核对 / 状态机入库）。

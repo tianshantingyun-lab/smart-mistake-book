@@ -35,20 +35,24 @@
   `kb_build.report_material_gaps --write` 对比 thin 递减。
 - 验收："zero 恒 0、thin 单调递减"（对方定的口径）。
 
-### W-3 块判定主线（未读完的旧资料，按指令**停止读取**，状态冻结在此）
-- 池：164,347 块 / 7,897 文件（2026 新高考资料树）。已判定 **16,625 行**
-  （`tools/kb_coverage/tables/material_judgments.csv`：METHOD_MODEL 7,685 /
-  CONCEPT_EXPLANATION 7,014 / MISCONCEPTION_GUIDE 1,126 / REPRESENTATION_GUIDE 519 /
-  DERIVATION 150 / WORKED_EXAMPLE 25 / COMPLETE_SOLUTION 4 / 未定型 102）。
-- 文件级状态机（`tools/kb_coverage/tables/extraction_state.csv`，10,482 文件）：
-  CHUNKED 6,185（已切块未判定）、PENDING_STRUCTURED 246、PENDING_SCANNED 187、PENDING 3、
-  ERROR 16（**这 16 个 ERROR 要单独看失败原因**）；EXTRACTED 2,295（已判定并隔离）、
-  SKIPPED_NO_CONTENT 411 + EMPTY 1,139（判定无内容，**不必重读**）。
-- 隔离机制：已判源文件搬入 `<源根>/zz-已判定隔离/`（镜像原路径、可 `--undo`、账本
-  `knowledge-production/processed-isolation-log-2026-09.tsv`）；扫描件隔离账本
-  `knowledge-production/scan-isolation-log-2026-09.tsv`。
-- **恢复入口**：`python tools/kb_coverage/… verify()` + `extraction_state --verify`
-  （O-01 教训：入库后必须跑 verify，否则悬空 output_ref 静默丢数据）；切片 60–80 文件/代理。
+### W-3 块判定主线（旧 2026 资料树）——**已按用户裁定舍弃（2026-09-20）**
+- 用户裁定："已经扫描出来内容的不要舍弃；真正需要舍弃的是还没扫描的；扫描过的旧资料直接删掉"，
+  随后追加"未扫描的也删掉"——**旧资料树整树清空**。
+- **已执行（两批，共 10,482 个文件 / 65.68 GB，源树现存文件 0）**：
+  - 批 1：删除扫描过的 **9,679 个 / 54.80 GB**（EXTRACTED 2,295 + CHUNKED 6,185 +
+    EMPTY 1,139 + 已转写扫描件 60）；空目录清理 2,636 个。
+  - 批 2：删除未扫描的 **803 个 / 10.88 GB**（REJECTED 392 + SKIPPED_NO_CONTENT 411）。
+  - 两批清单都在 `knowledge-production/source-deletion-log-2026-09.tsv`（rel/state/
+    location/sha16/size/action，可逐条审计）；未扫描 452 个（含 60 已转写）状态机标
+    **REJECTED**（ERROR 走合法两步跳转），SKIPPED_NO_CONTENT 行备注"源文件已删除"；
+    `extraction_state --verify` 账本完整。
+- **内容零丢失的依据**：扫描出的内容全部在仓内——判定入库的在 sidecar（材料 27,000+ 条），
+  切块未判定的在 `tools/kb_coverage/tables/extracted_chunks.jsonl`（177,761 块 / 252MB，
+  随版本控制）。CHUNKED 的 6,185 个文件按更早指令**不再读取**（冻结），但其块文本保留，
+  将来捡回任何一块都不需要源文件。
+- 状态机终态（10,482 文件）：EXTRACTED 2,295 / CHUNKED 6,185（冻结）/ EMPTY 1,139 /
+  SKIPPED_NO_CONTENT 411 / **REJECTED 452**；源文件 0。
+- 后续补料一律走第 3 节的 **2027 版《53知识清单》**（W-2 的 note 指向也改以它为准）。
 
 ### W-4 仪器化验证债
 - 真机没跑过的：`BundledContentReconciliationInstrumentedTest`（**382 条退役台账**的
@@ -94,9 +98,11 @@
 | 化学/生物「一轮复习讲义·学生版 + 知识清单·学生版」（9,405 块，31 代理） | **读完**，已入库（O 节，428+729 点） |
 | 教师版 / 课件（同内容幻灯片） | **明确不读**（=学生版+答案解析，判了等于重复入库，O 节裁定） |
 | 其余 2026 资料树（~15 万块，6,600+ 文件） | **未读完，停止读取**——状态在 W-3 的状态机里，随时可恢复 |
-| 扫描件 60 文件（2.4GB） | 已隔离待视觉转写（`scan-isolation-log`，可 `--undo`） |
+| 扫描件 60 文件（2.4GB） | 已转写入库（J/K 轮），源文件 09-20 批 1 已删（`scan-isolation-log` 存证） |
 
 ## 5. 恢复顺序建议
 
 W-1（错绑，池小、影响检索精度）→ W-2（薄料，用第 3 节新源，先走来源登记）→
-W-3（主线恢复，等 W-2 消化完新源再开）→ W-4（攒一批真机跑一次）→ W-5（独立）。
+W-4（攒一批真机跑一次）→ W-5（独立）。W-3 旧块池已归档舍弃，不再排期；
+唯一例外是 `extracted_chunks.jsonl` 里冻结的 17.7 万块——若 W-2 补料时发现
+某缺口只有旧块池里有干净文本，可按块捡回（不需要源文件）。
