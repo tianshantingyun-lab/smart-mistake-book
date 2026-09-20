@@ -546,12 +546,22 @@ fun TutorRespondInput.studentAuthorizedSolutionRequest(): Boolean {
 /**
  * Shared defense-in-depth boundary for validation, rendering, exposure recording, and history.
  *
- * 除五项身份精确匹配之外，还要求**本轮确实有绑定题**（[boundQuestion] 非 null，即那一轮的
- * 声明通过了本地两条校验）：无题轮永不产生答案暴露记录——暴露记录是"学生看过这道题的答案"
- * 的证据，锚不到题就没有主人，写进去之后任何按题查询都会错认。
+ * 除五项身份精确匹配之外，**新轮次**还要求本轮确实有绑定题（[boundQuestion] 非 null，即那一轮的
+ * 声明通过了本地两条校验）：无题轮永不产生答案暴露记录——暴露记录是"学生看过这道题的答案"的
+ * 证据，锚不到题就没有主人。
+ *
+ * @param requiresRoundQuestionBinding 本轮所在的行是否受"每轮绑定"约束
+ *   （[ModelTaskRequest.requiresRoundQuestionBinding]）。旧 schema 行里"有没有题、是哪道题"这一维
+ *   根本不存在——它们的输出没有 [boundQuestion] 字段，判据就只能是当年那套（身份 + 学生明确
+ *   索要）。若对旧行也要求绑定，那些**真的展示过完整解答并已记为 RESPOND_REPLY 暴露**的历史
+ *   回复会在升级后不再被认作已暴露，持久化曝光行会被候选键过滤掉：正文被换成"还没有完整看到"，
+ *   会话记忆一起回退。绑定新规只往前适用。
  */
-fun TutorRespondOutput.canExposeSolutionFor(input: TutorRespondInput): Boolean =
-    boundQuestion != null &&
+fun TutorRespondOutput.canExposeSolutionFor(
+    input: TutorRespondInput,
+    requiresRoundQuestionBinding: Boolean,
+): Boolean =
+    (!requiresRoundQuestionBinding || boundQuestion != null) &&
         solutionRevealed &&
         input.studentAuthorizedSolutionRequest() &&
         sessionId == input.sessionId &&

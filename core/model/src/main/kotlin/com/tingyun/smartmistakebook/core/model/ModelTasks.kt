@@ -437,6 +437,14 @@ data class ModelTaskRequest(
     }
 }
 
+/**
+ * 本轮所在的行是否受"每轮绑定"约束：schema 11（[ModelTaskRequest.TUTOR_ROUND_BINDING_SCHEMA_VERSION]）
+ * 起，Respond 轮次可能没有题（声明缺失或核不过），所以写门控与答案暴露都要按绑定判；更早的行里
+ * 这一维不存在，必须按当年的语义读（见 `canExposeSolutionFor`）。
+ */
+val ModelTaskRequest.requiresRoundQuestionBinding: Boolean
+    get() = schemaVersion >= ModelTaskRequest.TUTOR_ROUND_BINDING_SCHEMA_VERSION
+
 @Serializable
 sealed interface ModelTaskOutput
 

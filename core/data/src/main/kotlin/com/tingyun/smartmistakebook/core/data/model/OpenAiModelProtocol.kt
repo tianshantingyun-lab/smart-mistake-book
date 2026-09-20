@@ -75,6 +75,8 @@ import com.tingyun.smartmistakebook.core.model.TutorFormulaDerivationScene
 import com.tingyun.smartmistakebook.core.model.TutorFormulaDerivationStep
 import com.tingyun.smartmistakebook.core.model.TutorIntentDecision
 import com.tingyun.smartmistakebook.core.model.TutorToolCall
+import com.tingyun.smartmistakebook.core.domain.TUTOR_WRITE_TOOLS
+import com.tingyun.smartmistakebook.core.model.TutorRoundQuestionDeclaration
 import com.tingyun.smartmistakebook.core.model.TutorToolName
 import com.tingyun.smartmistakebook.core.model.TutorToolRequestsOutput
 import com.tingyun.smartmistakebook.core.model.TutorEvidenceDirection
@@ -355,6 +357,39 @@ internal object OpenAiModelProtocol {
                             },
                         )
                     }
+                    if (tool in TUTOR_WRITE_TOOLS) {
+                        // 写工具的逐次题锚：字段名与 json_object 信封路由一致，两条路由共用同一套
+                        // 本地校验（core:domain 的 TutorRoundQuestionBindingPolicy）。
+                        put(
+                            "problemId",
+                            buildJsonObject {
+                                put("type", "string")
+                                put("description", "本次写入锚定的题目 id，取自 boundQuestionCandidates")
+                            },
+                        )
+                        put(
+                            "problemRevisionId",
+                            buildJsonObject {
+                                put("type", "string")
+                                put("description", "本次写入锚定的题面修订 id，与 problemId 成对")
+                            },
+                        )
+                        put(
+                            "anchorTerms",
+                            buildJsonObject {
+                                put("type", "array")
+                                put(
+                                    "items",
+                                    buildJsonObject {
+                                        put("type", "string")
+                                        put("description", "逐字来自学生消息、且能在该题文本里找到的词")
+                                    },
+                                )
+                                put("maxItems", TutorRoundQuestionDeclaration.MAX_ANCHOR_TERMS)
+                                put("description", "该题的锚词（逐字，不得臆测）")
+                            },
+                        )
+                    }
                     if (masterySemantics) {
                         put(
                             "direction",
@@ -407,6 +442,9 @@ internal object OpenAiModelProtocol {
                         add(JsonPrimitive("direction"))
                         add(JsonPrimitive("understanding"))
                         add(JsonPrimitive("confidence"))
+                        add(JsonPrimitive("problemId"))
+                        add(JsonPrimitive("problemRevisionId"))
+                        add(JsonPrimitive("anchorTerms"))
                     },
                 )
             } else if (extendedResult) {
@@ -416,6 +454,17 @@ internal object OpenAiModelProtocol {
                         add(JsonPrimitive("terms"))
                         add(JsonPrimitive("rationale"))
                         add(JsonPrimitive("extendedResult"))
+                    },
+                )
+            } else if (tool in TUTOR_WRITE_TOOLS) {
+                put(
+                    "required",
+                    buildJsonArray {
+                        add(JsonPrimitive("terms"))
+                        add(JsonPrimitive("rationale"))
+                        add(JsonPrimitive("problemId"))
+                        add(JsonPrimitive("problemRevisionId"))
+                        add(JsonPrimitive("anchorTerms"))
                     },
                 )
             } else {
@@ -472,7 +521,8 @@ internal object OpenAiModelProtocol {
      * it, later rounds re-derive). Standard native tool_calls carry content=null,
      * so the intent is derived from the dispatch kind instead — native tools
      * never over-authorize because the repository still intersects with the
-     * declared set and the write anchor (Respond-only) stays.
+     * declared set, and a write additionally needs its own per-call question
+     * anchor (carried in the call's arguments, so both routes can express it).
      */
     private fun List<JsonElement>.toTutorToolRequestsOutput(
         input: com.tingyun.smartmistakebook.core.model.ModelTaskInput,
@@ -492,6 +542,9 @@ internal object OpenAiModelProtocol {
                 understanding = arguments.optionalString("understanding")?.let { enumValue<TutorUnderstandingTier>(it) },
                 difficultyTier = arguments.optionalString("difficultyTier")?.let { enumValue<TutorDifficultyTier>(it) },
                 confidence = arguments.optionalDouble("confidence") ?: 0.8,
+                // 写工具的本次调用锚在哪道题：与 json_object 信封路由同一组扁平字段
+                // （problemId / problemRevisionId / anchorTerms），两条路由因此都能表达它。
+                boundQuestion = arguments.toCallBoundQuestion(),
             )
         }
         val intentDecision = responseContent

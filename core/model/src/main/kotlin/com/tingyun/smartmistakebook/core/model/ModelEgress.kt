@@ -72,14 +72,22 @@ object ModelPromptPolicyVersions {
 /**
  * 讲题轮次出网披露的**唯一**计算口径：按运行时状态选择，不按 kind 分叉猜。
  *
- * 三态（`docs/tutor-surface-unification.md` §5.5 与 §6 障碍 3）：
+ * 状态维度（`docs/tutor-surface-unification.md` §5.5 与 §6 障碍 3）：
  * - **无题**（`carriesQuestion = false`）：只有学生消息与会话上下文，**不含题面**。大厅是无题轮。
  * - **有题**（`carriesQuestion = true`，无图）：题面、学习证据、会话上下文、学科知识库。
- * - **有题带图**（`carriesQuestion = true, includesImage = true`）：在上面的基础上追加图片类目。
+ * - **有题带图**：`carriesQuestion = true, includesImage = true` 追加图片类目。
+ *
+ * **三个校验调用点实际只走到两态**（`ModelEgressManifest` 的 init、`requireAuthorizes` 的
+ * Respond 与 Lobby 分支）：Respond 传 `includesImage = false` 且 `assets` 必须为空，Lobby 传
+ * `carriesQuestion = false`。第三态**不是**不可达的死分支，而是**尚未接线**：Respond 的附图
+ * （`studentImageAssetRefs`）今天只走全局同意通道（`agentConsentGranted`，`egressManifest == null`），
+ * 逐次清单那条路上"Tutor response cannot disclose image assets"是一条**既有断言**，本轮没有放宽
+ * 它——所以这一态留给"Respond 附图也走清单"的那天，函数已经能表达它。`ModelEgressTest` 里那条
+ * 逐态用例断言的是函数取值，不是生产路径可达性；把不可达**钉住**的用例是
+ * `a question round manifest still refuses image assets`。
  *
  * 另有两个正交的可选加成，各自只在"本轮真的带了它"时出现：
- * - `includesImage`：本轮真的出网图片字节（大厅的附图消息；Respond 的附图只走全局同意通道，
- *   逐次清单那条路上 `assets` 必须为空，见 `requireAuthorizes`）。
+ * - `includesImage`：本轮真的出网图片字节（大厅的附图消息，这一态在生产里是活的）。
  * - `includesQuestionCandidates`：本轮真的带了候选菜单（错题本里别的题面）。
  *
  * 存在的理由：此前披露集合是按 kind 在四处分别挑常量拼出来的，"哪种轮次披露什么"没有单一
@@ -115,6 +123,17 @@ object TutorRoundDisclosure {
         }
     }
 }
+
+/**
+ * 本轮派发的披露集合是否覆盖题面 / 学习证据 / 学科知识库——只有**题轮**（
+ * [TutorRespondInput] 派遣）如此，无题轮（[TutorLobbyInput]）的集合里没有这三类。
+ *
+ * 它回答的是"这一轮的披露面装不装得下某个工具的产出"，而不是"这一轮的学生在说哪一道题"。
+ * 两者必须分开：`TUTOR_LOBBY_DISCLOSURE` 覆盖不到掌握度明细与学科知识库，所以那两个读工具
+ * 在无题轮一律不放行（见 core:domain 的 tutorRoundToolAvailable）——这条判据取自披露集合
+ * 本身，不取自解析路由。
+ */
+fun ModelTaskInput.disclosesQuestionEvidence(): Boolean = this is TutorRespondInput
 
 @Serializable
 data class ModelEgressAssetGrant(

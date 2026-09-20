@@ -86,13 +86,18 @@ object TutorRoundQuestionBindingPolicy {
         return declaration
     }
 
-    /** 该题**自身**的文本：锚词必须在这一段里能找到，否则"可核对"无从谈起。 */
+    /**
+     * 该题**自身**的文本：锚词必须在这一段里能找到，否则"可核对"无从谈起。
+     *
+     * 只算标题与题面，**不算 `subject.name`**：那是枚举名（`MATH`/`PHYSICS`…），与题目内容毫无
+     * 关系；一旦算进去，学生消息里出现该英文串时，任何一条同科目候选都能被"核对"上——菜单有
+     * 八条时，模型可随手挑一条同科目候选、拿一个科目名当锚词通过，这条闸门就等于没有。
+     * 科目是分类，不是这道题的内容。
+     */
     private fun RelatedProblemCandidate.checkableText(): String = buildString {
         append(title)
         append('\n')
         append(QuestionDocumentMarkdownProjection.project(questionDocument))
-        append('\n')
-        append(subject.name)
     }.lowercase(Locale.ROOT)
 }
 

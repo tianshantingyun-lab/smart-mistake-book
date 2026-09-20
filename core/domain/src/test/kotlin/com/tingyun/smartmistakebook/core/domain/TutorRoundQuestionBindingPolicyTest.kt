@@ -184,6 +184,30 @@ class TutorRoundQuestionBindingPolicyTest {
     }
 
     @Test
+    fun `a subject name is not a verifiable anchor`() {
+        // `SubjectKind.name` 是枚举名（MATH/PHYSICS…），与题目内容毫无关系。算进"题自身文本"
+        // 的话，学生消息里出现该英文串时任何一条同科目候选都能被"核对"上——菜单八条时模型
+        // 可随手挑一条同科目候选、拿科目名当锚词通过，这条闸门就等于没有。
+        val candidates = listOf(
+            candidate(
+                problemId = "p-math",
+                problemRevisionId = "r-math",
+                title = "第 1 题",
+                questionMarkdown = "求函数的单调区间",
+                subject = SubjectKind.MATH,
+            ),
+        )
+
+        assertNull(
+            TutorRoundQuestionBindingPolicy.resolve(
+                candidates = candidates,
+                declaration = declaration("p-math", "r-math", "MATH"),
+                studentMessage = "MATH 这道题再讲一遍",
+            ),
+        )
+    }
+
+    @Test
     fun `an anchor found in the question body but not in its title binds`() {
         val candidates = listOf(
             candidate(
@@ -391,10 +415,11 @@ class TutorRoundQuestionBindingPolicyTest {
         problemRevisionId: String,
         title: String,
         questionMarkdown: String = "题干",
+        subject: SubjectKind = SubjectKind.PHYSICS,
     ): RelatedProblemCandidate = RelatedProblemCandidate(
         problemId = problemId,
         problemRevisionId = problemRevisionId,
-        subject = SubjectKind.PHYSICS,
+        subject = subject,
         title = title,
         questionDocument = QuestionDocument(
             id = "question-$problemRevisionId",

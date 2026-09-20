@@ -150,10 +150,11 @@ class RoomModelTaskT6MasteryInstrumentedTest {
                 understanding = TutorUnderstandingTier.CONFIDENT,
                 difficultyTier = TutorDifficultyTier.MEDIUM,
                 confidence = 0.85,
+                // 逐次题锚：写工具在**工具轮**执行，而"本轮在说哪道题"的声明在原生
+                // tool_calls 路由上无处可放，所以准入落在每一次调用自己身上。
+                boundQuestion = roundBinding(),
             ),
         ),
-        // 工具轮的同一个声明：写工具在**工具轮**执行，本地要在写之前就能回答"本轮有没有题"。
-        boundQuestion = roundBinding(),
         modelVersion = "t6-model-v1",
     )
 

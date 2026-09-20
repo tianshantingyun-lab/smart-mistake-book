@@ -76,6 +76,14 @@ data class TutorToolCall(
     /** Model-judged difficulty tier (advisory, audited with the evidence). */
     val difficultyTier: TutorDifficultyTier? = null,
     /**
+     * 这一**次调用**锚在哪一道题（写工具必需）。
+     *
+     * 判据与轮次声明完全相同（候选必须在派发前的菜单内、锚词必须在学生消息里逐字出现且在该题
+     * 自身文本里可核对），但落点不同：轮次声明要整轮的信封才能表达，而原生 tool_calls 路由的
+     * 标准形态 content=null，轮次声明无处可放；逐次锚把准入放回**两种路由都能表达**的地方。
+     */
+    val boundQuestion: TutorRoundQuestionDeclaration? = null,
+    /**
      * Model's own confidence in its semantic judgment (0..1), MASTERY_UPDATE
      * only. The local gate thresholds it against
      * [com.tingyun.smartmistakebook.core.domain.MasteryWriteGate.EVIDENCE_CONFIDENCE_THRESHOLD].
@@ -321,15 +329,6 @@ const val DROPPED_OUTCOME_SUMMARY = "本轮结果预算已用尽，本条摘要�
 data class TutorToolRequestsOutput(
     val intentDecision: TutorIntentDecision,
     val calls: List<TutorToolCall>,
-    /**
-     * 本轮在说哪一道题的声明（与最终回答里的是同一个声明、同一套本地校验）。
-     *
-     * 为什么工具轮也要声明：写工具（MASTERY_UPDATE / NOTEBOOK_WRITE）在**工具轮就执行**，而
-     * 最终回答要到下一轮才到。没有这个声明，本地就无法在写之前回答"本轮到底有没有题"，
-     * 写门控只能退回去看"输入类型是不是 Respond"——那在轮次级绑定之后不再等于"有题"
-     * （Respond 也可以是"这一轮不指任何一道"的无题轮）。
-     */
-    val boundQuestion: TutorRoundQuestionDeclaration? = null,
     val modelVersion: String,
 ) : ModelTaskOutput {
     init {

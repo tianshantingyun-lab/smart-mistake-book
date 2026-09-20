@@ -32,6 +32,7 @@ import com.tingyun.smartmistakebook.core.model.TutorRespondOutput
 import com.tingyun.smartmistakebook.core.model.TutorSuggestedMove
 import com.tingyun.smartmistakebook.core.model.TutorVisualDocumentScene
 import com.tingyun.smartmistakebook.core.model.canExposeSolutionFor
+import com.tingyun.smartmistakebook.core.model.requiresRoundQuestionBinding
 import com.tingyun.smartmistakebook.core.model.requiresModelSettings
 import com.tingyun.smartmistakebook.core.ui.AttachedImagesSection
 import com.tingyun.smartmistakebook.core.ui.Ink
@@ -113,8 +114,10 @@ internal fun tutorChatExchanges(
         val input = task.request.input as TutorRespondInput
         val output = task.output as? TutorRespondOutput
         if (task.status != ModelTaskStatus.SUCCEEDED || output == null) return@mapNotNull null
-        val answerWasExposed = output.canExposeSolutionFor(input) &&
-            task.toRespondAnswerExposureKey() in answerExposureKeys
+        val answerWasExposed = output.canExposeSolutionFor(
+            input,
+            requiresRoundQuestionBinding = task.request.requiresRoundQuestionBinding,
+        ) && task.toRespondAnswerExposureKey() in answerExposureKeys
         TutorChatHistoryEntry(
             studentMessage = input.studentMessage,
             assistantMarkdown = if (output.solutionRevealed && !answerWasExposed) {
@@ -305,7 +308,11 @@ private fun TutorAssistantReplyBubble(
                             TutorTurnFailureCard(detail = TUTOR_REPLY_INCOMPLETE_DETAIL)
                         } else if (
                             output.solutionRevealed &&
-                            !output.canExposeSolutionFor(input)
+                            !output.canExposeSolutionFor(
+                                input,
+                                requiresRoundQuestionBinding =
+                                task.request.requiresRoundQuestionBinding,
+                            )
                         ) {
                             SafeMarkdownText(
                                 markdown = UNAUTHORIZED_TUTOR_ANSWER_MESSAGE,

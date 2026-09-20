@@ -523,17 +523,19 @@ internal object OpenAiModelTaskAdapters {
                     "{problemId,problemRevisionId,anchorTerms},\"toolRequests\":" +
                     "[{\"tool\":\"<工具名>\",\"terms\":[\"<原词>\"],\"rationale\":\"<锚定理由>\"}]}；" +
                     "不需要查询时按正常规则返回最终回答。")
-                append("\nboundQuestion 在工具轮同样可省略，规则与最终回答完全一致：只能从 " +
-                    "boundQuestionCandidates 里原样复制一条的 problemId 与 problemRevisionId，" +
-                    "anchorTerms 逐字来自 studentMessage 且至少一个词能对上下发来的那道题。")
                 // 只在**声明了写工具**时讲写工具的准入：提示词不得提到本轮未声明的工具
                 // （TutorToolPromptInjectionTest 守着这条不变量）。
                 val declaredWriteTools = toolDeclarations.filter(TutorToolName::isWriteTool)
                 if (declaredWriteTools.isNotEmpty()) {
                     append("\n**写工具（" +
                         declaredWriteTools.joinToString(" / ") { tool -> tool.name } +
-                        "）只在本轮确实绑定了题时才执行**：省略 boundQuestion 或核不过，" +
-                        "这些工具一律不放行（读工具不受影响）。")
+                        "）的每一次调用都必须带题锚**：在该次调用的对象里加上 problemId、" +
+                        "problemRevisionId、anchorTerms 三个字段——problemId 与 problemRevisionId " +
+                        "从 boundQuestionCandidates 里原样复制某一条（两个必须成对、同一个修订），" +
+                        "anchorTerms 逐字来自 studentMessage，且至少一个词能在被声明那道题自己的标题" +
+                        "或题面里找到。本地逐条比对：候选不在菜单内、两个 id 不是一个完整配对、" +
+                        "anchorTerms 为空、有任何一条词没在 studentMessage 里逐字出现、或没有任何" +
+                        "一条词能对上那道题，这次写调用一律不放行。读工具不需要这三个字段。")
                 }
                 if (toolDeclarations.contains(TutorToolName.MASTERY_UPDATE)) {
                     append("\nMASTERY_UPDATE 判断规范（违反即不应申请）：")

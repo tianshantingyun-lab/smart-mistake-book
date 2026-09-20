@@ -24,7 +24,7 @@ class TutorSolutionExposureAuthorityTest {
 
         assertFalse(
             "无题轮：声明了 solutionRevealed、学生也明确索要，仍然不得产生暴露",
-            output.canExposeSolutionFor(input),
+            output.canExposeSolutionFor(input, requiresRoundQuestionBinding = true),
         )
     }
 
@@ -33,7 +33,46 @@ class TutorSolutionExposureAuthorityTest {
         val input = respondInput()
         val output = respondOutput(boundQuestion = binding())
 
-        assertTrue(output.canExposeSolutionFor(input))
+        assertTrue(output.canExposeSolutionFor(input, requiresRoundQuestionBinding = true))
+    }
+
+    @Test
+    fun `a legacy reply keeps the pre-binding exposure semantics`() {
+        // 旧 schema 行里没有"有没有题"这一维：它的输出没有 boundQuestion 字段（恒 null）。
+        // 那些**真的展示过完整解答并已记为暴露**的历史回复，升级后必须仍然被认作已暴露——
+        // 否则持久化的曝光行会被候选键过滤掉，正文被换成"还没有完整看到"，会话记忆一起回退。
+        val output = respondOutput(boundQuestion = null)
+
+        assertTrue(
+            output.canExposeSolutionFor(respondInput(), requiresRoundQuestionBinding = false),
+        )
+        // 同一份输出在新行上就是无题轮：同一份判据，只在"绑定是否适用"上分岔。
+        assertFalse(
+            output.canExposeSolutionFor(respondInput(), requiresRoundQuestionBinding = true),
+        )
+    }
+
+    @Test
+    fun `a legacy reply still needs every identity field and an explicit request`() {
+        val mismatches = listOf(
+            respondOutput(boundQuestion = null).copy(sessionId = "other-session"),
+            respondOutput(boundQuestion = null).copy(responseOrdinal = 2),
+            respondOutput(boundQuestion = null).copy(solutionRevealed = false),
+        )
+
+        mismatches.forEach { output ->
+            assertFalse(
+                "身份不匹配时必须拒绝：$output",
+                output.canExposeSolutionFor(respondInput(), requiresRoundQuestionBinding = false),
+            )
+        }
+        assertFalse(
+            respondOutput(boundQuestion = null)
+                .canExposeSolutionFor(
+                    respondInput().copy(studentMessage = "这一步为什么成立"),
+                    requiresRoundQuestionBinding = false,
+                ),
+        )
     }
 
     @Test
@@ -41,7 +80,7 @@ class TutorSolutionExposureAuthorityTest {
         val input = respondInput().copy(studentMessage = "这一步为什么成立")
         val output = respondOutput(boundQuestion = binding())
 
-        assertFalse(output.canExposeSolutionFor(input))
+        assertFalse(output.canExposeSolutionFor(input, requiresRoundQuestionBinding = true))
     }
 
     @Test
@@ -58,7 +97,7 @@ class TutorSolutionExposureAuthorityTest {
         )
 
         mismatches.forEach { output ->
-            assertFalse("身份不匹配时必须拒绝：$output", output.canExposeSolutionFor(respondInput()))
+            assertFalse("身份不匹配时必须拒绝：$output", output.canExposeSolutionFor(respondInput(), requiresRoundQuestionBinding = true))
         }
     }
 
@@ -75,10 +114,11 @@ class TutorSolutionExposureAuthorityTest {
 
         assertTrue(
             "绑定本身非空即可通过本函数（它只判「有没有题」）；题面是否同一道由 questionDocumentId 断言把关",
-            output.canExposeSolutionFor(respondInput()),
+            output.canExposeSolutionFor(respondInput(), requiresRoundQuestionBinding = true),
         )
         assertFalse(
-            output.copy(questionDocumentId = "other-question").canExposeSolutionFor(respondInput()),
+            output.copy(questionDocumentId = "other-question")
+                .canExposeSolutionFor(respondInput(), requiresRoundQuestionBinding = true),
         )
     }
 

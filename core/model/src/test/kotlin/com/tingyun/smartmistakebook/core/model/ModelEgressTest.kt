@@ -658,6 +658,32 @@ class ModelEgressTest {
     }
 
     @Test
+    fun `a question round manifest still refuses image assets`() {
+        // 这条既有断言（在 requireAuthorizes 里）正是"有题带图"这一态在**清单路径上**不可达的
+        // 原因：Respond 的附图只走全局同意通道。把它钉住，免得有人以为那一态已经接线、
+        // 或者反过来悄悄放宽它。
+        val manifest = tutorRespondManifest().copy(
+            assets = listOf(
+                ModelEgressAssetGrant(
+                    assetId = "asset-1",
+                    sha256 = "a".repeat(64),
+                    byteSize = 1_024,
+                    width = 100,
+                    height = 100,
+                ),
+            ),
+        )
+
+        assertThrows(IllegalArgumentException::class.java) {
+            ModelEgressPolicy.authorize(
+                request = tutorRespondRequest(manifest),
+                provider = tutorProvider(ModelTaskKind.TUTOR_RESPOND),
+                nowEpochMillis = 101,
+            )
+        }
+    }
+
+    @Test
     fun `a legacy manifest cannot claim to cover a candidate menu`() {
         assertThrows(IllegalArgumentException::class.java) {
             tutorRespondManifest().copy(

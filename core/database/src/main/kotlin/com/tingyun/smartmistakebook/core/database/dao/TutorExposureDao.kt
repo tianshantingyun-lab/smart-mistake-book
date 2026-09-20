@@ -27,6 +27,7 @@ import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
 import com.tingyun.smartmistakebook.core.model.TutorRespondOutput
 import com.tingyun.smartmistakebook.core.model.canExposeSolutionFor
+import com.tingyun.smartmistakebook.core.model.requiresRoundQuestionBinding
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 
@@ -294,7 +295,11 @@ internal abstract class TutorExposureDao {
             "RESPOND_REPLY" -> {
                 val input = request.input as? TutorRespondInput
                 val respondOutput = output as? TutorRespondOutput
-                input != null && respondOutput?.canExposeSolutionFor(input) == true &&
+                input != null &&
+                    respondOutput?.canExposeSolutionFor(
+                        input,
+                        requiresRoundQuestionBinding = request.requiresRoundQuestionBinding,
+                    ) == true &&
                     input.sessionId == command.sessionId &&
                     input.questionDocument.id == command.questionDocumentId &&
                     input.draftRevisionNumber == command.revisionNumber &&

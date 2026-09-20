@@ -134,7 +134,9 @@ class TutorRoundQuestionWireTest {
     }
 
     @Test
-    fun `a tool round carries the same declaration shape`() {
+    fun `a write call carries its own question anchor`() {
+        // 逐次锚：原生 tool_calls 路由的轮次信封放不下声明，所以写调用的 arguments 里必须能带
+        // 这三个字段（两条路由共用同一组扁平键）。
         val requests = Json.parseToJsonElement(
             """
             {
@@ -145,24 +147,58 @@ class TutorRoundQuestionWireTest {
                 "memoryPreference": "UNCHANGED",
                 "requestedLocalCapability": "NONE"
               },
-              "boundQuestion": {
+              "toolRequests": [{
+                "tool": "MASTERY_UPDATE",
+                "terms": ["配方法"],
+                "rationale": "学生说懂了",
+                "direction": "POSITIVE",
+                "understanding": "CONFIDENT",
+                "confidence": 0.8,
                 "problemId": "problem-1",
                 "problemRevisionId": "revision-1",
                 "anchorTerms": ["光的折射"]
-              },
-              "toolRequests": [{"tool": "MASTERY_UPDATE", "terms": ["配方法"], "rationale": "学生说懂了", "direction": "POSITIVE", "understanding": "CONFIDENT", "confidence": 0.8}]
+              }]
             }
             """.trimIndent(),
         ).let { element -> element as JsonObject }
 
         val parsed = requests.toTutorToolRequests("model-v1")
 
-        assertEquals("problem-1", parsed.boundQuestion?.problemId)
-        assertEquals(listOf("光的折射"), parsed.boundQuestion?.anchorTerms)
+        assertEquals("problem-1", parsed.calls.single().boundQuestion?.problemId)
+        assertEquals("revision-1", parsed.calls.single().boundQuestion?.problemRevisionId)
+        assertEquals(listOf("光的折射"), parsed.calls.single().boundQuestion?.anchorTerms)
     }
 
     @Test
-    fun `an unknown field inside the tool-round declaration invalidates the whole reply`() {
+    fun `a write call without the two ids has no anchor at all`() {
+        // 半个锚定位不到确定题面：只给 problemId 不给 revisionId 等于没有声明。
+        val requests = Json.parseToJsonElement(
+            """
+            {
+              "intentDecision": {
+                "intent": "CURRENT_QUESTION_HELP",
+                "confidence": 0.9,
+                "explicitActionRequest": false,
+                "memoryPreference": "UNCHANGED",
+                "requestedLocalCapability": "NONE"
+              },
+              "toolRequests": [{
+                "tool": "NOTEBOOK_WRITE",
+                "terms": ["配方法"],
+                "rationale": "学生说这道题记下来",
+                "problemId": "problem-1"
+              }]
+            }
+            """.trimIndent(),
+        ).let { element -> element as JsonObject }
+
+        val parsed = requests.toTutorToolRequests("model-v1")
+
+        assertNull(parsed.calls.single().boundQuestion)
+    }
+
+    @Test
+    fun `an unknown field on a tool call invalidates the whole reply`() {
         val rejection = runCatching {
             Json.parseToJsonElement(
                 """
@@ -174,12 +210,11 @@ class TutorRoundQuestionWireTest {
                     "memoryPreference": "UNCHANGED",
                     "requestedLocalCapability": "NONE"
                   },
-                  "boundQuestion": {
-                    "problemId": "problem-1",
-                    "problemRevisionId": "revision-1",
-                    "confidence": 0.9
-                  },
-                  "toolRequests": [{"tool": "NOTEBOOK_READ", "rationale": "查错题本"}]
+                  "toolRequests": [{
+                    "tool": "NOTEBOOK_READ",
+                    "rationale": "查错题本",
+                    "anchorConfidence": 0.9
+                  }]
                 }
                 """.trimIndent(),
             ).let { element -> element as JsonObject }.toTutorToolRequests("model-v1")

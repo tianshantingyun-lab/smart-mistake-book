@@ -8,6 +8,7 @@ import com.tingyun.smartmistakebook.core.model.TutorRespondInput
 import com.tingyun.smartmistakebook.core.model.TutorRespondOutput
 import com.tingyun.smartmistakebook.core.model.TutorToolName
 import com.tingyun.smartmistakebook.core.model.TutorToolRequestsOutput
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -168,6 +169,33 @@ class OpenAiNativeToolsProtocolTest {
         assertEquals(com.tingyun.smartmistakebook.core.model.TutorEvidenceDirection.POSITIVE, call.direction)
         assertEquals(com.tingyun.smartmistakebook.core.model.TutorUnderstandingTier.CONFIDENT, call.understanding)
         assertEquals(0.85, call.confidence, 1e-9)
+        // 逐次题锚也必须从 arguments 里读出来：原生 tool_calls 路由的标准形态 content=null，
+        // 写工具的准入只能落在调用自己身上（复核意见一）。
+        assertNull("没有题锚字段时就是没有声明", call.boundQuestion)
+    }
+
+    @Test
+    fun nativeWriteCallCarriesItsQuestionAnchorFromArguments() {
+        // 原生路由能表达写工具的题锚：arguments 里的 problemId / problemRevisionId /
+        // anchorTerms 与 json_object 信封路由同名同义，两条路由共用同一套本地校验。
+        val envelope = toolCallEnvelope(
+            """
+            {"role":"assistant","content":null,
+             "tool_calls":[{"id":"call_1","type":"function",
+               "function":{"name":"MASTERY_UPDATE",
+                 "arguments":"{\"terms\":[\"knowledge-node-1\"],\"rationale\":\"学生明确说理解了配方法。\",\"direction\":\"POSITIVE\",\"understanding\":\"CONFIDENT\",\"confidence\":0.85,\"problemId\":\"problem-peifang\",\"problemRevisionId\":\"revision-peifang\",\"anchorTerms\":[\"配方法\"]}"}}]}
+            """.trimIndent(),
+        )
+        val output = OpenAiModelProtocol.parseResponse(
+            responseBody = envelope,
+            input = respondInput(),
+            modelVersion = "test-model-v1",
+        ) as TutorToolRequestsOutput
+
+        val anchor = output.calls.single().boundQuestion
+        assertEquals("problem-peifang", anchor?.problemId)
+        assertEquals("revision-peifang", anchor?.problemRevisionId)
+        assertEquals(listOf("配方法"), anchor?.anchorTerms)
     }
 
     @Test

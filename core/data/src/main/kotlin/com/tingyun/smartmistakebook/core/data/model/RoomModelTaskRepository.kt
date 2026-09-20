@@ -4,6 +4,9 @@ import com.tingyun.smartmistakebook.core.database.CreateModelTaskCommand
 import com.tingyun.smartmistakebook.core.database.ReserveModelTaskRemoteDispatchCommand
 import com.tingyun.smartmistakebook.core.domain.TUTOR_TOOL_DECLARATIONS
 import com.tingyun.smartmistakebook.core.domain.TutorRoundQuestionBindingPolicy
+import com.tingyun.smartmistakebook.core.domain.TUTOR_QUESTION_ROUND_ONLY_READS
+import com.tingyun.smartmistakebook.core.domain.TUTOR_WRITE_TOOLS
+import com.tingyun.smartmistakebook.core.model.disclosesQuestionEvidence
 import com.tingyun.smartmistakebook.core.domain.tutorRoundToolAvailable
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.database.TransitionModelTaskCommand
@@ -44,6 +47,7 @@ import com.tingyun.smartmistakebook.core.model.ProblemOrganizationInput
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.TutorPlanInput
 import com.tingyun.smartmistakebook.core.model.TutorLobbyInput
+import com.tingyun.smartmistakebook.core.model.TutorToolCall
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
@@ -332,44 +336,22 @@ class RoomModelTaskRepository internal constructor(
                 // prompt 里堆到 18k。模型仍可对每次查询表达"需要更大预算"（语义），但放大几次由本地
                 // 定——与本项目"模型给语义、本地给数值"的划分一致。
                 var extendedResultUsed = false
-                // 本轮绑定：模型在**本工具轮**声明的那一道题，经本地两条校验（候选在派发前的
-                // 菜单内、锚词在学生消息里逐字可核对）。写工具只认这个结果。
-                val boundRoundQuestion = TutorRoundQuestionBindingPolicy.resolve(
-                    candidates = (roundRequest.input as? TutorRespondInput)
-                        ?.boundQuestionCandidates.orEmpty(),
-                    declaration = requests.boundQuestion,
-                    studentMessage = (roundRequest.input as? TutorRespondInput)
-                        ?.studentMessage.orEmpty(),
-                )
-                val outcomes = requests.calls.map { call ->
-                    // 轮次级可用性（tutorRoundToolAvailable）：写工具只能在"本轮有绑定题"时执行
-                    // ——它们会落库，没有题目锚点就是无主证据；产出装不进本轮披露面的读工具
-                    // （MASTERY_READ / KNOWLEDGE_READ）同理，无题轮的披露集合覆盖不到它们。
-                    //
-                    // 为什么不再用"输入类型是 Respond"当判据：按轮次绑定之后，Respond 也可以是
-                    // 无题轮（声明缺失或核不过），而那时题面只是会话带进来的上下文，不是学生
-                    // 这一轮在说的题。用输入类型判会把这些轮次误放行。
-                    val allowedForRound =
-                        tutorRoundToolAvailable(call.tool, boundRoundQuestion != null)
-                    if (call.tool !in authorization.allowedTools || !allowedForRound) {
-                        TutorToolOutcome(
-                            tool = call.tool,
-                            ok = false,
-                            summaryMarkdown = "该意图下未授权此查询。",
-                            errorKind = "not_authorized",
-                        )
-                    } else {
-                        val allowsExtendedResult = !extendedResultUsed
-                        val outcome = toolRunner.run(
+                val outcomes = tutorToolRoundOutcomes(
+                    calls = requests.calls,
+                    authorizedTools = authorization.allowedTools,
+                    input = roundRequest.input,
+                    runTool = { call, allowsExtendedResult ->
+                        toolRunner.run(
                             call,
-                            toolContext(roundRequest.input, roundRequest.requestId, allowsExtendedResult),
+                            toolContext(
+                                roundRequest.input,
+                                roundRequest.requestId,
+                                allowsExtendedResult,
+                            ),
                         )
-                        if (call.extendedResult && allowsExtendedResult) {
-                            extendedResultUsed = true
-                        }
-                        outcome
-                    }
-                }
+                    },
+                    consumeExtendedResult = { extendedResultUsed = true },
+                )
                 toolRoundResults = toolRoundResults + tutorToolRoundResult(
                     roundOrdinal = toolRoundsUsed,
                     outcomes = outcomes,
@@ -816,6 +798,65 @@ object ModelTaskRepositoryFactory {
         database = database,
         gateway = gateway,
     )
+}
+
+/**
+ * 工具环里**一轮工具调用**的判定与执行，整体抽出来是为了可测：这一段是"写工具只能在锚住题时
+ * 执行"这条不变量的**唯一**落地点，而它此前长在 `execute()` 里、只有仪器化用例够得着——把
+ * 判定删掉不会有任何本机可跑的用例转红（复核意见二）。
+ *
+ * 判定分两层，两层都取自**请求/调用本身**，不取自解析路由：
+ * - 写工具（[TUTOR_WRITE_TOOLS]）：这一次调用必须带上可核对的题锚，即
+ *   [TutorToolCall.boundQuestion] 经 [TutorRoundQuestionBindingPolicy.resolve] 通过（候选在派发前
+ *   的菜单内、锚词在学生消息里逐字出现且在该题自身文本里可核对）。原生 `tool_calls` 路由的标准
+ *   形态 content=null，轮次信封无处可放声明，逐次锚是两条路由都能表达的落点。
+ * - 只被题轮披露集合覆盖的读工具（[TUTOR_QUESTION_ROUND_ONLY_READS]）：本轮派发的披露面必须
+ *   覆盖它们的产出（[com.tingyun.smartmistakebook.core.model.disclosesQuestionEvidence]）。
+ *
+ * 其余读工具不受限。被拒的调用**不会**触达 [runTool]。
+ *
+ * @param consumeExtendedResult 调用方在"一次扩展结果预算被用掉"时调用；同一轮只放一次。
+ */
+internal suspend fun tutorToolRoundOutcomes(
+    calls: List<TutorToolCall>,
+    authorizedTools: Set<TutorToolName>,
+    input: ModelTaskInput,
+    runTool: suspend (TutorToolCall, Boolean) -> TutorToolOutcome,
+    consumeExtendedResult: () -> Unit,
+): List<TutorToolOutcome> {
+    val respondInput = input as? TutorRespondInput
+    val candidates = respondInput?.boundQuestionCandidates.orEmpty()
+    val studentMessage = respondInput?.studentMessage.orEmpty()
+    val roundDisclosesQuestionEvidence = input.disclosesQuestionEvidence()
+    var extendedResultUsed = false
+    return calls.map { call ->
+        val callIsAnchored = TutorRoundQuestionBindingPolicy.resolve(
+            candidates = candidates,
+            declaration = call.boundQuestion,
+            studentMessage = studentMessage,
+        ) != null
+        val available = tutorRoundToolAvailable(
+            tool = call.tool,
+            callIsAnchoredToRoundQuestion = callIsAnchored,
+            roundDisclosesQuestionEvidence = roundDisclosesQuestionEvidence,
+        )
+        if (call.tool !in authorizedTools || !available) {
+            TutorToolOutcome(
+                tool = call.tool,
+                ok = false,
+                summaryMarkdown = "该意图下未授权此查询。",
+                errorKind = "not_authorized",
+            )
+        } else {
+            val allowsExtendedResult = !extendedResultUsed
+            val outcome = runTool(call, allowsExtendedResult)
+            if (call.extendedResult && allowsExtendedResult) {
+                extendedResultUsed = true
+                consumeExtendedResult()
+            }
+            outcome
+        }
+    }
 }
 
 private class ConcurrentModelTaskTransition : RuntimeException()

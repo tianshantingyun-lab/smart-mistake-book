@@ -481,10 +481,23 @@ internal fun JsonObject.toTutorRespond(
     )
 }
 
-internal val TUTOR_TOOL_REQUESTS_WIRE_KEYS =
-    setOf("intentDecision", "toolRequests", "boundQuestion")
+internal val TUTOR_TOOL_REQUESTS_WIRE_KEYS = setOf("intentDecision", "toolRequests")
 private val TUTOR_TOOL_CALL_WIRE_KEYS =
-    setOf("tool", "terms", "rationale", "direction", "understanding", "difficultyTier", "confidence", "extendedResult")
+    setOf(
+        "tool",
+        "terms",
+        "rationale",
+        "direction",
+        "understanding",
+        "difficultyTier",
+        "confidence",
+        "extendedResult",
+        // 写工具的本次调用锚在哪道题（problemId + problemRevisionId + anchorTerms）。
+        // 三个键与解析出的声明字段同名，便于两条路由（本信封 / 原生 tool_calls arguments）共用。
+        "problemId",
+        "problemRevisionId",
+        "anchorTerms",
+    )
 
 internal fun JsonObject.toTutorToolRequests(
     modelVersion: String,
@@ -492,9 +505,6 @@ internal fun JsonObject.toTutorToolRequests(
     requireOnlyKeys(TUTOR_TOOL_REQUESTS_WIRE_KEYS)
     return TutorToolRequestsOutput(
         intentDecision = objectValue("intentDecision").toTutorIntentDecision(),
-        // 工具轮的声明**不在这里**做本地校验：它要与本轮输入（候选菜单 + 学生消息）比对，
-        // 而那两样只有派发方（RoomModelTaskRepository）手里有。解析层只负责形状。
-        boundQuestion = optionalObject("boundQuestion")?.toBoundQuestionDeclaration(),
         calls = optionalArray("toolRequests")
             ?.mapIndexed { index, element ->
                 val call = element.objectValue()
@@ -508,6 +518,7 @@ internal fun JsonObject.toTutorToolRequests(
                     difficultyTier = call.optionalString("difficultyTier")?.let { enumValue<TutorDifficultyTier>(it) },
                     confidence = call.optionalDouble("confidence") ?: 0.8,
                     extendedResult = call.optionalBoolean("extendedResult") ?: false,
+                    boundQuestion = call.toCallBoundQuestion(),
                 )
             }
             ?: throw InvalidModelResponseException(),
@@ -578,6 +589,23 @@ internal val TUTOR_RESPOND_WIRE_KEYS =
     )
 internal val TUTOR_BOUND_QUESTION_WIRE_KEYS =
     setOf("problemId", "problemRevisionId", "anchorTerms")
+
+/**
+ * 从**扁平字段**里读出这一对象声明的题锚（`problemId` + `problemRevisionId` + 可选 `anchorTerms`）。
+ *
+ * 两条路由共用：json_object 信封里是调用对象上的三个键，原生 `tool_calls` 里是 arguments 这个
+ * 扁平 JSON 的同样三个键。缺 `problemId` 或 `problemRevisionId` 就当作**没有声明**（null）——
+ * 半个锚定位不到确定题面，等于没有；"要不要信"由本地两条校验决定，不在这里。
+ */
+internal fun JsonObject.toCallBoundQuestion(): TutorRoundQuestionDeclaration? {
+    val problemId = optionalString("problemId") ?: return null
+    val problemRevisionId = optionalString("problemRevisionId") ?: return null
+    return TutorRoundQuestionDeclaration(
+        problemId = problemId,
+        problemRevisionId = problemRevisionId,
+        anchorTerms = optionalArray("anchorTerms").map(JsonElement::requiredPrimitiveString),
+    )
+}
 
 /** 声明字段的**形状**解析（白名单收口）；"要不要信"由本地校验决定，不在这里。 */
 internal fun JsonObject.toBoundQuestionDeclaration(): TutorRoundQuestionDeclaration {

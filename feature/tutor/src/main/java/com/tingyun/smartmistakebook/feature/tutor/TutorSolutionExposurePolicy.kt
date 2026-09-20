@@ -11,6 +11,7 @@ import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
 import com.tingyun.smartmistakebook.core.model.TutorRespondOutput
 import com.tingyun.smartmistakebook.core.model.canExposeSolutionFor
+import com.tingyun.smartmistakebook.core.model.requiresRoundQuestionBinding
 
 internal data class PlanSolutionPreviewKey(
     val sessionId: String,
@@ -77,7 +78,11 @@ internal fun tutorSolutionExposureCandidateKeys(
                     task.toRespondAnswerExposureKey()?.takeIf {
                         task.status == ModelTaskStatus.SUCCEEDED &&
                             input != null &&
-                            output?.canExposeSolutionFor(input) == true
+                            output?.canExposeSolutionFor(
+                                input,
+                                requiresRoundQuestionBinding =
+                                task.request.requiresRoundQuestionBinding,
+                            ) == true
                     }?.let(::add)
                 }
 
@@ -167,7 +172,10 @@ internal fun buildTutorSolutionExposureTargets(
                 val output = task.output as? TutorRespondOutput
                 if (
                     task.status == ModelTaskStatus.SUCCEEDED &&
-                    output?.canExposeSolutionFor(input) == true
+                    output?.canExposeSolutionFor(
+                        input,
+                        requiresRoundQuestionBinding = task.request.requiresRoundQuestionBinding,
+                    ) == true
                 ) {
                     val response = responsesByTurn[input.turnIdentity()]
                     TutorSolutionExposureTarget(

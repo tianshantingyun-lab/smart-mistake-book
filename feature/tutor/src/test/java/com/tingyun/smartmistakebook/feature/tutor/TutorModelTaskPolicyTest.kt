@@ -877,13 +877,43 @@ class TutorModelTaskPolicyTest {
             ),
             input.toolDeclarations,
         )
-        // 声明全量**不等于**放行全量：无题轮（大厅）里写工具与"产出装不进本轮披露面"的读工具
-        // 都由轮次级可用性拒掉，least-disclosure 与"无题不得写"两条不变量都不动。
-        assertFalse(tutorRoundToolAvailable(TutorToolName.MASTERY_UPDATE, roundHasBoundQuestion = false))
-        assertFalse(tutorRoundToolAvailable(TutorToolName.NOTEBOOK_WRITE, roundHasBoundQuestion = false))
-        assertFalse(tutorRoundToolAvailable(TutorToolName.MASTERY_READ, roundHasBoundQuestion = false))
-        assertFalse(tutorRoundToolAvailable(TutorToolName.KNOWLEDGE_READ, roundHasBoundQuestion = false))
-        assertTrue(tutorRoundToolAvailable(TutorToolName.NOTEBOOK_READ, roundHasBoundQuestion = false))
+        // 声明全量**不等于**放行全量：无题轮（大厅）里没有逐次题锚，写工具被拒；产出装不进
+        // 本轮披露面的读工具也被拒——least-disclosure 与"无题不得写"两条不变量都不动。
+        assertFalse(
+            tutorRoundToolAvailable(
+                TutorToolName.MASTERY_UPDATE,
+                callIsAnchoredToRoundQuestion = false,
+                roundDisclosesQuestionEvidence = false,
+            ),
+        )
+        assertFalse(
+            tutorRoundToolAvailable(
+                TutorToolName.NOTEBOOK_WRITE,
+                callIsAnchoredToRoundQuestion = false,
+                roundDisclosesQuestionEvidence = false,
+            ),
+        )
+        assertFalse(
+            tutorRoundToolAvailable(
+                TutorToolName.MASTERY_READ,
+                callIsAnchoredToRoundQuestion = false,
+                roundDisclosesQuestionEvidence = false,
+            ),
+        )
+        assertFalse(
+            tutorRoundToolAvailable(
+                TutorToolName.KNOWLEDGE_READ,
+                callIsAnchoredToRoundQuestion = false,
+                roundDisclosesQuestionEvidence = false,
+            ),
+        )
+        assertTrue(
+            tutorRoundToolAvailable(
+                TutorToolName.NOTEBOOK_READ,
+                callIsAnchoredToRoundQuestion = false,
+                roundDisclosesQuestionEvidence = false,
+            ),
+        )
     }
 
     private fun turn(stem: String, choice: String) = TutorTurnHistoryEntry(
