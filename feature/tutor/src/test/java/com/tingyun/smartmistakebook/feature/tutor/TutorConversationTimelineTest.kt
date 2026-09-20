@@ -25,6 +25,9 @@ import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
 import com.tingyun.smartmistakebook.core.model.TutorIntentDecision
 import com.tingyun.smartmistakebook.core.model.TutorMemoryPreference
 import com.tingyun.smartmistakebook.core.model.TutorMessageIntent
+import com.tingyun.smartmistakebook.core.model.RelatedProblemCandidate
+import com.tingyun.smartmistakebook.core.model.SubjectKind
+import com.tingyun.smartmistakebook.core.model.TutorRoundQuestionDeclaration
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
 import com.tingyun.smartmistakebook.core.model.TutorRespondOutput
 import com.tingyun.smartmistakebook.core.model.TutorRequestedLocalCapability
@@ -446,6 +449,7 @@ class TutorConversationTimelineTest {
             studentMessage = studentMessage,
             visibleTutorContextMarkdown = null,
             priorMessages = emptyList(),
+            boundQuestionCandidates = listOf(boundCandidateFor(studentMessage)),
         )
         val input = request.input as TutorRespondInput
         return ModelTaskSnapshot(
@@ -471,11 +475,37 @@ class TutorConversationTimelineTest {
                     "因为符号在这里改变。"
                 },
                 solutionRevealed = solutionRevealed,
+                // 这些用例讲的是"当前题"的会话：本轮有绑定题（暴露记录的前提）。
+                boundQuestion = TutorRoundQuestionDeclaration(
+                    problemId = BOUND_PROBLEM_ID,
+                    problemRevisionId = BOUND_REVISION_ID,
+                    anchorTerms = listOf(anchorTermFor(studentMessage)),
+                ),
                 intentDecision = intentDecision,
                 modelVersion = "model-v1",
             ),
             createdAtEpochMillis = occurredAtEpochMillis,
             updatedAtEpochMillis = updatedAtEpochMillis,
+        )
+    }
+
+    /** 锚词：学生这句话里第一段连续的字词（≥2 字、≤8 字，且是消息的连续子串）。 */
+    private fun anchorTermFor(studentMessage: String): String =
+        ALNUM_RUN.find(studentMessage)?.value?.take(8) ?: "题干"
+
+    /** 菜单里那一条候选：题干带上锚词，"锚词两边都在"因此成立。 */
+    private fun boundCandidateFor(studentMessage: String): RelatedProblemCandidate {
+        val anchor = anchorTermFor(studentMessage)
+        return RelatedProblemCandidate(
+            problemId = BOUND_PROBLEM_ID,
+            problemRevisionId = BOUND_REVISION_ID,
+            subject = SubjectKind.MATH,
+            title = "错题本里的一道题",
+            questionDocument = QuestionDocument(
+                id = "bound-question-1",
+                title = "错题本里的一道题",
+                blocks = listOf(ContentBlock.Paragraph("bound-stem", "题干：$anchor 的完整表述")),
+            ),
         )
     }
 
@@ -599,4 +629,12 @@ class TutorConversationTimelineTest {
         feedbackMarkdown = "判断正确。",
         requestedMove = com.tingyun.smartmistakebook.core.model.TutorMoveType.CHANGE_REPRESENTATION,
     )
+    private companion object {
+        const val BOUND_PROBLEM_ID = "bound-problem-1"
+        const val BOUND_REVISION_ID = "bound-revision-1"
+
+        /** 字母/数字/汉字连续 2 字以上（Java 正则的 \p{L} 覆盖 CJK）。 */
+        val ALNUM_RUN = Regex("[\\p{L}\\p{N}]{2,}")
+    }
 }
+

@@ -3,6 +3,9 @@ package com.tingyun.smartmistakebook.feature.tutor
 import com.tingyun.smartmistakebook.core.domain.LobbyMessageImage
 import com.tingyun.smartmistakebook.core.model.CaptureSourceAssetRef
 import com.tingyun.smartmistakebook.core.model.ModelEgressAssetGrant
+import com.tingyun.smartmistakebook.core.domain.TUTOR_TOOL_DECLARATIONS
+import com.tingyun.smartmistakebook.core.model.ModelEgressDataClass
+import com.tingyun.smartmistakebook.core.model.TutorRoundDisclosure
 import com.tingyun.smartmistakebook.core.model.ModelEgressManifest
 import com.tingyun.smartmistakebook.core.model.ModelEgressPurpose
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
@@ -70,10 +73,10 @@ internal fun buildTutorLobbyRequest(
         priorDigest = priorDigest,
         sourceImageAssetRefs = imageRefs,
         contextImageAssetRefs = contextImageRefs,
-        // Lobby 只声明错题本读取：MASTERY_READ 的产出（掌握度明细）无法归入 Lobby 的
-        // 披露集合，注入 round-2 出网 prompt 会违反 least-disclosure；掌握度读取仅保留在
-        // Respond（其披露集合含 RELEVANT_LEARNING_EVIDENCE）。
-        toolDeclarations = listOf(TutorToolName.NOTEBOOK_READ),
+        // 同页声明全量五个（docs/tutor-surface-unification.md §5.6）：大厅与讲题会话是同一个页面，
+        // 声明集按页面给，可用性交给既有的授权矩阵（意图 × 置信度 × 声明集）。写工具另有一道
+        // 本地门控——只有"本轮有绑定题"才执行，而大厅轮次没有绑定题，等于必然被拒。
+        toolDeclarations = TUTOR_TOOL_DECLARATIONS.toList(),
     )
     val requestHash = sha256(
         buildString {
@@ -116,16 +119,19 @@ internal fun buildTutorLobbyRequest(
                     height = image.height,
                 )
             },
-            disclosedData = if (includesImage) {
-                ModelEgressManifest.TUTOR_LOBBY_IMAGE_DISCLOSURE
-            } else {
-                ModelEgressManifest.TUTOR_LOBBY_DISCLOSURE
-            },
-            prohibitedData = if (includesImage) {
-                ModelEgressManifest.TUTOR_LOBBY_IMAGE_PROHIBITED_DATA
-            } else {
-                ModelEgressManifest.TUTOR_LOBBY_PROHIBITED_DATA
-            },
+            // 披露只走 TutorRoundDisclosure 这一条口径（大厅＝无题轮、无候选菜单）。
+            disclosedData = TutorRoundDisclosure.expected(
+                carriesQuestion = false,
+                includesImage = includesImage,
+                includesQuestionCandidates = false,
+            ),
+            // 未披露集＝全集 − 已披露：两者必须互补，任何一边单独改都会在这里对不上。
+            prohibitedData = ModelEgressDataClass.entries.toSet() -
+                TutorRoundDisclosure.expected(
+                    carriesQuestion = false,
+                    includesImage = includesImage,
+                    includesQuestionCandidates = false,
+                ),
         )
     } else {
         null

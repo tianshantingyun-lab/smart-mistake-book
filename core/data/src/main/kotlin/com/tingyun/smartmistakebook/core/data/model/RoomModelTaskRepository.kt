@@ -2,6 +2,9 @@ package com.tingyun.smartmistakebook.core.data.model
 
 import com.tingyun.smartmistakebook.core.database.CreateModelTaskCommand
 import com.tingyun.smartmistakebook.core.database.ReserveModelTaskRemoteDispatchCommand
+import com.tingyun.smartmistakebook.core.domain.TUTOR_TOOL_DECLARATIONS
+import com.tingyun.smartmistakebook.core.domain.TutorRoundQuestionBindingPolicy
+import com.tingyun.smartmistakebook.core.domain.tutorRoundToolAvailable
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.database.TransitionModelTaskCommand
 import com.tingyun.smartmistakebook.core.domain.ModelGateway
@@ -329,15 +332,26 @@ class RoomModelTaskRepository internal constructor(
                 // prompt 里堆到 18k。模型仍可对每次查询表达"需要更大预算"（语义），但放大几次由本地
                 // 定——与本项目"模型给语义、本地给数值"的划分一致。
                 var extendedResultUsed = false
+                // 本轮绑定：模型在**本工具轮**声明的那一道题，经本地两条校验（候选在派发前的
+                // 菜单内、锚词在学生消息里逐字可核对）。写工具只认这个结果。
+                val boundRoundQuestion = TutorRoundQuestionBindingPolicy.resolve(
+                    candidates = (roundRequest.input as? TutorRespondInput)
+                        ?.boundQuestionCandidates.orEmpty(),
+                    declaration = requests.boundQuestion,
+                    studentMessage = (roundRequest.input as? TutorRespondInput)
+                        ?.studentMessage.orEmpty(),
+                )
                 val outcomes = requests.calls.map { call ->
-                    // 写工具（MASTERY_UPDATE）的不变式：只能在"当前题"（Respond）派遣里执行——
-                    // 它是本会话内唯一可落库的写工具，绝不能在没有题目上下文的 Lobby/其他轮次
-                    // 凭模型自报意图写成证据。授权矩阵只按"声明集 ∩ 意图"放行，此处显式锚定到
-                    // Respond 输入，防止声明集将来漂移（如 Lobby 误含 T6）时写工具静默越界。
-                    val writeAnchoredToCurrentQuestion =
-                        call.tool != TutorToolName.MASTERY_UPDATE ||
-                            roundRequest.input is TutorRespondInput
-                    if (call.tool !in authorization.allowedTools || !writeAnchoredToCurrentQuestion) {
+                    // 轮次级可用性（tutorRoundToolAvailable）：写工具只能在"本轮有绑定题"时执行
+                    // ——它们会落库，没有题目锚点就是无主证据；产出装不进本轮披露面的读工具
+                    // （MASTERY_READ / KNOWLEDGE_READ）同理，无题轮的披露集合覆盖不到它们。
+                    //
+                    // 为什么不再用"输入类型是 Respond"当判据：按轮次绑定之后，Respond 也可以是
+                    // 无题轮（声明缺失或核不过），而那时题面只是会话带进来的上下文，不是学生
+                    // 这一轮在说的题。用输入类型判会把这些轮次误放行。
+                    val allowedForRound =
+                        tutorRoundToolAvailable(call.tool, boundRoundQuestion != null)
+                    if (call.tool !in authorization.allowedTools || !allowedForRound) {
                         TutorToolOutcome(
                             tool = call.tool,
                             ok = false,
@@ -737,16 +751,16 @@ class RoomModelTaskRepository internal constructor(
             .take(16)
             .joinToString(separator = "") { byte -> "%02x".format(byte) }
 
-    /** Per-kind tool declarations (spec §2): respond 全套；lobby 无科目上下文，不含 knowledge_read。 */
+    /**
+     * 同页声明**全量五个**工具（`docs/tutor-surface-unification.md` §5.6）：大厅与讲题会话是同一个
+     * 页面，声明集按页面给，可用性交给门控（意图 × 置信度 × 声明集，写工具另需本轮有绑定题）。
+     *
+     * 此前 lobby 只声明 NOTEBOOK_READ，于是同一个页面上"能查什么"随轮次类型跳变：学生在无题轮
+     * 里问"我错题本里有没有类似的题"，模型根本没有可申请的工具。声明全量不等于授权全量——
+     * 授权矩阵仍逐次裁决，写工具仍被绑定门控拦住。
+     */
     private fun toolDeclarationsFor(input: ModelTaskInput): Set<TutorToolName> = when (input) {
-        is TutorRespondInput -> setOf(
-            TutorToolName.KNOWLEDGE_READ,
-            TutorToolName.NOTEBOOK_READ,
-            TutorToolName.MASTERY_READ,
-            TutorToolName.MASTERY_UPDATE,
-            TutorToolName.NOTEBOOK_WRITE,
-        )
-        is TutorLobbyInput -> setOf(TutorToolName.NOTEBOOK_READ)
+        is TutorRespondInput, is TutorLobbyInput -> TUTOR_TOOL_DECLARATIONS
         else -> emptySet()
     }
 

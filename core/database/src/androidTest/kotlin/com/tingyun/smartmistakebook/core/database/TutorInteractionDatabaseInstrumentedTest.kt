@@ -16,6 +16,9 @@ import com.tingyun.smartmistakebook.core.model.TutorAnswerExposureOutcome
 import com.tingyun.smartmistakebook.core.model.TutorIntentDecision
 import com.tingyun.smartmistakebook.core.model.TutorPlanInput
 import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
+import com.tingyun.smartmistakebook.core.model.RelatedProblemCandidate
+import com.tingyun.smartmistakebook.core.model.SubjectKind
+import com.tingyun.smartmistakebook.core.model.TutorRoundQuestionDeclaration
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
 import com.tingyun.smartmistakebook.core.model.TutorRespondOutput
 import com.tingyun.smartmistakebook.core.model.TutorTurnPlan
@@ -812,6 +815,20 @@ class TutorInteractionDatabaseInstrumentedTest {
         responseOrdinal: Int,
         solutionRevealed: Boolean,
     ) {
+        val studentMessage = if (solutionRevealed) "请告诉我答案。" else "请继续解释。"
+        val anchor = ANCHOR_TERM.find(studentMessage)?.value ?: "题干"
+        // 暴露记录的前提是**本轮有绑定题**（答案暴露按绑定）：这里按真实派发的形状给一份
+        // 菜单 + 声明——锚词同时出现在学生消息与该题题干里，两条本地校验都过。
+        val boundCandidate = RelatedProblemCandidate(
+            problemId = EXPOSURE_BOUND_PROBLEM_ID,
+            problemRevisionId = EXPOSURE_BOUND_REVISION_ID,
+            subject = SubjectKind.MATH,
+            title = "错题本里的一道题",
+            questionDocument = QuestionDocument(
+                id = "bound-question-1",
+                blocks = listOf(ContentBlock.Paragraph("bound-stem", "题干：$anchor 的完整表述")),
+            ),
+        )
         val input = TutorRespondInput(
             sessionId = sessionId,
             draftRevisionNumber = 1,
@@ -822,7 +839,8 @@ class TutorInteractionDatabaseInstrumentedTest {
             responseOrdinal = responseOrdinal,
             cycleOrdinal = 1,
             turnOrdinal = 1,
-            studentMessage = if (solutionRevealed) "请告诉我答案。" else "请继续解释。",
+            studentMessage = studentMessage,
+            boundQuestionCandidates = listOf(boundCandidate),
         )
         persistSucceededModelTask(
             request = ModelTaskRequest(
@@ -843,6 +861,11 @@ class TutorInteractionDatabaseInstrumentedTest {
                     "先检查题目条件。"
                 },
                 solutionRevealed = solutionRevealed,
+                boundQuestion = TutorRoundQuestionDeclaration(
+                    problemId = EXPOSURE_BOUND_PROBLEM_ID,
+                    problemRevisionId = EXPOSURE_BOUND_REVISION_ID,
+                    anchorTerms = listOf(anchor),
+                ),
                 intentDecision = TutorIntentDecision.currentQuestionDefault(),
                 modelVersion = "instrumented-test-model",
             ),
@@ -984,6 +1007,12 @@ class TutorInteractionDatabaseInstrumentedTest {
     )
 
     private companion object {
+        const val EXPOSURE_BOUND_PROBLEM_ID = "bound-problem-1"
+        const val EXPOSURE_BOUND_REVISION_ID = "bound-revision-1"
+
+        /** 学生消息里第一段连续的字词（≥2 字）——锚词必须是消息的连续子串。 */
+        val ANCHOR_TERM = Regex("[\\p{L}\\p{N}]{2,}")
+
         const val LEARNER_ID = "learner:local"
         const val PROBLEM_ID = "problem-exposure"
         const val REVISION_ID = "revision-exposure"

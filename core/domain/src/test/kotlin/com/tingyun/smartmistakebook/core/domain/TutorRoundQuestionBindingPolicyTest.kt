@@ -1,5 +1,7 @@
 package com.tingyun.smartmistakebook.core.domain
 
+import com.tingyun.smartmistakebook.core.model.ModelFailureCode
+import com.tingyun.smartmistakebook.core.model.ModelTaskFailure
 import com.tingyun.smartmistakebook.core.model.ModelTaskFingerprint
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
@@ -219,67 +221,23 @@ class TutorRoundQuestionBindingPolicyTest {
         )
     }
 
-    private fun declaration(
-        problemId: String,
-        problemRevisionId: String,
-        vararg anchorTerms: String,
-    ) = TutorRoundQuestionDeclaration(
-        problemId = problemId,
-        problemRevisionId = problemRevisionId,
-        anchorTerms = anchorTerms.toList(),
-    )
-
     @Test
-    fun `a reply whose declaration misses the menu is a no-question round`() {
-        val output = respondOutput(
-            boundQuestion = declaration("p-outside", "r-outside", "光的折射"),
-            messageMarkdown = "先看这一步。",
-        )
-
-        assertNull(output.resolvedRoundQuestion(respondInput()))
-    }
-
-    @Test
-    fun `a reply that declares a menu candidate resolves to that question`() {
-        val output = respondOutput(
-            boundQuestion = declaration("p-1", "r-1", "光的折射"),
-            messageMarkdown = "先看这一步。",
-        )
-
-        assertEquals(
-            "p-1",
-            output.resolvedRoundQuestion(respondInput())?.problemId,
-        )
-    }
-
-    @Test
-    fun `a reply that never declares a question is a no-question round`() {
-        val output = respondOutput(boundQuestion = null, messageMarkdown = "先看这一步。")
-
-        assertNull(output.resolvedRoundQuestion(respondInput()))
-    }
-
-    @Test
-    fun `a round without a validated binding is not the previous bound question`() {
-        // 声明越界：上一轮不是"有题轮"，下一轮不能把它当成"上一轮绑定的题"顺延下去。
+    fun `a round whose reply carries no binding is not the previous bound question`() {
+        // output.boundQuestion 是**校验过**的绑定；它为 null（无题轮：声明缺失、越界或锚词对不上）
+        // 时，这一轮不能成为下一轮的"上一轮绑定的题"——那会把无题轮当成有题轮顺延下去。
         val tasks = listOf(
-            respondTask(
-                createdAtEpochMillis = 1,
-                input = respondInput(),
-                declaration = declaration("p-outside", "r-outside", "光的折射"),
-            ),
+            respondTask(createdAtEpochMillis = 1, boundQuestion = null),
         )
 
         assertNull(previousBoundRoundQuestion(tasks))
     }
 
     @Test
-    fun `the most recent validated binding is the previous bound question`() {
+    fun `the most recent bound round supplies the previous bound question`() {
         val tasks = listOf(
             respondTask(
                 createdAtEpochMillis = 1,
-                input = respondInput(),
-                declaration = declaration("p-1", "r-1", "光的折射"),
+                boundQuestion = declaration("p-1", "r-1", "光的折射"),
             ),
         )
 
@@ -287,35 +245,60 @@ class TutorRoundQuestionBindingPolicyTest {
     }
 
     @Test
-    fun `the previous bound question survives a later no-question round`() {
-        // 后一轮没有声明（无题轮）时，上一轮绑定的题仍是"上一轮绑定的题"：
-        // 无题轮不该把跨轮延续的那条线索抹掉。
+    fun `the newest binding wins when several rounds are bound`() {
+        // 两道不同的题各绑过一轮：取最近那一轮，而不是任意一轮。
         val tasks = listOf(
             respondTask(
                 createdAtEpochMillis = 1,
-                input = respondInput(),
-                declaration = declaration("p-1", "r-1", "光的折射"),
+                boundQuestion = declaration("p-1", "r-1", "光的折射"),
+                candidate = candidate("p-1", "r-1", "光的折射实验"),
             ),
             respondTask(
                 createdAtEpochMillis = 2,
-                input = respondInput(),
-                declaration = null,
+                boundQuestion = declaration("p-2", "r-2", "凸透镜成像"),
+                candidate = candidate("p-2", "r-2", "凸透镜成像规律"),
             ),
         )
 
-        assertEquals("p-1", previousBoundRoundQuestion(tasks)?.problemId)
-        assertEquals(
-            "p-1",
-            previousBoundRoundQuestion(tasks.sortedByDescending { it.createdAtEpochMillis })
-                ?.problemId,
+        assertEquals("p-2", previousBoundRoundQuestion(tasks)?.problemId)
+        // 顺序无关：取的是 createdAt 最近的一轮，不是列表末项——查询结果按什么顺序回来
+        // 都必须是同一道题，否则"上一轮绑定的题"会随查询计划漂移。
+        assertEquals("p-2", previousBoundRoundQuestion(tasks.reversed())?.problemId)
+    }
+
+    @Test
+    fun `a failed round does not become the previous bound question`() {
+        val tasks = listOf(
+            respondTask(
+                createdAtEpochMillis = 1,
+                boundQuestion = declaration("p-1", "r-1", "光的折射"),
+                status = ModelTaskStatus.PERMANENT_FAILURE,
+            ),
         )
+
+        assertNull(previousBoundRoundQuestion(tasks))
     }
 
     private fun respondTask(
         createdAtEpochMillis: Long,
-        input: TutorRespondInput,
-        declaration: TutorRoundQuestionDeclaration?,
+        boundQuestion: TutorRoundQuestionDeclaration?,
+        status: ModelTaskStatus = ModelTaskStatus.SUCCEEDED,
+        candidate: RelatedProblemCandidate = candidate("p-1", "r-1", "光的折射实验"),
     ): ModelTaskSnapshot {
+        val input = TutorRespondInput(
+            sessionId = "session-1",
+            draftRevisionNumber = 1,
+            subject = "物理",
+            questionDocument = QuestionDocument(
+                id = "question-current",
+                blocks = listOf(ContentBlock.Paragraph("stem", "题干")),
+            ),
+            relevantLearningEvidence = emptyList(),
+            projectionIsCurrent = true,
+            responseOrdinal = createdAtEpochMillis.toInt(),
+            studentMessage = "光的折射实验这道题再讲一遍",
+            boundQuestionCandidates = listOf(candidate),
+        )
         val request = ModelTaskRequest(
             requestId = "request-$createdAtEpochMillis",
             input = input,
@@ -325,19 +308,55 @@ class TutorRoundQuestionBindingPolicyTest {
             taskId = "task-$createdAtEpochMillis",
             request = request,
             requestFingerprint = ModelTaskFingerprint.of(request),
-            status = ModelTaskStatus.SUCCEEDED,
+            status = status,
             stateVersion = 1,
             stage = ModelTaskStage.COMPLETE,
             userMessage = "完成",
             attemptCount = 1,
-            output = respondOutput(
-                boundQuestion = declaration,
-                messageMarkdown = "先看这一步。",
-            ),
+            output = if (status == ModelTaskStatus.PERMANENT_FAILURE) {
+                null
+            } else {
+                respondOutput(
+                    boundQuestion = boundQuestion,
+                    responseOrdinal = input.responseOrdinal,
+                )
+            },
+            failure = if (status == ModelTaskStatus.PERMANENT_FAILURE) {
+                ModelTaskFailure(
+                    code = ModelFailureCode.UNKNOWN,
+                    message = "失败",
+                    retryable = false,
+                )
+            } else {
+                null
+            },
             createdAtEpochMillis = createdAtEpochMillis,
             updatedAtEpochMillis = createdAtEpochMillis,
         )
     }
+
+    private fun respondOutput(
+        boundQuestion: TutorRoundQuestionDeclaration?,
+        responseOrdinal: Int = 1,
+    ) = TutorRespondOutput(
+        sessionId = "session-1",
+        draftRevisionNumber = 1,
+        questionDocumentId = "question-current",
+        responseOrdinal = responseOrdinal,
+        messageMarkdown = "先看这一步。",
+        boundQuestion = boundQuestion,
+        modelVersion = "test-model",
+    )
+
+    private fun declaration(
+        problemId: String,
+        problemRevisionId: String,
+        vararg anchorTerms: String,
+    ) = TutorRoundQuestionDeclaration(
+        problemId = problemId,
+        problemRevisionId = problemRevisionId,
+        anchorTerms = anchorTerms.toList(),
+    )
 
     private fun respondInput() = TutorRespondInput(
         sessionId = "session-1",

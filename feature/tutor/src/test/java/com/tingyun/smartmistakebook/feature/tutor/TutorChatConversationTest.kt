@@ -24,6 +24,9 @@ import com.tingyun.smartmistakebook.core.model.TutorMemoryPreference
 import com.tingyun.smartmistakebook.core.model.TutorMessageIntent
 import com.tingyun.smartmistakebook.core.model.TutorRequestedLocalCapability
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
+import com.tingyun.smartmistakebook.core.model.RelatedProblemCandidate
+import com.tingyun.smartmistakebook.core.model.SubjectKind
+import com.tingyun.smartmistakebook.core.model.TutorRoundQuestionDeclaration
 import com.tingyun.smartmistakebook.core.model.TutorRespondOutput
 import com.tingyun.smartmistakebook.core.model.WritingLayer
 import org.junit.Assert.assertEquals
@@ -449,9 +452,12 @@ class TutorChatConversationTest {
         thinkingMarkdown: String? = null,
         createdAtEpochMillis: Long = responseOrdinal.toLong(),
         updatedAtEpochMillis: Long = createdAtEpochMillis,
+        /** 本轮是不是有题轮：这些用例讲的是"当前题"的会话，默认有题；无题轮另有专门用例。 */
+        boundQuestion: Boolean = true,
     ): ModelTaskSnapshot {
         val question = currentQuestion().toTutorQuestionContext()
         val provider = provider()
+        val bindingCandidate = boundCandidateFor(studentMessage)
         val request = buildTutorRespondRequest(
             question = question,
             profile = StudyProfileOverview(),
@@ -464,6 +470,7 @@ class TutorChatConversationTest {
             studentMessage = studentMessage,
             visibleTutorContextMarkdown = null,
             priorMessages = emptyList(),
+            boundQuestionCandidates = if (boundQuestion) listOf(bindingCandidate) else emptyList(),
         )
         return ModelTaskSnapshot(
             taskId = "task-$requestId",
@@ -482,6 +489,15 @@ class TutorChatConversationTest {
                 responseOrdinal = responseOrdinal,
                 messageMarkdown = assistantMarkdown,
                 solutionRevealed = solutionRevealed,
+                boundQuestion = if (boundQuestion) {
+                    TutorRoundQuestionDeclaration(
+                        problemId = bindingCandidate.problemId,
+                        problemRevisionId = bindingCandidate.problemRevisionId,
+                        anchorTerms = listOf(anchorTermFor(studentMessage)),
+                    )
+                } else {
+                    null
+                },
                 thinkingMarkdown = thinkingMarkdown,
                 intentDecision = TutorIntentDecision(
                     intent = TutorMessageIntent.CURRENT_QUESTION_HELP,
@@ -514,6 +530,43 @@ class TutorChatConversationTest {
         message = "暂时没有完成",
         retryable = true,
     )
+
+    /**
+     * 锚词：学生这句话里第一段**连续**的字母/数字/汉字（≥2 字，≤8 字）。
+     *
+     * 必须是消息里的**连续子串**（逐字锚纪律要求原样出现），且必须是无控制字符的短词
+     * （`TutorRoundQuestionDeclaration` 对锚词有长度与字符约束）——所以不能直接拿整句当锚词：
+     * 有的用例故意带首尾空白与换行。
+     */
+    private fun anchorTermFor(studentMessage: String): String =
+        ALNUM_RUN.find(studentMessage)?.value?.take(8) ?: "题干"
+
+    /**
+     * 本轮菜单里的一条候选：题干里带上锚词，于是"锚词在学生消息里 + 锚词在该题自身文本里"
+     * 两条同时成立（与真实派发同构——真实候选来自错题本、题干与学生的话各自独立，但校验规则
+     * 一样：同一个词要两边都在）。
+     */
+    private fun boundCandidateFor(studentMessage: String): RelatedProblemCandidate {
+        val anchor = anchorTermFor(studentMessage)
+        return RelatedProblemCandidate(
+            problemId = "bound-problem-1",
+            problemRevisionId = "bound-revision-1",
+            subject = SubjectKind.MATH,
+            title = "错题本里的一道题",
+            questionDocument = QuestionDocument(
+                id = "bound-question-1",
+                title = "错题本里的一道题",
+                blocks = listOf(
+                    ContentBlock.Paragraph("bound-stem", "题干：$anchor 的完整表述"),
+                ),
+            ),
+        )
+    }
+
+    private companion object {
+        // 字母/数字/汉字（Java 正则的 \p{L} 覆盖 CJK），连续 2 字以上。
+        val ALNUM_RUN = Regex("[\\p{L}\\p{N}]{2,}")
+    }
 
     private fun currentQuestion() = ConfirmedTutorSession(
         sessionId = "current-question-session",

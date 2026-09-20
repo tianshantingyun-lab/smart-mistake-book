@@ -519,9 +519,22 @@ internal object OpenAiModelTaskAdapters {
                 toolDeclarations.forEach { tool ->
                     append("- ${tool.name}：${toolPurposeDescription(tool)}\n")
                 }
-                append("需要查询时，把整个输出改为返回 {\"intentDecision\":{...},\"toolRequests\":" +
+                append("需要查询时，把整个输出改为返回 {\"intentDecision\":{...},\"boundQuestion\":" +
+                    "{problemId,problemRevisionId,anchorTerms},\"toolRequests\":" +
                     "[{\"tool\":\"<工具名>\",\"terms\":[\"<原词>\"],\"rationale\":\"<锚定理由>\"}]}；" +
                     "不需要查询时按正常规则返回最终回答。")
+                append("\nboundQuestion 在工具轮同样可省略，规则与最终回答完全一致：只能从 " +
+                    "boundQuestionCandidates 里原样复制一条的 problemId 与 problemRevisionId，" +
+                    "anchorTerms 逐字来自 studentMessage 且至少一个词能对上下发来的那道题。")
+                // 只在**声明了写工具**时讲写工具的准入：提示词不得提到本轮未声明的工具
+                // （TutorToolPromptInjectionTest 守着这条不变量）。
+                val declaredWriteTools = toolDeclarations.filter(TutorToolName::isWriteTool)
+                if (declaredWriteTools.isNotEmpty()) {
+                    append("\n**写工具（" +
+                        declaredWriteTools.joinToString(" / ") { tool -> tool.name } +
+                        "）只在本轮确实绑定了题时才执行**：省略 boundQuestion 或核不过，" +
+                        "这些工具一律不放行（读工具不受影响）。")
+                }
                 if (toolDeclarations.contains(TutorToolName.MASTERY_UPDATE)) {
                     append("\nMASTERY_UPDATE 判断规范（违反即不应申请）：")
                     append("\n1. 先列证据后判断：rationale 必须用引号逐字引用≥2条学生原话或可观察行为" +
@@ -630,3 +643,6 @@ internal object OpenAiModelTaskAdapters {
     }
 }
 
+/** 会落库的两个工具；与 core:domain 的 TUTOR_WRITE_TOOLS 同集合（提示词侧只需判名字）。 */
+private fun TutorToolName.isWriteTool(): Boolean =
+    this == TutorToolName.MASTERY_UPDATE || this == TutorToolName.NOTEBOOK_WRITE

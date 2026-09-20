@@ -58,6 +58,7 @@ import com.tingyun.smartmistakebook.core.model.TutorMoveType
 import com.tingyun.smartmistakebook.core.model.TutorPlanInput
 import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
+import com.tingyun.smartmistakebook.core.model.TutorRoundQuestionDeclaration
 import com.tingyun.smartmistakebook.core.model.TutorRespondOutput
 import com.tingyun.smartmistakebook.core.model.TutorSuggestedMove
 import com.tingyun.smartmistakebook.core.model.TutorTurnHistoryEntry
@@ -71,6 +72,16 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import org.junit.Rule
 import org.junit.runner.RunWith
+
+/**
+ * 替身输出里的本轮绑定：答案暴露要求"本轮确实有绑定题"（暴露记录是"学生看过这道题的答案"
+ * 的证据，锚不到题就没有主人）。
+ */
+internal val EXPOSURE_BOUND_QUESTION = TutorRoundQuestionDeclaration(
+    problemId = "bound-problem-1",
+    problemRevisionId = "bound-revision-1",
+    anchorTerms = listOf("答案"),
+)
 
 @RunWith(AndroidJUnit4::class)
 abstract class CapturedTutorSessionTestBase {
@@ -840,6 +851,9 @@ abstract class CapturedTutorSessionTestBase {
                                 turnOrdinal = restoredInput.turnOrdinal,
                                 messageMarkdown = "先看导数在临界点两侧的符号。",
                                 solutionRevealed = restoredSucceededRevealsSolution,
+                                // 答案暴露按绑定：暴露记录要求本轮确实有绑定题。替身直接构造
+                                // 输出，所以在这里显式声明（真实路径由解析层写入校验过的绑定）。
+                                boundQuestion = EXPOSURE_BOUND_QUESTION,
                                 suggestedMoves = restoredSucceededSuggestedMoves,
                                 intentDecision = restoredSucceededIntentDecision,
                                 modelVersion = "model-v1",
@@ -953,6 +967,7 @@ abstract class CapturedTutorSessionTestBase {
                         turnOrdinal = input.turnOrdinal,
                         messageMarkdown = messageMarkdown,
                         solutionRevealed = true,
+                        boundQuestion = EXPOSURE_BOUND_QUESTION,
                         intentDecision = TutorIntentDecision.currentQuestionDefault(),
                         modelVersion = "model-v1",
                     ),

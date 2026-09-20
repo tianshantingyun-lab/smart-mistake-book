@@ -1,12 +1,12 @@
 package com.tingyun.smartmistakebook.feature.tutor
 
+import com.tingyun.smartmistakebook.core.domain.TutorRoundQuestionBindingPolicy
 import com.tingyun.smartmistakebook.core.domain.BindStudentMessageQuestionCommand
 import com.tingyun.smartmistakebook.core.model.RelatedProblemCandidate
 import com.tingyun.smartmistakebook.core.domain.AppendTutorStudentMessageCommand
 import com.tingyun.smartmistakebook.core.domain.CreateTutorConversationCommand
 import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
 import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
-import com.tingyun.smartmistakebook.core.domain.resolvedRoundQuestion
 import com.tingyun.smartmistakebook.core.domain.TutorSendAction
 import com.tingyun.smartmistakebook.core.domain.TutorSendState
 import com.tingyun.smartmistakebook.core.domain.TutorTurnResponse
@@ -329,7 +329,15 @@ internal class TutorRespondCommands(
         val conversations = sink.conversations ?: return
         val input = request.input as? TutorRespondInput ?: return
         val output = snapshot.output as? TutorRespondOutput ?: return
-        val binding = output.resolvedRoundQuestion(input) ?: return
+        // 解析层已经把模型声明核过一遍（`output.boundQuestion` 就是核过的结果）。这里**再核
+        // 一遍**：落库的是耐久记录，而"解析层是唯一写入口"是对**生产**路径成立的假设——测试替身
+        // 与将来任何直接构造输出的地方都不受它约束。一次幂等的重核换来的是"写进消息层的绑定
+        // 一定通过两条本地校验"，代价只是重复一次纯函数调用。
+        val binding = TutorRoundQuestionBindingPolicy.resolve(
+            candidates = input.boundQuestionCandidates,
+            declaration = output.boundQuestion,
+            studentMessage = input.studentMessage,
+        ) ?: return
         runCatching {
             conversations.bindStudentMessageQuestion(
                 BindStudentMessageQuestionCommand(

@@ -25,6 +25,9 @@ import com.tingyun.smartmistakebook.core.model.TutorLobbyOutput
 import com.tingyun.smartmistakebook.core.model.TutorMemoryPreference
 import com.tingyun.smartmistakebook.core.model.TutorMessageIntent
 import com.tingyun.smartmistakebook.core.model.TutorRequestedLocalCapability
+import com.tingyun.smartmistakebook.core.model.RelatedProblemCandidate
+import com.tingyun.smartmistakebook.core.model.SubjectKind
+import com.tingyun.smartmistakebook.core.model.TutorRoundQuestionDeclaration
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
 import com.tingyun.smartmistakebook.core.model.TutorRespondOutput
 import com.tingyun.smartmistakebook.core.model.TutorToolCall
@@ -99,6 +102,10 @@ class RoomModelTaskT6MasteryInstrumentedTest {
             studentMessage = "我现在理解配方法这一步了。",
             priorMessages = emptyList(),
             requestedMove = null,
+            // 本轮有绑定题：写工具（MASTERY_UPDATE）的准入是本轮**确实**绑定了题，而不是
+            // "输入类型是 Respond"。菜单里那一条的锚词（"配方法"）同时出现在学生消息与题干里，
+            // 两条本地校验都过。
+            boundQuestionCandidates = listOf(boundCandidate()),
         )
         return ModelTaskRequest(
             requestId = "tutor-respond:t6-test",
@@ -107,6 +114,24 @@ class RoomModelTaskT6MasteryInstrumentedTest {
             egressManifest = null,
         )
     }
+
+    /** 菜单里那一条候选：锚词 "配方法" 在标题与题干里都有。 */
+    private fun boundCandidate() = RelatedProblemCandidate(
+        problemId = "problem-peifang",
+        problemRevisionId = "revision-peifang",
+        subject = SubjectKind.MATH,
+        title = "配方法解一元二次方程",
+        questionDocument = QuestionDocument(
+            id = "question-peifang",
+            blocks = listOf(ContentBlock.Paragraph("stem-peifang", "用配方法求函数的单调区间。")),
+        ),
+    )
+
+    private fun roundBinding() = TutorRoundQuestionDeclaration(
+        problemId = "problem-peifang",
+        problemRevisionId = "revision-peifang",
+        anchorTerms = listOf("配方法"),
+    )
 
     private fun masteryUpdateToolRequest() = TutorToolRequestsOutput(
         intentDecision = TutorIntentDecision(
@@ -127,6 +152,8 @@ class RoomModelTaskT6MasteryInstrumentedTest {
                 confidence = 0.85,
             ),
         ),
+        // 工具轮的同一个声明：写工具在**工具轮**执行，本地要在写之前就能回答"本轮有没有题"。
+        boundQuestion = roundBinding(),
         modelVersion = "t6-model-v1",
     )
 
@@ -146,6 +173,7 @@ class RoomModelTaskT6MasteryInstrumentedTest {
             memoryPreference = TutorMemoryPreference.UNCHANGED,
             requestedLocalCapability = TutorRequestedLocalCapability.NONE,
         ),
+        boundQuestion = roundBinding(),
         modelVersion = "t6-model-v1",
     )
 

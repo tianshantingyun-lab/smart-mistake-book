@@ -71,6 +71,7 @@ import com.tingyun.smartmistakebook.core.model.TutorEvidenceChainScene
 import com.tingyun.smartmistakebook.core.model.TutorDebriefInput
 import com.tingyun.smartmistakebook.core.model.TutorDebriefOutput
 import com.tingyun.smartmistakebook.core.model.AttachedImage
+import com.tingyun.smartmistakebook.core.domain.TutorRoundQuestionBindingPolicy
 import com.tingyun.smartmistakebook.core.model.AttachedImageKind
 import com.tingyun.smartmistakebook.core.model.TutorPlanInput
 import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
@@ -452,15 +453,14 @@ internal fun JsonObject.toTutorRespond(
     }
     val intentDecision = optionalObject("intentDecision")?.toTutorIntentDecision()
         ?: TutorIntentDecision.ambiguousDefault()
-    val boundQuestion = optionalObject("boundQuestion")?.let { element ->
-        element.requireOnlyKeys(TUTOR_BOUND_QUESTION_WIRE_KEYS)
-        TutorRoundQuestionDeclaration(
-            problemId = element.requiredString("problemId"),
-            problemRevisionId = element.requiredString("problemRevisionId"),
-            anchorTerms = element.optionalArray("anchorTerms")
-                .map(JsonElement::requiredPrimitiveString),
-        )
-    }
+    // 本地两条校验在**这里**落地：核不过的声明不进入输出，输出里的 boundQuestion 就是
+    // "本轮真正绑定的题"。下游（写门控、答案暴露、落库、渲染）因此不必各自再判一次，
+    // 也不会出现"某个调用点忘了校验"的漏口——这个解析器是 TutorRespondOutput 的唯一生产者。
+    val boundQuestion = TutorRoundQuestionBindingPolicy.resolve(
+        candidates = input.boundQuestionCandidates,
+        declaration = optionalObject("boundQuestion")?.toBoundQuestionDeclaration(),
+        studentMessage = input.studentMessage,
+    )
     return TutorRespondOutput(
         sessionId = input.sessionId,
         draftRevisionNumber = input.draftRevisionNumber,
@@ -481,7 +481,8 @@ internal fun JsonObject.toTutorRespond(
     )
 }
 
-internal val TUTOR_TOOL_REQUESTS_WIRE_KEYS = setOf("intentDecision", "toolRequests")
+internal val TUTOR_TOOL_REQUESTS_WIRE_KEYS =
+    setOf("intentDecision", "toolRequests", "boundQuestion")
 private val TUTOR_TOOL_CALL_WIRE_KEYS =
     setOf("tool", "terms", "rationale", "direction", "understanding", "difficultyTier", "confidence", "extendedResult")
 
@@ -491,6 +492,9 @@ internal fun JsonObject.toTutorToolRequests(
     requireOnlyKeys(TUTOR_TOOL_REQUESTS_WIRE_KEYS)
     return TutorToolRequestsOutput(
         intentDecision = objectValue("intentDecision").toTutorIntentDecision(),
+        // 工具轮的声明**不在这里**做本地校验：它要与本轮输入（候选菜单 + 学生消息）比对，
+        // 而那两样只有派发方（RoomModelTaskRepository）手里有。解析层只负责形状。
+        boundQuestion = optionalObject("boundQuestion")?.toBoundQuestionDeclaration(),
         calls = optionalArray("toolRequests")
             ?.mapIndexed { index, element ->
                 val call = element.objectValue()
@@ -574,6 +578,16 @@ internal val TUTOR_RESPOND_WIRE_KEYS =
     )
 internal val TUTOR_BOUND_QUESTION_WIRE_KEYS =
     setOf("problemId", "problemRevisionId", "anchorTerms")
+
+/** 声明字段的**形状**解析（白名单收口）；"要不要信"由本地校验决定，不在这里。 */
+internal fun JsonObject.toBoundQuestionDeclaration(): TutorRoundQuestionDeclaration {
+    requireOnlyKeys(TUTOR_BOUND_QUESTION_WIRE_KEYS)
+    return TutorRoundQuestionDeclaration(
+        problemId = requiredString("problemId"),
+        problemRevisionId = requiredString("problemRevisionId"),
+        anchorTerms = optionalArray("anchorTerms").map(JsonElement::requiredPrimitiveString),
+    )
+}
 internal val TUTOR_LOBBY_WIRE_KEYS =
     setOf("intentDecision", "messageMarkdown", "thinkingMarkdown", "attachedImages")
 internal val ATTACHED_IMAGE_WIRE_KEYS =

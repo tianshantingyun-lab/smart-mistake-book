@@ -543,9 +543,16 @@ fun TutorRespondInput.studentAuthorizedSolutionRequest(): Boolean {
         SOLUTION_REQUEST_NEGATIONS.none(normalized::contains)
 }
 
-/** Shared defense-in-depth boundary for validation, rendering, exposure recording, and history. */
+/**
+ * Shared defense-in-depth boundary for validation, rendering, exposure recording, and history.
+ *
+ * 除五项身份精确匹配之外，还要求**本轮确实有绑定题**（[boundQuestion] 非 null，即那一轮的
+ * 声明通过了本地两条校验）：无题轮永不产生答案暴露记录——暴露记录是"学生看过这道题的答案"
+ * 的证据，锚不到题就没有主人，写进去之后任何按题查询都会错认。
+ */
 fun TutorRespondOutput.canExposeSolutionFor(input: TutorRespondInput): Boolean =
-    solutionRevealed &&
+    boundQuestion != null &&
+        solutionRevealed &&
         input.studentAuthorizedSolutionRequest() &&
         sessionId == input.sessionId &&
         draftRevisionNumber == input.draftRevisionNumber &&
@@ -766,8 +773,12 @@ data class TutorRespondOutput(
     /** Optional locally-rendered figures the model asked for; drawn after the body, never in markdown. */
     val attachedImages: List<AttachedImage> = emptyList(),
     /**
-     * 模型声明"这一轮在说哪一道题"；null 表示不指任何一道（无题轮）。**声明不授予权限**：
-     * 本地要核候选在菜单内、且锚词逐字出现，核不过就当无题轮处理。
+     * **本轮真正绑定的题**；null 表示无题轮。
+     *
+     * 只在解析层写入：模型声明先经 `TutorRoundQuestionBindingPolicy.resolve`（候选必须在派发前
+     * 的菜单内、锚词必须逐字可核对），核过才落到这里，核不过就是 null。唯一的生产者是
+     * `OpenAiModelResponseParsers.toTutorRespond`，所以下游（门控、暴露、落库、渲染）可以把它
+     * 当作"已校验的本轮绑定"读，不必各自再判一次。
      */
     val boundQuestion: TutorRoundQuestionDeclaration? = null,
     val modelVersion: String,

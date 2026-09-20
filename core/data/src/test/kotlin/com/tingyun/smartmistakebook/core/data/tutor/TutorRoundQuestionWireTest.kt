@@ -5,6 +5,7 @@ import com.tingyun.smartmistakebook.core.model.ContentBlock
 import com.tingyun.smartmistakebook.core.model.QuestionDocument
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
 import com.tingyun.smartmistakebook.core.model.TutorRoundQuestionDeclaration
+import com.tingyun.smartmistakebook.core.data.model.toTutorToolRequests
 import com.tingyun.smartmistakebook.core.data.model.toTutorRespond
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -58,7 +59,9 @@ class TutorRoundQuestionWireTest {
     }
 
     @Test
-    fun `a declaration without anchors keeps them empty and never invents one`() {
+    fun `a declaration without anchors is a no-question round`() {
+        // 锚词为空 → 本地第二条校验不过 → 无题轮：输出里的 boundQuestion 必须是 null，
+        // 而不是"带一份空锚词的绑定"（那会让下游以为本轮有题）。
         val output = respond(
             """
             {
@@ -69,8 +72,120 @@ class TutorRoundQuestionWireTest {
             """.trimIndent(),
         )
 
+        assertNull(output.boundQuestion)
+    }
+
+    @Test
+    fun `an out-of-menu declaration is a no-question round`() {
+        val output = respond(
+            """
+            {
+              "messageMarkdown": "先看这一步。",
+              "solutionRevealed": false,
+              "boundQuestion": {
+                "problemId": "problem-outside",
+                "problemRevisionId": "revision-outside",
+                "anchorTerms": ["光的折射"]
+              }
+            }
+            """.trimIndent(),
+        )
+
+        assertNull(output.boundQuestion)
+    }
+
+    @Test
+    fun `an anchor the student never wrote is a no-question round`() {
+        val output = respond(
+            """
+            {
+              "messageMarkdown": "先看这一步。",
+              "solutionRevealed": false,
+              "boundQuestion": {
+                "problemId": "problem-1",
+                "problemRevisionId": "revision-1",
+                "anchorTerms": ["全反射临界角"]
+              }
+            }
+            """.trimIndent(),
+        )
+
+        assertNull(output.boundQuestion)
+    }
+
+    @Test
+    fun `a menu candidate anchored verbatim in the student message is the round binding`() {
+        val output = respond(
+            """
+            {
+              "messageMarkdown": "先看这一步。",
+              "solutionRevealed": false,
+              "boundQuestion": {
+                "problemId": "problem-1",
+                "problemRevisionId": "revision-1",
+                "anchorTerms": ["光的折射"]
+              }
+            }
+            """.trimIndent(),
+        )
+
         assertEquals("problem-1", output.boundQuestion?.problemId)
-        assertTrue(output.boundQuestion?.anchorTerms.orEmpty().isEmpty())
+        assertEquals("revision-1", output.boundQuestion?.problemRevisionId)
+    }
+
+    @Test
+    fun `a tool round carries the same declaration shape`() {
+        val requests = Json.parseToJsonElement(
+            """
+            {
+              "intentDecision": {
+                "intent": "CURRENT_QUESTION_HELP",
+                "confidence": 0.9,
+                "explicitActionRequest": false,
+                "memoryPreference": "UNCHANGED",
+                "requestedLocalCapability": "NONE"
+              },
+              "boundQuestion": {
+                "problemId": "problem-1",
+                "problemRevisionId": "revision-1",
+                "anchorTerms": ["光的折射"]
+              },
+              "toolRequests": [{"tool": "MASTERY_UPDATE", "terms": ["配方法"], "rationale": "学生说懂了", "direction": "POSITIVE", "understanding": "CONFIDENT", "confidence": 0.8}]
+            }
+            """.trimIndent(),
+        ).let { element -> element as JsonObject }
+
+        val parsed = requests.toTutorToolRequests("model-v1")
+
+        assertEquals("problem-1", parsed.boundQuestion?.problemId)
+        assertEquals(listOf("光的折射"), parsed.boundQuestion?.anchorTerms)
+    }
+
+    @Test
+    fun `an unknown field inside the tool-round declaration invalidates the whole reply`() {
+        val rejection = runCatching {
+            Json.parseToJsonElement(
+                """
+                {
+                  "intentDecision": {
+                    "intent": "CURRENT_QUESTION_HELP",
+                    "confidence": 0.9,
+                    "explicitActionRequest": false,
+                    "memoryPreference": "UNCHANGED",
+                    "requestedLocalCapability": "NONE"
+                  },
+                  "boundQuestion": {
+                    "problemId": "problem-1",
+                    "problemRevisionId": "revision-1",
+                    "confidence": 0.9
+                  },
+                  "toolRequests": [{"tool": "NOTEBOOK_READ", "rationale": "查错题本"}]
+                }
+                """.trimIndent(),
+            ).let { element -> element as JsonObject }.toTutorToolRequests("model-v1")
+        }
+
+        assertTrue(rejection.isFailure)
     }
 
     @Test

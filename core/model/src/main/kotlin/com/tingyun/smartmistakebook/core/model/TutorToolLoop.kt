@@ -321,6 +321,15 @@ const val DROPPED_OUTCOME_SUMMARY = "本轮结果预算已用尽，本条摘要�
 data class TutorToolRequestsOutput(
     val intentDecision: TutorIntentDecision,
     val calls: List<TutorToolCall>,
+    /**
+     * 本轮在说哪一道题的声明（与最终回答里的是同一个声明、同一套本地校验）。
+     *
+     * 为什么工具轮也要声明：写工具（MASTERY_UPDATE / NOTEBOOK_WRITE）在**工具轮就执行**，而
+     * 最终回答要到下一轮才到。没有这个声明，本地就无法在写之前回答"本轮到底有没有题"，
+     * 写门控只能退回去看"输入类型是不是 Respond"——那在轮次级绑定之后不再等于"有题"
+     * （Respond 也可以是"这一轮不指任何一道"的无题轮）。
+     */
+    val boundQuestion: TutorRoundQuestionDeclaration? = null,
     val modelVersion: String,
 ) : ModelTaskOutput {
     init {

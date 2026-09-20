@@ -42,6 +42,8 @@ import com.tingyun.smartmistakebook.core.model.studentAuthorizedSolutionRequest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
+import com.tingyun.smartmistakebook.core.domain.TUTOR_TOOL_DECLARATIONS
+import com.tingyun.smartmistakebook.core.domain.tutorRoundToolAvailable
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -852,7 +854,7 @@ class TutorModelTaskPolicyTest {
     }
 
     @Test
-    fun lobbyRequestCarriesLookupToolDeclarations() {
+    fun lobbyRequestCarriesTheSamePageToolDeclarations() {
         val request = buildTutorLobbyRequest(
             provider = provider(),
             conversationId = "tutor-lobby-declare",
@@ -862,13 +864,26 @@ class TutorModelTaskPolicyTest {
             occurredAtEpochMillis = 300,
         )
         val input = request.input as TutorLobbyInput
-        assertTrue(
-            "Lobby 应只声明 T3(NOTEBOOK_READ)：MASTERY_READ 产出无法归入 Lobby 披露集合（least-disclosure），无科目亦不含 T2",
-            input.toolDeclarations == listOf(TutorToolName.NOTEBOOK_READ),
+        // 同页全量五个（docs/tutor-surface-unification.md §5.6）：大厅与讲题会话是同一个页面，
+        // 声明集不再随轮次类型跳变——"模型能申请什么"与"本地放行什么"分成两层表达。
+        assertEquals(TUTOR_TOOL_DECLARATIONS.toList(), input.toolDeclarations)
+        assertEquals(
+            listOf(
+                TutorToolName.KNOWLEDGE_READ,
+                TutorToolName.NOTEBOOK_READ,
+                TutorToolName.MASTERY_READ,
+                TutorToolName.MASTERY_UPDATE,
+                TutorToolName.NOTEBOOK_WRITE,
+            ),
+            input.toolDeclarations,
         )
-        assertFalse(TutorToolName.KNOWLEDGE_READ in input.toolDeclarations)
-        assertFalse(TutorToolName.MASTERY_READ in input.toolDeclarations)
-        assertFalse(TutorToolName.MASTERY_UPDATE in input.toolDeclarations)
+        // 声明全量**不等于**放行全量：无题轮（大厅）里写工具与"产出装不进本轮披露面"的读工具
+        // 都由轮次级可用性拒掉，least-disclosure 与"无题不得写"两条不变量都不动。
+        assertFalse(tutorRoundToolAvailable(TutorToolName.MASTERY_UPDATE, roundHasBoundQuestion = false))
+        assertFalse(tutorRoundToolAvailable(TutorToolName.NOTEBOOK_WRITE, roundHasBoundQuestion = false))
+        assertFalse(tutorRoundToolAvailable(TutorToolName.MASTERY_READ, roundHasBoundQuestion = false))
+        assertFalse(tutorRoundToolAvailable(TutorToolName.KNOWLEDGE_READ, roundHasBoundQuestion = false))
+        assertTrue(tutorRoundToolAvailable(TutorToolName.NOTEBOOK_READ, roundHasBoundQuestion = false))
     }
 
     private fun turn(stem: String, choice: String) = TutorTurnHistoryEntry(

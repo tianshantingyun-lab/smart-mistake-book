@@ -2,6 +2,9 @@ package com.tingyun.smartmistakebook.core.model
 
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertThrows
+import com.tingyun.smartmistakebook.core.model.RelatedProblemCandidate
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -515,6 +518,185 @@ class ModelEgressTest {
         assets = emptyList(),
         disclosedData = ModelEgressManifest.TUTOR_PLAN_DISCLOSURE,
         prohibitedData = ModelEgressManifest.TUTOR_PLAN_PROHIBITED_DATA,
+    )
+
+    // ---- 披露三态：无题 / 有题 / 有题带图（外加候选菜单这一维）----
+    // 每一态都断言**两件事**：disclosedData == expected，且 prohibited == 全集 − 已披露。
+    // 披露集合是精确相等校验的，任何一边单独改动都会在这里对不上。
+
+    @Test
+    fun `a no-question round discloses no question document`() {
+        val expected = TutorRoundDisclosure.expected(
+            carriesQuestion = false,
+            includesImage = false,
+            includesQuestionCandidates = false,
+        )
+
+        assertEquals(ModelEgressManifest.TUTOR_LOBBY_DISCLOSURE, expected)
+        assertFalse(ModelEgressDataClass.CONFIRMED_QUESTION_DOCUMENT in expected)
+        assertEquals(
+            ModelEgressDataClass.entries.toSet() - expected,
+            ModelEgressManifest.TUTOR_LOBBY_PROHIBITED_DATA,
+        )
+    }
+
+    @Test
+    fun `a question round discloses the confirmed question document`() {
+        val expected = TutorRoundDisclosure.expected(
+            carriesQuestion = true,
+            includesImage = false,
+            includesQuestionCandidates = false,
+        )
+
+        assertEquals(ModelEgressManifest.TUTOR_RESPOND_DISCLOSURE, expected)
+        assertTrue(ModelEgressDataClass.CONFIRMED_QUESTION_DOCUMENT in expected)
+        assertEquals(
+            ModelEgressDataClass.entries.toSet() - expected,
+            ModelEgressManifest.TUTOR_RESPOND_PROHIBITED_DATA,
+        )
+    }
+
+    @Test
+    fun `a question round with an image additionally discloses image classes`() {
+        val expected = TutorRoundDisclosure.expected(
+            carriesQuestion = true,
+            includesImage = true,
+            includesQuestionCandidates = false,
+        )
+
+        assertTrue(ModelEgressDataClass.CONFIRMED_QUESTION_DOCUMENT in expected)
+        assertTrue(ModelEgressDataClass.SANITIZED_IMAGE_BYTES in expected)
+        assertTrue(ModelEgressDataClass.IMAGE_DIMENSIONS in expected)
+        assertFalse(ModelEgressDataClass.SELECTED_IMAGE_REGION in expected)
+    }
+
+    @Test
+    fun `a no-question round with an image keeps the existing lobby image disclosure`() {
+        // 这一态不是本轮新加的，而是大厅既有的附图通道：写成同一口径后取值必须逐字不变。
+        val expected = TutorRoundDisclosure.expected(
+            carriesQuestion = false,
+            includesImage = true,
+            includesQuestionCandidates = false,
+        )
+
+        assertEquals(ModelEgressManifest.TUTOR_LOBBY_IMAGE_DISCLOSURE, expected)
+        assertFalse(ModelEgressDataClass.CONFIRMED_QUESTION_DOCUMENT in expected)
+        assertEquals(
+            ModelEgressDataClass.entries.toSet() - expected,
+            ModelEgressManifest.TUTOR_LOBBY_IMAGE_PROHIBITED_DATA,
+        )
+    }
+
+    @Test
+    fun `a carried candidate menu is disclosed as its own data class`() {
+        val withMenu = TutorRoundDisclosure.expected(
+            carriesQuestion = true,
+            includesImage = false,
+            includesQuestionCandidates = true,
+        )
+
+        assertEquals(
+            ModelEgressManifest.TUTOR_RESPOND_DISCLOSURE +
+                ModelEgressDataClass.RELATED_QUESTION_CANDIDATES,
+            withMenu,
+        )
+        assertFalse(ModelEgressDataClass.RELATED_QUESTION_CANDIDATES in ModelEgressManifest.TUTOR_RESPOND_DISCLOSURE)
+    }
+
+    @Test
+    fun `a manifest that understates the candidate menu is rejected`() {
+        // 请求里带着菜单，清单却说"没有候选菜单"——少报就是真实的越界披露，必须被拒。
+        assertThrows(IllegalArgumentException::class.java) {
+            ModelEgressPolicy.authorize(
+                request = tutorRespondRequestWithMenu(
+                    tutorRespondManifest().copy(includesQuestionCandidates = false),
+                ),
+                provider = tutorProvider(ModelTaskKind.TUTOR_RESPOND),
+                nowEpochMillis = 101,
+            )
+        }
+    }
+
+    @Test
+    fun `a manifest that covers the candidate menu authorizes the round`() {
+        val covered = ModelEgressManifest.TUTOR_RESPOND_DISCLOSURE +
+            ModelEgressDataClass.RELATED_QUESTION_CANDIDATES
+        val manifest = tutorRespondManifest().copy(
+            disclosedData = covered,
+            prohibitedData = ModelEgressDataClass.entries.toSet() - covered,
+            includesQuestionCandidates = true,
+        )
+
+        val execution = ModelEgressPolicy.authorize(
+            request = tutorRespondRequestWithMenu(manifest),
+            provider = tutorProvider(ModelTaskKind.TUTOR_RESPOND),
+            // 授权新鲜度是短时窗口，测试时钟必须与 approvedAtEpochMillis 对齐。
+            nowEpochMillis = 101,
+        )
+
+        assertTrue(execution.permit is ModelExecutionPermit.External)
+    }
+
+    @Test
+    fun `a manifest that overstates the candidate menu is rejected too`() {
+        // 反向：清单说覆盖了菜单，请求里却没有菜单 —— 多报同样与请求不一致。
+        val covered = ModelEgressManifest.TUTOR_RESPOND_DISCLOSURE +
+            ModelEgressDataClass.RELATED_QUESTION_CANDIDATES
+        val manifest = tutorRespondManifest().copy(
+            disclosedData = covered,
+            prohibitedData = ModelEgressDataClass.entries.toSet() - covered,
+            includesQuestionCandidates = true,
+        )
+
+        assertThrows(IllegalArgumentException::class.java) {
+            ModelEgressPolicy.authorize(
+                request = tutorRespondRequest(manifest),
+                provider = tutorProvider(ModelTaskKind.TUTOR_RESPOND),
+                nowEpochMillis = 101,
+            )
+        }
+    }
+
+    @Test
+    fun `a legacy manifest cannot claim to cover a candidate menu`() {
+        assertThrows(IllegalArgumentException::class.java) {
+            tutorRespondManifest().copy(
+                schemaVersion = 6,
+                includesQuestionCandidates = true,
+            )
+        }
+    }
+
+    private fun tutorRespondRequestWithMenu(manifest: ModelEgressManifest) = ModelTaskRequest(
+        requestId = "tutor-respond:request-menu",
+        input = TutorRespondInput(
+            sessionId = "tutor-session-1",
+            draftRevisionNumber = 2,
+            subject = "MATH",
+            questionDocument = confirmedQuestion(),
+            relevantLearningEvidence = emptyList(),
+            projectionIsCurrent = true,
+            responseOrdinal = 1,
+            cycleOrdinal = 1,
+            turnOrdinal = 1,
+            studentMessage = "再把光的折射那道题讲一遍",
+            boundQuestionCandidates = listOf(
+                RelatedProblemCandidate(
+                    problemId = "problem-other",
+                    problemRevisionId = "revision-other",
+                    subject = SubjectKind.PHYSICS,
+                    title = "光的折射实验",
+                    questionDocument = QuestionDocument(
+                        id = "question-other",
+                        blocks = listOf(
+                            ContentBlock.Paragraph("stem-other", "入射角与折射角的关系"),
+                        ),
+                    ),
+                ),
+            ),
+        ),
+        occurredAtEpochMillis = 100,
+        egressManifest = manifest,
     )
 
     private fun tutorRespondRequest(manifest: ModelEgressManifest) = ModelTaskRequest(

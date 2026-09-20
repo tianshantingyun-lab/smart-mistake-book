@@ -97,20 +97,6 @@ object TutorRoundQuestionBindingPolicy {
 }
 
 /**
- * 这一轮**真正**绑定的题：模型声明 + 两条本地校验都过才有值，否则本轮是无题轮。
- *
- * 落库、门控与披露都必须读这一个函数的结果，不要各自去读 [TutorRespondOutput.boundQuestion]——
- * 那是模型的声明，不是裁决。
- */
-fun TutorRespondOutput.resolvedRoundQuestion(
-    input: TutorRespondInput,
-): TutorRoundQuestionDeclaration? = TutorRoundQuestionBindingPolicy.resolve(
-    candidates = input.boundQuestionCandidates,
-    declaration = boundQuestion,
-    studentMessage = input.studentMessage,
-)
-
-/**
  * 上一轮绑定的题——候选菜单的第二条来源（`docs/tutor-surface-unification.md` §5.4：可跨轮）。
  *
  * 取**最近一条已成功回复、且本轮声明确实通过了本地校验**的 RESPOND 任务，再从它自己那一轮的
@@ -127,7 +113,8 @@ fun previousBoundRoundQuestion(tasks: List<ModelTaskSnapshot>): RelatedProblemCa
             val input = task.request.input as? TutorRespondInput ?: return@mapNotNull null
             val output = task.output as? TutorRespondOutput ?: return@mapNotNull null
             if (task.status != ModelTaskStatus.SUCCEEDED) return@mapNotNull null
-            val binding = output.resolvedRoundQuestion(input) ?: return@mapNotNull null
+            // output.boundQuestion 已经是**校验过**的绑定（解析层是唯一写入口）。
+            val binding = output.boundQuestion ?: return@mapNotNull null
             val candidate = input.boundQuestionCandidates.singleOrNull { candidate ->
                 candidate.problemId == binding.problemId &&
                     candidate.problemRevisionId == binding.problemRevisionId
