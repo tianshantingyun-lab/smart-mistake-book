@@ -1613,10 +1613,11 @@ B/C/D 的实锤来自成品包本身：`/usr/bin/bash` 与 6 位 PID 都不可�
 **验证**：门全绿（点 3,572 / 材料 27,182 / 别名 25,360）；`check_pack_contract` 0 问题；
 tools 套件 289 passed / 30,835 subtests。`:core:data` 本轮**未能重跑**（见下）。
 
-**UNVERIFIED**：`:core:data` 450 用例在本轮数据改动后未重跑成功——`:core:domain:compileKotlin`
+**提交流程中的一段插曲（如实记录）**：本轮提交时 `:core:data` 重跑失败——`:core:domain:compileKotlin`
 报重载歧义（`TutorContextComposer.compose(List<TutorMessage>)` vs `(List<TutorChatHistoryEntry>)`），
-那是**另一条会话正在改的代码**，与本轮知识库数据改动无关；Python 侧契约镜像（0 问题）是当时的替代证据，
-Kotlin 侧待对方修复后补跑（登记为待验证项，不当已通过）。
+那是**另一条会话正在改的代码**，与本轮知识库数据改动无关。提交信息里按规矩记为 UNVERIFIED；
+对方随后修好编译，**已补跑并全绿**：`:core:data` 450 用例 0 失败、`:core:database` 67 用例 0 失败
+（本轮数据改动因此获得 Kotlin 侧证据，不再是未验证项）。
 
 **顺带登记的重复节点迹象（只报不改）**：四心家族有 5 个近义节点
 （平面向量与三角形的四心 / 三角形四心的向量特征 / 三角形四心的向量表示 / 三角形的四心 /
