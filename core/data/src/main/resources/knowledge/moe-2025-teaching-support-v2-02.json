@@ -3291,7 +3291,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:路端电压与外电阻的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:伏伏法测电阻",
      "role": "PRIMARY"
     }
    ]
@@ -3311,7 +3311,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:特点-整个导体回路的电阻一般很小-感应电流很大-故金属块的发热功率很大",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:安安法测电阻",
      "role": "PRIMARY"
     }
    ]
@@ -8071,7 +8071,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:追及相遇问题的实质及分析思路",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:卫星的追及与相遇问题",
      "role": "PRIMARY"
     }
    ]
@@ -9131,7 +9131,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:匀变速直线运动的规律",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:串并联电路的规律",
      "role": "PRIMARY"
     }
    ]
@@ -9191,7 +9191,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:平行板电容器的动态分析问题的两种情况",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:电路动态分析的方法",
      "role": "PRIMARY"
     }
    ]
@@ -10091,7 +10091,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:运动的对称性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:对称性",
      "role": "PRIMARY"
     }
    ]
@@ -11991,7 +11991,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:核心处理思想-运动的合成与分解-约束条件",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:合运动与分运动的关系",
      "role": "PRIMARY"
     }
    ]
@@ -13491,7 +13491,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:平行板电容器的动态分析问题的两种情况",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:电路动态分析的方法",
      "role": "PRIMARY"
     }
    ]
@@ -13531,7 +13531,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:必备实验仪器的原理及使用",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:螺旋测微器的原理与读数",
      "role": "PRIMARY"
     }
    ]
@@ -13771,7 +13771,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:如果要列出各物理量在某一时刻的关系式-可用牛顿第二定律",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:牛顿第二定律",
      "role": "PRIMARY"
     }
    ]
@@ -14991,7 +14991,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:注意事项-x1",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:测量金属丝电阻率的注意事项",
      "role": "PRIMARY"
     }
    ]
@@ -15171,7 +15171,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:路端电压与外电阻的关系",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:伏伏法测电阻",
      "role": "PRIMARY"
     }
    ]
@@ -15191,7 +15191,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:特点-整个导体回路的电阻一般很小-感应电流很大-故金属块的发热功率很大",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:安安法测电阻",
      "role": "PRIMARY"
     }
    ]
@@ -15311,7 +15311,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:利用电场线和等势面解决带电粒子运动问题的方法",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:多用电表的使用方法",
      "role": "PRIMARY"
     }
    ]
@@ -15351,7 +15351,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:波动图象的特点",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:磁感线的特点",
      "role": "PRIMARY"
     }
    ]
@@ -16011,7 +16011,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:探究结果-胡克定律-x为形变量",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:探究弹簧弹力与形变量关系的实验",
      "role": "PRIMARY"
     }
    ]
@@ -16291,7 +16291,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:追及相遇问题的实质及分析思路",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:卫星的追及与相遇问题",
      "role": "PRIMARY"
     }
    ]
@@ -19651,7 +19651,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:物体看作质点的条件-物体的大小和形状对研究问题的影响可以忽略",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:用油膜法估测油酸分子的大小",
      "role": "PRIMARY"
     }
    ]
@@ -20731,7 +20731,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:平行板电容器的动态分析问题的两种情况",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:电路动态分析的方法",
      "role": "PRIMARY"
     }
    ]
@@ -20811,7 +20811,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:必备实验仪器的原理及使用",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:螺旋测微器的原理与读数",
      "role": "PRIMARY"
     }
    ]
@@ -21251,7 +21251,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:核心处理思想-运动的合成与分解-约束条件",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:合运动与分运动的关系",
      "role": "PRIMARY"
     }
    ]
@@ -21351,7 +21351,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:等效法求解电场中圆周运动问题的解题思路",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:平抛运动问题的解题思路",
      "role": "PRIMARY"
     }
    ]
@@ -22711,7 +22711,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:安培力作用下导体的平衡与加速问题",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:库仑力作用下的平衡问题",
      "role": "PRIMARY"
     }
    ]
@@ -22771,7 +22771,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:利用电场线和等势面解决带电粒子运动问题的方法",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:电势高低与电势能大小的判断方法",
      "role": "PRIMARY"
     }
    ]
@@ -24171,7 +24171,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:波的干涉中振动加强点和减弱点的判断方法",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:超重与失重的判断方法",
      "role": "PRIMARY"
     }
    ]
@@ -26391,7 +26391,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:非弹性碰撞",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:碰撞的分类与比较",
      "role": "PRIMARY"
     }
    ]
@@ -27311,7 +27311,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:带电粒子在交变电磁场中的运动",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:带电粒子在交变电场中的运动",
      "role": "PRIMARY"
     }
    ]
@@ -27391,7 +27391,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:必备实验仪器的原理及使用",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:螺旋测微器的原理与读数",
      "role": "PRIMARY"
     }
    ]
@@ -29071,7 +29071,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:分析方法",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:气体状态变化图像的分析方法",
      "role": "PRIMARY"
     }
    ]
@@ -29091,7 +29091,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:物体看作质点的条件-物体的大小和形状对研究问题的影响可以忽略",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:用油膜法估测油酸分子的大小",
      "role": "PRIMARY"
     }
    ]
@@ -29411,7 +29411,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:平抛运动的临界问题",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:斜面上圆周运动的临界问题",
      "role": "PRIMARY"
     }
    ]
@@ -30431,7 +30431,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:核心处理思想-运动的合成与分解-约束条件",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:合运动与分运动的关系",
      "role": "PRIMARY"
     }
    ]
@@ -30451,7 +30451,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:定义-物体具有保持原来匀速直线运动状态或静止状态的性质-质量是惯性的唯一量度",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:两个直线运动合运动性质的判断",
      "role": "PRIMARY"
     }
    ]
@@ -34711,7 +34711,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:带电粒子在交变电磁场中的运动",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:带电粒子在交变电场中的运动",
      "role": "PRIMARY"
     }
    ]
@@ -34791,7 +34791,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:电压表-电流表的改装",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:安安法测电阻",
      "role": "PRIMARY"
     }
    ]
@@ -34811,7 +34811,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:电压表-电流表的改装",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:伏伏法测电阻",
      "role": "PRIMARY"
     }
    ]
@@ -34851,7 +34851,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:小量程电流表-表头",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:电流半偏法测电流表内阻",
      "role": "PRIMARY"
     }
    ]
@@ -34871,7 +34871,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:电压表-电流表的改装",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:电压半偏法测电压表内阻",
      "role": "PRIMARY"
     }
    ]
@@ -36091,7 +36091,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:平均速度与瞬时速度的区别",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:平均功率与瞬时功率",
      "role": "PRIMARY"
     }
    ]
@@ -38031,7 +38031,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:变压器",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:自耦变压器与互感器",
      "role": "PRIMARY"
     }
    ]
@@ -39451,7 +39451,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:多物体-多过程问题中动量守恒定律的应用",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:应用动量守恒定律的解题步骤",
      "role": "PRIMARY"
     }
    ]
@@ -40571,7 +40571,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:模型示意图",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:力的概念",
      "role": "PRIMARY"
     }
    ]
@@ -40871,7 +40871,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:牛顿第二定律的理解-五性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:牛顿第二定律",
      "role": "PRIMARY"
     }
    ]
@@ -45271,7 +45271,7 @@
    "reviewedAtEpochMillis": 1789757124890,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:逆序相加法求数列的前n项和",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:倒序相加法",
      "role": "PRIMARY"
     }
    ]
@@ -47991,7 +47991,7 @@
    "reviewedAtEpochMillis": 1789780065665,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:o2作为原电池的正极反应物时-其电极反应在不同的介质中有不同的写法",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:甲烷作燃料电池的负极反应物时-其电极反应式在不同的介质中有不同的写法",
      "role": "PRIMARY"
     }
    ]
@@ -49091,7 +49091,7 @@
    "reviewedAtEpochMillis": 1789780065665,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化工流程题的分析模型",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:循环物质的确定方法",
      "role": "PRIMARY"
     }
    ]
@@ -52911,7 +52911,7 @@
    "reviewedAtEpochMillis": 1789780065665,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:气体制备",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:装置气密性的检查方法",
      "role": "PRIMARY"
     }
    ]
@@ -55891,7 +55891,7 @@
    "reviewedAtEpochMillis": 1789780065665,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:乙烯",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:乙烯的实验室制法",
      "role": "PRIMARY"
     }
    ]

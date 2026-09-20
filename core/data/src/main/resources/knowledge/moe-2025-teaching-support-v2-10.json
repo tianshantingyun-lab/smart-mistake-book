@@ -2767,7 +2767,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:力的分解",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:力的正交分解法",
      "role": "PRIMARY"
     }
    ]
@@ -11067,7 +11067,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:应用动能定理求解步骤",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:动能定理在多过程问题中的应用",
      "role": "PRIMARY"
     }
    ]
@@ -19627,7 +19627,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:天上-星球上空距离星体中心r-r-h处的重力加速度为g",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:星体表面与上空的重力加速度",
      "role": "PRIMARY"
     }
    ]
@@ -19667,7 +19667,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:万有引力的-两点理解-和-两个推论",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:万有引力与重力的关系",
      "role": "PRIMARY"
     }
    ]
@@ -21247,7 +21247,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:动量定理",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:用动量定理解释两类现象",
      "role": "PRIMARY"
     }
    ]

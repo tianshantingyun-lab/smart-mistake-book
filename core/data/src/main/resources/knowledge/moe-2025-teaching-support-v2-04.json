@@ -6819,7 +6819,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:连续型离子方程式的书写-分类分析法",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:滴定分析法",
      "role": "PRIMARY"
     }
    ]
@@ -9579,7 +9579,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:有机物的结构可用键线式表示-如",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:有机物结构的表示方法",
      "role": "PRIMARY"
     }
    ]
@@ -25499,7 +25499,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:自由扩散",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:物质跨膜运输方式的比较",
      "role": "PRIMARY"
     }
    ]
@@ -25559,7 +25559,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:物质出入细胞的方式",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:影响物质跨膜运输的因素",
      "role": "PRIMARY"
     }
    ]
@@ -32179,7 +32179,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:遗传信息的翻译",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:核酸是遗传信息的携带者",
      "role": "PRIMARY"
     }
    ]
@@ -32239,7 +32239,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:dna的双螺旋结构",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:DNA分子的多样性与特异性",
      "role": "PRIMARY"
     }
    ]
@@ -33859,7 +33859,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:物质出入细胞的方式",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:影响物质跨膜运输的因素",
      "role": "PRIMARY"
     }
    ]
@@ -38059,7 +38059,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:人类遗传病",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:调查人群中的遗传病",
      "role": "PRIMARY"
     }
    ]
@@ -40699,7 +40699,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞呼吸原理的应用",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:种群研究的应用",
      "role": "PRIMARY"
     }
    ]
@@ -54419,7 +54419,7 @@
    "reviewedAtEpochMillis": 1789780065665,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:逆序相加法求数列的前n项和",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:倒序相加法",
      "role": "PRIMARY"
     }
    ]
@@ -58659,7 +58659,7 @@
    "reviewedAtEpochMillis": 1789780065665,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:逆序相加法求数列的前n项和",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:倒序相加法",
      "role": "PRIMARY"
     }
    ]

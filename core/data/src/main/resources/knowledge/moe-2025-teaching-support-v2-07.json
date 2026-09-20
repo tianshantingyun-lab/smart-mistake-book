@@ -967,7 +967,7 @@
    "reviewedAtEpochMillis": 1789812925252,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:有机物分子结构的确定",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:有机物分子结构的鉴定方法",
      "role": "PRIMARY"
     }
    ]
@@ -2047,7 +2047,7 @@
    "reviewedAtEpochMillis": 1789812925252,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:物质的量浓度",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:浓度计算的常用方法",
      "role": "PRIMARY"
     }
    ]
@@ -4627,7 +4627,7 @@
    "reviewedAtEpochMillis": 1789812925252,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:硫酸",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:硫酸的工业制备（接触法）",
      "role": "PRIMARY"
     }
    ]
@@ -8867,7 +8867,7 @@
    "reviewedAtEpochMillis": 1789812925252,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:氧化还原反应规律及其应用",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:强弱规律及其应用",
      "role": "PRIMARY"
     }
    ]
@@ -9007,7 +9007,7 @@
    "reviewedAtEpochMillis": 1789812925252,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:试纸的使用方法",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:试纸的类型与使用方法",
      "role": "PRIMARY"
     }
    ]
@@ -21287,7 +21287,7 @@
    "reviewedAtEpochMillis": 1789812925252,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:有机化合物中的共价键",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:键的极性对羧酸酸性的影响",
      "role": "PRIMARY"
     }
    ]
@@ -22627,7 +22627,7 @@
    "reviewedAtEpochMillis": 1789812925252,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:核反应方程的分析",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:核反应方程的分析思路",
      "role": "PRIMARY"
     }
    ]
@@ -24687,7 +24687,7 @@
    "reviewedAtEpochMillis": 1789812925252,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:种群的数量变化",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:密度制约因素与非密度制约因素",
      "role": "PRIMARY"
     }
    ]
@@ -26167,7 +26167,7 @@
    "reviewedAtEpochMillis": 1789812925252,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:晶胞",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:晶胞参数与晶体密度的计算",
      "role": "PRIMARY"
     }
    ]
@@ -35287,7 +35287,7 @@
    "reviewedAtEpochMillis": 1789812925252,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:常见阳离子的检验与推断依据",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:离子推断的四项基本原则",
      "role": "PRIMARY"
     }
    ]
@@ -38267,7 +38267,7 @@
    "reviewedAtEpochMillis": 1789812925252,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:误差分析",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:中和滴定的误差分析方法",
      "role": "PRIMARY"
     }
    ]
@@ -38327,7 +38327,7 @@
    "reviewedAtEpochMillis": 1789812925252,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:氧化还原滴定",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:氧化还原滴定的原理与指示剂",
      "role": "PRIMARY"
     }
    ]
@@ -38887,7 +38887,7 @@
    "reviewedAtEpochMillis": 1789812925252,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:人类遗传病",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:调查人群中的遗传病",
      "role": "PRIMARY"
     }
    ]
@@ -38967,7 +38967,7 @@
    "reviewedAtEpochMillis": 1789812925252,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:遗传病的检测和预防",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:遗传病的检测与预防",
      "role": "PRIMARY"
     }
    ]
@@ -43067,7 +43067,7 @@
    "reviewedAtEpochMillis": 1789812925252,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:硫酸",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:硫酸的工业制备（接触法）",
      "role": "PRIMARY"
     }
    ]
@@ -46287,7 +46287,7 @@
    "reviewedAtEpochMillis": 1789812925252,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:有关物质的量浓度的计算",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:溶液稀释与混合的计算",
      "role": "PRIMARY"
     }
    ]
@@ -56207,7 +56207,7 @@
    "reviewedAtEpochMillis": 1789812925252,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:有关物质的量浓度的计算",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:气体溶于水后溶液浓度的计算",
      "role": "PRIMARY"
     }
    ]
@@ -57407,7 +57407,7 @@
    "reviewedAtEpochMillis": 1789812925252,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:新型化学电源",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:多液电池的分析方法",
      "role": "PRIMARY"
     }
    ]
@@ -57507,7 +57507,7 @@
    "reviewedAtEpochMillis": 1789812925252,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:物质的分类",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:对下列物质分类-并完善表格内容",
      "role": "PRIMARY"
     }
    ]
@@ -61167,7 +61167,7 @@
    "reviewedAtEpochMillis": 1789812925252,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化学计算中的守恒法",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:守恒法在化学计算中的应用",
      "role": "PRIMARY"
     }
    ]
@@ -62407,7 +62407,7 @@
    "reviewedAtEpochMillis": 1789812925252,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:常见阴离子的检验与推断依据",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:硫酸根离子的检验",
      "role": "PRIMARY"
     }
    ]
@@ -62507,7 +62507,7 @@
    "reviewedAtEpochMillis": 1789812925252,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:乙烯",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:乙烯的实验室制法",
      "role": "PRIMARY"
     }
    ]
@@ -66387,7 +66387,7 @@
    "reviewedAtEpochMillis": 1789812925252,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:极端假设法确定浓度范围",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:极端假设法确定可逆反应的浓度范围",
      "role": "PRIMARY"
     }
    ]
@@ -77587,7 +77587,7 @@
    "reviewedAtEpochMillis": 1789812925252,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:常见阴离子的检验与推断依据",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:硫酸根离子的检验",
      "role": "PRIMARY"
     }
    ]
@@ -81087,7 +81087,7 @@
    "reviewedAtEpochMillis": 1789812925252,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化学反应速率及其计算",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:化学反应速率的计算方法",
      "role": "PRIMARY"
     }
    ]
@@ -81907,7 +81907,7 @@
    "reviewedAtEpochMillis": 1789812925252,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:陶瓷",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:新型无机非金属材料",
      "role": "PRIMARY"
     }
    ]
@@ -83227,7 +83227,7 @@
    "reviewedAtEpochMillis": 1789812925252,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:水电离出的c(H+)（或c(OH-)）的计算",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:水电离出的离子浓度的计算",
      "role": "PRIMARY"
     }
    ]
@@ -83447,7 +83447,7 @@
    "reviewedAtEpochMillis": 1789812925252,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:氧化还原滴定",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:氧化还原滴定的原理与指示剂",
      "role": "PRIMARY"
     }
    ]
@@ -85187,7 +85187,7 @@
    "reviewedAtEpochMillis": 1789812925252,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:氧化还原反应规律及其应用",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:氧化还原反应的守恒规律",
      "role": "PRIMARY"
     }
    ]
@@ -85207,7 +85207,7 @@
    "reviewedAtEpochMillis": 1789812925252,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:氧化还原反应规律及其应用",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:价态规律及其应用",
      "role": "PRIMARY"
     }
    ]
@@ -85227,7 +85227,7 @@
    "reviewedAtEpochMillis": 1789812925252,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:氧化还原反应规律及其应用",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:强弱规律及其应用",
      "role": "PRIMARY"
     }
    ]
@@ -85247,7 +85247,7 @@
    "reviewedAtEpochMillis": 1789812925252,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:氧化还原反应规律及其应用",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:先后规律及其应用",
      "role": "PRIMARY"
     }
    ]
@@ -85827,7 +85827,7 @@
    "reviewedAtEpochMillis": 1789812925252,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:核外电子运动状态",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:基态、激发态与原子光谱",
      "role": "PRIMARY"
     }
    ]
@@ -85907,7 +85907,7 @@
    "reviewedAtEpochMillis": 1789812925252,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:电解质概念和判断的几个-特殊点",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:强电解质与弱电解质",
      "role": "PRIMARY"
     }
    ]
@@ -87087,7 +87087,7 @@
    "reviewedAtEpochMillis": 1789812925252,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:细胞增殖",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:无丝分裂",
      "role": "PRIMARY"
     }
    ]
@@ -87167,7 +87167,7 @@
    "reviewedAtEpochMillis": 1789812925252,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:装置气密性检查方法",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:装置气密性的检查方法",
      "role": "PRIMARY"
     }
    ]
@@ -87387,7 +87387,7 @@
    "reviewedAtEpochMillis": 1789812925252,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:羧酸的结构和性质",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:键的极性对羧酸酸性的影响",
      "role": "PRIMARY"
     }
    ]
@@ -88807,7 +88807,7 @@
    "reviewedAtEpochMillis": 1789812925252,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:核素",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:核反应方程的分析思路",
      "role": "PRIMARY"
     }
    ]
@@ -90367,7 +90367,7 @@
    "reviewedAtEpochMillis": 1789812925252,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:氧化还原反应规律及其应用",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:chemistry:atomic:氧化还原反应的守恒规律",
      "role": "PRIMARY"
     }
    ]

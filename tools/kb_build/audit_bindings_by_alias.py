@@ -71,12 +71,31 @@ def suspects() -> list[dict]:
     return rows
 
 
+def reviewed_materials() -> set[str]:
+    """已裁定过的材料（KEEP/NONE/REBIND 都会落进 reviewed 表）。
+
+    为什么需要豁免：判据是启发式（材料标题 == 别的节点名），"已判定为误报"的行如果不豁免，
+    每轮都会再报一遍——审计就成了复读机，真嫌疑会被噪声淹没。裁定结果在
+    `binding_suspects_reviewed.csv`（由 `tools/kb_coverage/apply_rebind_verdicts.py` 落表）。
+    """
+    path = TABLES / "binding_suspects_reviewed.csv"
+    if not path.exists():
+        return set()
+    import csv
+    with path.open(encoding="utf-8", newline="") as fh:
+        return {row["material"].strip() for row in csv.DictReader(fh)
+                if (row.get("material") or "").strip()}
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--write", action="store_true")
     args = ap.parse_args(argv)
     rows = suspects()
-    print(f"错绑嫌疑 {len(rows)} 条")
+    reviewed = reviewed_materials()
+    skipped = [r for r in rows if r["material"] in reviewed]
+    rows = [r for r in rows if r["material"] not in reviewed]
+    print(f"错绑嫌疑 {len(rows)} 条（已裁定豁免 {len(skipped)} 条）")
     print("按科目：", Counter(r["subject"] for r in rows).most_common())
     for r in rows[:12]:
         print(f"  [{r['subject'][:3]}] 《{r['material_title'][:26]}》"

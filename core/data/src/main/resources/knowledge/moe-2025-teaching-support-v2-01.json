@@ -4519,7 +4519,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:逆序相加法求数列的前n项和",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:倒序相加法",
      "role": "PRIMARY"
     }
    ]
@@ -11039,7 +11039,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:逆序相加法求数列的前n项和",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:倒序相加法",
      "role": "PRIMARY"
     }
    ]
@@ -14059,7 +14059,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:逆序相加法求数列的前n项和",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:倒序相加法",
      "role": "PRIMARY"
     }
    ]
@@ -29619,7 +29619,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:逆序相加法求数列的前n项和",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:倒序相加法",
      "role": "PRIMARY"
     }
    ]
@@ -34299,7 +34299,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:逆序相加法求数列的前n项和",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:倒序相加法",
      "role": "PRIMARY"
     }
    ]
@@ -57219,7 +57219,7 @@
    "reviewedAtEpochMillis": 1789780065665,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:分离定律的特殊类型",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:从性遗传与限性遗传",
      "role": "PRIMARY"
     }
    ]
@@ -60579,7 +60579,7 @@
    "reviewedAtEpochMillis": 1789780065665,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:免疫失调",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:自身免疫病与免疫缺陷病",
      "role": "PRIMARY"
     }
    ]

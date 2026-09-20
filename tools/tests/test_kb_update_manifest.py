@@ -142,7 +142,9 @@ class RealArtifactsTest(unittest.TestCase):
         # 2026-09-19 坏名分流收口：把 fix_bad_names 的定稿移植进权威表后再 +9 行（113→122）
         # 2026-09-19 夜错绑审计：改绑后发现 2 组近重复节点已无材料
         # （三角形解的个数问题 / 分式不等式及其解法），合并进同名节点 → 122→124
-        self.assertEqual(124, kinds.get(um.KIND_MERGE, 0))
+        # 2026-09-19 夜错绑审计收口：改绑抽空 6 个近重复节点，与第 13 片的 2 组一起
+        # 成对合并 → 124→132
+        self.assertEqual(132, kinds.get(um.KIND_MERGE, 0))
         # 同日再删 1 条题干残片（含材料）→ 182→183→184
         self.assertEqual(184, kinds.get(um.KIND_DELETE, 0))
 
@@ -160,10 +162,10 @@ class RealArtifactsTest(unittest.TestCase):
         """
         doc = um.empty(self.pack["packId"])
         added = um.record(doc, self.entries)
-        # 2026-09-19 夜：合并表再 +2（122→124）→ 回填条目 306→308
-        self.assertEqual(308, len(self.entries), "回填原始条目数（2026-09-19 合并表 122→124 行后 306→308）")
-        # 2026-09-19 夜：合并表 +2（两条都是新的、无重复指向）→ 去重后 304→306
-        self.assertEqual(306, added, "去重后的并入数")
+        # 2026-09-19 夜：合并表再 +2（122→124）再 +6（124→130）→ 回填条目 306→314
+        self.assertEqual(316, len(self.entries), "回填原始条目数（2026-09-19 合并表 124→132 行后 308→316）")
+        # 2026-09-19 夜：合并表 +2 再 +6（八条都是新的、无重复指向）→ 去重后 304→314
+        self.assertEqual(314, added, "去重后的并入数")
         merged = {e["nodeId"].split(":")[-1]: e["supersededBy"].split(":")[-1]
                   for e in doc["retired"] if e["kind"] == um.KIND_MERGE}
         self.assertEqual("无氧呼吸-x1", merged["无氧呼吸-x2"])

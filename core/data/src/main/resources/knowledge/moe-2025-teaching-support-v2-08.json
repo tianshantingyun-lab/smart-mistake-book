@@ -2591,7 +2591,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:受力分析多力漏力-受力分析方法",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:受力分析的三个技巧",
      "role": "PRIMARY"
     }
    ]
@@ -2691,7 +2691,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:质量亏损",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:核能的计算方法",
      "role": "PRIMARY"
     }
    ]
@@ -2771,7 +2771,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:对超重和失重的理解应当注意的问题",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:超重与失重的判断方法",
      "role": "PRIMARY"
     }
    ]
@@ -4071,7 +4071,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:游标卡尺的读数",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:游标卡尺的构造与读数",
      "role": "PRIMARY"
     }
    ]
@@ -8271,7 +8271,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:逆序相加法求数列的前n项和",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:倒序相加法",
      "role": "PRIMARY"
     }
    ]
@@ -9851,7 +9851,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:库仑力作用下的平衡",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:库仑力作用下的平衡问题",
      "role": "PRIMARY"
     }
    ]
@@ -11471,7 +11471,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:变压器",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:探究变压器电压与匝数关系的实验",
      "role": "PRIMARY"
     }
    ]
@@ -12271,7 +12271,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:必备实验仪器的原理及使用",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:螺旋测微器的原理与读数",
      "role": "PRIMARY"
     }
    ]
@@ -12971,7 +12971,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:弹力的定义及产生条件",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:弹力有无的判断方法",
      "role": "PRIMARY"
     }
    ]
@@ -14391,7 +14391,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:波粒二象性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:光的波粒二象性",
      "role": "PRIMARY"
     }
    ]
@@ -15451,7 +15451,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:三角形垂心的向量特征",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:平面向量与三角形的垂心",
      "role": "PRIMARY"
     }
    ]
@@ -16751,7 +16751,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:平抛运动",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:探究平抛运动特点实验的注意事项",
      "role": "PRIMARY"
     }
    ]
@@ -17651,7 +17651,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:必备实验仪器的原理及使用",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:螺旋测微器的原理与读数",
      "role": "PRIMARY"
     }
    ]
@@ -17711,7 +17711,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:实验基础知识",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:实物图连接的注意事项",
      "role": "PRIMARY"
     }
    ]
@@ -18811,7 +18811,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:全反射",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:条件-①光从光密介质射入光疏介质-②入射角大于或等于临界角",
      "role": "PRIMARY"
     }
    ]
@@ -20231,7 +20231,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:摩擦力",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:摩擦力大小的计算方法",
      "role": "PRIMARY"
     }
    ]
@@ -21871,7 +21871,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:电磁感应中的三大动力学观点",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:动量定理在电磁感应中的应用",
      "role": "PRIMARY"
     }
    ]
@@ -23751,7 +23751,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:热力学图像问题",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:气体状态变化图像的分析方法",
      "role": "PRIMARY"
     }
    ]
@@ -24771,7 +24771,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:传播方向和振动方向的判断-图像理解",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:振动图像与波的图像的综合分析",
      "role": "PRIMARY"
     }
    ]
@@ -24851,7 +24851,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:热力学图像问题",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:气体状态变化图像的分析方法",
      "role": "PRIMARY"
     }
    ]
@@ -32651,7 +32651,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:天上-星球上空距离星体中心r-r-h处的重力加速度为g",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:星体表面与上空的重力加速度",
      "role": "PRIMARY"
     }
    ]
@@ -35131,7 +35131,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:波粒二象性",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:光的波粒二象性",
      "role": "PRIMARY"
     }
    ]
@@ -37511,7 +37511,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:带电粒子在匀强电场中偏转的两个分运动",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:两个重要结论",
      "role": "PRIMARY"
     }
    ]
@@ -39771,7 +39771,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:万有引力定律的应用",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:万有引力与重力的关系",
      "role": "PRIMARY"
     }
    ]
@@ -40211,7 +40211,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:三角形垂心的向量特征",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:平面向量与三角形的垂心",
      "role": "PRIMARY"
     }
    ]
@@ -45091,7 +45091,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:实验基础知识",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:探究小车速度随时间变化的规律",
      "role": "PRIMARY"
     }
    ]

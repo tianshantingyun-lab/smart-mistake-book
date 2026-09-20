@@ -1651,7 +1651,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:圆周运动常见的临界状态",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:斜面上圆周运动的临界问题",
      "role": "PRIMARY"
     }
    ]
@@ -3991,7 +3991,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:天上-星球上空距离星体中心r-r-h处的重力加速度为g",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:星体表面与上空的重力加速度",
      "role": "PRIMARY"
     }
    ]
@@ -4031,7 +4031,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:必备实验仪器的原理及使用",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:螺旋测微器的原理与读数",
      "role": "PRIMARY"
     }
    ]
@@ -4391,7 +4391,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:电路动态分析的方法",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:电路动态分析的三种方法",
      "role": "PRIMARY"
     }
    ]
@@ -6291,7 +6291,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:运动的合成与分解",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:合运动与分运动的关系",
      "role": "PRIMARY"
     }
    ]
@@ -7791,7 +7791,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:机械能守恒定律的应用技巧",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:轻弹簧连接系统的机械能守恒",
      "role": "PRIMARY"
     }
    ]
@@ -8951,7 +8951,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:三个自由点电荷平衡模型",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:三个自由点电荷的平衡模型",
      "role": "PRIMARY"
     }
    ]
@@ -16711,7 +16711,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:平抛运动",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:探究平抛运动特点的实验步骤",
      "role": "PRIMARY"
     }
    ]
@@ -17671,7 +17671,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:滑动变阻器的限流式与分压式",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:滑动变阻器两种接法的选择",
      "role": "PRIMARY"
     }
    ]
@@ -19111,7 +19111,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:电容器",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:含容电路的分析方法",
      "role": "PRIMARY"
     }
    ]
@@ -23911,7 +23911,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:牛顿第三定律",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:作用力与反作用力",
      "role": "PRIMARY"
     }
    ]
@@ -24791,7 +24791,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:波的干涉",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:波的叠加原理",
      "role": "PRIMARY"
     }
    ]
@@ -32771,7 +32771,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:等效替代法",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:替代法测电阻",
      "role": "PRIMARY"
     }
    ]
@@ -38611,7 +38611,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:万有引力的-两点理解-和-两个推论",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:万有引力与重力的关系",
      "role": "PRIMARY"
     }
    ]
@@ -39291,7 +39291,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:用油膜法估测油酸分子的大小实验",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:用油膜法估测油酸分子的大小",
      "role": "PRIMARY"
     }
    ]
@@ -41451,7 +41451,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:动量守恒定律",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:应用动量守恒定律的解题步骤",
      "role": "PRIMARY"
     }
    ]
@@ -43931,7 +43931,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:全反射",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:条件-①光从光密介质射入光疏介质-②入射角大于或等于临界角",
      "role": "PRIMARY"
     }
    ]
