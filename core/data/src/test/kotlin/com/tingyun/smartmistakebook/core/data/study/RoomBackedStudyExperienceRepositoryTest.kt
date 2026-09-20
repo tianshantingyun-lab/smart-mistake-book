@@ -49,6 +49,7 @@ import com.tingyun.smartmistakebook.core.database.LibraryFacetCountRecord
 import com.tingyun.smartmistakebook.core.database.TutorConversationRecord
 import com.tingyun.smartmistakebook.core.database.TutorMessageRecord
 import com.tingyun.smartmistakebook.core.database.CreateTutorConversationDatabaseCommand
+import com.tingyun.smartmistakebook.core.database.BindStudentMessageQuestionDatabaseCommand
 import com.tingyun.smartmistakebook.core.database.AppendTutorStudentMessageDatabaseCommand
 import com.tingyun.smartmistakebook.core.database.AppendTutorAssistantMessageDatabaseCommand
 import com.tingyun.smartmistakebook.core.database.UpdateTutorMessageStatusDatabaseCommand
@@ -1968,6 +1969,10 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
 
     override suspend fun appendTutorStudentMessage(
         command: AppendTutorStudentMessageDatabaseCommand,
+    ): TutorMessageRecord = error("Capture is outside this study-repository fake")
+
+    override suspend fun bindTutorStudentMessageQuestion(
+        command: BindStudentMessageQuestionDatabaseCommand,
     ): TutorMessageRecord = error("Capture is outside this study-repository fake")
 
     override suspend fun appendTutorAssistantMessage(

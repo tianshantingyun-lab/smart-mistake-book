@@ -71,6 +71,15 @@ internal data class TutorMessageEntity(
     /** 模型给出的思考轨迹（折叠展示、不回喂模型）；旧行与失败行保持 NULL。 */
     @ColumnInfo(name = "thinking_markdown")
     val thinkingMarkdown: String? = null,
+    /**
+     * 本轮绑定的题引用（只在学生消息行上写）。NULL = 无题轮，也包含"迁移前写下的旧行"——
+     * 旧行的题归属当年无从判定，不回填、不猜测。两列要么都为空、要么都非空：
+     * 只给 id 不给 revision 定位不到确定题面，等于没有绑定。
+     */
+    @ColumnInfo(name = "bound_problem_id")
+    val boundProblemId: String? = null,
+    @ColumnInfo(name = "bound_problem_revision_id")
+    val boundProblemRevisionId: String? = null,
     val status: String,
     @ColumnInfo(name = "logical_operation_id")
     val logicalOperationId: String?,

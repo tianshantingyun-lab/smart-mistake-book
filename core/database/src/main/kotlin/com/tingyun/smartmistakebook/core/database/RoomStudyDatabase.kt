@@ -948,6 +948,10 @@ internal class RoomStudyDatabase(
         command: AppendTutorStudentMessageDatabaseCommand,
     ): TutorMessageRecord = database.tutorConversationDao().appendStudentMessage(command)
 
+    override suspend fun bindTutorStudentMessageQuestion(
+        command: BindStudentMessageQuestionDatabaseCommand,
+    ): TutorMessageRecord = database.tutorConversationDao().bindStudentMessageQuestion(command)
+
     override suspend fun readTutorMessageSourceAssets(
         messageIds: List<String>,
     ): List<TutorMessageSourceAssetRecord> =

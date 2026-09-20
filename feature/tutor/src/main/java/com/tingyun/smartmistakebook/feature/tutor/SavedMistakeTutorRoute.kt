@@ -36,6 +36,7 @@ import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
 import com.tingyun.smartmistakebook.core.domain.StudyQuestionMemory
 import com.tingyun.smartmistakebook.core.domain.TutorConversationRepository
 import com.tingyun.smartmistakebook.core.domain.TutorInteractionRepository
+import com.tingyun.smartmistakebook.core.domain.TutorRoundQuestionRetriever
 import com.tingyun.smartmistakebook.core.domain.TutorSessionProblemAnchor
 import com.tingyun.smartmistakebook.core.domain.TutorTeachingReferenceRepository
 import com.tingyun.smartmistakebook.core.model.AttachedImage
@@ -70,6 +71,11 @@ fun SavedMistakeTutorRoute(
     /** 学生文字落库用；缺省 null 时该界面不落库（门控按空语料 fail-closed）。 */
     conversations: TutorConversationRepository? = null,
     catalogEntries: List<StudyCatalogEntry> = emptyList(),
+    /**
+     * 本轮候选菜单的本地检索源。错题讲题页拿到它才能组出"这一轮在说哪一道"的候选；
+     * null 时菜单只剩"上一轮绑定的题"，本轮多半是无题轮。
+     */
+    roundQuestionRetriever: TutorRoundQuestionRetriever? = null,
     profile: StudyProfileOverview,
     learningMemory: StudyQuestionMemory? = null,
     /** 学生消息附图的资产读取器；null 时会话页不提供附图入口。 */
@@ -156,6 +162,7 @@ fun SavedMistakeTutorRoute(
                 interactions = interactions,
                 conversations = conversations,
                 catalogEntries = catalogEntries,
+                roundQuestionRetriever = roundQuestionRetriever,
                 profile = profile,
                 learningMemory = learningMemory,
                 imageIntake = imageIntake,
@@ -221,6 +228,10 @@ internal fun SavedMistakeTutorContent(
     /** 学生文字落库用；缺省 null 时该界面不落库（门控按空语料 fail-closed）。 */
     conversations: TutorConversationRepository? = null,
     catalogEntries: List<StudyCatalogEntry> = emptyList(),
+    /**
+     * 本轮候选菜单的本地检索源；null 时菜单只剩"上一轮绑定的题"（见 [SavedMistakeTutorRoute]）。
+     */
+    roundQuestionRetriever: TutorRoundQuestionRetriever? = null,
     profile: StudyProfileOverview,
     learningMemory: StudyQuestionMemory?,
     imageIntake: LobbyMessageImageIntake? = null,
@@ -350,6 +361,7 @@ internal fun SavedMistakeTutorContent(
         interactions = interactions,
         conversations = conversations,
         catalogEntries = catalogEntries,
+        roundQuestionRetriever = roundQuestionRetriever,
         imageIntake = imageIntake,
         onOpenMistakeNotebook = onOpenMistakeNotebook,
         onOpenProfile = onOpenProfile,

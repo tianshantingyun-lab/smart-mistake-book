@@ -37,6 +37,10 @@ import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
 import com.tingyun.smartmistakebook.core.domain.RecordTutorChoiceCommand
 import com.tingyun.smartmistakebook.core.domain.RecordTutorMoveCommand
 import com.tingyun.smartmistakebook.core.domain.SaveTutorSessionRequest
+import com.tingyun.smartmistakebook.core.domain.TutorRoundQuestionBindingPolicy
+import com.tingyun.smartmistakebook.core.domain.TutorRoundQuestionRetriever
+import com.tingyun.smartmistakebook.core.domain.previousBoundRoundQuestion
+import com.tingyun.smartmistakebook.core.model.RelatedProblemCandidate
 import com.tingyun.smartmistakebook.core.domain.StudyCatalogEntry
 import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
 import com.tingyun.smartmistakebook.core.domain.TutorConversationAnchorKind
@@ -131,6 +135,11 @@ internal fun TutorModelPanel(
      */
     conversations: TutorConversationRepository? = null,
     catalogEntries: List<StudyCatalogEntry> = emptyList(),
+    /**
+     * 本轮候选菜单的本地文本检索源。null 时只组上一轮绑定的题这一条来源——
+     * 没有检索就等于菜单里只有身份确定的题，本轮多半判成无题轮，不会误绑。
+     */
+    roundQuestionRetriever: TutorRoundQuestionRetriever? = null,
     onLongTermWritesBlocked: () -> Unit = {},
     onRequestSave: () -> Unit = {},
     onRequestEnd: () -> Unit = {},
@@ -563,6 +572,52 @@ internal fun TutorModelPanel(
         visualWork.dispatchReview()
     }
 
+    /**
+     * 本轮候选菜单（派发前组好）：上一轮绑定的题 + 本地文本检索前 N 条。
+     *
+     * 第三条来源"本轮学生显式添加的题"在会话页暂时恒为空：P1-b 之后会话页的加号里仍然只有
+     * 拍照/相册，换题（"从错题库选择"选中的题落在**当前会话**而不是新开一个会话）属于 P3；
+     * 在这之前"显式添加"在这条路径上不存在，不能凭空造一条。菜单的组装 API 已经带上了这个
+     * 位置（`assembleCandidates(explicitlyAdded = …)`），P3 接上即可。
+     *
+     * 检索是 suspend 的，所以在草稿变化时预先算好放进状态：`execute` 是点击即发的非 suspend
+     * 路径，按下时现算会引入一次可见等待——或者更糟，按钮先亮后发。
+     */
+    val previousBoundQuestion = remember(persistedRespondTasks, question.sessionId) {
+        previousBoundRoundQuestion(persistedRespondTasks)
+    }
+    var retrievedCandidates by remember(question.sessionId) {
+        mutableStateOf(emptyList<RelatedProblemCandidate>())
+    }
+    LaunchedEffect(
+        chatDraft,
+        question.sessionId,
+        question.revisionNumber,
+        catalogEntries,
+        roundQuestionRetriever,
+    ) {
+        val retriever = roundQuestionRetriever
+        if (retriever == null || chatDraft.isBlank()) {
+            retrievedCandidates = emptyList()
+            return@LaunchedEffect
+        }
+        retrievedCandidates = runCatching {
+            retriever.retrieve(
+                catalog = catalogEntries,
+                studentMessage = chatDraft,
+                excluded = listOfNotNull(previousBoundQuestion),
+                limit = TutorRoundQuestionBindingPolicy.MAX_CANDIDATES,
+            )
+        }.getOrDefault(emptyList())
+    }
+    val boundQuestionCandidates = remember(previousBoundQuestion, retrievedCandidates) {
+        TutorRoundQuestionBindingPolicy.assembleCandidates(
+            explicitlyAdded = emptyList(),
+            previouslyBound = listOfNotNull(previousBoundQuestion),
+            retrieved = retrievedCandidates,
+        )
+    }
+
     val respondCommands = remember(question.sessionId) {
         TutorRespondCommands(
             scope = scope,
@@ -583,6 +638,9 @@ internal fun TutorModelPanel(
                 currentInput = { currentInput },
                 observedTask = { observedTask },
                 tutorRespondTasks = { tutorRespondTasks },
+                // 与上面一行是两个口径：上面是"这道题聊过什么"，这里是"这个会话走到第几轮"。
+                // 轮次号必须按会话分配，否则同一会话换题会撞 model_task/tutor_message 的唯一槽。
+                sessionRespondTasks = { persistedRespondTasks },
                 answerExposureKeys = { answerExposureKeys },
                 chatSending = { chatSending },
                 modelTasks = modelTasks,
@@ -616,6 +674,7 @@ internal fun TutorModelPanel(
             requestedMove = requestedMove,
             clearDraftOnPersist = clearDraftOnPersist,
             studentImageAssetIds = studentImageAssetIds,
+            boundQuestionCandidates = boundQuestionCandidates,
         )
     }
 

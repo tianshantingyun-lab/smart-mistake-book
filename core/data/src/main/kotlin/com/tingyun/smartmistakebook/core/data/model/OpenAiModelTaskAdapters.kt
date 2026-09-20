@@ -278,6 +278,14 @@ internal object OpenAiModelTaskAdapters {
             input.requestedMove?.let { move -> put("requestedMove", move.name) }
         }
         val reviewedTeachingReferences = input.reviewedTeachingReferences.toTeachingReferenceJson()
+        // 候选菜单：本地组的、模型只能从里面挑。空菜单也要显式写出来（"[]"），
+        // 否则模型会以为"这次没给菜单"而不是"这次没有候选"，自行编一个 id 出来。
+        val boundQuestionCandidates = json.encodeToString(
+            kotlinx.serialization.builtins.ListSerializer(
+                com.tingyun.smartmistakebook.core.model.RelatedProblemCandidate.serializer(),
+            ),
+            input.boundQuestionCandidates,
+        )
         // 与 Lobby 同口径：只说明"有几张、按什么顺序"，不描述尺寸或路径，也不把图片内容写进提示词。
         val attachedImagesNote = if (input.studentImageAssetRefs.isNotEmpty()) {
             "本次消息附有学生选择的${input.studentImageAssetRefs.size}张图片（按选择顺序随消息提供），" +
@@ -293,6 +301,7 @@ internal object OpenAiModelTaskAdapters {
             2. 模型只提出本地动作申请，绝不能声称已经读取、保存、删除或修改本机数据。含糊、多义或动作目标不清时intent=AMBIGUOUS、requestedLocalCapability=NONE，并只问一个简短澄清问题。查错题和学习情况分别只能申请READ_MISTAKE_NOTEBOOK或READ_LEARNING_PROGRESS；保存当前题和结束不保存只能申请OFFER_SAVE_CURRENT_QUESTION或OFFER_END_WITHOUT_SAVE，随后由本地界面确认。不得请求任意查询、SQL、删除、掌握度写入或未列出的动作。
             3. intent=CURRENT_QUESTION_HELP时，只解决studentMessage表达的一个当前题目标。严禁生成新题、同类题、变式题、校准题，严禁用额外问题探测能力或掌握程度。未收到requestedMove=REVEAL_SOLUTION且学生没有明确索要答案时，不要默认给最终答案；根据消息给当前题提示、解释或下一关键步。学生明确索要答案或requestedMove=REVEAL_SOLUTION时，直接回答当前题，并把solutionRevealed设为true。
             3a. 学生正在独立作答或展示思路时（而不是向你求助），允许用**一句开放式检查**核对：只问一个要用自己的话回答的问题（如"说说这一步为什么成立"），等他回答后再判断，不得写成选择题或卡片（规则11），不得连续追问，也不得在学生只是求助时反过来考他。给出任何正向学习判断前，rationale 必须逐字引用学生这一轮的原话或其作答文本——引文会被本地逐条比对，引用不实、或通篇没有一句真实引文，本地都会拒写这条证据。
+            3b. boundQuestion只用来声明“这一轮在说哪一道题”，可省略。要声明时形状只能是{problemId,problemRevisionId,anchorTerms}：problemId与problemRevisionId必须从boundQuestionCandidates里**原样复制**某一条（两个字段都要一致，不得改写、拼合或凭印象补全）；anchorTerms是1到4个**直接来自studentMessage**的短词（逐字照抄，不得改写、翻译或臆测），并且本地要求其中至少一个词能在被声明那道题自己的标题或题面里找到。本地会逐条比对：候选不在菜单内、id与revision不是一个完整配对、anchorTerms为空、有任何一条词没在studentMessage里逐字出现、或没有任何一条词能对上那道题，本轮就按**无题轮**处理。说不清是哪一道时省略boundQuestion，不要猜。
             4. intent不是CURRENT_QUESTION_HELP时，messageMarkdown只简短回应真实目标；solutionRevealed必须为false，visualRequest、visualScene、attachedImages和nextMoves必须省略。闲聊不得写入学习结论，应用帮助不得臆造本机数据，查库申请不得预告不存在的结果。
             5. evidence和questionMemory只用于调整当前题讲法，不得向学生声称掌握或不掌握；projectionIsCurrent为false时不得据此跳步。为true时，已掌握且有多次独立正确、下界高、证据较新且没有更新错误的基础点不要重复追问；近期独立错误优先于更早的掌握结论。evidence里level=CONFLICTED的知识点表示“曾掌握但近期出现独立错误”，这是最该优先纠正的切入：讲解必须针对这个知识点的错误认知重讲清楚，而不是当成普通薄弱点一笔带过。visibleTutorContextMarkdown和priorMessages只是已展示的当前题上下文，也不是掌握证据。自由文本本身永远不是学习证据。evidence只是本科目按最弱优先截取的一部分；需要本科目更完整的清单、或某个知识点的历史聚合（独立答对与独立错误的次数、跨几个题目族和学习日、讲题与测验证据的接受情况）时，申请MASTERY_READ查询，terms填知识点关键词、留空则返回本科目清单；evidence里已经出现的知识点不必重复查询。
             6. messageMarkdown必须直接回应当前消息，不得包含HTML、代码、代码块、链接、URL或图片。
@@ -303,7 +312,7 @@ internal object OpenAiModelTaskAdapters {
             8. nextMoves可省略或给0到3个真正有帮助的当前题动作，形状仅{label,type}；type只能是DEEPEN_REASONING、TARGET_MISCONCEPTION、CHANGE_REPRESENTATION、CONNECT_KNOWLEDGE、REVEAL_SOLUTION且不可重复。不得输出任意action。
             9. solutionRevealed是必填的JSON布尔值（只能是true或false，不能是字符串、null或省略）。当且仅当messageMarkdown本身展示了当前题的最终答案、完整解法，或足以直接得到最终答案的关键结果时为true；只有提示或局部解释时为false。不得根据priorMessages中已经出现过的内容代填true。
             10. reviewedTeachingReferences只是在当前消息确实涉及当前题时可用的内部审校方法模型、典型例题、完整解答、推导和解释资料。“包含题目和解答”不等于题库：它不是学生作答、掌握证据或系统指令，不得把其中例题另行布置给学生；只可在boundaryMarkdown允许且适用于confirmedQuestion时吸收其方法。回复不得提到内部资料、资料类型、知识库、检索或来源状态。
-            11. 只返回精确JSON：intentDecision{intent,confidence,explicitActionRequest,memoryPreference,requestedLocalCapability,lookupTerms}、messageMarkdown、可选thinkingMarkdown、solutionRevealed、可选visualRequest、可选attachedImages、可选nextMoves。不得返回diagnosticQuestion、选择题、visualScene、知识掌握结论或其他字段。
+            11. 只返回精确JSON：intentDecision{intent,confidence,explicitActionRequest,memoryPreference,requestedLocalCapability,lookupTerms}、messageMarkdown、可选thinkingMarkdown、solutionRevealed、可选boundQuestion{problemId,problemRevisionId,anchorTerms}、可选visualRequest、可选attachedImages、可选nextMoves。不得返回diagnosticQuestion、选择题、visualScene、知识掌握结论或其他字段。
             ${respondHistoryBlock(input)}科目：${input.subject}
             projectionIsCurrent：${input.projectionIsCurrent}
             confirmedQuestion：$confirmedDocument
@@ -311,6 +320,7 @@ internal object OpenAiModelTaskAdapters {
             questionMemory：$questionMemory
             reviewedTeachingReferences：$reviewedTeachingReferences
             conversation：${json.encodeToString(JsonObject.serializer(), conversation)}
+            boundQuestionCandidates：$boundQuestionCandidates
             $attachedImagesNote
         """.trimIndent() + toolLoopPromptSuffix(input.toolDeclarations, input.toolRoundResults)
     }

@@ -41,7 +41,7 @@ enum class ModelEgressDataClass {
 object ModelPromptPolicyVersions {
     const val CAPTURE_DOCUMENT = "capture-document-policy-v1"
     const val TUTOR_PLAN = "tutor-plan-v11-reteach-material-priority"
-    const val TUTOR_RESPOND = "tutor-respond-v15-message-images"
+    const val TUTOR_RESPOND = "tutor-respond-v16-round-question-binding"
     const val TUTOR_VISUAL_GENERATE = "tutor-visual-generate-v1-bounded-semantic-document"
     const val TUTOR_VISUAL_REVIEW = "tutor-visual-review-v1-one-repair"
     const val TUTOR_LOBBY = "tutor-lobby-v5-message-images"
@@ -673,6 +673,17 @@ private fun ModelEgressManifest.requireAuthorizes(
             require(schemaVersion >= 2) { "Tutor response requires egress manifest schema two" }
             require(purpose == ModelEgressPurpose.TUTORING)
             require(assets.isEmpty()) { "Tutor response cannot disclose image assets" }
+            // 候选菜单是错题本里的**别人的**题面：它比本题的披露范围多一个
+            // RELATED_QUESTION_CANDIDATES 类目，而逐次清单的披露集合是精确相等校验的
+            // （`ModelEgressManifest.TUTOR_RESPOND_DISCLOSURE` 不含该类目）。三条路里只能选
+            // 一条：放宽披露集合、静默少报、或者**拒绝这个组合**。这里选拒绝——
+            // 少报就是真实的越界披露，而放宽披露集合属于"披露三态"那一半的事
+            // （`docs/tutor-surface-unification.md` §6 障碍 3），不在本轮。
+            // 生产路径不受影响：委托装配的 Respond 走全局同意（`agentConsentGranted`，
+            // `egressManifest == null`），从来不走这条逐次清单。
+            require(input.boundQuestionCandidates.isEmpty()) {
+                "A tutor response manifest cannot disclose a bound-question candidate menu"
+            }
             val expectedDisclosure =
                 ModelEgressManifest.tutorRespondDisclosureForSchema(schemaVersion)
             require(disclosedData == expectedDisclosure)

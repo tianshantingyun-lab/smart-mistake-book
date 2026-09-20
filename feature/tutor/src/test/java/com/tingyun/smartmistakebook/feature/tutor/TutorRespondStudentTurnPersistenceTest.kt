@@ -35,6 +35,10 @@ import com.tingyun.smartmistakebook.core.model.QuestionBlockEvidence
 import com.tingyun.smartmistakebook.core.model.QuestionBlockProvenance
 import com.tingyun.smartmistakebook.core.model.QuestionBlockReviewStatus
 import com.tingyun.smartmistakebook.core.model.QuestionDocument
+import com.tingyun.smartmistakebook.core.domain.BindStudentMessageQuestionCommand
+import com.tingyun.smartmistakebook.core.model.RelatedProblemCandidate
+import com.tingyun.smartmistakebook.core.model.SubjectKind
+import com.tingyun.smartmistakebook.core.model.TutorRoundQuestionDeclaration
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
 import com.tingyun.smartmistakebook.core.model.TutorRespondOutput
 import com.tingyun.smartmistakebook.core.model.WritingLayer
@@ -139,6 +143,102 @@ class TutorRespondStudentTurnPersistenceTest {
         assertNull(chatStartError)
     }
 
+    @Test
+    fun roundQuestionBindingIsPersistedOnTheStudentTurn() = runTest {
+        val conversations = TutorConversationRows()
+        val sink = sink(conversations, ExecutingModelTasks(declaration = BINDING))
+        val commands = TutorRespondCommands(scope = this, sink = sink)
+
+        commands.collect(request = boundRequest(), clearDraftOnPersist = true)
+        advanceUntilIdle()
+
+        val bound = conversations.boundQuestions.single()
+        assertEquals("tutor-message:${boundRequest().requestId}", bound.messageId)
+        assertEquals(BOUND_PROBLEM_ID, bound.boundProblemId)
+        assertEquals(BOUND_REVISION_ID, bound.boundProblemRevisionId)
+    }
+
+    @Test
+    fun anOutOfMenuDeclarationLeavesTheRoundWithoutAQuestion() = runTest {
+        // 模型声明了一道本轮菜单里没有的题：两条本地校验第一条就不过，
+        // 本轮视为无题轮 —— 一行绑定都不该落。
+        val conversations = TutorConversationRows()
+        val sink = sink(
+            conversations,
+            ExecutingModelTasks(
+                declaration = TutorRoundQuestionDeclaration(
+                    problemId = "problem-outside",
+                    problemRevisionId = "revision-outside",
+                    anchorTerms = listOf("光的折射"),
+                ),
+            ),
+        )
+        val commands = TutorRespondCommands(scope = this, sink = sink)
+
+        commands.collect(request = boundRequest(), clearDraftOnPersist = true)
+        advanceUntilIdle()
+
+        assertTrue(conversations.boundQuestions.isEmpty())
+        assertEquals(1, conversations.studentMessages.size)
+    }
+
+    @Test
+    fun aMissingDeclarationLeavesTheRoundWithoutAQuestion() = runTest {
+        val conversations = TutorConversationRows()
+        val sink = sink(conversations, ExecutingModelTasks(declaration = null))
+        val commands = TutorRespondCommands(scope = this, sink = sink)
+
+        commands.collect(request = boundRequest(), clearDraftOnPersist = true)
+        advanceUntilIdle()
+
+        assertTrue(conversations.boundQuestions.isEmpty())
+    }
+
+    @Test
+    fun aFailingBindingWriteStillLetsTheConversationContinue() = runTest {
+        val conversations = TutorConversationRows().apply {
+            bindFailure = IllegalStateException("tutor_message binding cannot be written")
+        }
+        val sink = sink(conversations, ExecutingModelTasks(declaration = BINDING))
+        val commands = TutorRespondCommands(scope = this, sink = sink)
+
+        commands.collect(request = boundRequest(), clearDraftOnPersist = true)
+        advanceUntilIdle()
+
+        // 与"学生轮次落库失败"同一条纪律：簿记失败不阻断对话，也不该冒出一个与模型无关的报错。
+        assertEquals(1, conversations.studentMessages.size)
+        assertNull(chatStartError)
+    }
+
+    private fun boundRequest(): ModelTaskRequest = buildTutorRespondRequest(
+        question = question(),
+        profile = StudyProfileOverview(),
+        provider = provider,
+        requestId = "tutor-respond:binding-1",
+        occurredAtEpochMillis = 100,
+        responseOrdinal = 1,
+        cycleOrdinal = 1,
+        turnOrdinal = 1,
+        studentMessage = BOUND_STUDENT_MESSAGE,
+        visibleTutorContextMarkdown = null,
+        priorMessages = emptyList(),
+        boundQuestionCandidates = listOf(
+            RelatedProblemCandidate(
+                problemId = BOUND_PROBLEM_ID,
+                problemRevisionId = BOUND_REVISION_ID,
+                subject = SubjectKind.MATH,
+                title = "光的折射实验",
+                questionDocument = QuestionDocument(
+                    id = "question-bound",
+                    title = "光的折射实验",
+                    blocks = listOf(
+                        ContentBlock.Paragraph("stem-bound", "光的折射实验里入射角与折射角的关系。"),
+                    ),
+                ),
+            ),
+        ),
+    )
+
     private fun sink(
         conversations: TutorConversationRepository,
         modelTasks: ModelTaskRepository,
@@ -159,6 +259,7 @@ class TutorRespondStudentTurnPersistenceTest {
         currentInput = { error("No plan input expected") },
         observedTask = { error("No observed task expected") },
         tutorRespondTasks = { emptyList() },
+        sessionRespondTasks = { emptyList() },
         answerExposureKeys = { emptySet() },
         chatSending = { false },
         modelTasks = modelTasks,
@@ -204,7 +305,10 @@ class TutorRespondStudentTurnPersistenceTest {
         ),
     )
 
-    private class ExecutingModelTasks : ModelTaskRepository {
+    private class ExecutingModelTasks(
+        /** 模型这一轮声明"在说哪一道"；null = 不指任何一道。 */
+        private val declaration: TutorRoundQuestionDeclaration? = null,
+    ) : ModelTaskRepository {
         val executedRequests = mutableListOf<ModelTaskRequest>()
 
         override suspend fun capabilities(): ProviderCapabilitySnapshot = provider
@@ -236,6 +340,7 @@ class TutorRespondStudentTurnPersistenceTest {
                         questionDocumentId = input.questionDocument.id,
                         responseOrdinal = input.responseOrdinal,
                         messageMarkdown = "先看临界点两侧的符号。",
+                        boundQuestion = declaration,
                         modelVersion = "model-v1",
                     ),
                     createdAtEpochMillis = request.occurredAtEpochMillis,
@@ -253,7 +358,9 @@ class TutorRespondStudentTurnPersistenceTest {
         private val conversations = MutableStateFlow<Map<String, TutorConversation>>(emptyMap())
         val createCommands = mutableListOf<CreateTutorConversationCommand>()
         val studentMessages = mutableListOf<AppendTutorStudentMessageCommand>()
+        val boundQuestions = mutableListOf<BindStudentMessageQuestionCommand>()
         var appendFailure: Throwable? = null
+        var bindFailure: Throwable? = null
 
         suspend fun seed(conversation: TutorConversation) {
             conversations.update { rows -> rows + (conversation.conversationId to conversation) }
@@ -331,6 +438,17 @@ class TutorRespondStudentTurnPersistenceTest {
             )
         }
 
+        override suspend fun bindStudentMessageQuestion(
+            command: BindStudentMessageQuestionCommand,
+        ): Boolean {
+            bindFailure?.let { failure -> throw failure }
+            if (command.messageId !in studentMessages.map { it.messageId }) {
+                error("FOREIGN KEY constraint failed (code 787)")
+            }
+            boundQuestions += command
+            return true
+        }
+
         override suspend fun appendAssistantMessage(
             command: AppendTutorAssistantMessageCommand,
         ): TutorMessage = error("No assistant write expected")
@@ -366,6 +484,14 @@ class TutorRespondStudentTurnPersistenceTest {
     private companion object {
         const val SESSION_ID = "mistake-tutor-1"
         const val STUDENT_MESSAGE = "我先两边同时除以 2"
+        const val BOUND_STUDENT_MESSAGE = "光的折射实验这一步为什么这样"
+        const val BOUND_PROBLEM_ID = "problem-bound"
+        const val BOUND_REVISION_ID = "revision-bound"
+        val BINDING = TutorRoundQuestionDeclaration(
+            problemId = BOUND_PROBLEM_ID,
+            problemRevisionId = BOUND_REVISION_ID,
+            anchorTerms = listOf("光的折射"),
+        )
 
         val provider = ProviderCapabilitySnapshot(
             providerId = "configured-provider",

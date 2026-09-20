@@ -15,6 +15,8 @@ import com.tingyun.smartmistakebook.core.data.backup.attentionRequired
 import com.tingyun.smartmistakebook.core.data.knowledge.BundledKnowledgeBaseInstaller
 import com.tingyun.smartmistakebook.core.data.knowledge.TutorTeachingReferenceRepositoryFactory
 import com.tingyun.smartmistakebook.core.data.library.LibraryCatalogRepositoryFactory
+import com.tingyun.smartmistakebook.core.data.tutor.TutorRoundQuestionRetrieverFactory
+import com.tingyun.smartmistakebook.core.domain.TutorRoundQuestionRetriever
 import com.tingyun.smartmistakebook.core.data.mistake.MistakeDetailRepositoryFactory
 import com.tingyun.smartmistakebook.core.data.mistake.MistakeOrganizationRepositoryFactory
 import com.tingyun.smartmistakebook.core.data.model.ConfiguredModelGatewayFactory
@@ -104,6 +106,9 @@ class SmartMistakeBookApplication : Application() {
     }
 
     lateinit var mistakeDetailRepository: MistakeDetailRepository
+
+    /** 本轮候选菜单的本地检索源：由错题详情读口派生，无状态，可全局共用一个。 */
+    lateinit var tutorRoundQuestionRetriever: TutorRoundQuestionRetriever
         private set
 
     lateinit var mistakeOrganizationRepository: MistakeOrganizationRepository
@@ -175,6 +180,9 @@ class SmartMistakeBookApplication : Application() {
                 optimizedFsrsParameters = optimizedParameters,
             )
             mistakeDetailRepository = MistakeDetailRepositoryFactory.create(this, database)
+            tutorRoundQuestionRetriever = TutorRoundQuestionRetrieverFactory.create(
+                mistakeDetailRepository,
+            )
             mistakeOrganizationRepository = MistakeOrganizationRepositoryFactory.create(database)
             tutorInteractionRepository = TutorInteractionRepositoryFactory.create(database)
             tutorConversationRepository = TutorConversationRepositoryFactory.create(database)

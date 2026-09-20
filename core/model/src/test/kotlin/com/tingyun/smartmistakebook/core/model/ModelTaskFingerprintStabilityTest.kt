@@ -261,4 +261,86 @@ class ModelTaskFingerprintStabilityTest {
         assertEquals(true, decoded.agentConsentGranted)
         assertEquals(ModelTaskFingerprint.of(v8), ModelTaskFingerprint.of(decoded))
     }
+
+    @Test
+    fun respondBoundQuestionCarrierKeepsTheOperationFingerprintStableAcrossSchemaVersions() {
+        // 候选菜单（schema 11）在空值下不得改变逻辑指纹：v10 行当年是按"没有这个键"算出来的。
+        val v10 = ModelTaskRequest(
+            schemaVersion = ModelTaskRequest.LOBBY_CONTEXT_SCHEMA_VERSION,
+            requestId = "respond:v10-menu",
+            input = respondInput(),
+            occurredAtEpochMillis = 1_000,
+        )
+        val v11 = ModelTaskRequest(
+            schemaVersion = ModelTaskRequest.CURRENT_SCHEMA_VERSION,
+            requestId = "respond:v11-menu",
+            input = respondInput(),
+            occurredAtEpochMillis = 1_000,
+        )
+
+        assertEquals(
+            ModelTaskLogicalOperationFingerprint.of(v10.input),
+            ModelTaskLogicalOperationFingerprint.of(v11.input),
+        )
+    }
+
+    @Test
+    fun aRespondRowWrittenBeforeTheBoundQuestionCarrierStillValidatesAfterUpgrade() {
+        // bf8be888 的教训：旧 v10 行的编码里没有 boundQuestionCandidates 键，
+        // decode 取默认空列表后重算逻辑指纹必须与存库值一致，否则 toStore 直接抛完整性异常。
+        val legacyJson = ModelTaskCodec.encodeRequest(
+            ModelTaskRequest(
+                schemaVersion = ModelTaskRequest.LOBBY_CONTEXT_SCHEMA_VERSION,
+                requestId = "respond:legacy-menu-row",
+                input = respondInput(),
+                occurredAtEpochMillis = 1_000,
+            ),
+        ).replace(",\"boundQuestionCandidates\":[]", "")
+        val decoded = ModelTaskCodec.decodeRequest(legacyJson)
+
+        assertEquals(ModelTaskRequest.LOBBY_CONTEXT_SCHEMA_VERSION, decoded.schemaVersion)
+        assertEquals(
+            ModelTaskLogicalOperationFingerprint.of(respondInput()),
+            ModelTaskLogicalOperationFingerprint.of(decoded.input),
+        )
+    }
+
+    @Test
+    fun aRealBoundQuestionMenuStillChangesTheOperationFingerprint() {
+        // 反向要求：strip 只抹平空载体。真的带了候选菜单就是另一次输入，
+        // 指纹必须变——否则换了一道候选重放会命中旧请求。
+        val withMenu = respondInput().copy(boundQuestionCandidates = listOf(relatedCandidate()))
+
+        assertNotEquals(
+            ModelTaskLogicalOperationFingerprint.of(respondInput()),
+            ModelTaskLogicalOperationFingerprint.of(withMenu),
+        )
+    }
+
+    @Test
+    fun aLegacySchemaRequestCannotCarryABoundQuestionMenu() {
+        val rejected = runCatching {
+            ModelTaskRequest(
+                schemaVersion = ModelTaskRequest.LOBBY_CONTEXT_SCHEMA_VERSION,
+                requestId = "respond:legacy-with-menu",
+                input = respondInput().copy(
+                    boundQuestionCandidates = listOf(relatedCandidate()),
+                ),
+                occurredAtEpochMillis = 1_000,
+            )
+        }
+
+        assertTrue(rejected.isFailure)
+    }
+
+    private fun relatedCandidate() = RelatedProblemCandidate(
+        problemId = "problem-other",
+        problemRevisionId = "revision-other",
+        subject = SubjectKind.MATH,
+        title = "另一道题",
+        questionDocument = QuestionDocument(
+            id = "question-other",
+            blocks = listOf(ContentBlock.Paragraph("stem-other", "求另一个函数的单调区间")),
+        ),
+    )
 }

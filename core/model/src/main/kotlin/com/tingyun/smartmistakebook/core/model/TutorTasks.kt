@@ -370,6 +370,12 @@ data class TutorRespondInput(
     val toolDeclarations: List<TutorToolName> = emptyList(),
     /** Results of prior tool rounds; round 1 dispatch always leaves this empty. */
     val toolRoundResults: List<TutorToolRoundResult> = emptyList(),
+    /**
+     * 本轮派发前本地组好的候选菜单（显式添加的题 + 上一轮绑定的题 + 本地文本检索前 N 条），
+     * 供模型判"这一轮在说哪一道（或不指任何一道）"。空表示本地没有任何候选——此时本轮
+     * 必然是无题轮（[TutorRespondOutput.boundQuestion] 不可能通过本地校验）。
+     */
+    val boundQuestionCandidates: List<RelatedProblemCandidate> = emptyList(),
 ) : ModelTaskInput {
     override val kind: ModelTaskKind
         get() = ModelTaskKind.TUTOR_RESPOND
@@ -454,6 +460,13 @@ data class TutorRespondInput(
         ) {
             "Tutor response tool round ordinals must be sequential from one"
         }
+        require(boundQuestionCandidates.size <= MAX_BOUND_QUESTION_CANDIDATES) {
+            "Tutor response carries too many bound-question candidates"
+        }
+        require(
+            boundQuestionCandidates.map { it.problemId to it.problemRevisionId }.distinct().size ==
+                boundQuestionCandidates.size,
+        ) { "Tutor response bound-question candidates must be unique per revision" }
     }
 
     companion object {
@@ -462,11 +475,58 @@ data class TutorRespondInput(
         const val MAX_PRIOR_MESSAGES = 8
         const val MAX_PRIOR_MESSAGE_CHARS = 24_000
 
+        /** 候选菜单上限：与 `ProblemOrganizationInput.MAX_RELATION_CANDIDATES` 同一口径。 */
+        const val MAX_BOUND_QUESTION_CANDIDATES = 8
+
         /**
          * 早期对话摘要的长度上限。摘要是"要点提示"，不该反过来挤占原样保留的轮次，
          * 所以它远小于原样窗口；生成端（`TutorChatDigest`）另有一条更紧的上限。
          */
         const val MAX_PRIOR_DIGEST_CHARS = 2_000
+    }
+}
+
+/**
+ * 模型对"这一轮在说哪一道题"的声明。**声明本身不授予任何权限**：本地还要核两条——
+ * 候选必须在派发前的菜单内（按 problemId + problemRevisionId 精确匹配），并且
+ * [anchorTerms] 每一条都要在学生这一轮的消息里逐字出现、且至少一条能在该题自身
+ * （标题或题面）里找到。核不过就是无题轮。
+ *
+ * [anchorTerms] 沿用 `TutorIntentAuthority.actionIsBoundTo`/`lookupTerms` 的逐字锚纪律：
+ * 模型给出词、本地逐字比对，模型不能只给一个"我觉得是这道"的判断。
+ *
+ * @property problemId 声明指向的题目 id；必须在本地候选菜单内。
+ * @property problemRevisionId 声明指向的题面修订 id；同一道题的不同修订不算命中。
+ * @property anchorTerms 学生消息里逐字出现、且能在该题自身文本里找到的词，至少一条。
+ */
+@Serializable
+data class TutorRoundQuestionDeclaration(
+    val problemId: String,
+    val problemRevisionId: String,
+    val anchorTerms: List<String> = emptyList(),
+) {
+    init {
+        problemId.requireSafeModelText(
+            "Tutor round question id",
+            ModelTaskRequest.MAX_ID_CHARS,
+            false,
+        )
+        problemRevisionId.requireSafeModelText(
+            "Tutor round question revision",
+            ModelTaskRequest.MAX_ID_CHARS,
+            false,
+        )
+        require(anchorTerms.size <= MAX_ANCHOR_TERMS) {
+            "Tutor round question declaration carries too many anchor terms"
+        }
+        anchorTerms.forEach { term ->
+            term.requireSafeModelText("Tutor round question anchor", MAX_ANCHOR_TERM_CHARS, false)
+        }
+    }
+
+    companion object {
+        const val MAX_ANCHOR_TERMS = 4
+        const val MAX_ANCHOR_TERM_CHARS = 64
     }
 }
 
@@ -705,6 +765,11 @@ data class TutorRespondOutput(
     val thinkingMarkdown: String? = null,
     /** Optional locally-rendered figures the model asked for; drawn after the body, never in markdown. */
     val attachedImages: List<AttachedImage> = emptyList(),
+    /**
+     * 模型声明"这一轮在说哪一道题"；null 表示不指任何一道（无题轮）。**声明不授予权限**：
+     * 本地要核候选在菜单内、且锚词逐字出现，核不过就当无题轮处理。
+     */
+    val boundQuestion: TutorRoundQuestionDeclaration? = null,
     val modelVersion: String,
 ) : ModelTaskOutput {
     init {

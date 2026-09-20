@@ -8,6 +8,8 @@ import com.tingyun.smartmistakebook.core.database.TutorConversationRecord
 import com.tingyun.smartmistakebook.core.database.TutorMessageRecord
 import com.tingyun.smartmistakebook.core.database.UpdateTutorMessageStatusDatabaseCommand
 import com.tingyun.smartmistakebook.core.domain.AppendTutorAssistantMessageCommand
+import com.tingyun.smartmistakebook.core.database.BindStudentMessageQuestionDatabaseCommand
+import com.tingyun.smartmistakebook.core.domain.BindStudentMessageQuestionCommand
 import com.tingyun.smartmistakebook.core.domain.AppendTutorStudentMessageCommand
 import com.tingyun.smartmistakebook.core.domain.ArchiveTutorConversationCommand
 import com.tingyun.smartmistakebook.core.domain.ClearTutorConversationDraftCommand
@@ -76,6 +78,19 @@ internal class RoomTutorConversationRepository(
         command: AppendTutorStudentMessageCommand,
     ): TutorMessage = withContext(Dispatchers.IO) {
         database.appendTutorStudentMessage(command.toDatabase()).toDomain()
+    }
+
+    override suspend fun bindStudentMessageQuestion(
+        command: BindStudentMessageQuestionCommand,
+    ): Boolean = withContext(Dispatchers.IO) {
+        database.bindTutorStudentMessageQuestion(
+            BindStudentMessageQuestionDatabaseCommand(
+                messageId = command.messageId,
+                boundProblemId = command.boundProblemId,
+                boundProblemRevisionId = command.boundProblemRevisionId,
+            ),
+        )
+        true
     }
 
     override suspend fun appendAssistantMessage(
@@ -163,6 +178,8 @@ private fun AppendTutorStudentMessageCommand.toDatabase() =
         logicalOperationId = logicalOperationId,
         createdAtEpochMillis = createdAtEpochMillis,
         sourceImageAssetIds = sourceImageAssetIds,
+        boundProblemId = boundProblemId,
+        boundProblemRevisionId = boundProblemRevisionId,
     )
 
 private fun AppendTutorAssistantMessageCommand.toDatabase() =
@@ -221,4 +238,6 @@ private fun TutorMessageRecord.toDomain(
     completedAtEpochMillis = completedAtEpochMillis,
     errorCode = errorCode,
     sourceImageAssetIds = sourceImageAssetIds,
+    boundProblemId = boundProblemId,
+    boundProblemRevisionId = boundProblemRevisionId,
 )

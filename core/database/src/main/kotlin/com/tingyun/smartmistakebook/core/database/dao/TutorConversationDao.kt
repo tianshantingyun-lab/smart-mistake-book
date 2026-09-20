@@ -7,6 +7,7 @@ import androidx.room3.Query
 import androidx.room3.Transaction
 import com.tingyun.smartmistakebook.core.database.AppendTutorAssistantMessageDatabaseCommand
 import com.tingyun.smartmistakebook.core.database.AppendTutorStudentMessageDatabaseCommand
+import com.tingyun.smartmistakebook.core.database.BindStudentMessageQuestionDatabaseCommand
 import com.tingyun.smartmistakebook.core.database.ClearTutorConversationDraftDatabaseCommand
 import com.tingyun.smartmistakebook.core.database.CreateTutorConversationDatabaseCommand
 import com.tingyun.smartmistakebook.core.database.ImmutablePayloadConflictException
@@ -18,6 +19,7 @@ import com.tingyun.smartmistakebook.core.database.entity.TutorConversationEntity
 import com.tingyun.smartmistakebook.core.database.entity.TutorMessageEntity
 import com.tingyun.smartmistakebook.core.database.entity.TutorMessageSourceAssetEntity
 import com.tingyun.smartmistakebook.core.database.TutorMessageSourceAssetRecord
+import com.tingyun.smartmistakebook.core.database.requireBoundQuestionPair
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -261,6 +263,7 @@ internal abstract class TutorConversationDao {
         require(command.sourceImageAssetIds.size <= MAX_STUDENT_MESSAGE_IMAGES) {
             "Tutor student message carries too many images"
         }
+        requireBoundQuestionPair(command.boundProblemId, command.boundProblemRevisionId)
         val entity = command.toEntity()
         if (insertMessage(entity) != -1L) {
             if (command.sourceImageAssetIds.isNotEmpty()) {
@@ -288,12 +291,72 @@ internal abstract class TutorConversationDao {
             existing.conversationId != entity.conversationId ||
             existing.ordinal != entity.ordinal ||
             existing.bodyMarkdown != entity.bodyMarkdown ||
-            existing.logicalOperationId != entity.logicalOperationId
+            existing.logicalOperationId != entity.logicalOperationId ||
+            existing.boundProblemId != entity.boundProblemId ||
+            existing.boundProblemRevisionId != entity.boundProblemRevisionId
         ) {
             throw ImmutablePayloadConflictException("tutor_message", command.messageId)
         }
         return existing.toRecord()
     }
+
+    /**
+     * 把本轮绑定的题写到学生消息行。**一次绑定、之后只能写同一个值**：
+     *
+     * - 目标行不存在（或不是 STUDENT 行）→ 抛 `ImmutablePayloadConflictException`；绑定没有
+     *   主人就是无主数据，静默丢弃会让"这一轮有题"悄悄变成"没有"。
+     * - 同一行已经有**同一个**绑定 → 幂等成功（恢复重放同一条回复会走这里）。
+     * - 同一行已经有**另一个**绑定 → 抛冲突。一轮只能绑一道题；能改就等于历史可以被改写。
+     */
+    @Transaction
+    open suspend fun bindStudentMessageQuestion(
+        command: BindStudentMessageQuestionDatabaseCommand,
+    ): TutorMessageRecord {
+        require(command.messageId.isNotBlank())
+        requireBoundQuestionPair(command.boundProblemId, command.boundProblemRevisionId)
+        val existing = findMessage(command.messageId)
+            ?: throw ImmutablePayloadConflictException("tutor_message", command.messageId)
+        if (existing.role != "STUDENT") {
+            throw ImmutablePayloadConflictException("tutor_message", command.messageId)
+        }
+        if (existing.boundProblemId != null || existing.boundProblemRevisionId != null) {
+            if (
+                existing.boundProblemId == command.boundProblemId &&
+                existing.boundProblemRevisionId == command.boundProblemRevisionId
+            ) {
+                return existing.toRecord()
+            }
+            throw ImmutablePayloadConflictException("tutor_message_binding", command.messageId)
+        }
+        if (
+            updateStudentMessageBoundQuestion(
+                messageId = command.messageId,
+                boundProblemId = command.boundProblemId,
+                boundProblemRevisionId = command.boundProblemRevisionId,
+            ) != 1
+        ) {
+            throw ImmutablePayloadConflictException("tutor_message_binding", command.messageId)
+        }
+        return checkNotNull(findMessage(command.messageId)) {
+            "Tutor message binding was not readable"
+        }.toRecord()
+    }
+
+    @Query(
+        """
+        UPDATE tutor_message
+        SET bound_problem_id = :boundProblemId,
+            bound_problem_revision_id = :boundProblemRevisionId
+        WHERE message_id = :messageId
+          AND bound_problem_id IS NULL
+          AND bound_problem_revision_id IS NULL
+        """,
+    )
+    protected abstract suspend fun updateStudentMessageBoundQuestion(
+        messageId: String,
+        boundProblemId: String,
+        boundProblemRevisionId: String,
+    ): Int
 
     @Transaction
     open suspend fun appendAssistantMessage(
@@ -443,6 +506,8 @@ private fun AppendTutorStudentMessageDatabaseCommand.toEntity() = TutorMessageEn
     createdAtEpochMillis = createdAtEpochMillis,
     completedAtEpochMillis = createdAtEpochMillis,
     errorCode = null,
+    boundProblemId = boundProblemId,
+    boundProblemRevisionId = boundProblemRevisionId,
 )
 
 private fun AppendTutorAssistantMessageDatabaseCommand.toEntity() = TutorMessageEntity(
@@ -483,6 +548,8 @@ internal fun TutorMessageEntity.toRecord() = TutorMessageRecord(
     role = role,
     bodyMarkdown = bodyMarkdown,
     thinkingMarkdown = thinkingMarkdown,
+    boundProblemId = boundProblemId,
+    boundProblemRevisionId = boundProblemRevisionId,
     status = status,
     logicalOperationId = logicalOperationId,
     replyToMessageId = replyToMessageId,

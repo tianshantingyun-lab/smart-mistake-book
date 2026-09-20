@@ -351,6 +351,9 @@ internal fun SavedMistakeTutorDestination(
             // 学生文字要落进 tutor_message，写侧门控才能逐字核对模型引文（纯文字作答同理）。
             conversations = application.tutorConversationRepository,
             catalogEntries = experience.catalog,
+            // 按轮次绑定的候选菜单：本地检索这一半在生产里接上（机制见 core:domain 的
+            // TutorRoundQuestionBindingPolicy）。
+            roundQuestionRetriever = application.tutorRoundQuestionRetriever,
             // 会话里也能像大厅一样给学生消息附图（例如自己的手写过程）。
             imageIntake = application.lobbyMessageImageIntake,
             // 模型要的配图（重绘题面 / 过程图）要在这一页真的画出来：错题讲题页此前拿不到

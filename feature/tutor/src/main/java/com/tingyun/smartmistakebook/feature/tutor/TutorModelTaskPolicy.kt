@@ -27,6 +27,7 @@ import com.tingyun.smartmistakebook.core.model.TutorPlanInput
 import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
 import com.tingyun.smartmistakebook.core.model.TutorQuestionLearningEvidence
 import com.tingyun.smartmistakebook.core.model.TutorQuestionReviewStatus
+import com.tingyun.smartmistakebook.core.model.RelatedProblemCandidate
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
 import com.tingyun.smartmistakebook.core.model.TutorTeachingReference
 import com.tingyun.smartmistakebook.core.model.TutorToolName
@@ -392,6 +393,11 @@ internal fun buildTutorRespondRequest(
     requestedMove: TutorMoveType? = null,
     /** 本条消息附带的规范资产 id（按选择顺序）；空表示纯文字。 */
     studentImageAssetIds: List<String> = emptyList(),
+    /**
+     * 本轮派发前本地组好的候选菜单。空表示本地没有任何候选，本轮必然是无题轮。
+     * 菜单只决定"模型能指哪几道"，绑定仍要模型声明 + 本地两条校验。
+     */
+    boundQuestionCandidates: List<RelatedProblemCandidate> = emptyList(),
 ): ModelTaskRequest {
     val input = TutorRespondInput(
         sessionId = question.sessionId,
@@ -422,6 +428,7 @@ internal fun buildTutorRespondRequest(
             TutorToolName.MASTERY_UPDATE,
             TutorToolName.NOTEBOOK_WRITE,
         ),
+        boundQuestionCandidates = boundQuestionCandidates,
     )
     // 配置模型 = 全局同意：外部 agent-eligible 类型不再携带逐次披露清单。
     return ModelTaskRequest(

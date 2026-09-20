@@ -87,6 +87,12 @@ data class TutorMessage(
     val errorCode: String?,
     /** 学生消息附图的规范资产 id（按选择顺序）；空表示纯文字消息。 */
     val sourceImageAssetIds: List<String> = emptyList(),
+    /**
+     * 本轮绑定的题（本地校验通过后的声明）。两列同时为 null = **无题轮**——包括迁移前写下的
+     * 旧行：它们的题归属当年无从判定，读回保持 null，不回填、不猜测。
+     */
+    val boundProblemId: String? = null,
+    val boundProblemRevisionId: String? = null,
 ) {
     init {
         require(messageId.isNotBlank()) { "Tutor message id must not be blank" }
@@ -108,6 +114,9 @@ data class TutorMessage(
                 status == TutorMessageStatus.STREAMING ||
                 logicalOperationId != null,
         ) { "Only in-flight assistant messages may omit a logical operation id" }
+        require((boundProblemId == null) == (boundProblemRevisionId == null)) {
+            "A bound round question needs both its problem id and its revision id"
+        }
     }
 }
 
@@ -159,6 +168,14 @@ data class AppendTutorStudentMessageCommand(
     val createdAtEpochMillis: Long,
     /** 附图的规范资产 id（按选择顺序，最多 9 张）；空表示纯文字消息。 */
     val sourceImageAssetIds: List<String> = emptyList(),
+    /**
+     * 本轮绑定的题（本地两条校验通过后的声明）；两列同时为空表示**无题轮**。
+     *
+     * 挂在学生消息行上：一轮的锚是学生这一轮说的话。助手回复可能失败/重试/取消，挂在回复行上
+     * 会让绑定随重试而漂。
+     */
+    val boundProblemId: String? = null,
+    val boundProblemRevisionId: String? = null,
 ) {
     init {
         require(conversationId.isNotBlank()) { "Tutor conversation id must not be blank" }
@@ -173,11 +190,39 @@ data class AppendTutorStudentMessageCommand(
         require(sourceImageAssetIds.distinct().size == sourceImageAssetIds.size) {
             "Tutor student message image ids must be unique"
         }
+        require((boundProblemId == null) == (boundProblemRevisionId == null)) {
+            "A bound round question needs both its problem id and its revision id"
+        }
+        require(boundProblemId == null || boundProblemId.isNotBlank()) {
+            "A bound round question problem id must not be blank"
+        }
+        require(boundProblemRevisionId == null || boundProblemRevisionId.isNotBlank()) {
+            "A bound round question revision id must not be blank"
+        }
     }
 }
 
 /** 学生消息附图上限（与 Lobby 契约一致）。 */
 const val MAX_TUTOR_MESSAGE_IMAGES = 9
+
+/**
+ * 把本轮绑定的题补写到学生消息行。返回 false 表示该界面/实现不做这件事——调用方不得把
+ * false 当成"绑定成功"：绑定是否成立由 [TutorRoundQuestionBindingPolicy] 判定，这一步只负责
+ * 把它落下去。
+ */
+data class BindStudentMessageQuestionCommand(
+    val messageId: String,
+    val boundProblemId: String,
+    val boundProblemRevisionId: String,
+) {
+    init {
+        require(messageId.isNotBlank()) { "Tutor message id must not be blank" }
+        require(boundProblemId.isNotBlank()) { "A bound round question problem id must not be blank" }
+        require(boundProblemRevisionId.isNotBlank()) {
+            "A bound round question revision id must not be blank"
+        }
+    }
+}
 
 data class AppendTutorAssistantMessageCommand(
     val conversationId: String,
@@ -308,6 +353,14 @@ interface TutorConversationRepository {
     suspend fun createConversation(command: CreateTutorConversationCommand): TutorConversation
 
     suspend fun appendStudentMessage(command: AppendTutorStudentMessageCommand): TutorMessage
+
+    /**
+     * 把本轮绑定的题补写到学生消息行（拿到模型回复之后）。
+     *
+     * 默认不落：不是所有实现都提供会话行（测试替身、无库的界面）。默认返回 false 而不是 true，
+     * 是为了让"没落成"与"落成了"在调用方看来不一样——绑定落不下去时不得被当成已绑定。
+     */
+    suspend fun bindStudentMessageQuestion(command: BindStudentMessageQuestionCommand): Boolean = false
 
     suspend fun appendAssistantMessage(command: AppendTutorAssistantMessageCommand): TutorMessage
 

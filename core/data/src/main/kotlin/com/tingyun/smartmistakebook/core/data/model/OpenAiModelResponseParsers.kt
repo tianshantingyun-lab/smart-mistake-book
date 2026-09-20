@@ -79,6 +79,7 @@ import com.tingyun.smartmistakebook.core.model.TutorToolRequestsOutput
 import com.tingyun.smartmistakebook.core.model.TutorLobbyInput
 import com.tingyun.smartmistakebook.core.model.TutorLobbyOutput
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
+import com.tingyun.smartmistakebook.core.model.TutorRoundQuestionDeclaration
 import com.tingyun.smartmistakebook.core.model.TutorRespondOutput
 import com.tingyun.smartmistakebook.core.model.TutorEvidencePoint
 import com.tingyun.smartmistakebook.core.model.TutorEvidencePointKind
@@ -451,6 +452,15 @@ internal fun JsonObject.toTutorRespond(
     }
     val intentDecision = optionalObject("intentDecision")?.toTutorIntentDecision()
         ?: TutorIntentDecision.ambiguousDefault()
+    val boundQuestion = optionalObject("boundQuestion")?.let { element ->
+        element.requireOnlyKeys(TUTOR_BOUND_QUESTION_WIRE_KEYS)
+        TutorRoundQuestionDeclaration(
+            problemId = element.requiredString("problemId"),
+            problemRevisionId = element.requiredString("problemRevisionId"),
+            anchorTerms = element.optionalArray("anchorTerms")
+                .map(JsonElement::requiredPrimitiveString),
+        )
+    }
     return TutorRespondOutput(
         sessionId = input.sessionId,
         draftRevisionNumber = input.draftRevisionNumber,
@@ -466,6 +476,7 @@ internal fun JsonObject.toTutorRespond(
         intentDecision = intentDecision,
         thinkingMarkdown = optionalString("thinkingMarkdown"),
         attachedImages = optionalArray("attachedImages").map(JsonElement::toAttachedImage),
+        boundQuestion = boundQuestion,
         modelVersion = modelVersion,
     )
 }
@@ -557,7 +568,12 @@ internal val TUTOR_RESPOND_WIRE_KEYS =
         "nextMoves",
         "thinkingMarkdown",
         "attachedImages",
+        // 本轮"在说哪一道题"的声明（schema 11）。白名单是**逐字段**的：模型多写一个键就整条
+        // 响应无效，所以新声明必须在这里登记，否则合法的声明也会被判成无效响应。
+        "boundQuestion",
     )
+internal val TUTOR_BOUND_QUESTION_WIRE_KEYS =
+    setOf("problemId", "problemRevisionId", "anchorTerms")
 internal val TUTOR_LOBBY_WIRE_KEYS =
     setOf("intentDecision", "messageMarkdown", "thinkingMarkdown", "attachedImages")
 internal val ATTACHED_IMAGE_WIRE_KEYS =

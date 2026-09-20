@@ -1,9 +1,12 @@
 package com.tingyun.smartmistakebook.feature.tutor
 
+import com.tingyun.smartmistakebook.core.domain.BindStudentMessageQuestionCommand
+import com.tingyun.smartmistakebook.core.model.RelatedProblemCandidate
 import com.tingyun.smartmistakebook.core.domain.AppendTutorStudentMessageCommand
 import com.tingyun.smartmistakebook.core.domain.CreateTutorConversationCommand
 import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
 import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
+import com.tingyun.smartmistakebook.core.domain.resolvedRoundQuestion
 import com.tingyun.smartmistakebook.core.domain.TutorSendAction
 import com.tingyun.smartmistakebook.core.domain.TutorSendState
 import com.tingyun.smartmistakebook.core.domain.TutorTurnResponse
@@ -23,6 +26,7 @@ import com.tingyun.smartmistakebook.core.model.TutorConversationIds
 import com.tingyun.smartmistakebook.core.model.TutorMoveType
 import com.tingyun.smartmistakebook.core.model.TutorPlanInput
 import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
+import com.tingyun.smartmistakebook.core.model.TutorRespondOutput
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
 import com.tingyun.smartmistakebook.core.model.AppFailureCode
 import com.tingyun.smartmistakebook.core.model.Retryability
@@ -49,6 +53,31 @@ internal fun tutorRespondLimitError(): AppFailure = appFailure(
     retryability = Retryability.RETRYABLE,
     primaryAction = ActionType.RETRY,
 )
+
+/**
+ * 会话层的轮次号分配：该会话**全部** RESPOND 任务（不按题过滤）里最大的号 +1。
+ *
+ * 消灭的失败：此前序号按当前题派生（只在该题的任务里取 max），同一会话换了题就从 1 重新
+ * 开始。而 `model_task` 的唯一槽是 `(subject_id, task_kind, tutor_response_ordinal)`，
+ * `subject_id` 就是会话 id；`tutor_message` 的唯一键是 `(conversation_id, ordinal)`，而消息
+ * 序号由 `responseOrdinal*2-1` 算出。两处都会在"会话里的第二道题"上撞号并抛冲突。
+ *
+ * [sessionId] 由本函数自己过滤，而不是只信调用方给的那份列表：传进来一份"全库任务"不会
+ * 静默算出一个把别的会话的号也数进去的错号，而是照常只按本会话算。
+ *
+ * 空会话（首轮）返回 1。旧行照常读：本函数只影响新分配，历史行的号不变。
+ */
+internal fun nextTutorResponseOrdinal(
+    sessionId: String,
+    sessionRespondTasks: List<ModelTaskSnapshot>,
+): Int {
+    require(sessionId.isNotBlank()) { "Tutor response session id must not be blank" }
+    val highest = sessionRespondTasks.maxOfOrNull { task ->
+        val input = task.request.input as? TutorRespondInput
+        if (input?.sessionId == sessionId) input.responseOrdinal else 0
+    } ?: 0
+    return highest + 1
+}
 
 internal fun tutorRespondValidationError(): AppFailure = appFailure(
     code = AppFailureCode.VALIDATION_FAILED,
@@ -139,12 +168,15 @@ internal class TutorRespondCommands(
                         if (clearDraftOnPersist) sink.setChatDraft("")
                     }
                     when (snapshot.status) {
-                        ModelTaskStatus.SUCCEEDED -> sink.setTutorSendState(
-                            TutorTurnSendStateMachine.reduce(
-                                sink.tutorSendState(),
-                                TutorSendAction.DispatchSucceeded(logicalOperationId, messageId),
-                            ),
-                        )
+                        ModelTaskStatus.SUCCEEDED -> {
+                            bindRoundQuestionIfNeeded(request, snapshot)
+                            sink.setTutorSendState(
+                                TutorTurnSendStateMachine.reduce(
+                                    sink.tutorSendState(),
+                                    TutorSendAction.DispatchSucceeded(logicalOperationId, messageId),
+                                ),
+                            )
+                        }
                         ModelTaskStatus.RETRYABLE_FAILURE -> sink.setTutorSendState(
                             TutorTurnSendStateMachine.reduce(
                                 sink.tutorSendState(),
@@ -187,6 +219,8 @@ internal class TutorRespondCommands(
         requestedMove: TutorMoveType? = null,
         clearDraftOnPersist: Boolean = false,
         studentImageAssetIds: List<String> = emptyList(),
+        /** 本轮候选菜单（界面在派发前组好：显式添加 + 上一轮绑定 + 本地检索）。 */
+        boundQuestionCandidates: List<RelatedProblemCandidate> = emptyList(),
     ) {
         // 纯图消息给一句可读的兜底文本：消息体不能为空，且落库、指纹与派发必须用同一份文本，
         // 否则"学生看到的"和"模型读到的"会不是同一条消息。
@@ -205,10 +239,14 @@ internal class TutorRespondCommands(
         val provider = sink.currentProvider() ?: return
         val question = sink.question()
         val respondTasks = sink.tutorRespondTasks()
-        val lastResponseOrdinal = respondTasks.maxOfOrNull { task ->
-            (task.request.input as? TutorRespondInput)?.responseOrdinal ?: 0
-        } ?: 0
-        val responseOrdinal = lastResponseOrdinal + 1
+        val sessionRespondTasks = sink.sessionRespondTasks()
+        // 轮次号由**会话层**统一分配：取该会话全部 RESPOND 任务的最大号 +1，而不是只取
+        // "当前这道题"的。按题分配会在同一会话跨题时从 1 重新开始，而 `model_task` 的唯一槽
+        // 是 `(subject_id, task_kind, tutor_response_ordinal)`、`subject_id` 就是会话 id——
+        // 于是第二道题的第一轮会与第一道题的第一轮撞槽（`ModelTaskTransactionDao.create`
+        // 的槽位校验），落库直接抛冲突；`tutor_message` 的 `(conversation_id, ordinal)` 同理
+        // （ordinal = responseOrdinal*2-1）。
+        val responseOrdinal = nextTutorResponseOrdinal(question.sessionId, sessionRespondTasks)
         // 原样保留能装下的轮次，装不下的压成摘要：长会话里模型不再"忘记"前面讲过什么。
         val context = TutorContextComposer.compose(
             tutorChatExchanges(
@@ -222,7 +260,8 @@ internal class TutorRespondCommands(
             sink.currentResponse(),
             answerWasExposed = sink.observedTask().toPlanAnswerExposureKey() in sink.answerExposureKeys(),
         )
-        val attempt = respondTasks.count { task ->
+        // 重试计数与会话同口径：同一个会话轮次号下的多次尝试都算同一次的重试。
+        val attempt = sessionRespondTasks.count { task ->
             (task.request.input as? TutorRespondInput)?.responseOrdinal == responseOrdinal
         }
         val requestId = tutorRespondRequestId(
@@ -241,7 +280,7 @@ internal class TutorRespondCommands(
         )
         val occurredAt = maxOf(
             sink.clock(),
-            respondTasks.maxOfOrNull { it.createdAtEpochMillis + 1 } ?: 0L,
+            sessionRespondTasks.maxOfOrNull { it.createdAtEpochMillis + 1 } ?: 0L,
         )
         val request = try {
             buildTutorRespondRequest(
@@ -259,6 +298,7 @@ internal class TutorRespondCommands(
                 priorDigest = context.digest,
                 requestedMove = requestedMove,
                 studentImageAssetIds = studentImageAssetIds,
+                boundQuestionCandidates = boundQuestionCandidates,
             )
         } catch (_: IllegalArgumentException) {
             sink.setChatStartError(tutorRespondValidationError())
@@ -268,6 +308,43 @@ internal class TutorRespondCommands(
             request = request,
             clearDraftOnPersist = clearDraftOnPersist,
         )
+    }
+
+    /**
+     * 本轮绑定的题落到消息层。
+     *
+     * 时机：只能在**模型回复到手之后**——绑定 = 模型声明 + 本地两条校验，两者都要等回复。
+     * 学生消息行在派发前就已落库（写侧门控的引文语料靠它），所以这里是一次后写。
+     *
+     * 契约：
+     * - 校验不过（`resolvedRoundQuestion` 为 null）→ 什么都不写，本轮就是无题轮；
+     * - 校验过了 → 写 `problemId` + `problemRevisionId` 两列到学生消息行；
+     * - 落库失败不阻断对话（与 [recordStudentTurnIfNeeded] 同一条纪律：面板不该因内部记账
+     *   报错而崩），但**留日志**——绑定悄悄丢掉的后果是下一轮的"上一轮绑定"候选凭空消失。
+     */
+    private suspend fun bindRoundQuestionIfNeeded(
+        request: ModelTaskRequest,
+        snapshot: ModelTaskSnapshot,
+    ) {
+        val conversations = sink.conversations ?: return
+        val input = request.input as? TutorRespondInput ?: return
+        val output = snapshot.output as? TutorRespondOutput ?: return
+        val binding = output.resolvedRoundQuestion(input) ?: return
+        runCatching {
+            conversations.bindStudentMessageQuestion(
+                BindStudentMessageQuestionCommand(
+                    messageId = "tutor-message:${request.requestId}",
+                    boundProblemId = binding.problemId,
+                    boundProblemRevisionId = binding.problemRevisionId,
+                ),
+            )
+        }.onFailure { failure ->
+            android.util.Log.w(
+                "TutorRespond",
+                "Round question binding was not persisted",
+                failure,
+            )
+        }
     }
 
     /**
@@ -380,7 +457,14 @@ internal class TutorRespondSink(
     val currentResponse: () -> TutorTurnResponse?,
     val currentInput: () -> TutorPlanInput,
     val observedTask: () -> ModelTaskSnapshot,
+    /** 当前**这道题**的 RESPOND 任务：只用于拼上下文（历史、摘要、重试计数）。 */
     val tutorRespondTasks: () -> List<ModelTaskSnapshot>,
+    /**
+     * 当前**会话**的 RESPOND 任务（不按题过滤）：轮次号由它统一分配，所以跨题也必须单调。
+     * 与 [tutorRespondTasks] 是两个口径，不能互换——一个是"这道题聊过什么"，一个是"这个
+     * 会话走到第几轮"。
+     */
+    val sessionRespondTasks: () -> List<ModelTaskSnapshot>,
     val answerExposureKeys: () -> Set<TutorAnswerExposureKey>,
     val chatSending: () -> Boolean,
     val modelTasks: ModelTaskRepository,

@@ -18,6 +18,7 @@ import com.tingyun.smartmistakebook.core.database.TutorSessionRecord
 import com.tingyun.smartmistakebook.core.database.TutorSessionWriteResult
 import com.tingyun.smartmistakebook.core.database.AppendTutorAssistantMessageDatabaseCommand
 import com.tingyun.smartmistakebook.core.database.AppendTutorStudentMessageDatabaseCommand
+import com.tingyun.smartmistakebook.core.database.BindStudentMessageQuestionDatabaseCommand
 import com.tingyun.smartmistakebook.core.database.CreateTutorConversationDatabaseCommand
 import com.tingyun.smartmistakebook.core.database.TutorConversationRecord
 import com.tingyun.smartmistakebook.core.database.TutorMessageRecord
@@ -45,6 +46,11 @@ interface TutorWritePort {
 
     suspend fun appendTutorStudentMessage(
         command: AppendTutorStudentMessageDatabaseCommand,
+    ): TutorMessageRecord
+
+    /** 拿到模型回复后把"这一轮在说哪一道"补写到学生消息行（一轮一次，之后不可改）。 */
+    suspend fun bindTutorStudentMessageQuestion(
+        command: BindStudentMessageQuestionDatabaseCommand,
     ): TutorMessageRecord
 
     suspend fun appendTutorAssistantMessage(
