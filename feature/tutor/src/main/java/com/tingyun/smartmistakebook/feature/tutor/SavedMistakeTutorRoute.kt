@@ -38,6 +38,7 @@ import com.tingyun.smartmistakebook.core.domain.TutorConversationRepository
 import com.tingyun.smartmistakebook.core.domain.TutorInteractionRepository
 import com.tingyun.smartmistakebook.core.domain.TutorSessionProblemAnchor
 import com.tingyun.smartmistakebook.core.domain.TutorTeachingReferenceRepository
+import com.tingyun.smartmistakebook.core.model.AttachedImage
 import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
 import com.tingyun.smartmistakebook.core.model.QuestionDocumentMarkdownProjection
@@ -87,6 +88,18 @@ fun SavedMistakeTutorRoute(
     onRecordMisconception: (sessionId: String, practiceUnitId: String, payloadMarkdown: String) -> Unit = { _, _, _ -> },
     /** Stored advisories injected into the tutor prompt (read side of the loop). */
     priorTeachingAdvisories: List<String> = emptyList(),
+    /**
+     * 模型要求的配图（重绘题面 / 生成过程图）的解析器。
+     * null 时会话页里这类图**整段不渲染**——错题讲题页此前拿不到它，只有拍照会话传了。
+     */
+    attachedImageResolver: (suspend (AttachedImage) -> String?)? = null,
+    /**
+     * 意图确认按钮的动作。默认值都指向本页真实存在的动作，不留空实现：
+     * 这道题已经在错题本里，「确认加入错题本」打开错题本（它就在里面）；
+     * 「确认结束且不保存」离开这次讲题（题与对话都已经保存，页面不会谎称丢弃了什么）。
+     */
+    onRequestSave: () -> Unit = onOpenMistakeNotebook,
+    onRequestEnd: () -> Unit = onBack,
     modifier: Modifier = Modifier,
 ) {
     val stateFlow: Flow<MistakeDetailState> = remember(key, repository) {
@@ -157,6 +170,9 @@ fun SavedMistakeTutorRoute(
                 onRequestDebrief = onRequestDebrief,
                 onRecordMisconception = onRecordMisconception,
                 priorTeachingAdvisories = priorTeachingAdvisories,
+                attachedImageResolver = attachedImageResolver,
+                onRequestSave = onRequestSave,
+                onRequestEnd = onRequestEnd,
                 modifier = modifier.testTag("saved_mistake_tutor_screen"),
             )
         }
@@ -223,6 +239,11 @@ internal fun SavedMistakeTutorContent(
     onRecordMisconception: (sessionId: String, practiceUnitId: String, payloadMarkdown: String) -> Unit = { _, _, _ -> },
     /** Stored advisories injected into the tutor prompt (read side of the loop). */
     priorTeachingAdvisories: List<String> = emptyList(),
+    /** 模型要求的配图解析器；null 时会话页不渲染这类图（见 [SavedMistakeTutorRoute]）。 */
+    attachedImageResolver: (suspend (AttachedImage) -> String?)? = null,
+    /** 意图确认按钮的动作（见 [SavedMistakeTutorRoute]）。 */
+    onRequestSave: () -> Unit = onOpenMistakeNotebook,
+    onRequestEnd: () -> Unit = onBack,
     clock: () -> Long = System::currentTimeMillis,
     modifier: Modifier = Modifier,
 ) {
@@ -333,6 +354,11 @@ internal fun SavedMistakeTutorContent(
         onOpenMistakeNotebook = onOpenMistakeNotebook,
         onOpenProfile = onOpenProfile,
         onOpenModelSettings = onOpenModelSettings,
+        // 模型要的配图（重绘图 / 过程图）要在这一页渲染出来：此前这里没传，整段被跳过。
+        attachedImageResolver = attachedImageResolver,
+        // 意图确认按钮：此前这两个动作默认 {}，学生点了没反应。
+        onRequestSave = onRequestSave,
+        onRequestEnd = onRequestEnd,
         clock = clock,
         // 同一个页面标题栏：错题讲题与大堂、拍照会话长得一模一样。
         headerContent = {

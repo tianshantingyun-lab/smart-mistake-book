@@ -16,6 +16,12 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
         isCoreLibraryDesugaringEnabled = true
     }
+    testOptions {
+        // 非界面代码（例如 TutorRespondCommands 的落库失败路径）会留一条 android.util.Log
+        // 日志，而单元测试跑在 JVM 上：未 mock 的 android.jar 方法默认抛异常，会让
+        // "失败路径"的用例变成"日志调用"的失败。与 core:data 同一处置。
+        unitTests.isReturnDefaultValues = true
+    }
 }
 
 dependencies {

@@ -274,6 +274,30 @@ internal fun TutorTurnFailureCard(
     }
 }
 
+/** 贴尾滚动最多试几次：估算落点修正一次即可到位，上限只为不在这里死循环。 */
+private const val TUTOR_TAIL_FOLLOW_ATTEMPTS = 3
+
+/**
+ * 滚到列表真正的末尾。
+ *
+ * 消灭的失败（D6 残留）：`scrollToItem(末条)` 对**还没测量过**的末条用的是估算高度，落点会停在
+ * 真正末尾之前——最新那条回复半截（甚至整条）落在屏幕外，学生以为没有新回复。真机诊断：
+ * 12 条会话加载完后，滚动量停在 3306/3406，最后一条根本没被组合。第一次滚完末条已经被组合、
+ * 有了真实高度，再滚一次才是真正的末尾；每轮都拿**刚布局完**的可见项判断是否已到底。
+ */
+private suspend fun followTutorTail(listState: LazyListState) {
+    repeat(TUTOR_TAIL_FOLLOW_ATTEMPTS) {
+        val itemCount = snapshotFlow { listState.layoutInfo.totalItemsCount }
+            .first { it > 0 }
+        listState.scrollToItem(itemCount - 1)
+        withFrameNanos { }
+        val layout = listState.layoutInfo
+        val atTail = layout.totalItemsCount == 0 ||
+            layout.visibleItemsInfo.lastOrNull()?.index == layout.totalItemsCount - 1
+        if (atTail) return
+    }
+}
+
 /**
  * 讲题页面的唯一屏幕组件：标题栏 + 列表（自动跟随最新）+ 在途状态 + 输入区。
  *
@@ -328,10 +352,8 @@ internal fun TutorConversationFrame(
         val shouldFollow = !initialTailPositioned ||
             !blockAutoFollow && (followsTail || forceFollow)
         withFrameNanos { }
-        val itemCount = snapshotFlow { listState.layoutInfo.totalItemsCount }
-            .first { it > 0 }
         if (shouldFollow) {
-            listState.scrollToItem(itemCount - 1)
+            followTutorTail(listState)
             followsTail = true
         } else if (blockAutoFollow) {
             followsTail = false
@@ -411,9 +433,8 @@ internal fun TutorConversationFrame(
                 onClick = {
                     followsTail = true
                     forceFollowToken?.let { handledForceToken = it }
-                    coroutineScope.launch {
-                        listState.scrollToItem(listState.layoutInfo.totalItemsCount - 1)
-                    }
+                    // 同一个贴尾助手：点「回到最新」也要真的到最新，而不是停在估算落点上。
+                    coroutineScope.launch { followTutorTail(listState) }
                 },
                 modifier = Modifier
                     .align(Alignment.BottomEnd)

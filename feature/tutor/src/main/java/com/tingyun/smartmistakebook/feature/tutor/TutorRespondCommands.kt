@@ -1,12 +1,14 @@
 package com.tingyun.smartmistakebook.feature.tutor
 
 import com.tingyun.smartmistakebook.core.domain.AppendTutorStudentMessageCommand
+import com.tingyun.smartmistakebook.core.domain.CreateTutorConversationCommand
 import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
 import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
 import com.tingyun.smartmistakebook.core.domain.TutorSendAction
 import com.tingyun.smartmistakebook.core.domain.TutorSendState
 import com.tingyun.smartmistakebook.core.domain.TutorTurnResponse
 import com.tingyun.smartmistakebook.core.domain.TutorContextComposer
+import com.tingyun.smartmistakebook.core.domain.TutorConversationAnchorKind
 import com.tingyun.smartmistakebook.core.domain.TutorConversationRepository
 import com.tingyun.smartmistakebook.core.domain.TutorTurnSendStateMachine
 import com.tingyun.smartmistakebook.core.model.ActionType
@@ -27,6 +29,7 @@ import com.tingyun.smartmistakebook.core.model.Retryability
 import com.tingyun.smartmistakebook.core.model.appFailure
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 internal fun tutorRespondInProgressError(): AppFailure = appFailure(
@@ -275,14 +278,21 @@ internal class TutorRespondCommands(
      * 逐条比对"对纯文字（开放式）作答形同虚设，模型判 MASTERED 也机械不可达。
      * 落库后，锚核对才对**所有**模型交互生效，不再只管选择题。
      *
+     * 会话行**按需创建**（[ensureStudentConversation]）：错题讲题页此前没有任何一方建过这
+     * 一行——`TutorSessionViewModel` 只为拍照会话建——而 `tutor_message.conversation_id`
+     * 上有外键。于是那条路径上每一次 append 都抛（外键 787）并被下面的 `runCatching` 吞掉：
+     * 学生打了字、模型也回了，`tutor_message` 里一行 STUDENT 都没有，写侧门控的引文核对
+     * 永远是空语料。会话由这条写入自己保证，就不再依赖"某个入口记得先建"。
+     *
      * 簿记失败不阻断发信：面板不该因内部记账报错而发不出去；写侧门控对空语料是
-     * fail-closed（该次正向写不进去），学生仍能正常对话。
+     * fail-closed（该次正向写不进去），学生仍能正常对话。失败留一条日志，不再无声无息。
      */
     private suspend fun recordStudentTurnIfNeeded(request: ModelTaskRequest) {
         val conversations = sink.conversations ?: return
         val input = request.input as? TutorRespondInput ?: return
         val message = input.studentMessage.takeIf(String::isNotBlank) ?: return
         runCatching {
+            ensureStudentConversation(conversations, input, request.occurredAtEpochMillis)
             conversations.appendStudentMessage(
                 AppendTutorStudentMessageCommand(
                     conversationId = TutorConversationIds.captured(input.sessionId),
@@ -296,7 +306,38 @@ internal class TutorRespondCommands(
                     sourceImageAssetIds = input.studentImageAssetRefs,
                 ),
             )
+        }.onFailure { failure ->
+            android.util.Log.w(
+                "TutorRespond",
+                "Student turn was not persisted to tutor_message",
+                failure,
+            )
         }
+    }
+
+    /**
+     * 会话行不存在时按本轮题面派生锚点建一行；已存在（拍照会话由 [TutorSessionViewModel]
+     * 创建、大厅由发送路径创建）时原样复用——同锚点幂等、异锚点冲突，所以只有"确认没有"
+     * 的时候才建，不能无条件建。
+     */
+    private suspend fun ensureStudentConversation(
+        conversations: TutorConversationRepository,
+        input: TutorRespondInput,
+        occurredAtEpochMillis: Long,
+    ) {
+        val conversationId = TutorConversationIds.captured(input.sessionId)
+        if (conversations.observeConversation(conversationId).first() != null) return
+        conversations.createConversation(
+            CreateTutorConversationCommand(
+                conversationId = conversationId,
+                anchorKind = TutorConversationAnchorKind.EPHEMERAL_DRAFT,
+                anchorId = input.sessionId,
+                // 与会话页同一口径：锚点 = 本轮题面 + 题面修订号。
+                anchorRevisionId = "${input.questionDocument.id}:${input.draftRevisionNumber}",
+                title = input.questionDocument.title,
+                createdAtEpochMillis = occurredAtEpochMillis,
+            ),
+        )
     }
 
     fun retry(task: ModelTaskSnapshot) {

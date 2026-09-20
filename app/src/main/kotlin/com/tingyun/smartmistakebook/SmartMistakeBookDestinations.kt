@@ -1,5 +1,6 @@
 package com.tingyun.smartmistakebook
 
+import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
@@ -14,7 +15,13 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
+import com.tingyun.smartmistakebook.core.data.model.AttachedImageGeneratorFactory
+import com.tingyun.smartmistakebook.core.domain.MistakeDetailRepository
+import com.tingyun.smartmistakebook.core.domain.MistakeDetailState
 import com.tingyun.smartmistakebook.core.domain.MistakeRevisionKey
+import com.tingyun.smartmistakebook.core.domain.MistakeSourceAsset
+import com.tingyun.smartmistakebook.core.domain.MistakeSourceLocation
+import com.tingyun.smartmistakebook.core.domain.MistakeSourceSet
 import com.tingyun.smartmistakebook.core.domain.StudyDataStatus
 import com.tingyun.smartmistakebook.core.domain.StudyExperienceRepository
 import com.tingyun.smartmistakebook.core.domain.StudyExperienceSnapshot
@@ -29,9 +36,13 @@ import com.tingyun.smartmistakebook.feature.review.CapturedReviewSessionScreen
 import com.tingyun.smartmistakebook.feature.review.ReviewSessionScreen
 import com.tingyun.smartmistakebook.feature.tutor.SavedMistakeTutorRoute
 import com.tingyun.smartmistakebook.feature.tutor.buildTutorDebriefRequestForApp
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
+import java.security.MessageDigest
 
 /**
  * NavHost destinations of [SmartMistakeBookRoot] that carry their own
@@ -342,6 +353,24 @@ internal fun SavedMistakeTutorDestination(
             catalogEntries = experience.catalog,
             // 会话里也能像大厅一样给学生消息附图（例如自己的手写过程）。
             imageIntake = application.lobbyMessageImageIntake,
+            // 模型要的配图（重绘题面 / 过程图）要在这一页真的画出来：错题讲题页此前拿不到
+            // 解析器，整段被跳过（只有拍照会话传了它）。题面字节取自这道题的规范资产，
+            // 与会话页同一条"逐位核对"纪律，见 savedMistakeSheetBytes。
+            attachedImageResolver = AttachedImageGeneratorFactory.create(
+                context = application,
+                configurationStore = application.modelConfigurationStore,
+                networkRequestsAllowed = application.capabilities.networkRequestsAllowed,
+                resolveCurrentSheetBytes = {
+                    savedMistakeSheetBytes(application.mistakeDetailRepository, key)
+                },
+            ),
+            // 意图确认按钮的落地动作（此前是默认的 {}，点了没反应）：
+            // 「确认加入错题本」——这道题本来就在错题本里，把学生带到它所在的地方；
+            // 「确认结束且不保存」——离开这次讲题，题与对话都已保存，不会丢弃任何东西。
+            onRequestSave = {
+                navController.navigate(Routes.Library) { launchSingleTop = true }
+            },
+            onRequestEnd = navController::popBackStack,
             onOpenMistakeNotebook = {
                 navController.navigate(Routes.Library) { launchSingleTop = true }
             },
@@ -407,4 +436,45 @@ internal fun SavedMistakeTutorDestination(
             onBack = navController::popBackStack,
         )
     }
+}
+
+/** 错题题面里"干净重绘"的角色名（与 core:database / core:export / feature:library 同值）。 */
+internal const val CLEAN_PROBLEM_SHEET_ROLE = "CLEAN_IMAGE"
+
+/**
+ * 错题讲题页的「当前题面」字节：模型申请重绘题面（`REDRAW_PROBLEM`）时用它，**绝不能由模型提供**。
+ *
+ * 与拍照会话同一条纪律（`RoomCaptureWorkflowRepository.readTutorSessionSheetBytes`）：字节
+ * 必须与规范记录逐位一致（sha256 + 字节数），核对不过就按"没有这张图"处理 —— 磁盘上的文件
+ * 被替换或损坏时，那些字节不该被 POST 给图像模型。取干净重绘优先、否则原图，与错题详情、
+ * 导出同优先级；两者都没有（旧记录 / 本机文件缺失）时返回 null。
+ */
+internal suspend fun savedMistakeSheetBytes(
+    repository: MistakeDetailRepository,
+    key: MistakeRevisionKey,
+): ByteArray? {
+    val ready = runCatching { repository.readExact(key) }.getOrNull() as? MistakeDetailState.Ready
+        ?: return null
+    val asset = sheetSourceAsset(ready.detail.source) ?: return null
+    val localUri = (asset.location as? MistakeSourceLocation.Available)?.localUri ?: return null
+    val bytes = runCatching {
+        withContext(Dispatchers.IO) {
+            File(Uri.parse(localUri).path.orEmpty()).readBytes()
+        }
+    }.getOrNull() ?: return null
+    return bytes.takeIf(asset::matchesRecordedBytes)
+}
+
+/** 重绘题面用哪一张：干净重绘优先，否则原图；没有本机位置的资产直接跳过。 */
+internal fun sheetSourceAsset(source: MistakeSourceSet): MistakeSourceAsset? {
+    val assets = (source as? MistakeSourceSet.Present)?.assets.orEmpty()
+        .filter { it.location is MistakeSourceLocation.Available }
+    return assets.firstOrNull { it.role == CLEAN_PROBLEM_SHEET_ROLE } ?: assets.firstOrNull()
+}
+
+/** 字节与规范记录是否逐位一致（sha256 + 字节数）；不一致就不该出网。 */
+internal fun MistakeSourceAsset.matchesRecordedBytes(bytes: ByteArray): Boolean {
+    if (bytes.size.toLong() != byteSize) return false
+    val digest = MessageDigest.getInstance("SHA-256").digest(bytes)
+    return digest.joinToString("") { "%02x".format(it) } == contentSha256
 }
