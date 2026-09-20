@@ -78,6 +78,18 @@
 ## 6. 分阶段与已知障碍
 
 - **P1 看得见的一个页面**（不动安全契约）：单入口 + 加号三选项 + 页内 picker + 深链改造 + 一个屏幕组件 + 一条实时流 + 一个上下文装配；顺带修 D1~D4 与 D6。
+  - **P1-a（844496e8）**：加号三选项 + 页内 picker（`TutorMistakePickerDialog`）+ 修 D4。
+  - **P1-b（2026-09-20）入口收敛**：六条入口落同一个页面——页面标题栏统一成 `TutorRoute.kt`
+    里的 `TutorPageHeader`（讲题 + 历史 + 能力设置，可选返回），大厅 / 拍照会话 / 错题讲题
+    三处共用，会话页从此也有历史与能力设置入口（此前只有一条"← 讲题"）；空态
+    「从错题本选择」不再 `navigate(Routes.Library)`，改成同一页面的 picker
+    （`onChooseExisting` 形参删除）；拍照讲解、错题详情「讲解这道题」、复习预判
+    （`onRequestTutorPretest`）、判题复核（`onOpenTutorJudge`）、历史重开都带题作为**本轮附件**
+    （导航参数：`sessionId` 或 `entryId/problemId/problemRevisionId`）进这个页面，
+    底部导航仍停在「智能体」（`bottomBarRouteFor` 未改）。LOBBY/RESPOND 派发契约、egress
+    披露、写权限一行未动。
+    **仍是三个正文组件**（大厅 / 拍照会话 / 错题会话），即 P1 的"一个屏幕组件 + 一条实时流 +
+    一个上下文装配"还没做；会话页加号里仍只有拍照/相册（换题属 P3）。
 - **P2 每轮绑定**：候选菜单 + 模型绑定声明（新 wire key + 提示词 + policy 版本）+ 本地校验 + 绑定落消息层（迁移 v47→48）+ 门控三处改按绑定 + 工具声明改全量。
 - **P3 跨轮延续与切换**：上一轮绑定作为候选；继续 / 换题由同一套语义校验判定；历史按题分段。
 - **P4 多轮 messages 数组**：`[system]+[user 带图]+[assistant]+…`，工具轮用标准 `assistant.tool_calls` + `role:"tool"`（工具配对 + 上游前缀缓存）。

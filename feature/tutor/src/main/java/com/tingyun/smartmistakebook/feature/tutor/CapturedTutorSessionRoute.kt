@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,14 +16,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.LibraryAddCheck
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -108,7 +104,6 @@ import com.tingyun.smartmistakebook.core.ui.LocalImageLoadState
 import com.tingyun.smartmistakebook.core.ui.LocalModeLine
 import com.tingyun.smartmistakebook.core.ui.Outline
 import com.tingyun.smartmistakebook.core.ui.OutlineActionChip
-import com.tingyun.smartmistakebook.core.ui.PaperDivider
 import com.tingyun.smartmistakebook.core.ui.PrimaryActionButton
 import com.tingyun.smartmistakebook.core.ui.SectionHeader
 import com.tingyun.smartmistakebook.core.ui.SafeMarkdownText
@@ -135,6 +130,8 @@ fun CapturedTutorSessionRoute(
     /** 学生消息附图的资产读取器；null 时会话页不提供附图入口。 */
     imageIntake: LobbyMessageImageIntake? = null,
     onOpenModelSettings: () -> Unit,
+    /** 讲题历史入口；与大厅、错题讲题共用同一个页面标题栏，所以三个入口都有它。 */
+    onOpenHistory: (() -> Unit)? = null,
     onOpenMistakeNotebook: () -> Unit = {},
     onOpenProfile: () -> Unit = {},
     onBack: () -> Unit,
@@ -185,6 +182,7 @@ fun CapturedTutorSessionRoute(
         imageIntake = imageIntake,
         onLongTermWritesBlocked = viewModel::markLongTermWritesBlocked,
         onOpenModelSettings = onOpenModelSettings,
+        onOpenHistory = onOpenHistory,
         onOpenMistakeNotebook = onOpenMistakeNotebook,
         onOpenProfile = onOpenProfile,
         onBack = onBack,
@@ -246,6 +244,7 @@ private fun CapturedTutorSessionContent(
     imageIntake: LobbyMessageImageIntake? = null,
     onLongTermWritesBlocked: () -> Unit,
     onOpenModelSettings: () -> Unit,
+    onOpenHistory: (() -> Unit)? = null,
     onOpenMistakeNotebook: () -> Unit,
     onOpenProfile: () -> Unit,
     onBack: () -> Unit,
@@ -273,6 +272,7 @@ private fun CapturedTutorSessionContent(
                 longTermWritesBlocked = longTermWritesBlocked,
                 onLongTermWritesBlocked = onLongTermWritesBlocked,
                 onOpenModelSettings = onOpenModelSettings,
+                onOpenHistory = onOpenHistory,
                 onOpenMistakeNotebook = onOpenMistakeNotebook,
                 onOpenProfile = onOpenProfile,
                 onBack = onBack,
@@ -281,8 +281,11 @@ private fun CapturedTutorSessionContent(
 
         else -> TutorConversationFrame(
             header = {
-                TutorPageHeader(onBack)
-                PaperDivider()
+                TutorPageHeader(
+                    onOpenCapabilitySettings = onOpenModelSettings,
+                    onOpenHistory = onOpenHistory,
+                    onBack = onBack,
+                )
             },
             autoScrollVersion = state,
             modifier = modifier.testTag("captured_tutor_session_screen"),
@@ -307,34 +310,6 @@ private fun CapturedTutorSessionContent(
     }
 }
 
-@Composable
-internal fun TutorPageHeader(onBack: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(58.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        IconButton(
-            onClick = onBack,
-            modifier = Modifier
-                .size(48.dp)
-                .testTag("captured_tutor_back"),
-        ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                contentDescription = "返回",
-                tint = Ink,
-            )
-        }
-        Spacer(Modifier.size(4.dp))
-        Text(
-            text = "讲题",
-            color = Ink,
-            style = MaterialTheme.typography.headlineSmall,
-        )
-    }
-}
 
 @Composable
 internal fun LoadingTutorQuestion() {
@@ -377,6 +352,7 @@ internal fun ReadyCapturedSession(
     longTermWritesBlocked: Boolean = false,
     onLongTermWritesBlocked: () -> Unit = {},
     onOpenModelSettings: () -> Unit,
+    onOpenHistory: (() -> Unit)? = null,
     onOpenMistakeNotebook: () -> Unit = {},
     onOpenProfile: () -> Unit = {},
     onBack: () -> Unit = {},
@@ -403,9 +379,13 @@ internal fun ReadyCapturedSession(
         onOpenModelSettings = onOpenModelSettings,
         clock = clock,
         conversationEnabled = !session.isEndedWithoutSave,
+        // 同一个页面标题栏：拍照会话与大堂、错题讲题长得一模一样。
         headerContent = {
-            TutorPageHeader(onBack)
-            PaperDivider()
+            TutorPageHeader(
+                onOpenCapabilitySettings = onOpenModelSettings,
+                onOpenHistory = onOpenHistory,
+                onBack = onBack,
+            )
         },
         leadingContent = {
             LocalModeLine(text = tutorSessionStatusLine(session))

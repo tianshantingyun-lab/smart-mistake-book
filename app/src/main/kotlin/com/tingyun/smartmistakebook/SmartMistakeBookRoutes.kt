@@ -9,6 +9,11 @@ import com.tingyun.smartmistakebook.core.domain.MistakeRevisionKey
  * 从 `SmartMistakeBookRoot.kt` 拆出（2026-09-14）：那个文件因并行会话的改动超过了 1000 行
  * 硬限，规模门按处方要求拆块。同一包内移动，**所有调用点无需改 import**；
  * `RootDestination` 与 `rootDestinations` 留在 Root——它们是 file-private，移出来会破坏可见性。
+ *
+ * 讲题只有**一个页面**（智能体），`Tutor` / `CapturedTutorSession` / `MistakeTutor` /
+ * `TutorTextConversation` 是它的四种"这一轮带什么"的形态：不带附件（无题轮/大厅）、一次已
+ * 拍好的会话、一道错题（错题详情 / 复习判题 / 判题复核 / 页内选题共用）、一条历史文字会话。
+ * 四条都渲染同一个页面（同一个标题栏），底栏都映射到 `Tutor`（见 `bottomBarRouteFor`）。
  */
 internal object Routes {
     const val Review = "review"

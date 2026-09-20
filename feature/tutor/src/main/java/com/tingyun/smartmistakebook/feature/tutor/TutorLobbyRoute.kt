@@ -110,10 +110,13 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import java.util.UUID
 
+/**
+ * 智能体页面无题轮（大厅）。标题栏用全页面唯一的 [TutorPageHeader]：它与拍照会话、错题讲题
+ * 是**同一个页面**的同一个头，学生换入口不换页面。
+ */
 @Composable
 internal fun TutorLobbyRoute(
     onCapture: () -> Unit,
-    onChooseExisting: () -> Unit,
     onOpenCapabilitySettings: () -> Unit,
     onOpenMistakeNotebook: () -> Unit,
     onOpenProfile: () -> Unit,
@@ -124,7 +127,10 @@ internal fun TutorLobbyRoute(
     profile: StudyProfileOverview,
     imageIntake: LobbyMessageImageIntake? = null,
     initialConversationId: String? = null,
-    /** 加号里"从错题库选择"选中后，把这道题交给讲题会话（当前实现是进入它的会话页）。 */
+    /**
+     * 加号（或空态里的「从错题本选择」）在错题库里选中一道题之后，把这道题**作为本轮附件**
+     * 交给讲题页面：不换页面，只是这一轮有了要讲的那道题。
+     */
     onOpenMistakeTutor: (MistakeRevisionKey) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
@@ -199,7 +205,8 @@ internal fun TutorLobbyRoute(
         ),
     ) { mutableStateOf(emptyList()) }
     var attachMenuOpen by remember { mutableStateOf(false) }
-    // 加号里的"从错题库选择"：在本页直接挑题，而不是跳去错题本再自己找回来。
+    // 「从错题库选择」（加号里的一项，以及空态里的快捷按钮）：在本页直接挑题，
+    // 而不是跳去错题本再自己找回来。
     var mistakePickerOpen by remember { mutableStateOf(false) }
     // 模型这一轮申请了"查错题本"：给一个能点的入口，而不是让申请无声落地。
     var notebookLookupRequested by remember { mutableStateOf(false) }
@@ -739,11 +746,10 @@ internal fun TutorLobbyRoute(
                 .testTag("tutor_screen"),
         ) {
             item(key = "lobby-header") {
-                TutorTopBar(
+                TutorPageHeader(
                     onOpenCapabilitySettings = onOpenCapabilitySettings,
                     onOpenHistory = onOpenHistory,
                 )
-                PaperDivider(Modifier.padding(top = 8.dp, bottom = 14.dp))
             }
             if (conversationMessages.isEmpty() && visibleTasks.isEmpty()) {
                 item(key = "lobby-intro") {
@@ -767,11 +773,16 @@ internal fun TutorLobbyRoute(
                         )
                         OutlineActionChip(
                             text = "从错题本选择",
-                            onClick = onChooseExisting,
+                            // 就在这个页面里挑，挑中的题作为"这一轮要讲的那道题"带进同一个
+                            // 页面；此前这里只是 navigate(Routes.Library)——跳去错题本、自己
+                            // 找、点进详情、再点「讲解这道题」，四步之后才回到讲题，而"选择"
+                            // 这个动作本身不返回任何东西。
+                            onClick = { mistakePickerOpen = true },
                             icon = Icons.AutoMirrored.Outlined.MenuBook,
                             modifier = Modifier
                                 .weight(1f)
                                 .testTag("tutor_choose_existing_button"),
+                            contentDescription = "在错题库里挑一道题，作为这一轮要讲的题",
                         )
                     }
                 }

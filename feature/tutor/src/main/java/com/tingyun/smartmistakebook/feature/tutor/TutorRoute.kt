@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.AutoStories
 import androidx.compose.material.icons.outlined.CheckCircle
@@ -87,7 +88,6 @@ import com.tingyun.smartmistakebook.core.ui.InkSecondary
 import com.tingyun.smartmistakebook.core.ui.Jade
 import com.tingyun.smartmistakebook.core.ui.JadeActive
 import com.tingyun.smartmistakebook.core.ui.JadeSoft
-import com.tingyun.smartmistakebook.core.ui.LocalModeLine
 import com.tingyun.smartmistakebook.core.ui.Outline
 import com.tingyun.smartmistakebook.core.ui.OutlineActionChip
 import com.tingyun.smartmistakebook.core.ui.Paper
@@ -110,7 +110,6 @@ fun TutorRoute(
     onSubmitChoice: suspend (StudyChoiceSubmission) -> StudyChoiceSubmissionResult,
     onRevealAnswer: suspend (StudyAnswerRevealRequest) -> StudyAnswerRevealResult,
     onCapture: () -> Unit,
-    onChooseExisting: () -> Unit,
     onOpenCapabilitySettings: () -> Unit,
     onOpenMistakeNotebook: () -> Unit,
     onOpenProfile: () -> Unit,
@@ -127,7 +126,6 @@ fun TutorRoute(
     if (practiceUnitId.isBlank() && teachingArtifact == null) {
         TutorLobbyRoute(
             onCapture = onCapture,
-            onChooseExisting = onChooseExisting,
             onOpenCapabilitySettings = onOpenCapabilitySettings,
             onOpenMistakeNotebook = onOpenMistakeNotebook,
             onOpenProfile = onOpenProfile,
@@ -247,42 +245,6 @@ fun TutorRoute(
 }
 
 @Composable
-internal fun TutorStartEmptyState(
-    onCapture: () -> Unit,
-    onChooseExisting: () -> Unit,
-    onOpenCapabilitySettings: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    RootPageColumn(modifier = modifier.testTag("tutor_screen")) {
-        TutorTopBar(onOpenCapabilitySettings = onOpenCapabilitySettings)
-        LocalModeLine(text = "从你要讲的题开始")
-        PaperDivider(Modifier.padding(top = 2.dp, bottom = 16.dp))
-        TutorPrompt(
-            text = "拍下、上传或选择一道已有题目，我会围绕这道题讲解。",
-            modifier = Modifier.testTag("tutor_empty_state"),
-        )
-        PrimaryActionButton(
-            text = "拍题讲解",
-            onClick = onCapture,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp)
-                .testTag("tutor_capture_button"),
-            contentDescription = "拍照或选择题目图片开始讲解",
-        )
-        OutlineActionChip(
-            text = "从错题本选择",
-            onClick = onChooseExisting,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 10.dp)
-                .testTag("tutor_choose_existing_button"),
-            contentDescription = "从错题本选择已有题目",
-        )
-    }
-}
-
-@Composable
 private fun TutorAdaptivePauseScreen(
     message: String,
     detail: String,
@@ -291,8 +253,7 @@ private fun TutorAdaptivePauseScreen(
     modifier: Modifier = Modifier,
 ) {
     RootPageColumn(modifier = modifier.testTag("tutor_screen")) {
-        TutorTopBar(onOpenCapabilitySettings = onOpenCapabilitySettings)
-        PaperDivider(Modifier.padding(top = 2.dp, bottom = 16.dp))
+        TutorPageHeader(onOpenCapabilitySettings = onOpenCapabilitySettings)
         TutorPrompt(
             text = message,
             modifier = Modifier.testTag("tutor_adaptive_pause"),
@@ -322,10 +283,7 @@ private fun TutorUnavailableScreen(
     modifier: Modifier = Modifier,
 ) {
     RootPageColumn(modifier = modifier.testTag("tutor_screen")) {
-        TutorTopBar(
-            onOpenCapabilitySettings = onOpenCapabilitySettings,
-        )
-        PaperDivider(Modifier.padding(top = 2.dp, bottom = 16.dp))
+        TutorPageHeader(onOpenCapabilitySettings = onOpenCapabilitySettings)
         Text(
             text = when (reason) {
                 TutorCapabilityBlockReason.TUTOR_DISABLED_BY_BUILD -> "当前版本未启用讲题能力。"
@@ -376,10 +334,7 @@ private fun TutorScreen(
                 .weight(1f)
                 .testTag("tutor_screen"),
         ) {
-        TutorTopBar(
-            onOpenCapabilitySettings = onOpenCapabilitySettings,
-        )
-        PaperDivider(Modifier.padding(top = 2.dp, bottom = 8.dp))
+        TutorPageHeader(onOpenCapabilitySettings = onOpenCapabilitySettings)
 
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
@@ -594,39 +549,67 @@ private fun TutorScreen(
     }
 }
 
+/**
+ * 智能体页面的标题栏。**全页面只有这一个**：底部「智能体」、拍照讲解、错题详情「讲解这道题」、
+ * 复习判题 / 判题复核、历史重开都渲染它，学生从任何入口进来看到的都是同一个页面的同一个头。
+ *
+ * 消灭的失败：此前"讲题会话页"（拍照会话、错题讲题）各自带一条"← 讲题"头、大厅带"讲题 + 历史 +
+ * 设置"头，同一次讲题的两种状态看起来像两个不同的页面（产品侧原话：「这不是同一个页面」）；
+ * 而且会话页没有历史与能力设置入口，学生要回到大厅才能找到它们。
+ */
 @Composable
-internal fun TutorTopBar(
+internal fun TutorPageHeader(
     onOpenCapabilitySettings: () -> Unit,
     onOpenHistory: (() -> Unit)? = null,
+    /** 由别的页面推进来时（错题详情、历史、拍照流程）给一个返回；大厅这种标签根页传 null。 */
+    onBack: (() -> Unit)? = null,
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text = "讲题",
-            modifier = Modifier.weight(1f),
-            color = Ink,
-            style = MaterialTheme.typography.headlineLarge,
-        )
-        if (onOpenHistory != null) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (onBack != null) {
+                IconButton(
+                    onClick = onBack,
+                    modifier = Modifier
+                        .size(48.dp)
+                        .testTag("tutor_page_back"),
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                        contentDescription = "返回",
+                        tint = Ink,
+                    )
+                }
+                Spacer(Modifier.size(4.dp))
+            }
+            Text(
+                text = "讲题",
+                modifier = Modifier.weight(1f),
+                color = Ink,
+                style = MaterialTheme.typography.headlineLarge,
+            )
+            if (onOpenHistory != null) {
+                IconButton(
+                    onClick = onOpenHistory,
+                    modifier = Modifier.testTag("tutor_history_button"),
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.History,
+                        contentDescription = "讲题历史",
+                        tint = Ink,
+                    )
+                }
+            }
             IconButton(
-                onClick = onOpenHistory,
-                modifier = Modifier.testTag("tutor_history_button"),
+                onClick = onOpenCapabilitySettings,
+                modifier = Modifier.testTag("tutor_capability_settings_button"),
             ) {
-                Icon(
-                    imageVector = Icons.Outlined.History,
-                    contentDescription = "讲题历史",
-                    tint = Ink,
-                )
+                Icon(Icons.Outlined.Tune, contentDescription = "讲题能力设置", tint = Ink)
             }
         }
-        IconButton(
-            onClick = onOpenCapabilitySettings,
-            modifier = Modifier.testTag("tutor_capability_settings_button"),
-        ) {
-            Icon(Icons.Outlined.Tune, contentDescription = "讲题能力设置", tint = Ink)
-        }
+        PaperDivider(Modifier.padding(top = 8.dp, bottom = 14.dp))
     }
 }
 

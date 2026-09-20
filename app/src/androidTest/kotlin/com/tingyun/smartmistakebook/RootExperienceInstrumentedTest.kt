@@ -75,8 +75,13 @@ class RootExperienceInstrumentedTest {
         waitForTag("capture_screen")
         navigateBackAndWait("root_tutor")
 
+        // 「从错题本选择」是页内动作：在这个页面里打开错题选择器，挑中的题作为这一轮要讲的
+        // 那道题进同一个讲题页面——不再跳去错题本、挑完再点「讲解这道题」绕回来。
         composeRule.onNodeWithTag("tutor_choose_existing_button").performClick()
-        waitForTag("root_library")
+        waitForTag("lobby_picker_cancel")
+        composeRule.onNodeWithTag("lobby_picker_cancel").performClick()
+        waitForTag("root_tutor")
+        composeRule.onAllNodesWithTag("root_library").assertCountEquals(0)
     }
 
     @Test
@@ -157,12 +162,16 @@ class RootExperienceInstrumentedTest {
             .performClick()
         waitForTag("saved_mistake_tutor_screen")
         listOf("nav_review", "nav_tutor", "nav_library", "nav_profile").forEach(::waitForTag)
+        // 同一个讲题页面：从错题详情进来看到的标题栏与大厅是同一个（历史 + 能力设置），
+        // 而不是"另一个页面"。
+        waitForTag("tutor_history_button")
+        waitForTag("tutor_capability_settings_button")
         captureFullTutorShell()
 
         composeRule.onNodeWithTag("nav_tutor").performClick()
         waitForTag("saved_mistake_tutor_screen")
 
-        composeRule.onNodeWithTag("captured_tutor_back").performClick()
+        composeRule.onNodeWithTag("tutor_page_back").performClick()
         waitForTag("mistake_detail_ready")
         waitForText("当前题面")
     }

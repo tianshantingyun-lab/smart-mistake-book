@@ -48,7 +48,6 @@ import com.tingyun.smartmistakebook.core.ui.Ink
 import com.tingyun.smartmistakebook.core.ui.JadeSoft
 import com.tingyun.smartmistakebook.core.ui.LocalModeLine
 import com.tingyun.smartmistakebook.core.ui.Outline
-import com.tingyun.smartmistakebook.core.ui.PaperDivider
 import com.tingyun.smartmistakebook.core.ui.SectionHeader
 import com.tingyun.smartmistakebook.core.ui.StructuredContentRenderer
 import com.tingyun.smartmistakebook.core.ui.studentSubjectLabel
@@ -77,6 +76,8 @@ fun SavedMistakeTutorRoute(
     onOpenMistakeNotebook: () -> Unit = {},
     onOpenProfile: () -> Unit = {},
     onOpenModelSettings: () -> Unit,
+    /** 讲题历史入口；与大厅、拍照会话共用同一个页面标题栏，所以三个入口都有它。 */
+    onOpenHistory: (() -> Unit)? = null,
     onBack: () -> Unit,
     /** Silent teaching-focus persistence (three-store loop); no UI surface. */
     onRecordTeachingFocus: (sessionId: String, practiceUnitId: String, labels: List<String>) -> Unit = { _, _, _ -> },
@@ -124,8 +125,11 @@ fun SavedMistakeTutorRoute(
         is MistakeDetailState.Ready -> if (organization == null) {
             TutorConversationFrame(
                 header = {
-                    TutorPageHeader(onBack)
-                    PaperDivider()
+                    TutorPageHeader(
+                        onOpenCapabilitySettings = onOpenModelSettings,
+                        onOpenHistory = onOpenHistory,
+                        onBack = onBack,
+                    )
                 },
                 autoScrollVersion = current,
                 modifier = modifier.testTag("saved_mistake_tutor_screen"),
@@ -147,6 +151,7 @@ fun SavedMistakeTutorRoute(
                 onOpenMistakeNotebook = onOpenMistakeNotebook,
                 onOpenProfile = onOpenProfile,
                 onOpenModelSettings = onOpenModelSettings,
+                onOpenHistory = onOpenHistory,
                 onBack = onBack,
                 onRecordTeachingFocus = onRecordTeachingFocus,
                 onRequestDebrief = onRequestDebrief,
@@ -158,8 +163,11 @@ fun SavedMistakeTutorRoute(
 
         else -> TutorConversationFrame(
             header = {
-                TutorPageHeader(onBack)
-                PaperDivider()
+                TutorPageHeader(
+                    onOpenCapabilitySettings = onOpenModelSettings,
+                    onOpenHistory = onOpenHistory,
+                    onBack = onBack,
+                )
             },
             autoScrollVersion = current,
             modifier = modifier.testTag("saved_mistake_tutor_screen"),
@@ -205,6 +213,7 @@ internal fun SavedMistakeTutorContent(
     onOpenMistakeNotebook: () -> Unit = {},
     onOpenProfile: () -> Unit = {},
     onOpenModelSettings: () -> Unit,
+    onOpenHistory: (() -> Unit)? = null,
     onBack: () -> Unit = {},
     /** Silent teaching-focus persistence (three-store loop); no UI surface. */
     onRecordTeachingFocus: (sessionId: String, practiceUnitId: String, labels: List<String>) -> Unit = { _, _, _ -> },
@@ -325,9 +334,13 @@ internal fun SavedMistakeTutorContent(
         onOpenProfile = onOpenProfile,
         onOpenModelSettings = onOpenModelSettings,
         clock = clock,
+        // 同一个页面标题栏：错题讲题与大堂、拍照会话长得一模一样。
         headerContent = {
-            TutorPageHeader(onBack)
-            PaperDivider()
+            TutorPageHeader(
+                onOpenCapabilitySettings = onOpenModelSettings,
+                onOpenHistory = onOpenHistory,
+                onBack = onBack,
+            )
         },
         leadingContent = {
             LocalModeLine("已存入错题本 · 再次打开会接着上次讲题")

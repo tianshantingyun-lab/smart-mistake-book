@@ -63,9 +63,8 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class CapturedTutorSessionInstrumentedTest : CapturedTutorSessionTestBase() {
     @Test
-    fun tutorEmptyStateOffersRealConversationCaptureAndExistingQuestionEntry() {
+    fun tutorEmptyStateOffersRealConversationCaptureAndInPageQuestionPicker() {
         var captureRequests = 0
-        var existingQuestionRequests = 0
         var executedRequest: ModelTaskRequest? = null
         val modelTasks = object : ModelTaskRepository {
             override suspend fun capabilities() = ProviderCapabilitySnapshot(
@@ -95,7 +94,6 @@ class CapturedTutorSessionInstrumentedTest : CapturedTutorSessionTestBase() {
             MaterialTheme {
                 TutorLobbyRoute(
                     onCapture = { captureRequests += 1 },
-                    onChooseExisting = { existingQuestionRequests += 1 },
                     onOpenCapabilitySettings = {},
                     onOpenMistakeNotebook = {},
                     onOpenProfile = {},
@@ -112,12 +110,17 @@ class CapturedTutorSessionInstrumentedTest : CapturedTutorSessionTestBase() {
         composeRule.onNodeWithTag("tutor_history_button").assertExists()
         composeRule.onNodeWithTag("tutor_capture_shortcut").performClick()
         composeRule.onNodeWithTag("tutor_upload_button").assertDoesNotExist()
+        // 「从错题本选择」不再跳去错题本页：它在**这个页面里**打开选择器，挑中的题作为
+        // 这一轮要讲的那道题进同一个页面（详见 TutorMistakePickerDialog）。这里断言
+        // 选择器确实打开了、并且没有离开讲题页。
         composeRule.onNodeWithTag("tutor_choose_existing_button").performClick()
+        composeRule.onNodeWithTag("lobby_picker_empty").assertExists()
+        composeRule.onNodeWithTag("lobby_picker_cancel").performClick()
+        composeRule.onNodeWithTag("tutor_screen").assertExists()
         composeRule.onNodeWithTag("tutor_draft_input").performTextInput("我想问一下这一步")
         composeRule.onNodeWithTag("tutor_send_button").performClick()
         composeRule.runOnIdle {
             assertEquals(1, captureRequests)
-            assertEquals(1, existingQuestionRequests)
             assertEquals(
                 "我想问一下这一步",
                 (executedRequest?.input as? TutorLobbyInput)?.studentMessage,

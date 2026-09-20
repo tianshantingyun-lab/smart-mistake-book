@@ -32,8 +32,9 @@ import com.tingyun.smartmistakebook.core.ui.InkSecondary
 import com.tingyun.smartmistakebook.core.ui.Paper
 
 /**
- * 输入框加号里的「从错题库选择」：在学生当前所在的页面里直接挑一道题，选完就把它交给调用方
- * （当前实现是进入这道题的讲题会话）。
+ * 「从错题库选择」：在学生当前所在的页面里直接挑一道题，选完交给调用方作为**本轮附件**带进
+ * 讲题页面（`onOpenMistakeTutor`）。两个入口共用它：输入框加号里的那一项，以及空态里的
+ * 「从错题本选择」快捷按钮。
  *
  * 消灭的失败：这条入口此前只是 `navigate(Routes.Library)`——跳到错题本、自己找、点进详情、
  * 再点「讲解这道题」，四步之后才回到讲题；而且从错题本"选择"这个动作根本不返回任何东西

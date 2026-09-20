@@ -298,6 +298,11 @@ internal fun ReviewSessionDestination(
     }
 }
 
+/**
+ * 错题详情「讲解这道题」、复习预判（`onRequestTutorPretest`）与判题复核（`onOpenTutorJudge`）
+ * 三条入口都落在这里：它们带的是同一份题身份（entryId/problemId/problemRevisionId），
+ * 进入的是同一个讲题页面，题作为**本轮附件**显示在页面里；底部导航仍停在「智能体」。
+ */
 @Composable
 internal fun SavedMistakeTutorDestination(
     entry: NavBackStackEntry,
@@ -398,6 +403,7 @@ internal fun SavedMistakeTutorDestination(
                     catalogEntry.problemRevisionId == key.problemRevisionId
             }?.questionMemory,
             onOpenModelSettings = { navController.navigate(Routes.Capability) },
+            onOpenHistory = { navController.navigate(Routes.TutorHistory) },
             onBack = navController::popBackStack,
         )
     }

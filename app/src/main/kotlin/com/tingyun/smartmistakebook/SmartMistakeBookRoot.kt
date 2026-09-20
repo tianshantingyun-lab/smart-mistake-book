@@ -383,12 +383,12 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     onSubmitChoice = repository::submitChoice,
                     onRevealAnswer = repository::revealAnswer,
                     onCapture = { navController.navigate(Routes.CaptureTutor) },
-                    onChooseExisting = { navController.navigate(Routes.Library) },
                     onOpenCapabilitySettings = { navController.navigate(Routes.Capability) },
                     onOpenMistakeNotebook = { navController.navigate(Routes.Library) },
                     onOpenProfile = { navController.navigate(Routes.Profile) },
                     onOpenHistory = { navController.navigate(Routes.TutorHistory) },
-                    // 加号里从错题库选中的题交给讲题会话：不离开底部"智能体"标签。
+                    // 在错题库里挑中的题作为本轮附件进同一个讲题页面（Routes.MistakeTutor
+                    // 渲染的也是这个页面），不离开底部「智能体」标签、不换页面。
                     onOpenMistakeTutor = { key -> navController.navigate(Routes.mistakeTutor(key)) },
                     conversations = application.tutorConversationRepository,
                     modelTasks = application.modelTaskRepository,
@@ -433,6 +433,7 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     onBack = { navController.popBackStack() },
                 )
             }
+            // 历史重开：纯文字会话落回同一个讲题页面（没有附件题），不另开页面。
             composable(Routes.TutorTextConversation) { entry ->
                 val conversationId = entry.arguments?.getString("conversationId")
                     .orEmpty()
@@ -462,12 +463,11 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     onSubmitChoice = repository::submitChoice,
                     onRevealAnswer = repository::revealAnswer,
                     onCapture = { navController.navigate(Routes.CaptureTutor) },
-                    onChooseExisting = { navController.navigate(Routes.Library) },
                     onOpenCapabilitySettings = { navController.navigate(Routes.Capability) },
                     onOpenMistakeNotebook = { navController.navigate(Routes.Library) },
                     onOpenProfile = { navController.navigate(Routes.Profile) },
                     onOpenHistory = { navController.navigate(Routes.TutorHistory) },
-                    // 加号里从错题库选中的题交给讲题会话：不离开底部"智能体"标签。
+                    // 在这个页面上挑中的题作为本轮附件进同一个页面：不离开底部「智能体」标签。
                     onOpenMistakeTutor = { key -> navController.navigate(Routes.mistakeTutor(key)) },
                     conversations = application.tutorConversationRepository,
                     modelTasks = application.modelTaskRepository,
@@ -729,6 +729,8 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     onBack = navController::popBackStack,
                 )
             }
+            // 拍照讲解：拍完就地落回讲题页面，把这次拍好的会话作为**本轮附件**带进去
+            // （同一个页面、同一个标题栏、底栏仍停在「智能体」），而不是另开一个页面。
             composable(Routes.CapturedTutorSession) { entry ->
                 val sessionId = entry.arguments?.getString("sessionId").orEmpty()
                 CapturedTutorSessionRoute(
@@ -748,6 +750,7 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                         },
                     ),
                     onOpenModelSettings = { navController.navigate(Routes.Capability) },
+                    onOpenHistory = { navController.navigate(Routes.TutorHistory) },
                     onOpenMistakeNotebook = {
                         navController.navigate(Routes.Library) { launchSingleTop = true }
                     },
