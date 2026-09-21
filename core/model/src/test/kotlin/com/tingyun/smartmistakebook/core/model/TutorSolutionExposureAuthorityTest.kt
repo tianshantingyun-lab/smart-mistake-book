@@ -122,6 +122,30 @@ class TutorSolutionExposureAuthorityTest {
         )
     }
 
+    /**
+     * 判据的入口是"这一行写于哪一版"，不是"当前构建是哪一版"。
+     *
+     * v10 及更早的行里"有没有题"这一维根本不存在（它们的输出也没有 `boundQuestion` 字段），
+     * 必须按旧语义判；v11（绑定引入的那一版）起，包括后来的一切版本，受绑定约束。四处调用点
+     * 都传这个谓词，所以它一旦漂移（例如误挂到更新的 schema 常量上），站在 v11 行上的无题轮
+     * 就会重新变得可暴露——这条用例守住那个边界。
+     */
+    @Test
+    fun `the binding requirement follows the row's schema version`() {
+        assertFalse(rowAt(ModelTaskRequest.LOBBY_CONTEXT_SCHEMA_VERSION).requiresRoundQuestionBinding)
+        assertTrue(
+            rowAt(ModelTaskRequest.TUTOR_ROUND_BINDING_SCHEMA_VERSION).requiresRoundQuestionBinding,
+        )
+        assertTrue(rowAt(ModelTaskRequest.CURRENT_SCHEMA_VERSION).requiresRoundQuestionBinding)
+    }
+
+    private fun rowAt(schemaVersion: Int) = ModelTaskRequest(
+        schemaVersion = schemaVersion,
+        requestId = "row-$schemaVersion",
+        input = respondInput(),
+        occurredAtEpochMillis = 1_000,
+    )
+
     private fun binding() = TutorRoundQuestionDeclaration(
         problemId = "problem-1",
         problemRevisionId = "revision-1",

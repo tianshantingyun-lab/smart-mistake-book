@@ -291,6 +291,43 @@ class TutorConversationTimelineTest {
         assertNull(target.pendingRevealCommand)
     }
 
+    /**
+     * 无题轮永不产生暴露记录（F3 的另一半：新语义不得被放宽）。
+     *
+     * 同一份"学生明确索要答案 + 模型声明 solutionRevealed"的输出，只要本轮没有绑定题，就既不是
+     * 暴露候选键、也生成不出曝光目标——否则"学生看过**这道**题的答案"会被记在一轮根本没说题的
+     * 对话上。反证：把 `buildTutorSolutionExposureTargets` 里的 `requiresRoundQuestionBinding`
+     * 传成 `false`（等于按旧语义无条件放行），本用例转红。
+     */
+    @Test
+    fun aNoQuestionRoundIsNeitherAnExposureCandidateNorATarget() {
+        val task = respondTask(
+            requestId = "no-question-reply",
+            occurredAtEpochMillis = 500,
+            studentMessage = "请告诉我答案。",
+            solutionRevealed = true,
+            boundQuestion = false,
+        )
+        val response = actionResponse(updatedAtEpochMillis = 900, solutionRevealed = true)
+        val timeline = listOf(TutorConversationTimelineItem.Reply(task))
+
+        assertTrue(
+            tutorSolutionExposureCandidateKeys(
+                timeline = timeline,
+                responses = listOf(response),
+                longTermWritesBlocked = false,
+            ).isEmpty(),
+        )
+        assertTrue(
+            buildTutorSolutionExposureTargets(
+                timeline = timeline,
+                responses = listOf(response),
+                previewKeys = emptySet(),
+                longTermWritesBlocked = false,
+            ).isEmpty(),
+        )
+    }
+
     @Test
     fun previewedExplanationOnlyPlanCreatesOneDeferredRevealTarget() {
         val task = planTask(
@@ -436,6 +473,8 @@ class TutorConversationTimelineTest {
         target: TutorQuestionContext = question,
         solutionRevealed: Boolean = false,
         intentDecision: TutorIntentDecision = TutorIntentDecision.currentQuestionDefault(),
+        /** 本轮有没有绑定题：无题轮没有候选菜单，输出也没有题锚声明（新语义下不得产生暴露）。 */
+        boundQuestion: Boolean = true,
     ): ModelTaskSnapshot {
         val request = buildTutorRespondRequest(
             question = target,
@@ -449,7 +488,11 @@ class TutorConversationTimelineTest {
             studentMessage = studentMessage,
             visibleTutorContextMarkdown = null,
             priorMessages = emptyList(),
-            boundQuestionCandidates = listOf(boundCandidateFor(studentMessage)),
+            boundQuestionCandidates = if (boundQuestion) {
+                listOf(boundCandidateFor(studentMessage))
+            } else {
+                emptyList()
+            },
         )
         val input = request.input as TutorRespondInput
         return ModelTaskSnapshot(
@@ -475,12 +518,16 @@ class TutorConversationTimelineTest {
                     "因为符号在这里改变。"
                 },
                 solutionRevealed = solutionRevealed,
-                // 这些用例讲的是"当前题"的会话：本轮有绑定题（暴露记录的前提）。
-                boundQuestion = TutorRoundQuestionDeclaration(
-                    problemId = BOUND_PROBLEM_ID,
-                    problemRevisionId = BOUND_REVISION_ID,
-                    anchorTerms = listOf(anchorTermFor(studentMessage)),
-                ),
+                // 有题轮＝本轮确实绑定了题（暴露记录的前提）；无题轮这里与 request 一致地留空。
+                boundQuestion = if (boundQuestion) {
+                    TutorRoundQuestionDeclaration(
+                        problemId = BOUND_PROBLEM_ID,
+                        problemRevisionId = BOUND_REVISION_ID,
+                        anchorTerms = listOf(anchorTermFor(studentMessage)),
+                    )
+                } else {
+                    null
+                },
                 intentDecision = intentDecision,
                 modelVersion = "model-v1",
             ),

@@ -9,6 +9,7 @@ import com.tingyun.smartmistakebook.core.model.ModelFailureCode
 import com.tingyun.smartmistakebook.core.model.ModelTaskFingerprint
 import com.tingyun.smartmistakebook.core.model.ModelTaskFailure
 import com.tingyun.smartmistakebook.core.model.ModelTaskKind
+import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ModelTaskStage
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
@@ -352,6 +353,66 @@ class TutorChatConversationTest {
         val history = tutorChatHistory(listOf(task), answerExposureKeys = setOf(exposureKey))
 
         assertEquals("完整答案是 42", history.single().assistantMarkdown)
+    }
+
+    /**
+     * F3 回归：**升级前**的行（轮次绑定那一维还不存在）不能按新语义重判。
+     *
+     * 现场：`canExposeSolutionFor` 加上"本轮有绑定题"之后，旧行当然没有 `boundQuestion` 字段
+     * （当年也不存在），于是同一份输出被判成"无题轮"——持久化的 RESPOND_REPLY 曝光行被候选键
+     * 过滤掉，已经完整展示过的正文被换成 [HIDDEN_TUTOR_ANSWER_CONTEXT] 占位，会话记忆一起回退。
+     * 这里把行老化到 schema 10（菜单与绑定的前一版），学生明确索要过答案、曝光键也在集合里，
+     * 正文必须原样保留。反证：把 `canExposeSolutionFor` 的绑定条件改成无条件要求，本用例转红。
+     */
+    @Test
+    fun anAnswerExposedBeforeRoundBindingStillShowsAfterTheUpgrade() {
+        val task = agedBeforeRoundBinding(
+            succeededResponse(
+                responseOrdinal = 1,
+                studentMessage = "请告诉我答案",
+                assistantMarkdown = "完整答案是 42",
+                solutionRevealed = true,
+                // 旧行没有候选菜单，输出也没有题锚声明：这正是升级前写库的形状。
+                boundQuestion = false,
+            ),
+        )
+        val exposureKey = requireNotNull(task.toRespondAnswerExposureKey())
+
+        val history = tutorChatHistory(listOf(task), answerExposureKeys = setOf(exposureKey))
+
+        assertEquals("完整答案是 42", history.single().assistantMarkdown)
+    }
+
+    /**
+     * 同一份"没有题锚"的输出放在**新行**上仍是无题轮：即使曝光键恰好对得上，
+     * 正文也必须被占位顶替。与上一条成对，钉住"只在绑定的适用性上分岔"。
+     */
+    @Test
+    fun aNewRowWithoutABoundQuestionStillHidesTheAnswer() {
+        val task = succeededResponse(
+            responseOrdinal = 1,
+            studentMessage = "请告诉我答案",
+            assistantMarkdown = "完整答案是 42",
+            solutionRevealed = true,
+            boundQuestion = false,
+        )
+        val exposureKey = requireNotNull(task.toRespondAnswerExposureKey())
+
+        val history = tutorChatHistory(listOf(task), answerExposureKeys = setOf(exposureKey))
+
+        assertFalse(history.single().assistantMarkdown.contains("42"))
+        assertTrue(history.single().assistantMarkdown.contains("还没有完整看到"))
+    }
+
+    /**
+     * 把一行"老化"到轮次绑定之前（schema 10：`boundQuestionCandidates` 与 `boundQuestion` 都还
+     * 不存在的那一版）。指纹参与完整性断言（`ModelTaskSnapshot.init`），所以随 schema 一并重算。
+     */
+    private fun agedBeforeRoundBinding(task: ModelTaskSnapshot): ModelTaskSnapshot {
+        val aged = task.request.copy(
+            schemaVersion = ModelTaskRequest.LOBBY_CONTEXT_SCHEMA_VERSION,
+        )
+        return task.copy(request = aged, requestFingerprint = ModelTaskFingerprint.of(aged))
     }
 
     @Test
