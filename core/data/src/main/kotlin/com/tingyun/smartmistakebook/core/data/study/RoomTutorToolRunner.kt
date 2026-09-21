@@ -113,6 +113,18 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
          * the request silently do nothing.
          */
         val allowsExtendedResult: Boolean = true,
+        /**
+         * 本轮披露集合是否覆盖**候选菜单**（
+         * [com.tingyun.smartmistakebook.core.model.ModelTaskInput.disclosesQuestionCandidates]）：
+         * 决定 `NOTEBOOK_READ` 的产出形态。
+         *
+         * 覆盖时（学生本轮显式带题 / 本地检索到候选）别的题的标题与科目属于**已披露**的
+         * `RELATED_QUESTION_CANDIDATES`，逐条点名是被许可的能力；不覆盖时（无题轮、或本轮没有
+         * 菜单）它们属于清单里**列为禁止**的类目，结果只给条数与检索词。
+         *
+         * 默认 false 是 fail-closed：直调者没说是哪一档就不列别的题。
+         */
+        val roundDisclosesQuestionCandidates: Boolean = false,
     ) {
         init {
             require(attentionFactor in 0.0..1.0) { "Attention factor must be in 0..1" }
@@ -137,7 +149,7 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
                     knowledgeRead(subject, call.terms)
                 }
             }
-            TutorToolName.NOTEBOOK_READ -> notebookRead(call.terms)
+            TutorToolName.NOTEBOOK_READ -> notebookRead(call.terms, context)
             TutorToolName.MASTERY_READ -> masteryRead(call, context, context.allowsExtendedResult)
             TutorToolName.MASTERY_UPDATE -> masteryUpdate(call, context)
             TutorToolName.NOTEBOOK_WRITE -> notebookWrite(context)
@@ -179,7 +191,19 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
         )
     }
 
-    private suspend fun notebookRead(terms: List<String>): TutorToolOutcome {
+    /**
+     * 检索错题本（`NOTEBOOK_READ`）。
+     *
+     * 产出形态按**本轮披露范围**分两档（F5）：
+     * - 本轮披露集合覆盖候选菜单（`RELATED_QUESTION_CANDIDATES`，即学生显式带题 / 本地检索到
+     *   候选的那一轮）：别的题的标题与科目属于**已披露**的那一类，逐条点名是既有能力。
+     * - 不覆盖（无题轮，或本轮没带菜单）：它们属于清单里**列为禁止**的类目，只回**条数与检索词**。
+     *   此前这里无条件列出标题+科目，而大厅清单把 `RELATED_QUESTION_CANDIDATES` /
+     *   `CONFIRMED_QUESTION_DOCUMENT` 列为禁止 —— 清单一处少报了一个真实出网的类目。
+     *   解法是收紧产出，**不是**放宽披露集合：要不要把这一档披露出去，是用户的裁定。
+     *   要更丰富的错题本结果，先改披露边界（加类目并按 bf8be888 的纪律升 manifest schema）。
+     */
+    private suspend fun notebookRead(terms: List<String>, context: Context): TutorToolOutcome {
         val searchText = terms.joinToString(" ").take(120)
         val rows = port.libraryCatalogPage(
             searchText = searchText,
@@ -196,6 +220,18 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
                 tool = TutorToolName.NOTEBOOK_READ,
                 ok = true,
                 summaryMarkdown = "错题本里没有匹配的条目。",
+            )
+        }
+        if (!context.roundDisclosesQuestionCandidates) {
+            val termNote = terms.takeIf(List<String>::isNotEmpty)
+                ?.let { "（检索词：${it.joinToString("、")}）" }
+                .orEmpty()
+            return TutorToolOutcome(
+                tool = TutorToolName.NOTEBOOK_READ,
+                ok = true,
+                summaryMarkdown = "错题本里匹配 ${rows.size} 条$termNote。本轮披露范围不含别的题的标题，" +
+                    "故只给条数；不要臆造或复述任何题目标题，" +
+                    "需要具体某道题时请学生在错题本里查看或从错题本选择。",
             )
         }
         val lines = rows.mapIndexed { index, row ->

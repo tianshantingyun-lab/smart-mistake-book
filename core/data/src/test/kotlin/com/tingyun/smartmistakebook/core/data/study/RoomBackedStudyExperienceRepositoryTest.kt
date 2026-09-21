@@ -1450,6 +1450,15 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
     val tutorMessages = mutableListOf<TutorMessageRecord>()
 
     /**
+     * 错题本目录页的行，`NOTEBOOK_READ` 的检索源。默认空表：没被喂行就不该有行。
+     *
+     * `NOTEBOOK_READ` 的产出形态按**本轮披露范围**分两档（见
+     * `RoomTutorToolRunner.notebookRead`），所以这条路径必须能被喂真实行——此前它
+     * 一律 `error(...)`，"无题轮不列别的题目标题"在测试里根本不可达。
+     */
+    val libraryRows = mutableListOf<LibraryCatalogRow>()
+
+    /**
      * Subject-scoped mastery rows the `MASTERY_READ` tool reads, keyed by the
      * subject the fake was told to serve. Empty by default: a fake that served
      * rows without being told to would let a test pass while asserting nothing
@@ -1922,8 +1931,10 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
         sort: String,
         offset: Int,
         limit: Int,
-    ): List<LibraryCatalogRow> =
-        error("Library is outside this study-repository fake")
+    ): List<LibraryCatalogRow> = libraryRows
+        .filter { row -> searchText.isBlank() || row.title.contains(searchText) }
+        .drop(offset)
+        .take(limit)
 
     override suspend fun libraryCatalogCount(
         searchText: String,

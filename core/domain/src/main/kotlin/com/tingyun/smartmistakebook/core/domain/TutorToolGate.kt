@@ -35,6 +35,12 @@ val TUTOR_WRITE_TOOLS: Set<TutorToolName> = setOf(
  * （`TutorLobbyTasks.ALLOWED_LOCAL_CAPABILITIES` 早已为掌握度读取写下同一条理由），所以
  * 无题轮里它们不发。`NOTEBOOK_READ` **不在此列**：错题本条目一直是大厅轮次的能力
  * （大厅自始声明并使用它，同一条能力边界注释里也只把掌握度读取列为不可覆盖）。
+ *
+ * 但"能力保留"不等于"产出形态不变"：错题本条目的标题与科目属于
+ * `RELATED_QUESTION_CANDIDATES` 这一类，无题轮的披露集合把它列为**禁止**，所以无题轮的
+ * NOTEBOOK_READ 只回条数与检索词，不列任何标题（见 core:data 的
+ * `RoomTutorToolRunner.notebookRead`）。放行与否由本函数裁决，产出形态由披露范围决定——
+ * 要更丰富的错题本结果，得先由用户裁定放宽披露边界。
  */
 val TUTOR_QUESTION_ROUND_ONLY_READS: Set<TutorToolName> = setOf(
     TutorToolName.MASTERY_READ,

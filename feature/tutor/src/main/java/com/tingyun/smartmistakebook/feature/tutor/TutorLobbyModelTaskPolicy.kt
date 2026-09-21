@@ -120,17 +120,13 @@ internal fun buildTutorLobbyRequest(
                 )
             },
             // 披露只走 TutorRoundDisclosure 这一条口径（大厅＝无题轮、无候选菜单）。
-            disclosedData = TutorRoundDisclosure.expected(
-                carriesQuestion = false,
+            disclosedData = TutorRoundDisclosure.noQuestionRound(
                 includesImage = includesImage,
-                includesQuestionCandidates = false,
             ),
             // 未披露集＝全集 − 已披露：两者必须互补，任何一边单独改都会在这里对不上。
             prohibitedData = ModelEgressDataClass.entries.toSet() -
-                TutorRoundDisclosure.expected(
-                    carriesQuestion = false,
+                TutorRoundDisclosure.noQuestionRound(
                     includesImage = includesImage,
-                    includesQuestionCandidates = false,
                 ),
         )
     } else {

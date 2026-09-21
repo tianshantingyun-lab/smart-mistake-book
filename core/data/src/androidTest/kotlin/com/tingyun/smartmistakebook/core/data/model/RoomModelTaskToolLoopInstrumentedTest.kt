@@ -10,6 +10,7 @@ import com.tingyun.smartmistakebook.core.database.ProblemSeedRecord
 import com.tingyun.smartmistakebook.core.database.StudyDbValue
 import com.tingyun.smartmistakebook.core.database.StudyDatabaseFactory
 import com.tingyun.smartmistakebook.core.database.StudySeedBundle
+import com.tingyun.smartmistakebook.core.model.ContentBlock
 import com.tingyun.smartmistakebook.core.model.ModelEgressManifest
 import com.tingyun.smartmistakebook.core.model.ModelEgressPurpose
 import com.tingyun.smartmistakebook.core.model.ModelGatewayEvent
@@ -23,12 +24,17 @@ import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
+import com.tingyun.smartmistakebook.core.model.QuestionDocument
+import com.tingyun.smartmistakebook.core.model.RelatedProblemCandidate
+import com.tingyun.smartmistakebook.core.model.SubjectKind
 import com.tingyun.smartmistakebook.core.model.TutorIntentDecision
 import com.tingyun.smartmistakebook.core.model.TutorLobbyOutput
 import com.tingyun.smartmistakebook.core.model.TutorMemoryPreference
 import com.tingyun.smartmistakebook.core.model.TutorLobbyInput
 import com.tingyun.smartmistakebook.core.model.TutorMessageIntent
 import com.tingyun.smartmistakebook.core.model.TutorRequestedLocalCapability
+import com.tingyun.smartmistakebook.core.model.TutorRespondInput
+import com.tingyun.smartmistakebook.core.model.TutorRespondOutput
 import com.tingyun.smartmistakebook.core.model.TutorToolCall
 import com.tingyun.smartmistakebook.core.model.TutorToolName
 import com.tingyun.smartmistakebook.core.model.TutorToolRequestsOutput
@@ -40,6 +46,7 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -62,6 +69,14 @@ class RoomModelTaskToolLoopInstrumentedTest {
         supportsStructuredOutput = true,
         supportsStreaming = false,
         executionLocation = ModelExecutionLocation.LOCAL_NO_EGRESS,
+    )
+
+    /**
+     * 同一个模型服务题轮派遣。轮预算那条用例必须在题轮上跑（见该用例的 KDoc）：
+     * 只有题轮的披露集合可能覆盖错题本条目标题所属的那一类。
+     */
+    private val respondProvider = provider.copy(
+        supportedTasks = setOf(ModelTaskKind.TUTOR_RESPOND),
     )
 
     private class ScriptedGateway(
@@ -114,6 +129,67 @@ class RoomModelTaskToolLoopInstrumentedTest {
         )
     }
 
+    /**
+     * 题轮派遣，且本轮**带候选菜单**：披露集合因此覆盖 `RELATED_QUESTION_CANDIDATES`，
+     * `NOTEBOOK_READ` 才会逐条列出别的题的标题（F5 的两档之一）。
+     */
+    private fun questionRoundRequest(): ModelTaskRequest {
+        val input = TutorRespondInput(
+            sessionId = "tool-loop-session",
+            draftRevisionNumber = 1,
+            subject = "MATH",
+            questionDocument = QuestionDocument(
+                id = "question-tool-loop",
+                blocks = listOf(ContentBlock.Paragraph("stem-tool-loop", "求函数的最值。")),
+            ),
+            relevantLearningEvidence = emptyList(),
+            projectionIsCurrent = true,
+            responseOrdinal = 1,
+            cycleOrdinal = 1,
+            turnOrdinal = 1,
+            studentMessage = "帮我看看错题本里有没有二次函数的题",
+            priorMessages = emptyList(),
+            requestedMove = null,
+            boundQuestionCandidates = listOf(boundCandidate()),
+        )
+        return ModelTaskRequest(
+            requestId = "tutor-respond:tool-loop-budget",
+            input = input,
+            occurredAtEpochMillis = 1_000L,
+            egressManifest = null,
+        )
+    }
+
+    private fun boundCandidate() = RelatedProblemCandidate(
+        problemId = "problem-menu",
+        problemRevisionId = "revision-menu",
+        subject = SubjectKind.MATH,
+        title = "二次函数综合题",
+        questionDocument = QuestionDocument(
+            id = "question-menu",
+            blocks = listOf(ContentBlock.Paragraph("stem-menu", "求二次函数的最值。")),
+        ),
+    )
+
+    private fun respondFinalAnswerOutput() = TutorRespondOutput(
+        sessionId = "tool-loop-session",
+        draftRevisionNumber = 1,
+        questionDocumentId = "question-tool-loop",
+        responseOrdinal = 1,
+        cycleOrdinal = 1,
+        turnOrdinal = 1,
+        messageMarkdown = "错题本里有 3 道二次函数相关错题。",
+        solutionRevealed = false,
+        intentDecision = TutorIntentDecision(
+            intent = TutorMessageIntent.MISTAKE_NOTEBOOK_LOOKUP,
+            confidence = 0.9,
+            explicitActionRequest = true,
+            memoryPreference = TutorMemoryPreference.UNCHANGED,
+            requestedLocalCapability = TutorRequestedLocalCapability.READ_MISTAKE_NOTEBOOK,
+        ),
+        modelVersion = "tool-loop-model-v1",
+    )
+
     private fun toolRequestOutput() = TutorToolRequestsOutput(
         intentDecision = TutorIntentDecision(
             intent = TutorMessageIntent.MISTAKE_NOTEBOOK_LOOKUP,
@@ -154,6 +230,11 @@ class RoomModelTaskToolLoopInstrumentedTest {
      * 三条长标题的错题让 `NOTEBOOK_READ` 的摘要超过 4k。若仓库层不再走
      * `tutorToolRoundResult`（即再原样塞回 outcomes），这条测试会因为第二轮的
      * 结果超预算且没有截断说明而变红——纯函数单测抓不到这个缺口。
+     *
+     * **车为什么要换到题轮**（F5）：错题本条目标题属于 `RELATED_QUESTION_CANDIDATES`，
+     * 只有本轮披露集合覆盖它时 `NOTEBOOK_READ` 才逐条列出标题。大厅轮的披露集合把它列为
+     * 禁止，产出形态只剩"条数 + 检索词"——再长的标题也撑不出一个超预算的结果，用大厅轮
+     * 就测不到这条接线了。三条断言逐字未动，换的只是承载体：本轮带候选菜单的题轮。
      */
     @Test
     fun aRoundWhoseResultsExceedTheBudgetIsTrimmedBeforeItIsCarriedForward() = runBlocking {
@@ -163,15 +244,18 @@ class RoomModelTaskToolLoopInstrumentedTest {
         val database = StudyDatabaseFactory.open(context, databaseName)
         try {
             database.seedFixture(longTitledSeed())
-            val gateway = ScriptedGateway(provider, listOf(toolRequestOutput(), finalAnswerOutput()))
+            val gateway = ScriptedGateway(
+                respondProvider,
+                listOf(toolRequestOutput(), respondFinalAnswerOutput()),
+            )
             val repository = com.tingyun.smartmistakebook.core.data.model.RoomModelTaskRepository(
                 database = database,
                 gateway = gateway,
                 clock = { 2_000L },
             )
-            repository.execute(request()).toList()
+            repository.execute(questionRoundRequest()).toList()
 
-            val second = gateway.dispatchLog[1].input as TutorLobbyInput
+            val second = gateway.dispatchLog[1].input as TutorRespondInput
             val outcomes = second.toolRoundResults.single().outcomes
             val total = outcomes.sumOf { it.summaryMarkdown.length } + outcomes.size - 1
             assertTrue(
@@ -181,6 +265,47 @@ class RoomModelTaskToolLoopInstrumentedTest {
             assertTrue(
                 "超预算的部分必须说明自己被截断了，否则模型会当成完整结果读",
                 outcomes.any { it.summaryMarkdown.contains(TRUNCATED_OUTCOME_NOTE) },
+            )
+        } finally {
+            database.close()
+            context.deleteDatabase(databaseName)
+        }
+    }
+
+    /**
+     * 无题轮的错题本读取不点名任何一条目（F5 的**仓库接线**证明）。
+     *
+     * 大厅的披露集合把 `RELATED_QUESTION_CANDIDATES` / `CONFIRMED_QUESTION_DOCUMENT` 列为禁止，
+     * 逐条列出别的题的标题就是清单少报。这条用例走完整接线（请求 → 仓库 → 工具环 → runner）：
+     * 判据若没从请求传到执行器（或传反），下面的断言就会转红。同时钉住"放行但收紧"——无题轮
+     * 仍然放行 NOTEBOOK_READ（学生问"错题本里有没有"要有工具可用），只是产出只剩条数与检索词。
+     */
+    @Test
+    fun aLobbyRoundNotebookReadNamesNoEntry() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val databaseName = "tool-loop-lobby-notebook-${System.nanoTime()}.db"
+        context.deleteDatabase(databaseName)
+        val database = StudyDatabaseFactory.open(context, databaseName)
+        try {
+            database.seedFixture(longTitledSeed())
+            val gateway =
+                ScriptedGateway(provider, listOf(toolRequestOutput(), finalAnswerOutput()))
+            val repository = com.tingyun.smartmistakebook.core.data.model.RoomModelTaskRepository(
+                database = database,
+                gateway = gateway,
+                clock = { 2_000L },
+            )
+            repository.execute(request()).toList()
+
+            val second = gateway.dispatchLog[1].input as TutorLobbyInput
+            val outcome = second.toolRoundResults.single().outcomes.single()
+            assertEquals(TutorToolName.NOTEBOOK_READ, outcome.tool)
+            assertTrue("无题轮仍要放行这个读工具：${outcome.errorKind}", outcome.ok)
+            val text = outcome.summaryMarkdown
+            assertTrue("命中了三条就得说三条，模型才知道有没有命中: $text", text.contains("3 条"))
+            assertFalse(
+                "别的题的标题不得随请求下发（大厅清单把它列为禁止）: $text",
+                text.contains("二次函数综合题"),
             )
         } finally {
             database.close()

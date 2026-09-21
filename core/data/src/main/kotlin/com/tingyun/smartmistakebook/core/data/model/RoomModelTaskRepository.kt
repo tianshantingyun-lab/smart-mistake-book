@@ -6,6 +6,7 @@ import com.tingyun.smartmistakebook.core.domain.TUTOR_TOOL_DECLARATIONS
 import com.tingyun.smartmistakebook.core.domain.TutorRoundQuestionBindingPolicy
 import com.tingyun.smartmistakebook.core.domain.TUTOR_QUESTION_ROUND_ONLY_READS
 import com.tingyun.smartmistakebook.core.domain.TUTOR_WRITE_TOOLS
+import com.tingyun.smartmistakebook.core.model.disclosesQuestionCandidates
 import com.tingyun.smartmistakebook.core.model.disclosesQuestionEvidence
 import com.tingyun.smartmistakebook.core.domain.tutorRoundToolAvailable
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
@@ -787,6 +788,11 @@ class RoomModelTaskRepository internal constructor(
             // 幂等命名空间：同一 model-task request 的重试/多轮共享同一 evidenceId 命名空间，
             // 让 MASTERY_UPDATE 的 evidence_id 确定性派生（重试不重复落库）。
             evidenceIdNamespace = requestId,
+            // 本轮披露集合是否覆盖候选菜单：NOTEBOOK_READ 的产出形态由它决定——覆盖了才允许
+            // 逐条点名别的题（那属于已披露的 RELATED_QUESTION_CANDIDATES），否则只给条数与检索词。
+            // 判据取自请求本身（与清单侧核对 includesQuestionCandidates 用的是同一条），
+            // 不看解析路由、不看执行位置。
+            roundDisclosesQuestionCandidates = input.disclosesQuestionCandidates(),
         )
 }
 

@@ -568,7 +568,9 @@ internal object OpenAiModelTaskAdapters {
         TutorToolName.KNOWLEDGE_READ -> "读取这道题相关知识点讲解材料"
         TutorToolName.NOTEBOOK_READ ->
             "检索错题本中匹配的错题（只查错题库：返回条目本身；掌握情况不在这里，" +
-                "要了解某知识点掌握得怎样用 MASTERY_READ）"
+                "要了解某知识点掌握得怎样用 MASTERY_READ）。返回形态随本轮的披露范围：" +
+                "本轮没有题锚、披露范围也不含别的题时只回条数与检索词，不列任何条目标题" +
+                "（这时不要臆造或复述题目标题）。"
         TutorToolName.MASTERY_READ ->
             "读取学生对相关知识的掌握情况（限当前科目；只查掌握情况，不含错题条目本身——" +
                 "要找题用 NOTEBOOK_READ）。terms 留空＝返回本科目全部有学习证据的" +

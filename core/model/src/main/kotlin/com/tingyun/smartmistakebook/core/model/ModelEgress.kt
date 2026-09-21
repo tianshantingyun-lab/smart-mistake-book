@@ -41,10 +41,10 @@ enum class ModelEgressDataClass {
 object ModelPromptPolicyVersions {
     const val CAPTURE_DOCUMENT = "capture-document-policy-v1"
     const val TUTOR_PLAN = "tutor-plan-v11-reteach-material-priority"
-    const val TUTOR_RESPOND = "tutor-respond-v17-round-bound-tool-gate"
+    const val TUTOR_RESPOND = "tutor-respond-v18-notebook-read-scope"
     const val TUTOR_VISUAL_GENERATE = "tutor-visual-generate-v1-bounded-semantic-document"
     const val TUTOR_VISUAL_REVIEW = "tutor-visual-review-v1-one-repair"
-    const val TUTOR_LOBBY = "tutor-lobby-v6-same-page-tool-declarations"
+    const val TUTOR_LOBBY = "tutor-lobby-v7-notebook-read-scope"
     const val LEARNING_SUMMARIZE = "learning-summarize-v1-tutor-debrief"
     const val PROBLEM_ORGANIZATION = "problem-organization-v4-atomic"
     const val KNOWLEDGE_QUIZ = "knowledge-quiz-v1-boundary-anchored"
@@ -72,54 +72,55 @@ object ModelPromptPolicyVersions {
 /**
  * 讲题轮次出网披露的**唯一**计算口径：按运行时状态选择，不按 kind 分叉猜。
  *
- * 状态维度（`docs/tutor-surface-unification.md` §5.5 与 §6 障碍 3）：
- * - **无题**（`carriesQuestion = false`）：只有学生消息与会话上下文，**不含题面**。大厅是无题轮。
- * - **有题**（`carriesQuestion = true`，无图）：题面、学习证据、会话上下文、学科知识库。
- * - **有题带图**：`carriesQuestion = true, includesImage = true` 追加图片类目。
+ * 生产里只有**两态**（`docs/tutor-surface-unification.md` §5.5 与 §6 障碍 3），函数也就只表达
+ * 两态，两个具名入口各自对应一个真实存在的轮次：
+ * - [noQuestionRound]：无题轮（大厅）。学生消息 + 会话上下文，**不含题面**；附图消息追加图片类目。
+ * - [questionRound]：有题轮（Respond）。题面、学习证据、会话上下文、学科知识库；本轮真的带了
+ *   候选菜单时再追加 [ModelEgressDataClass.RELATED_QUESTION_CANDIDATES]。
  *
- * **三个校验调用点实际只走到两态**（`ModelEgressManifest` 的 init、`requireAuthorizes` 的
- * Respond 与 Lobby 分支）：Respond 传 `includesImage = false` 且 `assets` 必须为空，Lobby 传
- * `carriesQuestion = false`。第三态**不是**不可达的死分支，而是**尚未接线**：Respond 的附图
- * （`studentImageAssetRefs`）今天只走全局同意通道（`agentConsentGranted`，`egressManifest == null`），
- * 逐次清单那条路上"Tutor response cannot disclose image assets"是一条**既有断言**，本轮没有放宽
- * 它——所以这一态留给"Respond 附图也走清单"的那天，函数已经能表达它。`ModelEgressTest` 里那条
- * 逐态用例断言的是函数取值，不是生产路径可达性；把不可达**钉住**的用例是
- * `a question round manifest still refuses image assets`。
+ * 这里此前还有一个"有题带图"的第三态（`carriesQuestion = true, includesImage = true`），它在
+ * **三个校验调用点都不可达**：`ModelEgressManifest` 的 init 里两个标志由**同一个** kind 派生
+ * （`carriesQuestion` 要 TUTOR_RESPOND、`includesImage` 要 TUTOR_LOBBY，互斥），`requireAuthorizes`
+ * 的 Respond 分支硬编码 `includesImage = false` 且 `assets` 必须为空，Lobby 分支
+ * `carriesQuestion = false`。一个表达不出来的状态留在签名里，只会让人以为它已经接线（甚至据此
+ * 怀疑那条既有断言过时），所以删掉分支、把两个真实状态拆成两个具名函数：不合法的组合从此
+ * **构造不出来**，而不是靠注释提醒。
  *
- * 另有两个正交的可选加成，各自只在"本轮真的带了它"时出现：
- * - `includesImage`：本轮真的出网图片字节（大厅的附图消息，这一态在生产里是活的）。
- * - `includesQuestionCandidates`：本轮真的带了候选菜单（错题本里别的题面）。
+ * 若将来"有题轮带图字节"真的要接线，不是给这里补一个参数就行：`TutorRespondInput` 分支的
+ * `require(assets.isEmpty())`、图片能力门与清单 schema 都要一起动，那时再让这一态显式出现。
+ * 今天这条边界由 `a question round manifest still refuses image assets` 钉住。
  *
- * 存在的理由：此前披露集合是按 kind 在四处分别挑常量拼出来的，"哪种轮次披露什么"没有单一
- * 口径；加一维（候选菜单）时无处可加，只能靠封堵。写成函数之后，每一态都有逐态的
- * `disclosedData == expected` 且 `prohibited == 全集 − expected` 用例。
+ * 两条分档仍按 schema 走（schema<4 的 Respond 行当年没有 SUBJECT_KNOWLEDGE_BASE；schema<6 的
+ * 大厅行不能带图）：旧行 decode 时会重跑这条校验，漏掉 legacy 分档就会让升级后的旧行直接抛
+ * 异常（bf8be888 的同一类事故）。
  */
 object TutorRoundDisclosure {
-    fun expected(
-        carriesQuestion: Boolean,
+    /**
+     * 无题轮（大厅）：纯文本时是最小披露，附图消息按 schema 六追加图片类目。
+     *
+     * 没有"候选菜单"这一维：`TutorLobbyInput` 根本没有菜单字段，无题轮不存在"菜单里的别的题"。
+     */
+    fun noQuestionRound(
         includesImage: Boolean,
+        schemaVersion: Int = ModelEgressManifest.CURRENT_SCHEMA_VERSION,
+    ): Set<ModelEgressDataClass> = ModelEgressManifest.tutorLobbyDisclosureForSchema(
+        schemaVersion = schemaVersion,
+        includesImage = includesImage,
+    )
+
+    /**
+     * 有题轮（Respond）：题面 / 学习证据 / 学科知识库，带候选菜单时追加菜单类目。
+     *
+     * 没有"图片"这一维：清单路径上的题轮**永不带图字节**（`TutorRespondInput` 分支的
+     * `require(assets.isEmpty())`），所以没有"带不带图"可选。
+     */
+    fun questionRound(
         includesQuestionCandidates: Boolean,
         schemaVersion: Int = ModelEgressManifest.CURRENT_SCHEMA_VERSION,
-    ): Set<ModelEgressDataClass> {
-        // 分档仍按 schema 走（schema<4 的 Respond 行当年没有 SUBJECT_KNOWLEDGE_BASE；schema<6 的
-        // 大厅行不能带图）：旧行 decode 时会重跑这条校验，漏掉 legacy 分档就会让升级后的旧行
-        // 直接抛异常（bf8be888 的同一类事故）。
-        val base = if (carriesQuestion) {
-            ModelEgressManifest.tutorRespondDisclosureForSchema(schemaVersion)
-        } else {
-            ModelEgressManifest.tutorLobbyDisclosureForSchema(
-                schemaVersion = schemaVersion,
-                includesImage = includesImage,
-            )
-        }
-        return buildSet {
-            addAll(base)
-            if (includesQuestionCandidates) {
-                add(ModelEgressDataClass.RELATED_QUESTION_CANDIDATES)
-            }
-            if (includesImage && carriesQuestion) {
-                addAll(ModelEgressManifest.CAPTURE_IMAGE_DISCLOSURE)
-            }
+    ): Set<ModelEgressDataClass> = buildSet {
+        addAll(ModelEgressManifest.tutorRespondDisclosureForSchema(schemaVersion))
+        if (includesQuestionCandidates) {
+            add(ModelEgressDataClass.RELATED_QUESTION_CANDIDATES)
         }
     }
 }
@@ -134,6 +135,24 @@ object TutorRoundDisclosure {
  * 本身，不取自解析路由。
  */
 fun ModelTaskInput.disclosesQuestionEvidence(): Boolean = this is TutorRespondInput
+
+/**
+ * 本轮披露集合是否覆盖**候选菜单**（错题本里别的题面，`RELATED_QUESTION_CANDIDATES`）。
+ *
+ * 它回答的是"这一轮的披露面装不装得下别的题的可识别内容"，与 [disclosesQuestionEvidence]
+ * （装不装得下本题的题面与学习证据）是两个问题，取的是同一个请求侧事实：本轮**真的**带了菜单
+ * （`TutorRespondInput.boundQuestionCandidates` 非空）才算覆盖。无题轮没有菜单字段，一票否决。
+ *
+ * 谁在消费它：
+ * - 清单侧：`requireAuthorizes` 的 Respond 分支按它核对 `includesQuestionCandidates`（多了少了都拒）；
+ * - 产出侧：`core:data` 的 `NOTEBOOK_READ` 按它决定结果形态——披露面覆盖菜单时才逐条点名别的题，
+ *   否则只给条数与检索词（错题本条目标题属于这一类的可识别内容）。
+ *
+ * 披露粒度是**类目**：清单声明的是"这一类出网了"，逐条对齐只有图片资产的 grant 做得到。所以
+ * 判据取"本轮披露集合覆盖了这一类"，而不是"这条标题恰好是菜单里的某一条"。
+ */
+fun ModelTaskInput.disclosesQuestionCandidates(): Boolean =
+    this is TutorRespondInput && boundQuestionCandidates.isNotEmpty()
 
 @Serializable
 data class ModelEgressAssetGrant(
@@ -272,18 +291,17 @@ data class ModelEgressManifest(
             ) {
                 "Tutor egress must authorize exactly one supported tutoring task"
             }
-            // 讲题轮次的披露**只**走这一条显式函数：按"本轮有没有题 / 有没有图 / 有没有候选菜单"
-            // 运行时选择，而不是按 kind 分叉各猜一遍。大厅＝无题轮，Respond＝有题轮；有图时追加
-            // 图片类目，带候选菜单时追加该菜单的类目。旧 schema 行（无候选菜单这一维）读回时
+            // 讲题轮次的披露**只**走这一条显式口径：按"本轮有没有题 / 有没有图 / 有没有候选菜单"
+            // 运行时选择，而不是按 kind 分叉各猜一遍。大厅＝无题轮，Respond＝有题轮；大厅附图追加
+            // 图片类目，题轮带候选菜单追加该菜单的类目。旧 schema 行（无候选菜单这一维）读回时
             // includesQuestionCandidates 为 false，取值与改前逐字一致。
             val expectedDisclosure = when (tutoringKind) {
-                ModelTaskKind.TUTOR_RESPOND,
-                ModelTaskKind.TUTOR_LOBBY,
-                -> TutorRoundDisclosure.expected(
-                    carriesQuestion = tutoringKind == ModelTaskKind.TUTOR_RESPOND,
-                    includesImage = tutoringKind == ModelTaskKind.TUTOR_LOBBY &&
-                        assets.isNotEmpty(),
+                ModelTaskKind.TUTOR_RESPOND -> TutorRoundDisclosure.questionRound(
                     includesQuestionCandidates = includesQuestionCandidates,
+                    schemaVersion = schemaVersion,
+                )
+                ModelTaskKind.TUTOR_LOBBY -> TutorRoundDisclosure.noQuestionRound(
+                    includesImage = assets.isNotEmpty(),
                     schemaVersion = schemaVersion,
                 )
                 ModelTaskKind.TUTOR_PLAN -> tutorPlanDisclosureForSchema(schemaVersion)
@@ -763,13 +781,11 @@ private fun ModelEgressManifest.requireAuthorizes(
             // 两条都要成立才算授权：
             // ① 清单自己声明覆盖了候选菜单（否则清单就是在少报——请求里带着菜单而清单说没有）；
             // ② 清单的披露集合与"本轮真的带了什么"逐字相等。
-            val carriesQuestionCandidates = input.boundQuestionCandidates.isNotEmpty()
+            val carriesQuestionCandidates = input.disclosesQuestionCandidates()
             require(includesQuestionCandidates == carriesQuestionCandidates) {
                 "Egress manifest candidate-menu scope disagrees with the request"
             }
-            val expectedDisclosure = TutorRoundDisclosure.expected(
-                carriesQuestion = true,
-                includesImage = false,
+            val expectedDisclosure = TutorRoundDisclosure.questionRound(
                 includesQuestionCandidates = carriesQuestionCandidates,
                 schemaVersion = schemaVersion,
             )
@@ -815,8 +831,9 @@ private fun ModelEgressManifest.requireAuthorizes(
             // 所以授权范围必须逐张覆盖它们，缺一张就拒绝——图片不因"来自历史消息"而少一分披露。
             val disclosedImages = input.sourceImageAssetRefs + input.contextImageAssetRefs
             val includesImage = disclosedImages.isNotEmpty()
-            // 大厅输入没有候选菜单字段：无题轮不存在"菜单里的别的题"。
-            val carriesQuestionCandidates = false
+            // 大厅输入没有候选菜单字段：无题轮不存在"菜单里的别的题"，这个判据恒为 false
+            // （与下面 `noQuestionRound` 不含该维一致：清单说覆盖了菜单同样被拒）。
+            val carriesQuestionCandidates = input.disclosesQuestionCandidates()
             if (includesImage) {
                 require(schemaVersion >= ModelEgressManifest.LOBBY_IMAGE_SCHEMA_VERSION) {
                     "Tutor lobby image egress requires egress manifest schema six"
@@ -847,10 +864,8 @@ private fun ModelEgressManifest.requireAuthorizes(
             require(includesQuestionCandidates == carriesQuestionCandidates) {
                 "Egress manifest candidate-menu scope disagrees with the request"
             }
-            val expectedDisclosure = TutorRoundDisclosure.expected(
-                carriesQuestion = false,
+            val expectedDisclosure = TutorRoundDisclosure.noQuestionRound(
                 includesImage = includesImage,
-                includesQuestionCandidates = carriesQuestionCandidates,
                 schemaVersion = schemaVersion,
             )
             require(disclosedData == expectedDisclosure)

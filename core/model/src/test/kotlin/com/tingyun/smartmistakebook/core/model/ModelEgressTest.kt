@@ -520,17 +520,20 @@ class ModelEgressTest {
         prohibitedData = ModelEgressManifest.TUTOR_PLAN_PROHIBITED_DATA,
     )
 
-    // ---- 披露三态：无题 / 有题 / 有题带图（外加候选菜单这一维）----
+    // ---- 披露两态：无题 / 有题（外加候选菜单与大厅附图两个正交加成）----
     // 每一态都断言**两件事**：disclosedData == expected，且 prohibited == 全集 − 已披露。
     // 披露集合是精确相等校验的，任何一边单独改动都会在这里对不上。
+    //
+    // 这里此前还有一条 `a question round with an image additionally discloses image classes`
+    // 的逐态用例。它测的是**生产里不可达**的组合（题轮 + 图字节）：三个校验调用点没有一个能
+    // 传入这一组合（init 里两个标志由同一个 kind 派生而互斥、Respond 分支硬编码无图且
+    // `assets` 必须为空、Lobby 分支 carriesQuestion=false），函数收敛成两个具名入口之后
+    // 这个组合**构造不出来**，所以用例随之删除——它不是被放宽，而是不再有对应的状态。
+    // 那条边界仍由 `a question round manifest still refuses image assets` 在清单层钉住。
 
     @Test
     fun `a no-question round discloses no question document`() {
-        val expected = TutorRoundDisclosure.expected(
-            carriesQuestion = false,
-            includesImage = false,
-            includesQuestionCandidates = false,
-        )
+        val expected = TutorRoundDisclosure.noQuestionRound(includesImage = false)
 
         assertEquals(ModelEgressManifest.TUTOR_LOBBY_DISCLOSURE, expected)
         assertFalse(ModelEgressDataClass.CONFIRMED_QUESTION_DOCUMENT in expected)
@@ -542,14 +545,14 @@ class ModelEgressTest {
 
     @Test
     fun `a question round discloses the confirmed question document`() {
-        val expected = TutorRoundDisclosure.expected(
-            carriesQuestion = true,
-            includesImage = false,
-            includesQuestionCandidates = false,
-        )
+        val expected = TutorRoundDisclosure.questionRound(includesQuestionCandidates = false)
 
         assertEquals(ModelEgressManifest.TUTOR_RESPOND_DISCLOSURE, expected)
         assertTrue(ModelEgressDataClass.CONFIRMED_QUESTION_DOCUMENT in expected)
+        // 题轮在清单路径上永不带图字节（`require(assets.isEmpty())`）：它的披露集合里
+        // **没有**图片类目，也没有"带图"这一维可传。
+        assertFalse(ModelEgressDataClass.SANITIZED_IMAGE_BYTES in expected)
+        assertFalse(ModelEgressDataClass.IMAGE_DIMENSIONS in expected)
         assertEquals(
             ModelEgressDataClass.entries.toSet() - expected,
             ModelEgressManifest.TUTOR_RESPOND_PROHIBITED_DATA,
@@ -557,27 +560,9 @@ class ModelEgressTest {
     }
 
     @Test
-    fun `a question round with an image additionally discloses image classes`() {
-        val expected = TutorRoundDisclosure.expected(
-            carriesQuestion = true,
-            includesImage = true,
-            includesQuestionCandidates = false,
-        )
-
-        assertTrue(ModelEgressDataClass.CONFIRMED_QUESTION_DOCUMENT in expected)
-        assertTrue(ModelEgressDataClass.SANITIZED_IMAGE_BYTES in expected)
-        assertTrue(ModelEgressDataClass.IMAGE_DIMENSIONS in expected)
-        assertFalse(ModelEgressDataClass.SELECTED_IMAGE_REGION in expected)
-    }
-
-    @Test
     fun `a no-question round with an image keeps the existing lobby image disclosure`() {
         // 这一态不是本轮新加的，而是大厅既有的附图通道：写成同一口径后取值必须逐字不变。
-        val expected = TutorRoundDisclosure.expected(
-            carriesQuestion = false,
-            includesImage = true,
-            includesQuestionCandidates = false,
-        )
+        val expected = TutorRoundDisclosure.noQuestionRound(includesImage = true)
 
         assertEquals(ModelEgressManifest.TUTOR_LOBBY_IMAGE_DISCLOSURE, expected)
         assertFalse(ModelEgressDataClass.CONFIRMED_QUESTION_DOCUMENT in expected)
@@ -589,11 +574,7 @@ class ModelEgressTest {
 
     @Test
     fun `a carried candidate menu is disclosed as its own data class`() {
-        val withMenu = TutorRoundDisclosure.expected(
-            carriesQuestion = true,
-            includesImage = false,
-            includesQuestionCandidates = true,
-        )
+        val withMenu = TutorRoundDisclosure.questionRound(includesQuestionCandidates = true)
 
         assertEquals(
             ModelEgressManifest.TUTOR_RESPOND_DISCLOSURE +
@@ -601,6 +582,39 @@ class ModelEgressTest {
             withMenu,
         )
         assertFalse(ModelEgressDataClass.RELATED_QUESTION_CANDIDATES in ModelEgressManifest.TUTOR_RESPOND_DISCLOSURE)
+    }
+
+    @Test
+    fun `only a question round that carries a menu discloses other questions`() {
+        // 这一个判据同时被两处消费：清单侧核对 `includesQuestionCandidates`，core:data 侧决定
+        // NOTEBOOK_READ 能不能逐条点名别的题。把三种输入钉在一处，免得两侧对"覆盖了菜单"
+        // 各有一套说法。
+        assertFalse(
+            tutorRespondRequest(tutorRespondManifest()).input.disclosesQuestionCandidates(),
+        )
+        assertTrue(
+            tutorRespondRequestWithMenu(tutorRespondManifest()).input.disclosesQuestionCandidates(),
+        )
+        assertFalse(tutorLobbyRequest(tutorLobbyManifest()).input.disclosesQuestionCandidates())
+    }
+
+    @Test
+    fun `a lobby manifest cannot claim to cover a candidate menu`() {
+        // 无题轮不存在候选菜单（`TutorLobbyInput` 没有菜单字段），所以"清单说覆盖了菜单"就是
+        // **多报**一个本轮根本不存在的类目。这条断言此前只在 requireAuthorizes 里成立（init
+        // 会把该标志透传给披露计算并因此放行这种清单），现在构造期就拒——清单一旦落库就是
+        // 耐久记录，能在构造期拦住的错误不该等到逐次核对。
+        val covered = ModelEgressManifest.TUTOR_LOBBY_DISCLOSURE +
+            ModelEgressDataClass.RELATED_QUESTION_CANDIDATES
+
+        assertThrows(IllegalArgumentException::class.java) {
+            tutorLobbyManifest().copy(
+                schemaVersion = ModelEgressManifest.CURRENT_SCHEMA_VERSION,
+                disclosedData = covered,
+                prohibitedData = ModelEgressDataClass.entries.toSet() - covered,
+                includesQuestionCandidates = true,
+            )
+        }
     }
 
     @Test

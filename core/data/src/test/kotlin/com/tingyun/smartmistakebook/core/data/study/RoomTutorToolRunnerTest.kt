@@ -1,6 +1,7 @@
 package com.tingyun.smartmistakebook.core.data.study
 
 import com.tingyun.smartmistakebook.core.database.KnowledgeNodeSeedRecord
+import com.tingyun.smartmistakebook.core.database.LibraryCatalogRow
 import com.tingyun.smartmistakebook.core.database.TutorMessageRecord
 import com.tingyun.smartmistakebook.core.database.TutorTurnResponseRecord
 import com.tingyun.smartmistakebook.core.database.port.MasteryAggregateRecord
@@ -13,6 +14,7 @@ import com.tingyun.smartmistakebook.core.model.TutorToolOutcome
 import com.tingyun.smartmistakebook.core.model.TutorUnderstandingTier
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -622,6 +624,73 @@ class RoomTutorToolRunnerTest {
             outcome.summaryMarkdown.length <= TutorToolOutcome.MAX_TOOL_RESULT_CHARS,
         )
     }
+
+    // ---- 错题本读取：产出形态随本轮披露范围（F5）----
+
+    @Test
+    fun aRoundThatDoesNotDiscloseOtherQuestionsGetsNoNotebookTitles() = runBlocking {
+        // 消灭的失败：无题轮的 NOTEBOOK_READ 把错题本里**别的题**的标题与科目逐条列进下一轮
+        // 请求，而本轮的披露集合把 RELATED_QUESTION_CANDIDATES / CONFIRMED_QUESTION_DOCUMENT
+        // 列为禁止——清单少报了一个真实出网的类目。不扩披露集合（那是用户的裁定），改结果形态：
+        // 只给条数与检索词。
+        val port = anchoredPort()
+        port.libraryRows += libraryRow(title = "二次函数最值综合题", subject = "MATH")
+        port.libraryRows += libraryRow(title = "向量数量积的应用", subject = "MATH")
+
+        val outcome = RoomTutorToolRunner(port).run(
+            notebookRead(terms = listOf("二次函数")),
+            context(),
+        )
+
+        assertTrue("expected ok outcome but was $outcome", outcome.ok)
+        val text = outcome.summaryMarkdown
+        assertTrue("条数必须留着，否则模型不知道有没有命中: $text", text.contains("1"))
+        assertFalse("别的题的标题不得随请求下发: $text", text.contains("二次函数最值综合题"))
+        assertFalse("没命中的那条更不该出现: $text", text.contains("向量数量积的应用"))
+        assertFalse("条目的可识别字段（科目）同样属于该披露类目: $text", text.contains("MATH"))
+    }
+
+    @Test
+    fun aRoundThatDisclosesTheCandidateMenuMayStillNameTheEntries() = runBlocking {
+        // 反向：本轮披露集合覆盖了候选菜单（学生显式带题 / 本地检索到候选）时，别的题的标题是
+        // **已披露**的那一类内容，逐条点名仍是被许可的能力——闸门不能修成一律不列。
+        val port = anchoredPort()
+        port.libraryRows += libraryRow(title = "二次函数最值综合题", subject = "MATH")
+
+        val outcome = RoomTutorToolRunner(port).run(
+            notebookRead(terms = listOf("二次函数")),
+            context().copy(roundDisclosesQuestionCandidates = true),
+        )
+
+        assertTrue("expected ok outcome but was $outcome", outcome.ok)
+        assertTrue(
+            "覆盖了候选菜单时条目标题应当照旧可读: ${outcome.summaryMarkdown}",
+            outcome.summaryMarkdown.contains("二次函数最值综合题"),
+        )
+    }
+
+    private fun notebookRead(
+        terms: List<String> = emptyList(),
+    ) = TutorToolCall(
+        tool = TutorToolName.NOTEBOOK_READ,
+        rationale = "学生想找错题本里的题",
+        terms = terms,
+    )
+
+    private fun libraryRow(
+        title: String,
+        subject: String = "MATH",
+        problemMarkdown: String = "求函数的最值。",
+    ) = LibraryCatalogRow(
+        entryId = "entry-${title.hashCode()}",
+        title = title,
+        problemMarkdown = problemMarkdown,
+        subject = subject,
+        createdAtEpochMillis = 1_000,
+        updatedAtEpochMillis = 1_000,
+        nextReviewAtEpochMillis = null,
+        retrievability = null,
+    )
 
     private fun masteryReadCall(
         terms: List<String> = emptyList(),
