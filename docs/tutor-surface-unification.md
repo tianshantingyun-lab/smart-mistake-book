@@ -110,3 +110,142 @@
   `RELATED_QUESTION_CANDIDATES`，而大厅的披露集合把它列为禁止，列出来就是清单少报。要不要把这一档
   披露出去（让无题轮也能报出题目名称）是用户的裁定，不是本地的策略选择；真要放宽，须同时改
   `TUTOR_LOBBY_DISCLOSURE` 并按 bf8be888 的纪律升 manifest schema（否则旧行读回即抛异常）。
+
+## 8. 2026-09-21 修复批次（F1~F6）
+
+P2 改造（`4544310b` + `40bf72ff`）落地后，独立复核列出六条发现；当天逐条修复，并由复核者
+按同一份清单再核一遍。**六条全部 resolved**，无 partly、无 unresolved。
+
+判定口径统一为一条：**拒绝/放行依据"这一轮有没有题"这个语义事实，而不是"这一轮来自哪条解析
+路由"**；每条修复先写会红的用例（或做一次把修复短路掉的变异反证），再改到转绿。门禁由流程
+脚本统一跑；修复者侧跑的是模块定向用例 + 编译门，复核者侧跑的是精确 `--tests` 过滤的 JVM
+用例与单方法仪器用例（其环境模拟器可用）。
+
+| 提交 | 覆盖 | 一句话 |
+|---|---|---|
+| `ab98d2c3` | F1 | 写工具准入回退到本轮请求侧已知题锚 |
+| `89ddd768` | F2 | 仓库接线的端到端负向用例（设备阶段） |
+| `a4681a6d` | F3 | 旧行暴露语义的回归钉住 + 无题轮不暴露双层守卫 |
+| `47958b10` | F4/F5/F6 | 披露口径收敛成两态 + 无题轮错题本读取不点名别的题 |
+
+### F1（medium，resolved）原生 `tool_calls` 路由上的写工具/需题读工具被无条件拒
+
+- **现象**：该路由标准形态 `content=null`，模型复述题锚的唯一落点是每次调用的 `arguments`；
+  只认"调用自己带声明"时，"模型没复述"就被判成"无题轮"，写工具与两个需题读工具被拒——拒绝
+  依据退化成"这一轮来自哪条解析路由"，相对改造前（`input is TutorRespondInput`）是能力回退。
+- **处置**：写工具准入 = `TutorRoundQuestionBindingPolicy.callIsAnchoredToRoundQuestion(declaration,
+  candidates, studentMessage, knownRoundQuestion)`（`core/domain/.../TutorRoundQuestionBindingPolicy.kt:110-119`）：
+  模型声明经两条本地校验优先；声明**缺失**时回退到本轮请求侧已知锚
+  `TutorRespondInput.knownRoundQuestion`（`core/model/.../TutorTasks.kt:396`，schema 11→12，
+  含两条指纹 strip 与"已知锚必须是本轮候选之一"的构造契约）。仓库门控在
+  `core/data/.../RoomModelTaskRepository.kt:836-852` 调用它。声明**在但核不过**不回退
+  （说错了 ≠ 没说）。台账同步：`TutorToolLoop.kt` 的 `TutorToolCall.boundQuestion` KDoc、
+  `TutorToolGate.kt`、`OpenAiModelProtocol.kt` 的写锚段落与 `nativeToolRoundIntent` 注释。
+- **依据（修复者本轮实跑）**：先红后绿——接线前 `TutorToolRoundGateTest` 8 条 1 红（断言
+  "有题轮的原生写调用不得因『模型没复述题锚』被拒"），接线后 8/8 绿。反证两条：短路回退分支
+  → 绑定政策 1/24 红 + 工具环 1/8 红；从逻辑指纹链去掉新 strip → 旧 v11 行完整性用例 1/18 红；
+  均恢复后转绿。
+- **复核（resolved）**：模型声明取自调用对象、其余三个入参（`candidates`/`studentMessage`/
+  `knownRoundQuestion`）全部取自 `TutorRespondInput`（`RoomModelTaskRepository.kt:835-852`、
+  `TutorRoundQuestionBindingPolicy.kt:110-119`），拒绝依据与解析路由无关；实跑
+  `./gradlew :core:data:testDebugUnitTest --tests "*TutorToolRoundGateTest" --tests "*RoomTutorToolRunnerTest"`
+  → 8/29 条 0 失败，其中原生路由正例走真实 `OpenAiModelProtocol.parseResponse` + 真实
+  `tutorToolAuthorization`，负向孪生断言仍拒；陈旧注释全仓无命中（`Respond-only` /
+  `the write anchor`）。
+- **残留**：生产侧 `knownRoundQuestion` 目前只有"上一轮绑定延续"一个来源
+  （`feature/tutor/.../TutorSessionPanel.kt:678-682`），"本轮学生显式添加的题/深链"那一来源
+  未接线（属 P3）；会话首轮若模型不复述锚、请求侧也无已知锚，写调用仍会被拒。
+- **复核备注（与原始发现文本不符之处）**：F1 原文称"工具 arguments 里也无法表达"其实不成立
+  ——严格 schema 早已把 `problemId/problemRevisionId/anchorTerms` 列为写工具的 required
+  （`OpenAiModelProtocol.kt:459-469`），解析层也照收（`:547` → `OpenAiModelResponseParsers.kt:600-608`）。
+  本批次真正消灭的是"模型没复述"那一半。
+
+### F2（medium，resolved）轮次门控的落地接线没有可运行测试
+
+- **现象**：判定若只长在仓库内部，删掉接线也不会有本机用例变红；仪器用例只覆盖正方向。
+- **处置**：判定整体已是 `tutorToolRoundOutcomes`（`core/data/.../RoomModelTaskRepository.kt:828-870`），
+  `execute()` 直接调用它（`:340-355`）——`call.tool !in authorizedTools || !available` 一行即接线本身。
+  新增设备侧负向用例
+  `RoomModelTaskT6MasteryInstrumentedTest.anUnanchoredWriteCallIsRefusedBeforeItReachesTheRunner`
+  （Respond 轮、菜单有候选但无题锚：断言 `outcome.ok=false`、`errorKind="not_authorized"`、
+  `toolRunner.executedCallCount==0`、无证据行）。
+- **依据（修复者本轮实跑）**：删掉 `|| !available` → `TutorToolRoundGateTest` 8 条 5 红（含
+  `a write call with no question anchor is refused and never reaches the runner`），恢复后 8/8 绿。
+  仓库无法在 JVM 构造（本机现成的假端口对模型任务方法一律 error：
+  `RoomBackedStudyExperienceRepositoryTest.kt:1530`、`:1698-1704`），所以"仓库是否调用它"这一半
+  由设备用例钉住，本机只过 `:core:data:compileDebugAndroidTestKotlin` 编译门。
+- **复核（resolved）**：复核者环境模拟器可用（`emulator-5554`），**实跑**了该仪器用例
+  （`connectedDebugAndroidTest` 单方法）→ `Starting 1 tests / Finished 1 tests`、tests=1
+  failures=0；JVM 侧 8 条 0 失败。
+- **复核备注**："删掉接线会转红"的变异实验复核者未亲自执行（其为只读角色，不得改文件），
+  该结论来自断言与代码阅读；修复者提交里报告过同名的变异结果（上文）。
+
+### F3（medium，resolved）旧行的暴露语义回退（升级后不再被认作已暴露）
+
+- **现象**：`canExposeSolutionFor` 无条件要求 `boundQuestion != null` 之后，升级前真的展示过
+  完整解答、并已持久化 `RESPOND_REPLY` 暴露的旧行（输出没有该字段）被判成无题轮 → 曝光行被
+  候选键过滤，正文被 `HIDDEN_TUTOR_ANSWER_CONTEXT` 顶替，会话记忆的已暴露轮次一起回退。
+- **处置**：判据按**行**分岔 `(!requiresRoundQuestionBinding || boundQuestion != null)`
+  （`core/model/.../TutorTasks.kt:587-589`），谓词 = `schemaVersion >= 11`
+  （`ModelTasks.kt:455`），四处调用点都传本行判据（`TutorExposureDao.kt:301`、
+  `TutorChatConversation.kt:119` 与 `:313-314`、`TutorSolutionExposurePolicy.kt:83-84` 与 `:177`）。
+  本批次补的是**证据**：行年龄→判据（v10 及更早不受约束、v11/当前受约束）、判据→正文
+  （老化到 schema 10 的行正文原样保留，同一输出在新行上被占位顶替）、无题轮既不是候选键也
+  生成不出曝光目标。
+- **依据（修复者本轮实跑）**：三条变异反证——A 绑定条件改成无条件 → 规范层 1/7 红 + 正文层 1/33 红；
+  B 两处 feature 调用点传 `false`（等于按旧语义放行）→ 时间线 1/13 红 + 正文 1/33 红；
+  C 谓词漂到 v12 → 新谓词用例 1/8 红；恢复后合计 1498 条 0 失败。
+- **复核（resolved）**：核对四个调用点后实跑
+  `./gradlew :core:model:test --tests "*TutorSolutionExposureAuthorityTest" --tests "*ModelEgressTest" --tests "*ModelTaskFingerprintStabilityTest"`
+  → 8/32/18 条 0 失败；`./gradlew :feature:tutor:testDebugUnitTest --tests "*TutorChatConversationTest" --tests "*TutorConversationTimelineTest"`
+  → 20/13 条 0 失败，其中旧行正文保留与新行占位顶替成对、无题轮双守卫生效。
+- **复核备注**：红测结论来自用例断言与夹具阅读（复核者未执行变异）。
+
+### F4（resolved）"有题带图"这一态在三个校验调用点不可达
+
+- **处置**：不是让它可达，而是**删掉死分支**：`TutorRoundDisclosure.expected(...)` 已不存在，只剩
+  两个具名入口 `noQuestionRound(includesImage, schemaVersion)`（`ModelEgress.kt:103-109`）与
+  `questionRound(includesQuestionCandidates, schemaVersion)`（`:117-125`）；第四个调用点同步
+  （`TutorLobbyModelTaskPolicy.kt:122-130`）。不合法的组合从此**构造不出来**。
+- **依据**：改前实现确有 `includesImage && carriesQuestion` 那个不可达支，且
+  `RELATED_QUESTION_CANDIDATES` 仅凭标志无条件添加（`git show 47958b10^:core/model/.../ModelEgress.kt:98-121`）；
+  测试只留生产可达组合（被删的那条逐态用例与其原因记在 `ModelEgressTest.kt:525-535`），边界由
+  `a question round manifest still refuses image assets` 与新增
+  `a lobby manifest cannot claim to cover a candidate menu` 接住。复核者实跑 ModelEgressTest 32 条 0 失败。
+- **修复者核对**：本工作树 `grep "fun expected(\|TutorRoundDisclosure.expected"` 无命中。
+
+### F5（resolved）无题轮的错题本读取会点名"别的题"
+
+- **处置**：按"不扩披露"消除——`RoomTutorToolRunner.kt:225-236` 在
+  `!context.roundDisclosesQuestionCandidates` 时只回条数与检索词（不含任何标题、科目）；
+  该标志默认 `false`（`:127`，fail-closed），由 `input.disclosesQuestionCandidates()` 传入
+  （`RoomModelTaskRepository.kt:791-795`，`toolContext` 仅此一处调用点）。
+- **依据**：复核者实跑 `./gradlew :core:data:testDebugUnitTest --tests "*RoomTutorToolRunnerTest"`
+  → 29 条 0 失败（含 `aRoundThatDoesNotDiscloseOtherQuestionsGetsNoNotebookTitles` 与其反向
+  `aRoundThatDisclosesTheCandidateMenuMayStillNameTheEntries`）；设备侧全链路
+  `RoomModelTaskToolLoopInstrumentedTest#aLobbyRoundNotebookReadNamesNoEntry` → 1 条 0 失败。
+- **残留（复核提醒，未修）**：①原生 tools 路由的 `nativeToolDescription` 未同步这一档
+  （`OpenAiModelProtocol.kt:301-302`，修复者核对仍是旧描述）——那条路由上模型只能从结果正文
+  得知新形态；②`TUTOR_LOBBY` v6→v7、`TUTOR_RESPOND` v17→v18 的 bump（`ModelEgress.kt:44,47`）
+  会让此前已确认的同版本清单在 `requireAuthorizes` 处失效，代价是学生重新确认一次（仓库先例
+  `d3b5a8a9` 的口径）。
+
+### F6（resolved）科目名可当锚词
+
+- **处置**：`checkableText()` 只拼 `title` 与题面投影，不含 `subject.name`
+  （`core/domain/.../TutorRoundQuestionBindingPolicy.kt:129-133`）。
+- **依据**：复核者实跑 `./gradlew :core:domain:test --tests "*TutorRoundQuestionBindingPolicyTest" --tests "*TutorToolGateTest"`
+  → 24/5 条 0 失败，含 `a subject name is not a verifiable anchor`（学生写"MATH 这道题再讲一遍"、
+  模型拿 `MATH` 当锚词时 `resolve` 必须返回 null）。
+- **复核备注**：把 `append(subject.name)` 加回去观察转红的变异实验复核者未执行。
+
+### 批次的未验证项（不当作已通过）
+
+- 仪器化测试（迁移、DAO 落库、UI 曝光流、真机端到端）：修复者本机 adb 不可用，只跑了
+  `compileDebugAndroidTestKotlin` 编译门；F2/F5 的设备用例由复核者在模拟器上实跑过，
+  其余仪器用例未跑。
+- 变异反证的分工：F1/F3 的变异由修复者实跑（上文数字）；F2 的"删接线转红"与 F6 的
+  "加回科目名转红"只有断言与阅读结论，无实跑记录。
+- 门禁：修复者一轮里出现过一次基础设施失败（`core:data:testDebugUnitTest` 的 `EOFException`，
+  双会话抢构建目录），删 `build/test-results/*/binary` 后单跑转绿；整套门禁由流程脚本统一跑。
+
