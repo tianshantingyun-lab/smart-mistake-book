@@ -133,7 +133,9 @@ class RoomModelTaskT6MasteryInstrumentedTest {
         anchorTerms = listOf("配方法"),
     )
 
-    private fun masteryUpdateToolRequest() = TutorToolRequestsOutput(
+    private fun masteryUpdateToolRequest(
+        anchor: TutorRoundQuestionDeclaration? = roundBinding(),
+    ) = TutorToolRequestsOutput(
         intentDecision = TutorIntentDecision(
             intent = TutorMessageIntent.CURRENT_QUESTION_HELP,
             confidence = 0.95,
@@ -152,7 +154,7 @@ class RoomModelTaskT6MasteryInstrumentedTest {
                 confidence = 0.85,
                 // 逐次题锚：写工具在**工具轮**执行，而"本轮在说哪道题"的声明在原生
                 // tool_calls 路由上无处可放，所以准入落在每一次调用自己身上。
-                boundQuestion = roundBinding(),
+                boundQuestion = anchor,
             ),
         ),
         modelVersion = "t6-model-v1",
@@ -214,6 +216,63 @@ class RoomModelTaskT6MasteryInstrumentedTest {
             assertEquals(1, rows.size)
             assertTrue(rows.single().isRejected)
             assertEquals("KNOWLEDGE_NODE_NOT_ANCHORED", rows.single().rejected_reason)
+        } finally {
+            database.close()
+            context.deleteDatabase(databaseName)
+        }
+    }
+
+    /**
+     * 轮次门控的**仓库接线**（F2）：无题轮的写工具在仓库这一层就被拒，且不触达 runner。
+     *
+     * 与相邻用例只差题锚：菜单里有候选（不是"无菜单"），但这一次调用没有复述锚、本轮请求侧
+     * 也没有已知题锚——按语义就是无题轮。判定本身（`tutorToolRoundOutcomes`）已有本机可跑的
+     * 红绿用例（`TutorToolRoundGateTest`），但"仓库是否把它接上"此前只有正方向的仪器用例覆盖：
+     * 删掉仓库那条接线后 MASTERY_UPDATE 会被直接执行，下面三处断言（outcome 拒因、
+     * `executedCallCount`、证据簿记行数）会同时转红。
+     *
+     * 本用例需要设备（Room + AndroidX Test），由设备阶段实跑。
+     */
+    @Test
+    fun anUnanchoredWriteCallIsRefusedBeforeItReachesTheRunner() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val databaseName = "t6-unanchored-${System.nanoTime()}.db"
+        context.deleteDatabase(databaseName)
+        val database = StudyDatabaseFactory.open(context, databaseName)
+        try {
+            val gateway = ScriptedGateway(
+                provider,
+                listOf(masteryUpdateToolRequest(anchor = null), finalAnswer()),
+            )
+            val repository = com.tingyun.smartmistakebook.core.data.model.RoomModelTaskRepository(
+                database = database,
+                gateway = gateway,
+                clock = { 2_000L },
+            )
+            val snapshots = repository.execute(request()).toList()
+
+            val final = snapshots.last()
+            assertEquals(ModelTaskStatus.SUCCEEDED, final.status)
+            assertEquals("应派遣两轮", 2, gateway.dispatchCount)
+
+            val second = gateway.dispatchLog[1].input as TutorRespondInput
+            val outcome = second.toolRoundResults[0].outcomes.single()
+            assertEquals(TutorToolName.MASTERY_UPDATE, outcome.tool)
+            assertEquals("无题轮的写调用必须停在授权/门控层", false, outcome.ok)
+            assertEquals(
+                "拒因应是「未授权」而不是 runner 的 gate 拒：${outcome.errorKind}",
+                "not_authorized",
+                outcome.errorKind,
+            )
+            assertEquals(
+                "被拒的写调用不得触达执行器",
+                0,
+                repository.toolRunner.executedCallCount,
+            )
+            assertTrue(
+                "被拒的写调用不得留下任何证据行",
+                database.readChatEvidenceByConversation("tutor-conv:captured:t6-session").isEmpty(),
+            )
         } finally {
             database.close()
             context.deleteDatabase(databaseName)

@@ -23,15 +23,20 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * 写工具门控的**接线**测试（复核意见二）。
+ * 写工具门控的**接线**测试。
  *
  * 此前唯一钉住"无题轮写工具被拒"的用例只测纯函数 `tutorRoundToolAvailable`，而真正的落地点
  * ——`RoomModelTaskRepository.execute()` 里那个 `|| !allowedForRound`——只有仪器化用例够得着，
  * 且那条例只验证正方向。于是把判定整条删掉，本机没有一条用例会转红。
  *
- * 现在工具环的一轮判定整体是 [tutorToolRoundOutcomes]，这里直接钉它：判定、拒绝、以及
- * "被拒的调用不会触达执行器"三件事一起断言。删掉其中的 `|| !available` 会让本文件的第一条
- * 用例转红（已实证）。
+ * 现在工具环的一轮判定整体是 [tutorToolRoundOutcomes]（仓库在 execute() 里直接调用它），这里
+ * 直接钉它：判定、拒绝、以及"被拒的调用不会触达执行器"三件事一起断言。反证（2026-09-22 实跑）：
+ * 把其中的 `|| !available` 删掉后本文件 8 条里 5 条转红（含"no question anchor is refused"
+ * 与其负方向的原生路由用例），恢复后全绿——这一步不需要设备。
+ *
+ * 仓库是否**调用**了这个单元，另由仪器用例
+ * `RoomModelTaskT6MasteryInstrumentedTest.anUnanchoredWriteCallIsRefusedBeforeItReachesTheRunner`
+ * 端到端钉住（需要设备，由设备阶段实跑）。
  */
 class TutorToolRoundGateTest {
 
