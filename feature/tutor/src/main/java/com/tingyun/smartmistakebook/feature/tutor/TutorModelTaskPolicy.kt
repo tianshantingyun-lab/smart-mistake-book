@@ -398,6 +398,13 @@ internal fun buildTutorRespondRequest(
      * 菜单只决定"模型能指哪几道"，绑定仍要模型声明 + 本地两条校验。
      */
     boundQuestionCandidates: List<RelatedProblemCandidate> = emptyList(),
+    /**
+     * 本轮**请求侧已经知道**的题锚（学生本轮显式添加的题 / 上一轮已校验的绑定）。它是写工具
+     * 门控在"模型没有复述题锚"时的回退来源（原生 `tool_calls` 路由的标准形态 content=null，
+     * 复述的唯一落点是每次调用的 arguments，而复述不是必然的）。按契约必须是
+     * [boundQuestionCandidates] 的一员；两者都没有就是真的无题轮。
+     */
+    knownRoundQuestion: RelatedProblemCandidate? = null,
 ): ModelTaskRequest {
     val input = TutorRespondInput(
         sessionId = question.sessionId,
@@ -429,6 +436,7 @@ internal fun buildTutorRespondRequest(
             TutorToolName.NOTEBOOK_WRITE,
         ),
         boundQuestionCandidates = boundQuestionCandidates,
+        knownRoundQuestion = knownRoundQuestion,
     )
     // 配置模型 = 全局同意：外部 agent-eligible 类型不再携带逐次披露清单。
     return ModelTaskRequest(

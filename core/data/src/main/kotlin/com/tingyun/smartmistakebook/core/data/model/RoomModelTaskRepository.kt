@@ -806,10 +806,12 @@ object ModelTaskRepositoryFactory {
  * 判定删掉不会有任何本机可跑的用例转红（复核意见二）。
  *
  * 判定分两层，两层都取自**请求/调用本身**，不取自解析路由：
- * - 写工具（[TUTOR_WRITE_TOOLS]）：这一次调用必须带上可核对的题锚，即
- *   [TutorToolCall.boundQuestion] 经 [TutorRoundQuestionBindingPolicy.resolve] 通过（候选在派发前
- *   的菜单内、锚词在学生消息里逐字出现且在该题自身文本里可核对）。原生 `tool_calls` 路由的标准
- *   形态 content=null，轮次信封无处可放声明，逐次锚是两条路由都能表达的落点。
+ * - 写工具（[TUTOR_WRITE_TOOLS]）：这一次调用必须锚住本轮的题
+ *   （[TutorRoundQuestionBindingPolicy.callIsAnchoredToRoundQuestion]）——模型声明经两条本地
+ *   校验（候选在派发前的菜单内、锚词在学生消息里逐字出现且在该题自身文本里可核对），
+ *   或模型没复述时回退到**请求侧已知的题锚**（[com.tingyun.smartmistakebook.core.model.TutorRespondInput.knownRoundQuestion]：
+ *   学生本轮显式添加的题 / 上一轮已校验的绑定）。原生 `tool_calls` 路由的标准形态 content=null，
+ *   整轮信封无处放声明，逐次锚与请求侧已知锚是两条路由都能表达的落点。
  * - 只被题轮披露集合覆盖的读工具（[TUTOR_QUESTION_ROUND_ONLY_READS]）：本轮派发的披露面必须
  *   覆盖它们的产出（[com.tingyun.smartmistakebook.core.model.disclosesQuestionEvidence]）。
  *
@@ -827,14 +829,16 @@ internal suspend fun tutorToolRoundOutcomes(
     val respondInput = input as? TutorRespondInput
     val candidates = respondInput?.boundQuestionCandidates.orEmpty()
     val studentMessage = respondInput?.studentMessage.orEmpty()
+    val knownRoundQuestion = respondInput?.knownRoundQuestion
     val roundDisclosesQuestionEvidence = input.disclosesQuestionEvidence()
     var extendedResultUsed = false
     return calls.map { call ->
-        val callIsAnchored = TutorRoundQuestionBindingPolicy.resolve(
-            candidates = candidates,
+        val callIsAnchored = TutorRoundQuestionBindingPolicy.callIsAnchoredToRoundQuestion(
             declaration = call.boundQuestion,
+            candidates = candidates,
             studentMessage = studentMessage,
-        ) != null
+            knownRoundQuestion = knownRoundQuestion,
+        )
         val available = tutorRoundToolAvailable(
             tool = call.tool,
             callIsAnchoredToRoundQuestion = callIsAnchored,

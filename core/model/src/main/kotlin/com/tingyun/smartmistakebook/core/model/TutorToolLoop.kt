@@ -76,11 +76,16 @@ data class TutorToolCall(
     /** Model-judged difficulty tier (advisory, audited with the evidence). */
     val difficultyTier: TutorDifficultyTier? = null,
     /**
-     * 这一**次调用**锚在哪一道题（写工具必需）。
+     * 这一**次调用**锚在哪一道题（写工具准入的一条来源，非唯一）。
      *
      * 判据与轮次声明完全相同（候选必须在派发前的菜单内、锚词必须在学生消息里逐字出现且在该题
      * 自身文本里可核对），但落点不同：轮次声明要整轮的信封才能表达，而原生 tool_calls 路由的
-     * 标准形态 content=null，轮次声明无处可放；逐次锚把准入放回**两种路由都能表达**的地方。
+     * 标准形态 content=null，轮次声明无处可放；逐次锚把复述放回**两种路由都能表达**的地方。
+     *
+     * 为空只是"模型没说"，不等于"这一轮没有题"：准入的判定是
+     * `TutorRoundQuestionBindingPolicy.callIsAnchoredToRoundQuestion`——模型没复述时回退到
+     * 本轮请求侧已知的题锚（[TutorRespondInput.knownRoundQuestion]，学生显式添加的题 /
+     * 上一轮已校验的绑定）；两者都没有才是真的无题轮，写工具照旧被拒。
      */
     val boundQuestion: TutorRoundQuestionDeclaration? = null,
     /**

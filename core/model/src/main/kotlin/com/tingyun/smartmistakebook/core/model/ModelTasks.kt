@@ -409,6 +409,10 @@ data class ModelTaskRequest(
             schemaVersion >= TUTOR_ROUND_BINDING_SCHEMA_VERSION ||
                 (input as? TutorRespondInput)?.boundQuestionCandidates.isNullOrEmpty(),
         ) { "Legacy tutor requests cannot carry a bound-question candidate menu" }
+        require(
+            schemaVersion >= TUTOR_KNOWN_ROUND_QUESTION_SCHEMA_VERSION ||
+                (input as? TutorRespondInput)?.knownRoundQuestion == null,
+        ) { "Legacy tutor requests cannot carry a known round question" }
         require(requestId.isNotBlank()) { "Model task request id must not be blank" }
         require(requestId.length <= MAX_ID_CHARS) { "Model task request id exceeds budget" }
         require(input.subjectId.isNotBlank()) { "Model task subject id must not be blank" }
@@ -432,7 +436,13 @@ data class ModelTaskRequest(
         const val LOBBY_CONTEXT_SCHEMA_VERSION = 10
         /** Schema at which a tutor reply may declare which round question it is answering. */
         const val TUTOR_ROUND_BINDING_SCHEMA_VERSION = 11
-        const val CURRENT_SCHEMA_VERSION = TUTOR_ROUND_BINDING_SCHEMA_VERSION
+        /**
+         * Schema at which a Respond round may also carry the request side's **already known**
+         * question anchor (`knownRoundQuestion`) — the fallback the write gate uses when the
+         * model did not restate an anchor in a native `tool_calls` round.
+         */
+        const val TUTOR_KNOWN_ROUND_QUESTION_SCHEMA_VERSION = 12
+        const val CURRENT_SCHEMA_VERSION = TUTOR_KNOWN_ROUND_QUESTION_SCHEMA_VERSION
         const val MAX_ID_CHARS = 256
     }
 }
@@ -701,7 +711,8 @@ object ModelTaskLogicalOperationFingerprint {
                     .withoutEmptyToolCarrier(input)
                     .withoutEmptyLobbyImageRefs(input)
                     .withoutEmptyLobbyContext(input)
-                    .withoutEmptyBoundQuestionCandidates(input),
+                    .withoutEmptyBoundQuestionCandidates(input)
+                    .withoutEmptyKnownRoundQuestion(input),
             )
         }
 }
@@ -785,6 +796,13 @@ private fun ModelTaskRequest.fingerprintPayload(): String =
                 .let {
                     if (schemaVersion < ModelTaskRequest.TUTOR_ROUND_BINDING_SCHEMA_VERSION) {
                         it.withoutEmptyBoundQuestionCandidates(input)
+                    } else {
+                        it
+                    }
+                }
+                .let {
+                    if (schemaVersion < ModelTaskRequest.TUTOR_KNOWN_ROUND_QUESTION_SCHEMA_VERSION) {
+                        it.withoutEmptyKnownRoundQuestion(input)
                     } else {
                         it
                     }
@@ -875,6 +893,22 @@ private fun String.withoutEmptyLobbyContext(input: ModelTaskInput): String = whe
 private fun String.withoutEmptyBoundQuestionCandidates(input: ModelTaskInput): String =
     if (input is TutorRespondInput) {
         replace(",\"boundQuestionCandidates\":[]", "")
+    } else {
+        this
+    }
+
+/**
+ * 去掉 Respond 的"本轮请求侧已知题锚"空载体键（schema 12 引入）。
+ *
+ * 与 [withoutEmptyBoundQuestionCandidates] 同一条教训（提交 bf8be888）：两个指纹路径都以
+ * `encodeDefaults = true` 编码当前输入，旧 v11 行存的是不含该键的编码——不抹平空载体，
+ * 升级后读回任意一条旧 Respond 行都会算出与存库不同的哈希，`toSnapshot` 直接抛
+ * `LearningLedgerIntegrityException`。非空已知锚只可能出现在 v12 行（构造契约里有
+ * `require`），所以 strip 不会削弱新行的指纹区分度。
+ */
+private fun String.withoutEmptyKnownRoundQuestion(input: ModelTaskInput): String =
+    if (input is TutorRespondInput) {
+        replace(",\"knownRoundQuestion\":null", "")
     } else {
         this
     }

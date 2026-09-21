@@ -675,6 +675,11 @@ internal fun TutorModelPanel(
             clearDraftOnPersist = clearDraftOnPersist,
             studentImageAssetIds = studentImageAssetIds,
             boundQuestionCandidates = boundQuestionCandidates,
+            // 本轮请求侧已知的题锚。今天只有"上一轮绑定延续"这一条来源——"本轮学生显式添加的题"
+            // 与 boundQuestionCandidates 的 explicitlyAdded 位置同一个缺口（P3 接上）。
+            // 写工具门控在模型没有复述题锚时回退到它：原生 tool_calls 路由的整轮信封无处放声明，
+            // 复述只能落在每次调用的 arguments 里，而复述不是必然的。
+            knownRoundQuestion = previousBoundQuestion,
         )
     }
 

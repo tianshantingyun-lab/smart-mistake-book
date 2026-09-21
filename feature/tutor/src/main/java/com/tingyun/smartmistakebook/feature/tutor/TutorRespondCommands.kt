@@ -221,6 +221,11 @@ internal class TutorRespondCommands(
         studentImageAssetIds: List<String> = emptyList(),
         /** 本轮候选菜单（界面在派发前组好：显式添加 + 上一轮绑定 + 本地检索）。 */
         boundQuestionCandidates: List<RelatedProblemCandidate> = emptyList(),
+        /**
+         * 本轮请求侧已知的题锚（同上两个来源里的**那一道**，不是候选集）。写工具门控在
+         * "模型没有复述题锚"时回退到它；为空即真的无题轮，写工具照旧被拒。
+         */
+        knownRoundQuestion: RelatedProblemCandidate? = null,
     ) {
         // 纯图消息给一句可读的兜底文本：消息体不能为空，且落库、指纹与派发必须用同一份文本，
         // 否则"学生看到的"和"模型读到的"会不是同一条消息。
@@ -299,6 +304,7 @@ internal class TutorRespondCommands(
                 requestedMove = requestedMove,
                 studentImageAssetIds = studentImageAssetIds,
                 boundQuestionCandidates = boundQuestionCandidates,
+                knownRoundQuestion = knownRoundQuestion,
             )
         } catch (_: IllegalArgumentException) {
             sink.setChatStartError(tutorRespondValidationError())

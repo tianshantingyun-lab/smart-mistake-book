@@ -376,6 +376,24 @@ data class TutorRespondInput(
      * 必然是无题轮（[TutorRespondOutput.boundQuestion] 不可能通过本地校验）。
      */
     val boundQuestionCandidates: List<RelatedProblemCandidate> = emptyList(),
+    /**
+     * 本轮**请求侧已经知道**的题锚：派发前本地就能确定"这一轮在说哪一道"的那道题。
+     * 与 [boundQuestionCandidates] 的区别是**层级**——菜单是"模型能指哪几道"的选项集（候选），
+     * 这个字段是本地已经确定下来的那一轮题锚（绑定）。
+     *
+     * 两条来源，按优先级（与 `TutorRoundQuestionBindingPolicy.assembleCandidates` 前两条来源同序）：
+     * 1. 学生本轮显式把这题带进来（加号里的"从错题库选择"、六条深链入口）——学生的动作本身就是锚；
+     * 2. 上一轮已经过本地两条校验的绑定（跨轮延续，`docs/tutor-surface-unification.md` §5.4）。
+     *
+     * 都没有就是 null —— **真的无题轮**。
+     *
+     * 消灭的失败（F1）：写工具的准入事实是"这一轮有没有题"，而模型声明只是这条事实的**一条**
+     * 来源。原生 `tool_calls` 路由的标准形态 content=null，模型复述题锚的唯一落点是每次调用的
+     * arguments；"没有复述"说明它没说，不说明这一轮没有题。本地已经知道答案时，把"这一轮来自
+     * 哪条解析路由"当成拒绝理由就是能力回退——改造前那条按 `input is TutorRespondInput` 的判据
+     * 在原生工具轮里是放行的。
+     */
+    val knownRoundQuestion: RelatedProblemCandidate? = null,
 ) : ModelTaskInput {
     override val kind: ModelTaskKind
         get() = ModelTaskKind.TUTOR_RESPOND
@@ -467,6 +485,13 @@ data class TutorRespondInput(
             boundQuestionCandidates.map { it.problemId to it.problemRevisionId }.distinct().size ==
                 boundQuestionCandidates.size,
         ) { "Tutor response bound-question candidates must be unique per revision" }
+        require(
+            knownRoundQuestion == null ||
+                boundQuestionCandidates.any { candidate ->
+                    candidate.problemId == knownRoundQuestion.problemId &&
+                        candidate.problemRevisionId == knownRoundQuestion.problemRevisionId
+                },
+        ) { "A known round question must be one of this round's candidates" }
     }
 
     companion object {

@@ -333,6 +333,129 @@ class ModelTaskFingerprintStabilityTest {
         assertTrue(rejected.isFailure)
     }
 
+    @Test
+    fun knownRoundQuestionCarrierKeepsTheOperationFingerprintStableAcrossSchemaVersions() {
+        // 请求侧已知题锚（schema 12）在空值下不得改变逻辑指纹：v11 行当年是按"没有这个键"算的。
+        val v11 = ModelTaskRequest(
+            schemaVersion = ModelTaskRequest.TUTOR_ROUND_BINDING_SCHEMA_VERSION,
+            requestId = "respond:v11-known-anchor",
+            input = respondInput(),
+            occurredAtEpochMillis = 1_000,
+        )
+        val v12 = ModelTaskRequest(
+            schemaVersion = ModelTaskRequest.CURRENT_SCHEMA_VERSION,
+            requestId = "respond:v12-known-anchor",
+            input = respondInput(),
+            occurredAtEpochMillis = 1_000,
+        )
+
+        assertEquals(
+            ModelTaskLogicalOperationFingerprint.of(v11.input),
+            ModelTaskLogicalOperationFingerprint.of(v12.input),
+        )
+    }
+
+    @Test
+    fun aRespondRowWrittenBeforeTheKnownRoundQuestionCarrierStillValidatesAfterUpgrade() {
+        // bf8be888 的教训（第三次同一条）：旧 v11 行的编码里没有 knownRoundQuestion 键，
+        // 升级后读回该行重算**请求指纹**必须与存库值一致，否则 toSnapshot 直接抛完整性异常。
+        // 存库值 = 当年 v11 编码器写出的那份 JSON 的摘要（本用例手工复现那份编码）。
+        val legacyJson = ModelTaskCodec.encodeRequest(
+            ModelTaskRequest(
+                schemaVersion = ModelTaskRequest.TUTOR_ROUND_BINDING_SCHEMA_VERSION,
+                requestId = "respond:legacy-known-anchor-row",
+                input = respondInput(),
+                occurredAtEpochMillis = 1_000,
+            ),
+        ).replace(",\"knownRoundQuestion\":null", "")
+        val decoded = ModelTaskCodec.decodeRequest(legacyJson)
+
+        assertEquals(ModelTaskRequest.TUTOR_ROUND_BINDING_SCHEMA_VERSION, decoded.schemaVersion)
+        assertEquals(sha256Hex(legacyJson), ModelTaskFingerprint.of(decoded))
+        // 逻辑指纹走同一条纪律：数据库每次读回行都会用**当前**编码重算逻辑指纹并与存库值比对
+        // （`ModelTaskEntity.toSnapshot` 抛 `LearningLedgerIntegrityException`），所以旧行的
+        // 逻辑指纹也必须按"没有这个键"的那份输入编码算出来。
+        assertEquals(
+            sha256Hex("${decoded.input.kind.name}\n${legacyInputJson(decoded.input)}"),
+            ModelTaskLogicalOperationFingerprint.of(decoded.input),
+        )
+    }
+
+    @Test
+    fun aRealKnownRoundQuestionStillChangesTheOperationFingerprint() {
+        // 反向要求：strip 只抹平空载体。真的带了本轮已知题锚就是另一次输入，指纹必须变——
+        // 否则"上一轮绑定的题换了"会重放命中旧请求。
+        val withKnownAnchor = respondInput().copy(
+            boundQuestionCandidates = listOf(relatedCandidate()),
+            knownRoundQuestion = relatedCandidate(),
+        )
+
+        assertNotEquals(
+            ModelTaskLogicalOperationFingerprint.of(respondInput()),
+            ModelTaskLogicalOperationFingerprint.of(withKnownAnchor),
+        )
+    }
+
+    @Test
+    fun aLegacySchemaRequestCannotCarryAKnownRoundQuestion() {
+        val rejected = runCatching {
+            ModelTaskRequest(
+                schemaVersion = ModelTaskRequest.TUTOR_ROUND_BINDING_SCHEMA_VERSION,
+                requestId = "respond:legacy-with-known-anchor",
+                input = respondInput().copy(
+                    boundQuestionCandidates = listOf(relatedCandidate()),
+                    knownRoundQuestion = relatedCandidate(),
+                ),
+                occurredAtEpochMillis = 1_000,
+            )
+        }
+
+        assertTrue(rejected.isFailure)
+    }
+
+    @Test
+    fun aKnownRoundQuestionOutsideTheMenuIsRejectedAtConstruction() {
+        // 已知锚必须是本轮候选之一：不在菜单里的锚会让写工具拿着"本轮从没出现过的题"去写，
+        // 菜单这条边界就被绕过了。
+        val rejected = runCatching {
+            respondInput().copy(knownRoundQuestion = relatedCandidate())
+        }
+
+        assertTrue(rejected.isFailure)
+    }
+
+    private fun sha256Hex(value: String): String = MessageDigest.getInstance("SHA-256")
+        .digest(value.toByteArray(StandardCharsets.UTF_8))
+        .joinToString(separator = "") { byte -> "%02x".format(byte) }
+
+    /**
+     * 旧 v11 行当年算**逻辑**指纹时用的那份输入编码。
+     *
+     * 逻辑指纹链没有 schema 分支（`operationPayload` 无条件抹平空载体键），所以"当年"那份负载
+     * = 今天的编码减掉 v12 新键、再减掉 v11 当时那套 strip：
+     * - `"knownRoundQuestion":null`：v12 才有的键，当年的编码器不知道它；
+     * - `"toolDeclarations":[]` / `"toolRoundResults":[]`（`withoutEmptyToolCarrier`）；
+     * - `"priorDigest":null`（`withoutEmptyLobbyContext` 的 Respond 分支）；
+     * - `"boundQuestionCandidates":[]`（v11 引入菜单时同一提交也把 strip 加进了逻辑链）。
+     *
+     * 手工复现这份负载是为了对**存库值**：生产侧删掉任何一条 strip，这里的摘要就与
+     * `ModelTaskLogicalOperationFingerprint.of` 不再相等（本用例已用反证跑过）。
+     */
+    private fun legacyInputJson(input: ModelTaskInput): String = legacyFingerprintJson
+        .encodeToString(ModelTaskInput.serializer(), input)
+        .replace(",\"knownRoundQuestion\":null", "")
+        .replace(",\"toolDeclarations\":[]", "")
+        .replace(",\"toolRoundResults\":[]", "")
+        .replace(",\"priorDigest\":null", "")
+        .replace(",\"boundQuestionCandidates\":[]", "")
+
+    private val legacyFingerprintJson = kotlinx.serialization.json.Json {
+        classDiscriminator = "type"
+        encodeDefaults = true
+        explicitNulls = true
+        ignoreUnknownKeys = false
+    }
+
     private fun relatedCandidate() = RelatedProblemCandidate(
         problemId = "problem-other",
         problemRevisionId = "revision-other",

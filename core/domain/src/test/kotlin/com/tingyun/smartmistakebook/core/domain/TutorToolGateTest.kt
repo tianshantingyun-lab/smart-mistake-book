@@ -14,8 +14,13 @@ import org.junit.Test
  * 锚词核不过），而那时题面只是会话带进来的上下文，不是学生这一轮在说的题。写进去的学习证据
  * 因此没有主人。
  *
- * 判据落在**每一次调用**上（`TutorToolCall.boundQuestion`）：原生 tool_calls 路由的标准形态
- * content=null，整轮的信封声明无处可放，只有逐次调用对象是两条路由都能表达的落点。
+ * 判据落在**每一次调用**上，由 `TutorRoundQuestionBindingPolicy.callIsAnchoredToRoundQuestion`
+ * 判定：模型声明（`TutorToolCall.boundQuestion`）经两条本地校验通过，**或**模型没复述时回退到
+ * 本轮请求侧已知的题锚（`TutorRespondInput.knownRoundQuestion`，学生显式添加的题 / 上一轮已校验的
+ * 绑定）。原生 tool_calls 路由的标准形态 content=null，整轮的信封声明无处可放，逐次调用对象与请求侧
+ * 已知锚都是两条路由都能表达的落点；两者都没有（真的无题轮）仍然被拒——本文件断言的是这张表本身
+ * （参数为 false 即拒），回退来源的判定另有 `TutorRoundQuestionBindingPolicyTest` 与
+ * `TutorToolRoundGateTest` 钉住。
  *
  * 同一张表还挡下"产出只被题轮披露集合覆盖"的读工具：无题轮的披露集合
  * （`TUTOR_LOBBY_DISCLOSURE`：仅学生消息 + 会话上下文）装不下掌握度明细与学科知识库，

@@ -521,8 +521,11 @@ internal object OpenAiModelProtocol {
      * it, later rounds re-derive). Standard native tool_calls carry content=null,
      * so the intent is derived from the dispatch kind instead — native tools
      * never over-authorize because the repository still intersects with the
-     * declared set, and a write additionally needs its own per-call question
-     * anchor (carried in the call's arguments, so both routes can express it).
+     * declared set, and a write additionally needs its question anchor: the
+     * per-call one carried in the call's arguments, or — when the model did not
+     * restate it — the anchor the round's request already knows
+     * (`TutorRespondInput.knownRoundQuestion`, schema 12). The parsing layer
+     * itself never invents an anchor.
      */
     private fun List<JsonElement>.toTutorToolRequestsOutput(
         input: com.tingyun.smartmistakebook.core.model.ModelTaskInput,
@@ -561,10 +564,18 @@ internal object OpenAiModelProtocol {
 
     /**
      * Kind-appropriate intent for a native tool round when the provider did not
-     * restate one in content. Respond dispatches are always anchored to the
-     * current question → CURRENT_QUESTION_HELP; Lobby dispatches only declare
-     * NOTEBOOK_READ (fix-1) → MISTAKE_NOTEBOOK_LOOKUP. Derivation stays narrow
-     * so the authorization matrix gates the same as Route B would.
+     * restate one in content. Respond dispatches → CURRENT_QUESTION_HELP (the
+     * intent that authorizes the write tools and the question-scoped reads);
+     * Lobby dispatches → MISTAKE_NOTEBOOK_LOOKUP, the narrow intent that covers
+     * the lobby's long-standing NOTEBOOK_READ capability. Derivation stays narrow
+     * so the authorization matrix gates the same as Route B would: a content=null
+     * round carries no envelope, and the local side never names a wider intent
+     * than the kind itself justifies. Lobby declares all five tools on the same
+     * page now (`TUTOR_TOOL_DECLARATIONS`), but the declared set is only intersected
+     * last — it never widens the matrix.
+     *
+     * 题锚不走这里：写工具的准入看每次调用的 arguments，或回退到本轮请求侧已知的题锚
+     * （`TutorRespondInput.knownRoundQuestion`），两条路由都能表达。
      */
     private fun nativeToolRoundIntent(
         input: com.tingyun.smartmistakebook.core.model.ModelTaskInput,

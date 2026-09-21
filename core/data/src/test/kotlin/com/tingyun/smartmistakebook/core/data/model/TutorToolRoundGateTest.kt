@@ -12,10 +12,13 @@ import com.tingyun.smartmistakebook.core.model.TutorToolCall
 import com.tingyun.smartmistakebook.core.model.TutorUnderstandingTier
 import com.tingyun.smartmistakebook.core.model.TutorToolName
 import com.tingyun.smartmistakebook.core.model.TutorToolOutcome
+import com.tingyun.smartmistakebook.core.model.TutorToolRequestsOutput
+import com.tingyun.smartmistakebook.core.model.tutorToolAuthorization
 import kotlinx.coroutines.runBlocking
 import com.tingyun.smartmistakebook.core.domain.TUTOR_TOOL_DECLARATIONS
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -160,6 +163,98 @@ class TutorToolRoundGateTest {
         assertTrue(ran.isEmpty())
     }
 
+    /**
+     * F1 现场（原生 tool_calls 路由 + 有题轮）：Route A 的标准形态是 content=null，整轮信封
+     * 无处放题锚声明，模型复述题锚的唯一落点是每次调用的 arguments。这条用例不喂"模型复述了"
+     * 的 arguments，而是喂一个**请求侧已知题锚**的轮次——本地已经知道这一轮在说哪道题，
+     * 写工具的准入事实按它成立，不能因为模型没说就拒。
+     */
+    @Test
+    fun `a native tool round in a question round no longer refuses the write`() = runBlocking {
+        val known = candidate()
+        val input = respondInput(boundCandidate = known, knownRoundQuestion = known)
+
+        // 走真实解析层：原生 tool_calls，MASTERY_UPDATE 的 arguments 里没有 problemId/
+        // problemRevisionId（模型没复述），解析层也不凭空补一个。
+        val round = OpenAiModelProtocol.parseResponse(
+            responseBody = nativeMasteryUpdateWithoutAnchor(),
+            input = input,
+            modelVersion = "test-model-v1",
+        ) as TutorToolRequestsOutput
+        assertNull("解析层不得替模型补声明", round.calls.single().boundQuestion)
+
+        val ran = mutableListOf<TutorToolName>()
+        val outcomes = tutorToolRoundOutcomes(
+            calls = round.calls,
+            // 与生产同路：意图矩阵仍逐次裁决（原生无 content 时按 Respond 推导 CURRENT_QUESTION_HELP）。
+            authorizedTools = tutorToolAuthorization(
+                round.intentDecision,
+                TUTOR_TOOL_DECLARATIONS,
+            ).allowedTools,
+            input = input,
+            runTool = { call, _ -> ran += call.tool; ok(call.tool) },
+            consumeExtendedResult = {},
+        )
+
+        assertTrue("有题轮的原生写调用不得因『模型没复述题锚』被拒", outcomes.single().ok)
+        assertEquals(listOf(TutorToolName.MASTERY_UPDATE), ran)
+    }
+
+    /**
+     * 负方向（同一解析路由、同一调用形状）：请求侧也没有已知题锚——真的无题轮——写调用仍然
+     * 被拒且不触达执行器。拒绝依据是"这一轮有没有题"，不是"这一轮来自哪条路由"。
+     */
+    @Test
+    fun `a native tool round in a round with no question still refuses the write`() = runBlocking {
+        val ran = mutableListOf<TutorToolName>()
+        val input = respondInput(boundCandidate = candidate(), knownRoundQuestion = null)
+
+        val round = OpenAiModelProtocol.parseResponse(
+            responseBody = nativeMasteryUpdateWithoutAnchor(),
+            input = input,
+            modelVersion = "test-model-v1",
+        ) as TutorToolRequestsOutput
+
+        val outcomes = tutorToolRoundOutcomes(
+            calls = round.calls,
+            authorizedTools = TUTOR_TOOL_DECLARATIONS,
+            input = input,
+            runTool = { call, _ -> ran += call.tool; ok(call.tool) },
+            consumeExtendedResult = {},
+        )
+
+        assertFalse("无题轮的写调用必须被拒", outcomes.single().ok)
+        assertEquals("not_authorized", outcomes.single().errorKind)
+        assertTrue("被拒的调用不得触达执行器", ran.isEmpty())
+    }
+
+    /** 说错了 ≠ 没说：模型声明越界时不拿请求侧已知锚兜底（有题轮也一样拒）。 */
+    @Test
+    fun `an out-of-menu native declaration does not fall back to the known question`() = runBlocking {
+        val ran = mutableListOf<TutorToolName>()
+        val known = candidate()
+        val input = respondInput(boundCandidate = known, knownRoundQuestion = known)
+
+        val outcomes = tutorToolRoundOutcomes(
+            calls = listOf(
+                masteryUpdateCall(
+                    anchor = TutorRoundQuestionDeclaration(
+                        problemId = "problem-outside",
+                        problemRevisionId = "revision-outside",
+                        anchorTerms = listOf("配方法"),
+                    ),
+                ),
+            ),
+            authorizedTools = TUTOR_TOOL_DECLARATIONS,
+            input = input,
+            runTool = { call, _ -> ran += call.tool; ok(call.tool) },
+            consumeExtendedResult = {},
+        )
+
+        assertFalse(outcomes.single().ok)
+        assertTrue(ran.isEmpty())
+    }
+
     private fun masteryUpdateCall(anchor: TutorRoundQuestionDeclaration?) = TutorToolCall(
         tool = TutorToolName.MASTERY_UPDATE,
         rationale = "学生说「我现在理解配方法这一步了」",
@@ -168,6 +263,14 @@ class TutorToolRoundGateTest {
         understanding = TutorUnderstandingTier.CONFIDENT,
         boundQuestion = anchor,
     )
+
+    /** 原生 tool_calls 里一个没复述题锚的 MASTERY_UPDATE（arguments 无三个锚字段）。 */
+    private fun nativeMasteryUpdateWithoutAnchor(): String = """
+        {"choices":[{"message":{"role":"assistant","content":null,
+         "tool_calls":[{"id":"call_1","type":"function",
+           "function":{"name":"MASTERY_UPDATE",
+             "arguments":"{\"terms\":[\"knowledge-node-peifang\"],\"rationale\":\"学生说理解了\",\"direction\":\"POSITIVE\",\"understanding\":\"CONFIDENT\",\"confidence\":0.85}"}}]}}]}
+    """.trimIndent()
 
     private fun ok(tool: TutorToolName) = TutorToolOutcome(
         tool = tool,
@@ -187,7 +290,14 @@ class TutorToolRoundGateTest {
         ),
     )
 
-    private fun respondInput(boundCandidate: RelatedProblemCandidate) = TutorRespondInput(
+    /**
+     * @param knownRoundQuestion 本轮请求侧已知的题锚。按 `TutorRespondInput` 的构造契约，
+     *   已知锚必须是本轮候选之一，所以夹具只允许传菜单里的那一条。
+     */
+    private fun respondInput(
+        boundCandidate: RelatedProblemCandidate,
+        knownRoundQuestion: RelatedProblemCandidate? = null,
+    ) = TutorRespondInput(
         sessionId = "session-1",
         draftRevisionNumber = 1,
         subject = "MATH",
@@ -203,6 +313,7 @@ class TutorToolRoundGateTest {
         studentMessage = "我现在理解配方法这一步了。",
         toolDeclarations = TUTOR_TOOL_DECLARATIONS.toList(),
         boundQuestionCandidates = listOf(boundCandidate),
+        knownRoundQuestion = knownRoundQuestion,
     )
 
     private companion object {

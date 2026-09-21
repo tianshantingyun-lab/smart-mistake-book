@@ -44,16 +44,18 @@ val TUTOR_QUESTION_ROUND_ONLY_READS: Set<TutorToolName> = setOf(
 /**
  * 轮次/调用级可用性：声明集里的工具这一次到底能不能执行。
  *
- * - 写工具（[TUTOR_WRITE_TOOLS]）：要求这一次调用带上了**可核对的题锚**
- *   （[com.tingyun.smartmistakebook.core.model.TutorToolCall.boundQuestion] 经本地两条校验 resolve
- *   通过）——它们会落库，没有题目锚点就是无主证据。
+ * - 写工具（[TUTOR_WRITE_TOOLS]）：要求这**一次调用**锚住了本轮的题
+ *   （[callIsAnchoredToRoundQuestion] = [com.tingyun.smartmistakebook.core.model.TutorToolCall.boundQuestion]
+ *   经本地两条校验 resolve 通过，**或**模型没复述时回退到本轮请求侧已知的题锚
+ *   [com.tingyun.smartmistakebook.core.model.TutorRespondInput.knownRoundQuestion]）——它们会落库，
+ *   没有题目锚点就是无主证据。
  * - 产出口袋被题轮披露集合覆盖的读工具（[TUTOR_QUESTION_ROUND_ONLY_READS]）：要求本轮派发的
  *   披露面覆盖它们的产出。
  * - 其余读工具不受限。
  *
- * 两个参数都取自**请求/调用本身**，不取自"这一轮由哪种解析路由产出"：原生 tool_calls 路由
- * 的表达位置是每次调用的 arguments，json_object 信封路由是同一份调用对象的字段——两条路由
- * 都能满足上面每一条。
+ * 两个参数都取自**请求/调用本身**，不取自"这一轮由哪种解析路由产出"：原生 tool_calls 路由的
+ * 表达位置是每次调用的 arguments（或请求侧已知锚），json_object 信封路由是同一份调用对象的
+ * 字段——两条路由都能满足上面每一条。
  *
  * 具名函数而不是内联在工具环里，是为了让它可被单测直接钉死。
  */

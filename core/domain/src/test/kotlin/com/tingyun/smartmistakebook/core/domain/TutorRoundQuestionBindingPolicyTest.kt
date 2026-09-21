@@ -15,7 +15,9 @@ import com.tingyun.smartmistakebook.core.model.TutorRespondInput
 import com.tingyun.smartmistakebook.core.model.TutorRespondOutput
 import com.tingyun.smartmistakebook.core.model.TutorRoundQuestionDeclaration
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class TutorRoundQuestionBindingPolicyTest {
@@ -301,6 +303,60 @@ class TutorRoundQuestionBindingPolicyTest {
         )
 
         assertNull(previousBoundRoundQuestion(tasks))
+    }
+
+    @Test
+    fun `a call whose declaration passes the two local checks is anchored`() {
+        assertTrue(
+            TutorRoundQuestionBindingPolicy.callIsAnchoredToRoundQuestion(
+                declaration = declaration("p-1", "r-1", "光的折射"),
+                candidates = listOf(candidate("p-1", "r-1", "光的折射实验")),
+                studentMessage = "光的折射实验这道题再讲一遍",
+                knownRoundQuestion = null,
+            ),
+        )
+    }
+
+    @Test
+    fun `a call without a declaration falls back to the question the request already knows`() {
+        // F1：原生 tool_calls 路由的标准形态 content=null，模型复述题锚的唯一落点是每次调用的
+        // arguments（schema 的 required 只约束合规 provider）。"没复述"不等于"这一轮没有题"：
+        // 请求侧已知的锚就是这一轮的题，写工具的准入事实必须按它成立。
+        assertTrue(
+            TutorRoundQuestionBindingPolicy.callIsAnchoredToRoundQuestion(
+                declaration = null,
+                candidates = listOf(candidate("p-1", "r-1", "光的折射实验")),
+                studentMessage = "这道题还是不懂",
+                knownRoundQuestion = candidate("p-1", "r-1", "光的折射实验"),
+            ),
+        )
+    }
+
+    @Test
+    fun `a call without a declaration in a round with no known question stays unanchored`() {
+        // 负方向：请求侧也没有（真的无题轮）→ 仍然不认，一行证据都不该写。
+        assertFalse(
+            TutorRoundQuestionBindingPolicy.callIsAnchoredToRoundQuestion(
+                declaration = null,
+                candidates = listOf(candidate("p-1", "r-1", "光的折射实验")),
+                studentMessage = "这道题还是不懂",
+                knownRoundQuestion = null,
+            ),
+        )
+    }
+
+    @Test
+    fun `a declaration that fails the local checks does not fall back to the known question`() {
+        // 说错了 ≠ 没说：模型指了一道本轮菜单外的题，不能拿本地已知锚替它兜底——否则声明越界
+        // 反而比不声明更宽松，两条本地校验就白设了。
+        assertFalse(
+            TutorRoundQuestionBindingPolicy.callIsAnchoredToRoundQuestion(
+                declaration = declaration("p-outside", "r-outside", "光的折射"),
+                candidates = listOf(candidate("p-1", "r-1", "光的折射实验")),
+                studentMessage = "光的折射实验这道题再讲一遍",
+                knownRoundQuestion = candidate("p-1", "r-1", "光的折射实验"),
+            ),
+        )
     }
 
     private fun respondTask(

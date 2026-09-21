@@ -87,6 +87,38 @@ object TutorRoundQuestionBindingPolicy {
     }
 
     /**
+     * 这**一次调用**算不算"锚住了本轮的题"——写工具准入的唯一事实来源。
+     *
+     * 两条来源，按可靠性排序：
+     * 1. **模型声明**（[declaration]）：本地两条校验全过才算。首选路径，因为"这一轮在说哪一道"
+     *    是语义判断——模型给语义、本地给裁决。
+     * 2. **请求侧已经知道的题锚**（[knownRoundQuestion]，`TutorRespondInput.knownRoundQuestion`）：
+     *    学生本轮显式把这题带进来、或上一轮已校验的绑定延续到本轮。这种情况本地**已经**知道
+     *    这一轮有题，缺的只是"模型有没有在调用里复述它"——不能因为没复述就判成无题轮。
+     *
+     * 为什么必须有第二条（F1）：原生 `tool_calls` 路由的标准形态 content=null，模型复述题锚的
+     * 唯一落点是每次调用的 arguments；schema 的 `required` 只约束合规 provider，复述不是必然的。
+     * 只认第一条，拒绝的理由就退化成"这一轮来自哪条解析路由"，而不是"这一轮有没有题"这个语义
+     * 事实——比改造前那条 `input is TutorRespondInput` 还窄，是能力回退。
+     *
+     * 声明**在但核不过**时不回退：那是模型指了一道本轮菜单外的题（或锚词凭不到学生原话），
+     * 属于"说错了"，不是"没说"，按无题轮处理。
+     *
+     * [knownRoundQuestion] 在本轮菜单内的成员资格由 `TutorRespondInput` 的构造契约保证
+     * （已知锚不是本轮候选之一时构造直接失败），所以这里只判"有没有"。
+     */
+    fun callIsAnchoredToRoundQuestion(
+        declaration: TutorRoundQuestionDeclaration?,
+        candidates: List<RelatedProblemCandidate>,
+        studentMessage: String,
+        knownRoundQuestion: RelatedProblemCandidate?,
+    ): Boolean = if (declaration != null) {
+        resolve(candidates, declaration, studentMessage) != null
+    } else {
+        knownRoundQuestion != null
+    }
+
+    /**
      * 该题**自身**的文本：锚词必须在这一段里能找到，否则"可核对"无从谈起。
      *
      * 只算标题与题面，**不算 `subject.name`**：那是枚举名（`MATH`/`PHYSICS`…），与题目内容毫无
