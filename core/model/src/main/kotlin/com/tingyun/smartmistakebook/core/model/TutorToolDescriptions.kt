@@ -43,7 +43,8 @@ fun TutorToolName.purposeDescription(): String = when (this) {
 fun TutorToolName.nativePurposeDescription(): String = when (this) {
     TutorToolName.KNOWLEDGE_READ -> "读取当前题相关知识点讲解材料（返回代号+名称+边界+材料摘要）"
     TutorToolName.NOTEBOOK_READ ->
-        "检索错题本中匹配的错题（只查错题库，不含掌握情况）"
+        "检索错题本中匹配的错题（只查错题库，不含掌握情况）。本轮披露范围不含别的题时只回条数（至多6条）" +
+            "与检索词，不列条目标题——那时不要臆造或复述题目标题"
     TutorToolName.MASTERY_READ ->
         "读取学生对相关知识的掌握情况（terms 留空＝本科目全部清单，填关键词＝聚焦并附历史聚合；不含错题条目）"
     TutorToolName.MASTERY_UPDATE ->

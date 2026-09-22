@@ -110,6 +110,25 @@ class OpenAiNativeToolsProtocolTest {
     }
 
     @Test
+    fun notebookReadNativeDescriptionStatesTheNoDisclosureTier() {
+        // F5 残留：信封路由的 NOTEBOOK_READ 描述早已写清"无题轮只回条数与检索词"，
+        // 但原生 tools 路由的描述没同步——而当前配置走的正是原生路由，模型在那条路上
+        // 拿不到这档行为的任何预告。描述现在两条路由同一来源，这里把它钉住。
+        val withTools = OpenAiModelProtocol.requestBody(
+            modelId = "test-model",
+            input = respondInput(),
+            images = emptyList(),
+            enableNativeTools = true,
+        )
+        val notebookBlock = withTools.substringAfter("\"name\":\"NOTEBOOK_READ\"")
+            .substringBefore("\"name\":\"", missingDelimiterValue = "")
+        assertTrue(
+            "原生路由的 NOTEBOOK_READ 描述必须预告无题轮只回条数与检索词（实得：$notebookBlock）",
+            notebookBlock.contains("只回条数") && notebookBlock.contains("检索词"),
+        )
+    }
+
+    @Test
     fun readToolSchemaStaysMinimalRequired() {
         // 仅声明读工具（NOTEBOOK_READ）时 strict required 不应被 T6 语义字段污染
         val input = respondInput().copy(

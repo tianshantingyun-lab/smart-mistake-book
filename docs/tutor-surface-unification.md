@@ -249,3 +249,62 @@ P2 改造（`4544310b` + `40bf72ff`）落地后，独立复核列出六条发现
 - 门禁：修复者一轮里出现过一次基础设施失败（`core:data:testDebugUnitTest` 的 `EOFException`，
   双会话抢构建目录），删 `build/test-results/*/binary` 后单跑转绿；整套门禁由流程脚本统一跑。
 
+
+## 9. 2026-09-22 残留收口（F5 描述同步 / 变异实跑 / API 34 边界）
+
+> 说明：§8 是当天（09-21）的历史记录，原样保留。本节是 09-22 对 §8 遗留项的处置与订正。
+> 注意：`f08fce92`（KB 架构重构）落在 F 批次之后，把 §8 引用的两处位置挪走了——
+> `nativeToolDescription` 已更名 `nativePurposeDescription` 且两条路由的描述统一到
+> `core/model/.../TutorToolDescriptions.kt`（单一来源）；`RoomModelTaskRepository` 的
+> `|| !available` 接线已被 D6 决策整条删除，轮次门控现在是纯函数
+> `tutorToolRoundOutcomes`（`core/data/.../RoomModelTaskRepository.kt:920-953`，两个拒绝分支：
+> 未授权工具、伪造知识点代号），无题轮的写入放行到 runner 后由 `MasteryWriteGate` 失败关闭。
+> 下面引用一律按当前代码。
+
+### 9.1 F5 残留①（已关闭）：原生 tools 路由的 NOTEBOOK_READ 描述补上"无题轮"档
+
+- `TutorToolDescriptions.nativePurposeDescription()` 的 NOTEBOOK_READ 分支补了档位说明
+  （"本轮披露范围不含别的题时只回条数（至多6条）与检索词，不列条目标题——那时不要臆造
+  或复述题目标题"），与信封路由的 `purposeDescription()` 同一来源；
+- 新增钉住测试 `OpenAiNativeToolsProtocolTest.notebookReadNativeDescriptionStatesTheNoDisclosureTier`
+  （此前**两条路由的描述都没有测试守**）；`:core:data:testDebugUnitTest` 该类 11 条 0 失败。
+- §8 里"`limit = 6` 的歧义（6 条与 6+ 条不可区分）"顺带在描述里注明"至多6条"。
+
+### 9.2 变异实验实跑记录（补 §8"无实跑记录"的两条 + 按新门控结构重做 F2 那条）
+
+实验方式统一：注入变异 → 跑指定用例 → 记录红了哪几条 → `git checkout --` 还原 → 复跑转绿。
+
+| 编号 | 变异 | 命令 | 结果（红/总数） | 转红的用例 |
+|---|---|---|---|---|
+| M1 | `checkableText()` 加回 `append(subject.name)` | `:core:domain:test --tests "*TutorRoundQuestionBindingPolicyTest"` | 1/24 | `a subject name is not a verifiable anchor`（失败值正是以 `MATH` 为锚词通过的声明） |
+| M2 | 删 `tutorToolRoundOutcomes` 分支一（`call.tool !in authorizedTools`） | `:core:data:testDebugUnitTest --tests "*TutorToolRoundGateTest"` | 1/10 | `an authorized tool outside the declared set is still refused` |
+| M3 | 删 `tutorToolRoundOutcomes` 分支二（MASTERY_UPDATE 代号校验） | 同上 | 2/10 | `a fabricated code is structurally refused and never reaches the runner`、`a lobby round without any disclosed code refuses the write structurally` |
+
+- §8 F2 那条"删 `|| !available` → 8 条 5 红"描述的是**旧门控**（已被 D6 删除），其等价
+  实验即上表 M2/M3；两条都已按新结构实跑并留痕（2026-09-22 本地）。
+- §8 F6 那条"加回科目名转红"的变异即上表 M1，已实跑。
+
+### 9.3 仓库接线调用点（JVM 侧无法转红的那一半）：设备实跑
+
+`RoomModelTaskRepository.execute()` 里"是否调用 `tutorToolRoundOutcomes`"这一行，JVM 侧
+没有构造仓库的测试端口（假端口对模型任务方法一律 `error`），删掉它不会让任何 JVM 用例转红。
+其设备侧钉已实跑（emulator-5554，2026-09-22 本地）：
+
+```
+:core:data:connectedDebugAndroidTest
+  -Pandroid.testInstrumentationRunnerArguments.class=com.tingyun.smartmistakebook.core.data.model.RoomModelTaskT6MasteryInstrumentedTest
+→ Starting 3 tests / Finished 3 tests，BUILD SUCCESSFUL（tests=3 failures=0）
+  aLegalCodeWriteRunsThroughTheGateAndIsRejectedAsUnanchoredNotUnAuthorized
+  aNoQuestionRoundWriteReachesTheRunnerAndTheGateDecides
+  aFabricatedCodeIsStructurallyRefusedBeforeItReachesTheRunner
+```
+
+### 9.4 可测 Android 版本边界（如实记录，不假装覆盖）
+
+- 本机：唯一 AVD `test_device` = **android-34 / google_apis / x86_64**；已装系统镜像仅
+  `system-images/android-34/google_apis/x86_64`（android-37 只有编译平台、没有镜像）。
+- CI（`android-check.yml` instrumented job）：同一配置（api-level 34 / google_apis / x86_64 /
+  pixel_6）。
+- 应用声明范围 `minSdk 23 / targetSdk 36 / compileSdk 37`，**API 34 之外的版本在本机与 CI
+  均不可测**（没有对应系统镜像/AVD）。仓库脚本 `tools/android-env.ps1` 指向的
+  `smart_mistake_book_api_36` AVD 在本机不存在（另一会话的工具链，本节只记录不改）。
