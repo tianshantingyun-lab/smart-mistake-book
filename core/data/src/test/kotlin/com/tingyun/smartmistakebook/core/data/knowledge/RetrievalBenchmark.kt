@@ -4,6 +4,14 @@ import com.tingyun.smartmistakebook.core.database.KnowledgeNodeSeedRecord
 import com.tingyun.smartmistakebook.core.database.KnowledgeSearchFeatureExtractor
 import com.tingyun.smartmistakebook.core.model.KnowledgeNodeGranularity
 import com.tingyun.smartmistakebook.core.model.KnowledgeNodeVerificationStatus
+import java.io.File
+import java.security.MessageDigest
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonObject
 
 /**
  * 四科检索评测的**同一套题面与同一套口径**，供两个基准共用：
@@ -209,6 +217,109 @@ internal object RetrievalBenchmark {
             }
     }
 
+    /**
+     * MISS 诊断的**放宽深度**——不是判分口径。
+     *
+     * 判分固定 top-5（[SCORED_TOP_K]，口径不得动）；这里只回答"再放宽看，预期节点排到第几、
+     * 还是在候选里根本不存在"。这一个数把 D-01 的两种病因分开：
+     * **rank=名次** = 在候选里、只是被更强的候选挤下去（排序问题，IDF/长度归一化能救）；
+     * **rank=absent** = 该深度内根本没有（索引/特征问题，排序怎么调都救不回来）。
+     *
+     * **名次口径**（两侧必须逐字相同才可比）：把该路线的候选放宽到本深度后，取**返回序列
+     * （父节点前置后）的前 [MISS_PROBE_LIMIT] 名**当诊断窗口，名次是窗口内的 1 起始位置。
+     * 判分用的 top-5 结果**不从这里取**，所以放宽不会污染任何已出的分数。
+     *
+     * **跨侧对照纪律**（2026-09-23 实测）：两侧 MISS **集合**逐题一致（对称差 0）；**名次**
+     * 可差 1~3 位——父节点前置块的条数与序不同（镜像按包内出现序、真 SQL 按 rowid 序）会让
+     * 窗口内位置整体位移。所以集合是两侧对齐的判据，名次只在本侧窗口内解释，不跨侧当同一口径。
+     */
+    const val MISS_PROBE_LIMIT = 256
+
+    /** 一条未命中 top-5 的题 + 它的放宽诊断。 */
+    data class GoldenMiss(
+        val case: GoldenCase,
+        /** 放宽到 [MISS_PROBE_LIMIT] 后预期节点的 1 起始名次；0 = absent（该深度内不存在）。 */
+        val probeRank: Int,
+    )
+
+    /**
+     * 逐题 MISS 清单（`query` + `expectedSlug` + `rank|absent` 三件套）。
+     *
+     * 只对 [GoldenRouteResult.scores] 里未命中的题调 [probe]（已命中的题不进清单，
+     * 免得清单被"命中的题"稀释）。[probe] 收到 `(题, 深度)`，返回该路线的候选序列——
+     * 判分用的 top-5 结果**不从这里取**，所以放宽不会污染任何已出过的分数。
+     * 名次取**返回序列的前 [MISS_PROBE_LIMIT] 名**内的位置（`take` 不能省：store 的返回形态
+     * 是"父节点前置 + matched"，序列本身可以长过深度，不截断就会报出超过声明深度的名次）。
+     */
+    fun goldenMisses(
+        result: GoldenRouteResult,
+        probe: (GoldenCase, Int) -> List<KnowledgeNodeSeedRecord>,
+    ): List<GoldenMiss> = result.scores.filterNot { it.hit }.map { score ->
+        val window = probe(score.case, MISS_PROBE_LIMIT).take(MISS_PROBE_LIMIT)
+        val probeRank = window.indexOfFirst {
+            it.knowledgeNodeId.endsWith(ATOMIC_ID_SUFFIX + score.case.expectedSlug)
+        }.let { if (it < 0) 0 else it + 1 }
+        GoldenMiss(score.case, probeRank)
+    }
+
+    /**
+     * MISS 清单的渲染。**JVM 落盘与仪表化日志用同一格式**（纯字符串拼接：
+     * 仪表化侧实测过模板插值渲染异常，两侧都避开插值，日志才能逐行对照）。
+     */
+    fun goldenMissLines(misses: List<GoldenMiss>): List<String> =
+        if (misses.isEmpty()) {
+            listOf("  （无 MISS：本路线 top-5 全命中）")
+        } else {
+            misses.map { miss ->
+                "  MISS [" + miss.case.subject + "] " + miss.case.query +
+                    " | expectedSlug=" + miss.case.expectedSlug +
+                    " | chapter=" + miss.case.chapter +
+                    " | rank=" + (if (miss.probeRank > 0) miss.probeRank.toString() else "absent")
+            }
+        }
+
+    /** 逐章分布行（命中/总数 = Recall@5 + 该章 MISS 数），两侧同格式。 */
+    fun goldenChapterLines(result: GoldenRouteResult): List<String> =
+        result.byChapter.map { (chapter, value) ->
+            val chapterScores = result.scores.filter { it.case.chapter == chapter }
+            "  " + chapter + " = " + chapterScores.count { it.hit } + "/" + chapterScores.size +
+                " = " + value + " (MISS " + chapterScores.count { !it.hit } + ")"
+        }
+
+    /**
+     * 金标集的**唯一解析入口**（JVM 测量台与 Stage-1 实验台共用这一份）。
+     *
+     * "两处各解析一遍"是本评测台真实存在的失败类：同一份冻结题面被两处读成两种含义时，
+     * 两个分数就没法比，而两边都"看起来正常"。字段集与非空字符串在这里一次钉死。
+     */
+    fun loadGoldenCases(goldenFile: File): List<GoldenCase> =
+        (json.parseToJsonElement(goldenFile.readText(Charsets.UTF_8)) as JsonArray).map { element ->
+            val value = element.jsonObject
+            require(value.keys == GOLDEN_FIELD_NAMES) {
+                "金标集字段漂移：${value.keys.sorted()}"
+            }
+            GoldenCase(
+                chapter = value.stringField("chapter"),
+                expectedSlug = value.stringField("expectedSlug"),
+                query = value.stringField("query"),
+                subject = value.stringField("subject"),
+            )
+        }
+
+    /** 冻结金标集的 sha256（十六进制小写）——封存值复核（`.sha256` 文件）用。 */
+    fun sha256Hex(bytes: ByteArray): String =
+        MessageDigest.getInstance("SHA-256").digest(bytes).joinToString("") { "%02x".format(it) }
+
+    private val json = Json { ignoreUnknownKeys = false }
+    private val GOLDEN_FIELD_NAMES = setOf("query", "expectedSlug", "chapter", "subject")
+
+    private fun JsonObject.stringField(name: String): String {
+        val primitive = this[name] as? JsonPrimitive ?: error("金标集字段 $name 不是字符串")
+        val content = primitive.contentOrNull ?: error("金标集字段 $name 不是字符串")
+        require(content.isNotBlank()) { "金标集字段 $name 为空" }
+        return content
+    }
+
     /** 判分口径：预期 slug 的原子节点是否落在该路线返回的前 [SCORED_TOP_K] 名。 */
     fun scoreGolden(
         routeName: String,
@@ -229,6 +340,36 @@ internal object RetrievalBenchmark {
     private const val ATOMIC_ID_SUFFIX = ":atomic:"
 
     /**
+     * 生产 B 路的**可信状态过滤集**（`ProblemOrganizationDao.searchSubjectKnowledgeRecallCandidates`
+     * 的 `verification_status IN (...)`）。抽成一份给所有金标路线共用：镜像与 Stage-1 各臂
+     * 各自写一遍，就等于"候选池"这一层可以悄悄分叉而没人发现（§2 共用口径：候选过滤一致）。
+     */
+    val TRUSTED_VERIFICATION_STATUSES: Set<String> = setOf(
+        KnowledgeNodeVerificationStatus.CURATED.name,
+        KnowledgeNodeVerificationStatus.SOURCE_GROUNDED.name,
+        KnowledgeNodeVerificationStatus.USER_CONFIRMED.name,
+    )
+
+    /** 空查询特征时生产 B 路的回退顺序（store 的 `readSubjectKnowledgeNodes` 排序，limit 压到 256）。 */
+    fun emptyQueryFallbackOrder(trusted: List<KnowledgeNodeSeedRecord>): List<KnowledgeNodeSeedRecord> =
+        trusted.sortedWith(
+            compareBy(
+                { verificationOrder(it.verificationStatus) },
+                { if (it.granularity == KnowledgeNodeGranularity.ATOMIC.name) 0 else 1 },
+                { it.canonicalName },
+                { it.knowledgeNodeId },
+            ),
+        ).take(EMPTY_QUERY_FALLBACK_LIMIT)
+
+    private const val EMPTY_QUERY_FALLBACK_LIMIT = 256
+
+    private fun verificationOrder(status: String): Int = when (status) {
+        KnowledgeNodeVerificationStatus.CURATED.name -> 0
+        KnowledgeNodeVerificationStatus.SOURCE_GROUNDED.name -> 1
+        else -> 2
+    }
+
+    /**
      * **B 路（生产 SQL 倒排）的 JVM 镜像**——SQL 排序的 JVM 镜像，真 SQL 以仪表化为准。
      *
      * 逐条对齐 `RoomKnowledgeBaseStore.readSubjectKnowledgeRecallCandidates` 的生产语义：
@@ -243,6 +384,8 @@ internal object RetrievalBenchmark {
      *   granularity → canonical_name → id，limit 压到 256）；
      * - 返回 = `parents + matched`（匹配节点的父 topic 前置——生产 store 的真实返回形态，
      *   父节点在生产的行序是 rowid 序，镜像按包内出现序取，保证 JVM 侧确定性可复现）。
+     *   另有两个**只作诊断**的返回形态：[matchedOnly]（不前置父节点——各臂判分数所在的口径）与
+     *   [matchedFirst]（D1 候选：matched 前置、父节点排其后）。排序与候选过滤三者逐字相同。
      *
      * 它回答的问题：生产 v1 形状（裸 B 路 limit=5，SQL 倒排二值 TF 排序）在 JVM 上
      * 保真到什么程度——[goldenBRoute] 在它上面跑同一判分口径（top-5 裸排序），与
@@ -256,56 +399,84 @@ internal object RetrievalBenchmark {
         private val nodeFeatures: Map<String, Set<String>> =
             nodes.associate { it.knowledgeNodeId to KnowledgeSearchFeatureExtractor.fromNode(it) }
         private val nodesInPackOrder = nodes
-        private val TRUSTED = setOf(
-            KnowledgeNodeVerificationStatus.CURATED.name,
-            KnowledgeNodeVerificationStatus.SOURCE_GROUNDED.name,
-            KnowledgeNodeVerificationStatus.USER_CONFIRMED.name,
-        )
 
         val totalFeatureRows: Long = nodeFeatures.values.sumOf { it.size.toLong() }
         val maxFeaturesPerNode: Int = nodeFeatures.values.maxOfOrNull { it.size } ?: 0
 
+        /** 生产 store 的返回形态：`.distinctBy(id)` 后的 `parents + matched`。 */
         fun recall(subject: String, questionText: String, limit: Int): List<KnowledgeNodeSeedRecord> {
             val queryFeatures = KnowledgeSearchFeatureExtractor.fromQuestion(questionText)
-            val trusted = nodesInPackOrder.filter {
-                it.subject == subject && it.verificationStatus in TRUSTED
-            }
             if (queryFeatures.isEmpty()) {
-                // 镜像 store 的空特征回退（readSubjectKnowledgeNodes 的顺序）
-                return trusted.sortedWith(
-                    compareBy(
-                        { verificationOrder(it.verificationStatus) },
-                        { if (it.granularity == KnowledgeNodeGranularity.ATOMIC.name) 0 else 1 },
-                        { it.canonicalName },
-                        { it.knowledgeNodeId },
-                    ),
-                ).take(limit.coerceAtMost(256))
+                // 镜像 store 的空特征回退（readSubjectKnowledgeNodes 的顺序）：生产此时不走倒排、也不前置父节点
+                return emptyQueryFallbackOrder(trustedPool(subject)).take(limit)
             }
-            val counted: List<Pair<KnowledgeNodeSeedRecord, Int>> = trusted
-                .map { node ->
-                    node to nodeFeatures.getValue(node.knowledgeNodeId).count { it in queryFeatures }
-                }
-                .filter { (_, matchedCount) -> matchedCount > 0 }
-            val matched = counted
-                .sortedWith(
-                    compareByDescending<Pair<KnowledgeNodeSeedRecord, Int>> { it.second }
-                        .thenBy { (node, _) -> if (node.granularity == KnowledgeNodeGranularity.ATOMIC.name) 0 else 1 }
-                        .thenBy { (node, _) -> node.canonicalName }
-                        .thenBy { (node, _) -> node.knowledgeNodeId },
-                )
-                .take(limit)
-                .map { (node, _) -> node }
+            val matched = matchedRanked(subject, queryFeatures, limit)
+            return (parentsOf(matched) + matched).distinctBy { it.knowledgeNodeId }
+        }
+
+        /**
+         * **matched-only 口径**（**不是生产判分口径**，只作诊断）：只返回排序后的 matched 序列，
+         * **不前置父节点**。它是"排序本身有多好"的这一维——Stage-1 各臂的判分数（如臂 A 的
+         * 0.6556）都出自这个口径，而生产 store 返回的是 [recall] 的 `parents + matched`。
+         */
+        fun matchedOnly(subject: String, questionText: String, limit: Int): List<KnowledgeNodeSeedRecord> {
+            val queryFeatures = KnowledgeSearchFeatureExtractor.fromQuestion(questionText)
+            return if (queryFeatures.isEmpty()) {
+                emptyQueryFallbackOrder(trustedPool(subject)).take(limit)
+            } else {
+                matchedRanked(subject, queryFeatures, limit)
+            }
+        }
+
+        /**
+         * **D1 候选返回形态**：matched 前置、父节点排在其后（`matched + parents`）。
+         *
+         * 与 [recall] 的差别只在序列位置：父节点仍返回（上层解释需要），但不再挤占判分窗口的
+         * 前 5；判分取前 5 时因此与 [matchedOnly] 同窗口。生产 SQL 只改返回顺序即可落地。
+         */
+        fun matchedFirst(subject: String, questionText: String, limit: Int): List<KnowledgeNodeSeedRecord> {
+            val queryFeatures = KnowledgeSearchFeatureExtractor.fromQuestion(questionText)
+            if (queryFeatures.isEmpty()) {
+                return emptyQueryFallbackOrder(trustedPool(subject)).take(limit)
+            }
+            val matched = matchedRanked(subject, queryFeatures, limit)
+            return (matched + parentsOf(matched)).distinctBy { it.knowledgeNodeId }
+        }
+
+        private fun trustedPool(subject: String): List<KnowledgeNodeSeedRecord> =
+            nodesInPackOrder.filter {
+                it.subject == subject && it.verificationStatus in TRUSTED_VERIFICATION_STATUSES
+            }
+
+        /**
+         * 生产 SQL 的排序镜像（`ORDER BY COUNT(DISTINCT search_feature) DESC,` ATOMIC 优先,
+         * `canonical_name ASC, knowledge_node_id ASC`）取前 [limit]：matched 序列本身。
+         */
+        private fun matchedRanked(
+            subject: String,
+            queryFeatures: Set<String>,
+            limit: Int,
+        ): List<KnowledgeNodeSeedRecord> = trustedPool(subject)
+            .map { node -> node to nodeFeatures.getValue(node.knowledgeNodeId).count { it in queryFeatures } }
+            .filter { (_, matchedCount) -> matchedCount > 0 }
+            .sortedWith(
+                compareByDescending<Pair<KnowledgeNodeSeedRecord, Int>> { it.second }
+                    .thenBy { (node, _) -> if (node.granularity == KnowledgeNodeGranularity.ATOMIC.name) 0 else 1 }
+                    .thenBy { (node, _) -> node.canonicalName }
+                    .thenBy { (node, _) -> node.knowledgeNodeId },
+            )
+            .take(limit)
+            .map { (node, _) -> node }
+
+        /**
+         * matched 的父节点（去掉同时也在 matched 里的），按**包内出现序**——生产 `readKnowledgeNodesByIds`
+         * 的 rowid 序在 JVM 侧的确定性镜像（见类注释）。
+         */
+        private fun parentsOf(matched: List<KnowledgeNodeSeedRecord>): List<KnowledgeNodeSeedRecord> {
             val matchedIds = matched.mapTo(HashSet<String>()) { it.knowledgeNodeId }
             val parentSet = matched.mapNotNullTo(HashSet<String>()) { it.parentKnowledgeNodeId }
             val parentIds = parentSet.minus(matchedIds)
-            val parents = nodesInPackOrder.filter { it.knowledgeNodeId in parentIds }
-            return (parents + matched).distinctBy { it.knowledgeNodeId }
-        }
-
-        private fun verificationOrder(status: String): Int = when (status) {
-            KnowledgeNodeVerificationStatus.CURATED.name -> 0
-            KnowledgeNodeVerificationStatus.SOURCE_GROUNDED.name -> 1
-            else -> 2
+            return nodesInPackOrder.filter { it.knowledgeNodeId in parentIds }
         }
     }
 
@@ -338,7 +509,14 @@ internal object RetrievalBenchmark {
         )
     }
 
-    /** 金标 JVM 指标文件。测量台性质——**不含阈值断言**（预注册判据见 docs/kb-vector-topic-decision.md）。 */
+    /**
+     * 金标 JVM 指标文件。测量台性质——**不含阈值断言**（预注册判据见 docs/kb-vector-topic-decision.md）。
+     *
+     * 每条路线一节：主集 Recall@5 / MRR、逐章分布（命中/总数 + MISS 数）、逐题 MISS 清单
+     * （`query` + `expectedSlug` + `rank|absent`）。[missesByRoute] 以 `route` 名为键——
+     * 漏传某条路线的 MISS 清单会让该节只剩表头，由 `GoldenRetrievalJvmTest` 的
+     * 产物契约断言抓（清单条数必须等于该路线未命中数）。
+     */
     fun goldenMetricsFile(
         packId: String,
         nodeCount: Int,
@@ -346,18 +524,25 @@ internal object RetrievalBenchmark {
         goldenInfo: String,
         a: GoldenRouteResult,
         b: GoldenRouteResult,
+        missesByRoute: Map<String, List<GoldenMiss>> = emptyMap(),
     ): String = buildString {
-        appendLine("# golden-jvm-metrics — GoldenRetrievalJvmTest 测量台（不断言阈值，D12 预注册判据见 docs/kb-vector-topic-decision.md）")
+        appendLine("# golden-jvm-metrics — GoldenRetrievalJvmTest 测量台（不断言质量阈值，D12 预注册判据见 docs/kb-vector-topic-decision.md）")
         appendLine("# pack=$packId nodes=$nodeCount")
         appendLine("# index: $indexInfo")
         appendLine("# golden: $goldenInfo")
         for (result in listOf(a, b)) {
+            val misses = missesByRoute[result.route].orEmpty()
             appendLine("")
             appendLine("== ${result.route} ==")
             appendLine("Recall@5(主集)=${result.recallAt5} (${result.hits}/${result.total})")
             appendLine("MRR=${result.mrr}")
             appendLine("逐章 Recall@5:")
-            result.byChapter.forEach { (chapter, value) -> appendLine("  $chapter = $value") }
+            goldenChapterLines(result).forEach(::appendLine)
+            appendLine(
+                "MISS 清单（${misses.size} 例；rank = 预期节点在本路线返回序列放宽窗口" +
+                    "（前 $MISS_PROBE_LIMIT 名）内的名次，absent = 该窗口内不存在）:",
+            )
+            goldenMissLines(misses).forEach(::appendLine)
         }
         appendLine("")
         appendLine("== 逐题 ==")

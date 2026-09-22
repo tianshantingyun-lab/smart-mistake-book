@@ -858,7 +858,7 @@ that the draft is reachable or resolved.
 
 **Reopen condition.** 门 `latex_damage` 非 0。
 
-## KD-24 (open) · 去截断实验（v2）净伤害词面路由已回滚——公共 gram 通胀打掉窄路召回（19 例自由落体）+ 宽路 p95 663ms 超预算；别名截断缺陷（62% 节点）改由已开启的 dense 兜底议题结构性消灭，词面侧不再以去截断方式修
+## KD-24 (open) · 去截断实验（v2）净伤害词面路由已回滚——公共 gram 通胀打掉窄路召回（19 例自由落体）+ 宽路 p95 663ms 超预算；别名截断缺陷（62% 节点）改由已开启的 dense 兜底议题结构性消灭，词面侧不再以去截断方式修（口径更正见末段）
 
 **Symptom.** 2026-09-22 第四轮按 D12 施工去截断索引（v2：删
 `MAX_SEARCH_FRAGMENTS=16` / `MAX_NODE_FEATURES=192`）并把 KNOWLEDGE_READ / MASTERY_READ
@@ -915,3 +915,20 @@ LiteRT ≈30MB / RRF / 无 ANN）见决策文档 §4，立项需另一次用户�
 (ii) `INDEX_VERSION` 被改动但锚点换血语义（不等即重建）被弱化；(iii) 19 例回归
 （v1 索引 × B64→A）跌破 19/19——那是窄路召回的真实回归，不是设备噪声（KD-2 的
 预算系数不覆盖召回命中断言）。
+
+**口径更正（2026-09-23，WP-A；只更正读法，不改归宿、不改重开条件）。** 本条目（及
+标题、审计 §1.4、`KnowledgeSearchFeatureExtractor.kt` 文档注释）引用的「**62%** 节点
+别名被索引截断」是**含 boundary 片段**的读法。对成品包
+`core/data/src/main/resources/knowledge/moe-2025-four-subjects-v1.json` 的 3,572 个
+原子节点、按 `KnowledgeSearchFeatureExtractor.fromNode` 的实际切片规则（名称 + 排序后
+别名 + boundary，片段按 `[^\p{L}\p{N}]+` 切分，判据 = 片段数 > 16）复算：
+
+- **纯名称 + 别名超 16 片段：661 / 3,572 = 18.51%**——这才是"别名被截断"的节点面；
+- **含 boundary 片段超 16 片段：2,208 / 3,572 = 61.81%**（审计记 2,209，差 1 条为口径
+  边界，不影响结论）。
+
+更正后的读法：**"62%" 不等于"62% 的节点的别名进不了索引"**——别名被截断的节点面是
+18.51%，被截掉的主要是 boundary 摘录（61.81%）。**归宿不变**（该缺陷仍由已开启的同层
+dense 兜底议题结构性消灭，词面侧不再以去截断方式修——v2 实测净伤害即本条登记的事实）；
+**重开条件不变**（原文三条一字不动）。复算口径与命令的完整记录见
+`docs/kb-vector-topic-decision.md` §7 附录 A.1。

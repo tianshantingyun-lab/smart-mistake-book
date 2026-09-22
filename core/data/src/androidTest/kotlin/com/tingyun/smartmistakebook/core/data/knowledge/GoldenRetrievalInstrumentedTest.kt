@@ -25,10 +25,12 @@ import java.security.MessageDigest
  * **真 SQL 以本测试为准**。两条数对照，差值即"镜像与真库的口径漂移"，应当可见且小。
  *
  * 数据链（每一步都可复核）：
- * 1. 题面 = 冻结金标集。androidTest assets 里带的是**逐字节副本**（构建时从
- *    `tools/kb_coverage/tables/` 拷入）；本测试运行时对 assets 内的 `.sha256` 封存复核
- *    完整性，并把算出的 hex 打进日志，与仓库根封存值人工交叉核对；
- *    仓库侧那份由 `GoldenRetrievalJvmTest`（档 1，每次 JVM 跑都验 sha256）钉住。
+ * 1. 题面 = 冻结金标集。androidTest assets 里带的是**逐字节副本**（`main` 构建期由
+ *    `:core:data:syncGoldenQueryAssets` 从 `tools/kb_coverage/tables/` 拷入，且接在
+ *    `merge*AndroidTestAssets` 之前——不再靠手工同步）；本测试运行时对 assets 内的
+ *    `.sha256` 封存复核完整性，并把算出的 hex 打进日志，与仓库根封存值人工交叉核对；
+ *    仓库侧那份由 `GoldenRetrievalJvmTest`（档 1，每次 JVM 跑都验 sha256，并逐字节比对
+ *    仓库份与副本）钉住。
  * 2. 包数据 = 真实 `BundledKnowledgeBaseInstaller.install`（随包 50MB JSON → Room，
  *    与生产同一入口）。
  * 3. 索引 = v1 截断规则（`KnowledgeSearchFeatureExtractor.INDEX_VERSION=1`；2026-09-22
@@ -41,9 +43,20 @@ import java.security.MessageDigest
  *    v2 实验的两组数（v2 索引 × 裸 B5 首测 0.5222、v2 索引 × B512→A 0.3444/p95 663ms）
  *    封存于同一文档 §3/§3.1，三组数并列对照。
  *
- * **测量台 + 一条性能门**：Recall/MRR **不断言阈值**（D12 预注册判据
- * `docs/kb-vector-topic-decision.md`，出数后一次性判定）；唯一硬断言是 p95 预算
- * 150ms×CI 系数（沿用 [KnowledgeContextRetrievalInstrumentedTest] 的门与系数来源）。
+ * **测量台 + 一条性能门 + 两条回归地板**：Recall/MRR 的质量**判据**仍是 D12 预注册的
+ * （`docs/kb-vector-topic-decision.md`，出数后一次性判定，本测试不参与）；这里额外钉的
+ * 两条是**回归地板**（主集 Recall@5 ≥ [RECALL_MAIN_FLOOR]、MRR ≥ [MRR_MAIN_FLOOR]），
+ * 即"不得比 v1 生产形状基线更差"的告示牌，**不是质量目标**，也不得用来改判预注册结论。
+ * 另一条硬断言是 p95 预算 150ms×CI 系数（沿用
+ * [KnowledgeContextRetrievalInstrumentedTest] 的门与系数来源）。
+ *
+ * **诊断产物**：逐章分布（命中/总数 + MISS 数）与逐题 MISS 清单
+ * （`query` + `expectedSlug` + `rank|absent`）打进 System.out（logcat 的 `System.out` 标签）。
+ * `rank=N` ⇒ 预期节点在候选里、被更强的候选挤到第 N（排序问题）；`absent` ⇒ 放宽窗口
+ * （本路线返回序列前 [MISS_PROBE_LIMIT] 名）内根本不存在（索引/特征问题）。
+ * 窗口口径与 JVM 镜像逐字相同、清单格式也一致，两侧 MISS **集合**可逐题对照
+ * （2026-09-23 实测对称差 0）；**名次**只在本侧窗口内解释——父节点前置块的条数与序不同
+ * （镜像按包内出现序、真 SQL 按 rowid 序），同样的题可差 1~3 位。
  *
  * 说明：任务书写的"in-memory Room"在本模块不可达——`openInMemory` 是
  * `:core:database` 的 internal，而金标集与安装器都在 `:core:data`；本测试因此沿用
@@ -124,6 +137,28 @@ class GoldenRetrievalInstrumentedTest {
             val chapterStats = perCase.groupBy { it.chapter }.map { entry ->
                 Triple(entry.key, entry.value.count { s -> s.hitInAllSamples }, entry.value.size)
             }
+            // MISS 诊断（**判分口径不动**：上面的 top-5 分数仍来自裸 B 路 limit=5 的那次调用）。
+            // 只对未命中的题放宽深度再召一次，回答"排到第几 / 到底在不在"——D-01 的两种病因
+            // 靠这一个数分开：rank=N 是排序问题（IDF/长度归一化能救），absent 是索引/特征问题。
+            val misses = perCase.filter { s -> !s.hitInAnySample }.map { s ->
+                val probe = store.readSubjectKnowledgeRecallCandidates(
+                    subject = s.subject,
+                    searchFeatures = KnowledgeSearchFeatureExtractor.fromQuestion(s.query),
+                    limit = MISS_PROBE_LIMIT,
+                )
+                // `take` 不能省：store 返回"父节点前置 + matched"，序列可长过深度，
+                // 不截断就会报出超过声明深度的名次（2026-09-23 实测过一次 rank=284>256）。
+                val probeRank = probe.take(MISS_PROBE_LIMIT).indexOfFirst {
+                    it.knowledgeNodeId.endsWith(ATOMIC_SUFFIX + s.expectedSlug)
+                }.let { if (it < 0) 0 else it + 1 }
+                GoldenMiss(
+                    subject = s.subject,
+                    chapter = s.chapter,
+                    query = s.query,
+                    expectedSlug = s.expectedSlug,
+                    probeRank = probeRank,
+                )
+            }
             // 先落全部数、最后断言——断言红了数也不丢（第一版断言在输出前，p95 一红指标全失）。
             // 输出用**纯字符串拼接**（不依赖 `$it.属性` 模板插值）：本环境实测过插值渲染异常，
             // 拼接形式在 dex 里是确定的字节码，排除这一类干扰。
@@ -139,13 +174,44 @@ class GoldenRetrievalInstrumentedTest {
             println("主集 Recall@5(全样本命中) = " + recallMainAll + " (" + hitAllCount + "/" + perCase.size + ")")
             println("主集 Recall@5(任一样本命中) = " + recallMainAny)
             println("MRR(最优名次) = " + mrrMain)
-            println("逐章 Recall@5(全样本命中):")
+            println("逐章分布（命中/总数 = Recall@5, MISS 数）:")
             chapterStats.forEach { (chapter, hitCount, size) ->
-                println("  " + chapter + " = " + hitCount.toDouble() / size)
+                println(
+                    "  " + chapter + " = " + hitCount + "/" + size + " = " +
+                        hitCount.toDouble() / size + " (MISS " + (size - hitCount) + ")",
+                )
             }
-            perCase.filter { s -> !s.hitInAnySample }.forEach { s ->
-                println("MISS [" + s.subject + "] " + s.query + " (期望 " + s.expectedSlug + ", 章: " + s.chapter + ")")
+            println(
+                "MISS 清单（" + misses.size + "/" + perCase.size + " 例；rank = 预期节点在本路线" +
+                    "返回序列放宽窗口（前 " + MISS_PROBE_LIMIT + " 名）内的名次，absent = 该窗口内不存在）:",
+            )
+            if (misses.isEmpty()) {
+                println("  （无 MISS：本路线 top-5 全命中）")
+            } else {
+                misses.forEach { miss ->
+                    println(
+                        "  MISS [" + miss.subject + "] " + miss.query +
+                            " | expectedSlug=" + miss.expectedSlug +
+                            " | chapter=" + miss.chapter +
+                            " | rank=" + (if (miss.probeRank > 0) miss.probeRank.toString() else "absent"),
+                    )
+                }
             }
+            // 回归地板（**下界，不是质量目标**）：基线 = v1 生产形状实测 0.5444 / 0.1511
+            // （2026-09-22/23 多次复跑零漂移，docs/kb-vector-topic-decision.md §3.2）。
+            // 地板故意贴紧基线下沿：这是"不得更差"的告示牌，任何真实退化都该立刻红，
+            // 不是达标线；D12 预注册判据（主集 ≥0.75 且逐章 ≥0.60）另行一次性判定，
+            // 与本地板互不影响。基线提升后同步抬高并记录旧值（旧值：0.54 / 0.15）。
+            assertTrue(
+                "主集 Recall@5(全样本命中) = " + recallMainAll + " 低于回归地板 " + RECALL_MAIN_FLOOR +
+                    "（v1 生产形状基线 0.5444；这是不得更差的下界，不是质量目标）",
+                recallMainAll >= RECALL_MAIN_FLOOR,
+            )
+            assertTrue(
+                "主集 MRR = " + mrrMain + " 低于回归地板 " + MRR_MAIN_FLOOR +
+                    "（v1 生产形状基线 0.1511；这是不得更差的下界，不是质量目标）",
+                mrrMain >= MRR_MAIN_FLOOR,
+            )
             assertTrue(
                 "real-SQL recall p95 was ${p95}ms (budget ${RECALL_P95_BUDGET_MILLIS}ms); " +
                     "n=${elapsedMillis.size} p50=${p50}ms max=${elapsedMillis.max()}",
@@ -172,6 +238,19 @@ class GoldenRetrievalInstrumentedTest {
         val hitInAllSamples: Boolean,
         val hitInAnySample: Boolean,
         val bestRank: Int,
+    )
+
+    /**
+     * 一条未命中 top-5 的题的**放宽诊断**（判分口径不动，只回答"再放宽能看到第几"）。
+     * 与 JVM 侧 `RetrievalBenchmark.GoldenMiss` 同名同义，日志格式也一致，两侧可逐行对照。
+     */
+    private data class GoldenMiss(
+        val subject: String,
+        val chapter: String,
+        val query: String,
+        val expectedSlug: String,
+        /** 放宽窗口（返回序列前 [MISS_PROBE_LIMIT] 名）内预期节点的 1 起始名次；0 = absent。 */
+        val probeRank: Int,
     )
 
     /**
@@ -223,6 +302,26 @@ class GoldenRetrievalInstrumentedTest {
         const val SCORED_TOP_K = 5
         const val SAMPLES_PER_QUERY = 5
         const val ATOMIC_SUFFIX = ":atomic:"
+
+        /**
+         * MISS 诊断的**放宽深度**——不是判分口径（判分固定 top-5）。
+         * 名次口径 = 候选放宽到本深度后，**返回序列（父节点前置 + matched）前 256 名**的窗口内位置。
+         * 与 JVM 镜像的 `RetrievalBenchmark.MISS_PROBE_LIMIT` 同值同口径：两侧 MISS 集合逐题
+         * 可对照；名次因父节点前置块的序不同（镜像按包内序、真 SQL 按 rowid 序）可差 1~3 位，
+         * 只在本侧窗口内解释。
+         */
+        const val MISS_PROBE_LIMIT = 256
+
+        /**
+         * 回归地板（**下界，不是质量目标**）：v1 生产形状（v1 截断索引 × 裸 B5）实测基线
+         * 主集 Recall@5 = 0.5444、MRR = 0.1511（多次复跑零漂移，见
+         * `docs/kb-vector-topic-decision.md` §3.2）。地板贴紧基线下沿是有意的：它是
+         * "不得更差"的告示牌，任何真实退化都该当场红。基线提升后同步抬高并记录旧值
+         * （当前记录：旧值 0.54 / 0.15）。与 D12 预注册判据（主集 ≥0.75 且逐章 ≥0.60）
+         * 互不影响，不得用本地板改判预注册结论。
+         */
+        const val RECALL_MAIN_FLOOR = 0.54
+        const val MRR_MAIN_FLOOR = 0.15
 
         /**
          * 与参照测试同源的门：150ms×CI 系数（CI 的 runner 模拟器慢 ~2-3x，
