@@ -260,6 +260,16 @@ internal interface ProblemOrganizationDao {
     @Query("DELETE FROM knowledge_search_feature WHERE knowledge_node_id IN (:ids)")
     suspend fun deleteSearchFeaturesForNodes(ids: Set<String>)
 
+    /**
+     * 整科删检索特征：抽取规则版本变化（`knowledge_search_index_state` 锚点落后于
+     * `KnowledgeSearchFeatureExtractor.INDEX_VERSION`）时按科重建用。
+     *
+     * 与 [deleteSearchFeaturesForNodes] 不同，它不挑节点——旧规则建的行哪怕节点一个没变
+     * 也是残缺的（v1 截断了 62% 节点的大半别名），必须整科换血。
+     */
+    @Query("DELETE FROM knowledge_search_feature WHERE subject = :subject")
+    suspend fun deleteSearchFeaturesForSubject(subject: String): Int
+
     @Upsert
     suspend fun upsertKnowledgeSources(sources: List<KnowledgeSourceEntity>)
 

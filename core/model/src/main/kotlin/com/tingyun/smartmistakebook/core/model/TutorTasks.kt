@@ -220,6 +220,25 @@ data class TutorPlanInput(
     val priorTurns: List<TutorTurnHistoryEntry> = emptyList(),
     /** Stored model advisories (teaching focus / misconception) for this question. */
     val priorTeachingAdvisories: List<String> = emptyList(),
+    /**
+     * 全 5 工具面（D8：Plan 复用 Respond 的工具环）：非空即启用工具协议。
+     * 与 [TutorRespondInput.toolDeclarations] 同一口径、同一组轮次校验。
+     */
+    val toolDeclarations: List<TutorToolName> = emptyList(),
+    /** Results of prior tool rounds; round 1 dispatch always leaves this empty. */
+    val toolRoundResults: List<TutorToolRoundResult> = emptyList(),
+    /**
+     * 本会话已披露的知识点代号条目（单一代号通道，D5）。派发时由 feature 提供
+     * **未赋码**条目（[TutorKnowledgeCode.code] = null：当前题确认绑定 / 检索候选 / 前置），
+     * core:data 的会话注册表在派生前按首现顺序赋码 K1..Kn 并回写输入（持久化形状即赋码
+     * 形状，会话内稳定）。空 = 本轮没有任何预披露（拍照检索零命中即空注入，维持现状语义）。
+     */
+    val knowledgeCodes: List<TutorKnowledgeCode> = emptyList(),
+    /**
+     * 教学材料**加载失败**（区别于"检索零命中"的合法空注入）：true 时 prompt 显式披露
+     * "教学材料未加载"，模型不得假装手里有资料。加载成功但零命中时保持 false。
+     */
+    val teachingReferencesLoadFailed: Boolean = false,
 ) : ModelTaskInput {
     override val kind: ModelTaskKind
         get() = ModelTaskKind.TUTOR_PLAN
@@ -280,6 +299,35 @@ data class TutorPlanInput(
         require(priorTurns.map(TutorTurnHistoryEntry::turnOrdinal) == (1 until turnOrdinal).toList()) {
             "Tutor history ordinals must be contiguous"
         }
+        // 工具环（D8：Plan 复用 Respond 的工具环）——与 TutorRespondInput 的同名校验逐条同参。
+        require(toolDeclarations.size <= MAX_TOOL_DECLARATIONS) {
+            "Tutor plan declares too many tools"
+        }
+        require(toolDeclarations.distinct().size == toolDeclarations.size) {
+            "Tutor plan tool declarations must be distinct"
+        }
+        require(toolRoundResults.size <= TutorToolRoundResult.MAX_TOOL_ROUNDS) {
+            "Tutor plan carries too many tool rounds"
+        }
+        require(toolRoundResults.isEmpty() || toolDeclarations.isNotEmpty()) {
+            "Tutor plan tool rounds require declared tools"
+        }
+        require(
+            toolRoundResults.map(TutorToolRoundResult::roundOrdinal) ==
+                (1..toolRoundResults.size).toList(),
+        ) { "Tutor plan tool round ordinals must be sequential from one" }
+        // 单一代号通道（D5）：披露集有界、节点与代号各自不重。
+        require(knowledgeCodes.size <= MAX_SESSION_KNOWLEDGE_CODES) {
+            "Tutor plan discloses too many knowledge codes"
+        }
+        require(
+            knowledgeCodes.map(TutorKnowledgeCode::knowledgeNodeId).distinct().size ==
+                knowledgeCodes.size,
+        ) { "Tutor plan knowledge-code node ids must be unique" }
+        require(
+            knowledgeCodes.mapNotNull(TutorKnowledgeCode::code).distinct().size ==
+                knowledgeCodes.count { it.code != null },
+        ) { "Tutor plan knowledge-code values must be unique" }
     }
 
     companion object {
@@ -387,13 +435,18 @@ data class TutorRespondInput(
      *
      * 都没有就是 null —— **真的无题轮**。
      *
-     * 消灭的失败（F1）：写工具的准入事实是"这一轮有没有题"，而模型声明只是这条事实的**一条**
-     * 来源。原生 `tool_calls` 路由的标准形态 content=null，模型复述题锚的唯一落点是每次调用的
-     * arguments；"没有复述"说明它没说，不说明这一轮没有题。本地已经知道答案时，把"这一轮来自
-     * 哪条解析路由"当成拒绝理由就是能力回退——改造前那条按 `input is TutorRespondInput` 的判据
-     * 在原生工具轮里是放行的。
+     * 2026-09-21 裁定（ADR 0001 / D6）之后它的消费面收窄：不再参与写工具准入（无题轮不再
+     * 结构性拒写），仍是**轮次绑定基底**——答案暴露守卫（F3 双层，`canExposeSolutionFor` +
+     * `requiresRoundQuestionBinding`）与候选菜单的第二来源。F1 的历史背景：模型声明只是
+     * "这一轮有没有题"的一条来源，原生 `tool_calls` 路由 content=null 时复述不是必然的，
+     * 本地已知锚避免把"解析路由"误当"语义事实"。
      */
     val knownRoundQuestion: RelatedProblemCandidate? = null,
+    /**
+     * 本会话已披露的知识点代号条目（单一代号通道，D5）；与 [TutorPlanInput.knowledgeCodes]
+     * 同一口径——派发时未赋码（code = null），core:data 会话注册表派生前赋码回写。
+     */
+    val knowledgeCodes: List<TutorKnowledgeCode> = emptyList(),
 ) : ModelTaskInput {
     override val kind: ModelTaskKind
         get() = ModelTaskKind.TUTOR_RESPOND

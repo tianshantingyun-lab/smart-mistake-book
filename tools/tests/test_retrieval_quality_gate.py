@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import contextlib
+import io
 import json
 import tempfile
 import unittest
@@ -104,6 +106,14 @@ class EvaluateTest(unittest.TestCase):
 
 
 class MainExitCodeTest(unittest.TestCase):
+    """main() 的退出码与 stdout 报告契约。
+
+    每个用例都捕获 stdout：档1 门禁会扫描整轮测试的 stdout，而负向用例
+    （阈值未达）的人读报告里含 `verdict : FAIL`——若放任它漏进测试套件的
+    共享 stdout，门禁会被自己钉死的正常负向输出误判红（2026-09-22 档1 假红）。
+    因此 verdict 行改为本类内的显式断言：行为契约不丢，共享输出不再带 FAIL。
+    """
+
     def setUp(self) -> None:
         self.golden_path = write_temp_json(
             {
@@ -117,37 +127,47 @@ class MainExitCodeTest(unittest.TestCase):
             },
         )
 
+    def run_main(self, argv: list[str]) -> tuple[int, str]:
+        with contextlib.redirect_stdout(io.StringIO()) as captured:
+            exit_code = rqg.main(argv)
+        return exit_code, captured.getvalue()
+
     def test_missing_results_file_exits_two(self) -> None:
-        exit_code = rqg.main(
+        exit_code, stdout = self.run_main(
             ["--golden", str(self.golden_path), "--results", "does-not-exist.json"],
         )
         self.assertEqual(2, exit_code)
+        # 错误路径只写 stderr，stdout 不得带报告/verdict（门禁扫的就是 stdout）。
+        self.assertEqual("", stdout)
 
     def test_passing_results_exit_zero(self) -> None:
         results_path = write_temp_json({"q1": ["math:monotonicity"]})
-        exit_code = rqg.main(
+        exit_code, stdout = self.run_main(
             ["--golden", str(self.golden_path), "--results", str(results_path)],
         )
         self.assertEqual(0, exit_code)
+        self.assertIn("verdict           : PASS", stdout)
 
     def test_failing_results_exit_one(self) -> None:
         results_path = write_temp_json({"q1": ["unrelated:node"]})
-        exit_code = rqg.main(
+        exit_code, stdout = self.run_main(
             ["--golden", str(self.golden_path), "--results", str(results_path)],
         )
         self.assertEqual(1, exit_code)
+        self.assertIn("verdict           : FAIL", stdout)
 
     def test_malformed_results_file_exits_two(self) -> None:
         results_path = write_temp_json(["not", "an", "object"])
-        exit_code = rqg.main(
+        exit_code, stdout = self.run_main(
             ["--golden", str(self.golden_path), "--results", str(results_path)],
         )
         self.assertEqual(2, exit_code)
+        self.assertEqual("", stdout)
 
     def test_report_json_is_written(self) -> None:
         results_path = write_temp_json({"q1": ["math:monotonicity"]})
         report_path = self.golden_path.with_name("report.json")
-        exit_code = rqg.main(
+        exit_code, stdout = self.run_main(
             [
                 "--golden",
                 str(self.golden_path),
@@ -158,6 +178,7 @@ class MainExitCodeTest(unittest.TestCase):
             ],
         )
         self.assertEqual(0, exit_code)
+        self.assertIn("verdict           : PASS", stdout)
         payload = json.loads(report_path.read_text(encoding="utf-8"))
         self.assertTrue(payload["passed"])
         self.assertEqual(1.0, payload["recall5"])

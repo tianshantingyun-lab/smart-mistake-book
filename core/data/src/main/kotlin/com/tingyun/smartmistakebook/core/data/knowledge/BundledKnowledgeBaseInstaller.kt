@@ -28,12 +28,54 @@ object BundledKnowledgeBaseInstaller {
     private const val MAX_SKIPPED_DETAIL = 50
 
     suspend fun install(database: StudyDatabasePort) = installMutex.withLock {
+        val installStartedAt = System.nanoTime()
+        // 快路径（D13/R4a）：manifest 是 111KB 小文件，单独解析、不触发整包解析；
+        // 先对进度戳——记录行的 packId 即按 manifest.packId 查询（DAO `WHERE pack_id = ?`），
+        // contentVersion 一致 ⟺ 上一次调和完整跑完且随包内容未变（WP2/R1 前提：
+        // 戳原子可信、仅 promote 刷新）。命中则**跳过全量解析与调和**，不触碰驻留 holder。
+        //
+        // 已知边界（登记于 `docs/kb-architecture-refactor-decisions-2026-09-21.md` §6）：
+        // 信戳不验包——戳一致但 APK 内 JSON 被改动不会被发现；威胁模型内无攻击者
+        // （APK 受签名保护，"每次都验"本身也只验 APK 自带资源），故接受而不加机制。
         val manifest = BundledKnowledgePackResources.updateManifest
+        if (manifest != null) {
+            val recorded = database.readContentInstallState(manifest.packId)
+            if (recorded != null && recorded.contentVersion == manifest.contentVersion) {
+                // 常驻观测：install 全程耗时。before/after 启动基线以它对比
+                // （`.jez/artifacts/r4a-startup-baseline-2026-09-22.md`）。
+                android.util.Log.d(
+                    "KnowledgeInstall",
+                    "install finished in ${elapsedMillis(installStartedAt)} ms " +
+                        "(fast path: content stamp matches, no parse, no reconcile)",
+                )
+                return@withLock
+            }
+        }
         BundledKnowledgePackResources.load().forEach { pack ->
             pack.validate()
             reconcile(database, pack, manifest?.takeIf { it.packId == pack.packId })
         }
+        android.util.Log.d(
+            "KnowledgeInstall",
+            "install finished in ${elapsedMillis(installStartedAt)} ms (full path: parse + reconcile)",
+        )
     }
+
+    /**
+     * 释放驻留的包对象图，供进程编排侧（Application）在 install() 成功返回后调用：
+     * 那一刻数据已在 Room，对象图使命结束。
+     *
+     * 安全前提：全仓唯一生产消费方是本 installer（`BundledKnowledgePackResources`
+     * 的 grep 核实；测试不算生产路径）。释放后，后续 install() 命中快路径时零解析；
+     * 若戳不一致（仅 App 升级后首次），全量解析会重新填充，调用方再释放一次。
+     * 可重复调用，空 holder 上是 no-op。
+     */
+    fun releaseResidentPacks() {
+        BundledKnowledgePackResources.clear()
+    }
+
+    private fun elapsedMillis(startedAtNano: Long): Long =
+        (System.nanoTime() - startedAtNano) / 1_000_000
 
     private suspend fun reconcile(
         database: StudyDatabasePort,
@@ -42,8 +84,10 @@ object BundledKnowledgeBaseInstaller {
     ) {
         val contentVersion = manifest?.contentVersion.orEmpty()
 
-        // 快速路径：上次调和**完整跑完**（进度行最后写，所以版本一致 ⟺ 跑完了），且包没变。
-        // 没有它，每次启动都要读约 2600 个节点加约 11000 条材料来确认"什么都没变"。
+        // 逐包进度锚点（纵深）：上次调和**完整跑完**（进度行最后写，所以版本一致 ⟹ 跑完了），
+        // 且包没变 → 跳过本包的差分和写戳。主闸已上移到 `install()`（manifest 先读、
+        // 戳一致则整次 install 零解析），这里覆盖"install 级检查之后状态又变"与
+        // 2020 样例包这类无 manifest（contentVersion 为空）的包：它们照旧逐次差分。
         if (contentVersion.isNotEmpty()) {
             val recorded = database.readContentInstallState(pack.packId)
             if (recorded?.contentVersion == contentVersion) return

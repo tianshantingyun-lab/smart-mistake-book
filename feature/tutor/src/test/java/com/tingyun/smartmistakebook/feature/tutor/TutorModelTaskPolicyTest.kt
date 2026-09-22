@@ -20,9 +20,13 @@ import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.QuestionBlockEvidence
 import com.tingyun.smartmistakebook.core.model.QuestionBlockProvenance
 import com.tingyun.smartmistakebook.core.model.QuestionBlockReviewStatus
+import com.tingyun.smartmistakebook.core.model.KnowledgeTeachingMaterialType
 import com.tingyun.smartmistakebook.core.model.QuestionDocument
 import com.tingyun.smartmistakebook.core.model.SubjectKind
+import com.tingyun.smartmistakebook.core.model.TutorKnowledgeCode
+import com.tingyun.smartmistakebook.core.model.TutorKnowledgeCodeRole
 import com.tingyun.smartmistakebook.core.model.TutorPlanInput
+import com.tingyun.smartmistakebook.core.model.TutorTeachingReference
 import com.tingyun.smartmistakebook.core.model.TutorConversationMemory
 import com.tingyun.smartmistakebook.core.model.TutorChatHistoryEntry
 import com.tingyun.smartmistakebook.core.model.TutorEvidenceRecency
@@ -43,7 +47,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import com.tingyun.smartmistakebook.core.domain.TUTOR_TOOL_DECLARATIONS
-import com.tingyun.smartmistakebook.core.domain.tutorRoundToolAvailable
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -877,43 +880,12 @@ class TutorModelTaskPolicyTest {
             ),
             input.toolDeclarations,
         )
-        // 声明全量**不等于**放行全量：无题轮（大厅）里没有逐次题锚，写工具被拒；产出装不进
-        // 本轮披露面的读工具也被拒——least-disclosure 与"无题不得写"两条不变量都不动。
-        assertFalse(
-            tutorRoundToolAvailable(
-                TutorToolName.MASTERY_UPDATE,
-                callIsAnchoredToRoundQuestion = false,
-                roundDisclosesQuestionEvidence = false,
-            ),
-        )
-        assertFalse(
-            tutorRoundToolAvailable(
-                TutorToolName.NOTEBOOK_WRITE,
-                callIsAnchoredToRoundQuestion = false,
-                roundDisclosesQuestionEvidence = false,
-            ),
-        )
-        assertFalse(
-            tutorRoundToolAvailable(
-                TutorToolName.MASTERY_READ,
-                callIsAnchoredToRoundQuestion = false,
-                roundDisclosesQuestionEvidence = false,
-            ),
-        )
-        assertFalse(
-            tutorRoundToolAvailable(
-                TutorToolName.KNOWLEDGE_READ,
-                callIsAnchoredToRoundQuestion = false,
-                roundDisclosesQuestionEvidence = false,
-            ),
-        )
-        assertTrue(
-            tutorRoundToolAvailable(
-                TutorToolName.NOTEBOOK_READ,
-                callIsAnchoredToRoundQuestion = false,
-                roundDisclosesQuestionEvidence = false,
-            ),
-        )
+        // 2026-09-21 裁定（ADR 0001 / D6/D7）改写：声明全量**且**放行不再按场景分叉——
+        // 无题轮（大厅）不再结构性拒写、MASTERY_READ 无场景分支。逐次准入只剩两条，
+        // 都钉在 core:data 的 `TutorToolRoundGateTest`：意图授权矩阵（NOTEBOOK_WRITE 另需
+        // explicitActionRequest）与 MASTERY_UPDATE 的代号白名单（大厅没有已披露代号 →
+        // 任何代号结构性拒，模型被提示词教会先确认科目）。
+        assertEquals(5, input.toolDeclarations.size)
     }
 
     private fun turn(stem: String, choice: String) = TutorTurnHistoryEntry(
@@ -958,6 +930,137 @@ class TutorModelTaskPolicyTest {
         executionLocation = ModelExecutionLocation.EXTERNAL_PROVIDER,
         providerConfigurationVersion = configurationVersion,
     )
+
+    // ---- 单一代号通道 + Plan 全工具面 + 拍照注入（ADR 0001 / D5-D8）----
+
+    private fun teachingReference(nodeId: String) = TutorTeachingReference(
+        materialId = "mat-$nodeId",
+        subject = "MATH",
+        materialType = KnowledgeTeachingMaterialType.CONCEPT_EXPLANATION,
+        title = "方法模型：$nodeId",
+        summaryMarkdown = "核心方法摘要。",
+        applicabilityMarkdown = "适用当前题。",
+        contentMarkdown = "讲解正文。",
+        boundaryMarkdown = "边界说明。",
+        knowledgeNodeIds = listOf(nodeId),
+    )
+
+    @Test
+    fun planRequestDeclaresTheFullFiveToolSurface() {
+        // D8：Plan 复用 Respond 的工具环——声明集全量五个，与 Respond/大厅同一页面口径。
+        val request = buildTutorPlanRequest(
+            question = session().toTutorQuestionContext(),
+            profile = StudyProfileOverview(),
+            provider = provider(),
+            requestId = "plan-five-tools",
+            occurredAtEpochMillis = 100,
+        )
+        val input = request.input as TutorPlanInput
+        assertEquals(TUTOR_TOOL_DECLARATIONS.toList(), input.toolDeclarations)
+        assertEquals(5, input.toolDeclarations.size)
+        assertTrue(input.toolRoundResults.isEmpty())
+    }
+
+    @Test
+    fun photoQuestionWithKnowledgeHitsInjectsCandidateTeachingReferencesIntoPlanInput() {
+        // 拍照讲题注入验收：题面有 KB 命中 → 检索候选（未确认绑定 → RETRIEVAL_CANDIDATE 角色）
+        // + 候选节点的材料（经既有 referencesFor/20k 选择器）一起进 Plan 输入。
+        val question = session().toTutorQuestionContext().copy(
+            relatedKnowledgeNodeIds = setOf("kc-candidate-1", "kc-candidate-2"),
+            reviewedTeachingReferences = listOf(
+                teachingReference("kc-candidate-1"),
+                teachingReference("kc-candidate-2"),
+            ),
+            knowledgeCodes = listOf(
+                TutorKnowledgeCode(
+                    knowledgeNodeId = "kc-candidate-1",
+                    displayName = "函数单调性",
+                    role = TutorKnowledgeCodeRole.RETRIEVAL_CANDIDATE,
+                ),
+                TutorKnowledgeCode(
+                    knowledgeNodeId = "kc-candidate-2",
+                    displayName = "配方法",
+                    role = TutorKnowledgeCodeRole.RETRIEVAL_CANDIDATE,
+                ),
+                TutorKnowledgeCode(
+                    knowledgeNodeId = "kc-prereq",
+                    displayName = "一元二次方程",
+                    role = TutorKnowledgeCodeRole.PREREQUISITE,
+                ),
+            ),
+        )
+        val request = buildTutorPlanRequest(
+            question = question,
+            profile = StudyProfileOverview(),
+            provider = provider(),
+            requestId = "plan-photo-injection",
+            occurredAtEpochMillis = 100,
+        )
+        val input = request.input as TutorPlanInput
+        assertTrue("候选材料注入 Plan 输入", input.reviewedTeachingReferences.size >= 1)
+        assertEquals(
+            listOf(
+                TutorKnowledgeCodeRole.RETRIEVAL_CANDIDATE,
+                TutorKnowledgeCodeRole.RETRIEVAL_CANDIDATE,
+                TutorKnowledgeCodeRole.PREREQUISITE,
+            ),
+            input.knowledgeCodes.map { it.role },
+        )
+        assertTrue("派发侧条目未赋码（会话注册表派生前分配）", input.knowledgeCodes.all { it.code == null })
+        assertFalse(input.teachingReferencesLoadFailed)
+    }
+
+    @Test
+    fun aFailedKnowledgeLoadIsDisclosedInThePlanInput() {
+        // 加载失败 ≠ 零命中：prompt 必须披露"教学材料未加载"，模型不得假装手里有资料。
+        val question = session().toTutorQuestionContext().copy(
+            teachingReferencesLoadFailed = true,
+        )
+        val input = buildTutorPlanRequest(
+            question = question,
+            profile = StudyProfileOverview(),
+            provider = provider(),
+            requestId = "plan-load-failed",
+            occurredAtEpochMillis = 100,
+        ).input as TutorPlanInput
+        assertTrue(input.teachingReferencesLoadFailed)
+        assertTrue(input.reviewedTeachingReferences.isEmpty())
+    }
+
+    @Test
+    fun respondRequestCarriesTheSameKnowledgeCodesAsPlan() {
+        // 同一会话的 Plan 与 Respond 带同一份预披露条目——会话注册表据此保证 K1..Kn 跨轮稳定。
+        val question = session().toTutorQuestionContext().copy(
+            knowledgeCodes = listOf(
+                TutorKnowledgeCode(
+                    knowledgeNodeId = "kc-bound",
+                    displayName = "配方法",
+                    role = TutorKnowledgeCodeRole.CONFIRMED_BINDING,
+                ),
+            ),
+        )
+        val plan = buildTutorPlanRequest(
+            question = question,
+            profile = StudyProfileOverview(),
+            provider = provider(),
+            requestId = "same-codes-plan",
+            occurredAtEpochMillis = 100,
+        ).input as TutorPlanInput
+        val respond = buildTutorRespondRequest(
+            question = question,
+            profile = StudyProfileOverview(),
+            provider = provider(),
+            requestId = "same-codes-respond",
+            occurredAtEpochMillis = 100,
+            responseOrdinal = 1,
+            cycleOrdinal = 1,
+            turnOrdinal = 1,
+            studentMessage = "这一步为什么？",
+            visibleTutorContextMarkdown = null,
+            priorMessages = emptyList(),
+        ).input as TutorRespondInput
+        assertEquals(plan.knowledgeCodes, respond.knowledgeCodes)
+    }
 
     private fun session(): ConfirmedTutorSession = ConfirmedTutorSession(
         sessionId = "session-1",

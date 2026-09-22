@@ -368,6 +368,7 @@ class ModelTaskFingerprintStabilityTest {
                 occurredAtEpochMillis = 1_000,
             ),
         ).replace(",\"knownRoundQuestion\":null", "")
+            .replace(",\"knowledgeCodes\":[]", "")
         val decoded = ModelTaskCodec.decodeRequest(legacyJson)
 
         assertEquals(ModelTaskRequest.TUTOR_ROUND_BINDING_SCHEMA_VERSION, decoded.schemaVersion)
@@ -424,6 +425,232 @@ class ModelTaskFingerprintStabilityTest {
         assertTrue(rejected.isFailure)
     }
 
+    // ---- schema 13：单一代号通道 + Plan 工具环（铁律 7 的四个必测面）----
+
+    private fun planInput() = TutorPlanInput(
+        sessionId = "session-plan-stable",
+        draftRevisionNumber = 1,
+        subject = "数学",
+        questionDocument = QuestionDocument(
+            id = "question-plan",
+            blocks = listOf(ContentBlock.Paragraph("stem", "求函数的单调区间")),
+        ),
+        relevantLearningEvidence = emptyList(),
+        projectionIsCurrent = true,
+    )
+
+    private fun codedPlanInput() = planInput().copy(
+        knowledgeCodes = listOf(
+            TutorKnowledgeCode(
+                knowledgeNodeId = "kc-peifang",
+                displayName = "配方法",
+                role = TutorKnowledgeCodeRole.RETRIEVAL_CANDIDATE,
+                code = "K1",
+            ),
+            TutorKnowledgeCode(
+                knowledgeNodeId = "kc-monotonicity",
+                displayName = "函数单调性",
+                role = TutorKnowledgeCodeRole.PREREQUISITE,
+                code = "K2",
+            ),
+        ),
+        toolDeclarations = listOf(
+            TutorToolName.KNOWLEDGE_READ,
+            TutorToolName.NOTEBOOK_READ,
+            TutorToolName.MASTERY_READ,
+            TutorToolName.MASTERY_UPDATE,
+            TutorToolName.NOTEBOOK_WRITE,
+        ),
+    )
+
+    @Test
+    fun knowledgeCodeChannelCarriersKeepTheOperationFingerprintStableAcrossSchemaVersions() {
+        // ③ 空载体：Plan 的新键（knowledgeCodes / toolDeclarations / toolRoundResults /
+        // teachingReferencesLoadFailed）与 Respond 的 knowledgeCodes 在空值下不得改变逻辑指纹——
+        // v12 行当年是按"没有这些键"算出来的。
+        val v12Plan = ModelTaskRequest(
+            schemaVersion = ModelTaskRequest.TUTOR_KNOWN_ROUND_QUESTION_SCHEMA_VERSION,
+            requestId = "plan:v12-empty-carrier",
+            input = planInput(),
+            occurredAtEpochMillis = 1_000,
+        )
+        val v13Plan = ModelTaskRequest(
+            schemaVersion = ModelTaskRequest.CURRENT_SCHEMA_VERSION,
+            requestId = "plan:v13-empty-carrier",
+            input = planInput(),
+            occurredAtEpochMillis = 1_000,
+        )
+        assertEquals(
+            ModelTaskLogicalOperationFingerprint.of(v12Plan.input),
+            ModelTaskLogicalOperationFingerprint.of(v13Plan.input),
+        )
+        val v12Respond = ModelTaskRequest(
+            schemaVersion = ModelTaskRequest.TUTOR_KNOWN_ROUND_QUESTION_SCHEMA_VERSION,
+            requestId = "respond:v12-empty-carrier",
+            input = respondInput(),
+            occurredAtEpochMillis = 1_000,
+        )
+        val v13Respond = ModelTaskRequest(
+            schemaVersion = ModelTaskRequest.CURRENT_SCHEMA_VERSION,
+            requestId = "respond:v13-empty-carrier",
+            input = respondInput(),
+            occurredAtEpochMillis = 1_000,
+        )
+        assertEquals(
+            ModelTaskLogicalOperationFingerprint.of(v12Respond.input),
+            ModelTaskLogicalOperationFingerprint.of(v13Respond.input),
+        )
+    }
+
+    @Test
+    fun aPlanRowWrittenBeforeTheKnowledgeCodeChannelStillValidatesAfterUpgrade() {
+        // ① 旧行读取 + ④ 升级路径（bf8be888 的教训）：模拟 v12 时代写库的 Plan 行——
+        // 当前 codec 编码后手工删掉 v13 新键，还原当年那份形状。decode 取默认值后，
+        // **请求指纹**与**逻辑指纹**两个校验点都必须与存库值一致，否则 toSnapshot 抛完整性异常。
+        val legacyJson = ModelTaskCodec.encodeRequest(
+            ModelTaskRequest(
+                schemaVersion = ModelTaskRequest.TUTOR_KNOWN_ROUND_QUESTION_SCHEMA_VERSION,
+                requestId = "plan:legacy-code-channel-row",
+                input = planInput(),
+                occurredAtEpochMillis = 1_000,
+            ),
+        )
+            .replace(",\"toolDeclarations\":[]", "")
+            .replace(",\"toolRoundResults\":[]", "")
+            .replace(",\"knowledgeCodes\":[]", "")
+            .replace(",\"teachingReferencesLoadFailed\":false", "")
+        val decoded = ModelTaskCodec.decodeRequest(legacyJson)
+
+        assertEquals(ModelTaskRequest.TUTOR_KNOWN_ROUND_QUESTION_SCHEMA_VERSION, decoded.schemaVersion)
+        assertEquals(sha256Hex(legacyJson), ModelTaskFingerprint.of(decoded))
+        assertEquals(
+            sha256Hex("${decoded.input.kind.name}\n${legacyPlanInputJson(decoded.input)}"),
+            ModelTaskLogicalOperationFingerprint.of(decoded.input),
+        )
+    }
+
+    @Test
+    fun aRespondRowWrittenBeforeTheKnowledgeCodeChannelStillValidatesAfterUpgrade() {
+        // 同一升级路径的 Respond 半边：v12 行编码里没有 knowledgeCodes 键。
+        val legacyJson = ModelTaskCodec.encodeRequest(
+            ModelTaskRequest(
+                schemaVersion = ModelTaskRequest.TUTOR_KNOWN_ROUND_QUESTION_SCHEMA_VERSION,
+                requestId = "respond:legacy-code-channel-row",
+                input = respondInput(),
+                occurredAtEpochMillis = 1_000,
+            ),
+        ).replace(",\"knowledgeCodes\":[]", "")
+        val decoded = ModelTaskCodec.decodeRequest(legacyJson)
+
+        assertEquals(ModelTaskRequest.TUTOR_KNOWN_ROUND_QUESTION_SCHEMA_VERSION, decoded.schemaVersion)
+        assertEquals(sha256Hex(legacyJson), ModelTaskFingerprint.of(decoded))
+        assertEquals(
+            ModelTaskLogicalOperationFingerprint.of(respondInput()),
+            ModelTaskLogicalOperationFingerprint.of(decoded.input),
+        )
+    }
+
+    @Test
+    fun aCodedKnowledgeChannelRowRoundTripsAndKeepsItsFingerprint() {
+        // ② 新行写入：v13 行带着真值（已赋码条目 + 全 5 工具声明）落库，
+        // encode → decode 往返后两条指纹都逐位稳定。
+        val v13 = ModelTaskRequest(
+            schemaVersion = ModelTaskRequest.CURRENT_SCHEMA_VERSION,
+            requestId = "plan:new-coded-row",
+            input = codedPlanInput(),
+            occurredAtEpochMillis = 1_000,
+        )
+        val decoded = ModelTaskCodec.decodeRequest(ModelTaskCodec.encodeRequest(v13))
+
+        assertEquals(v13.input, decoded.input)
+        assertEquals(ModelTaskFingerprint.of(v13), ModelTaskFingerprint.of(decoded))
+        assertEquals(
+            ModelTaskLogicalOperationFingerprint.of(v13.input),
+            ModelTaskLogicalOperationFingerprint.of(decoded.input),
+        )
+    }
+
+    @Test
+    fun aRealKnowledgeCodeChannelStillChangesTheOperationFingerprint() {
+        // 反向要求：strip 只抹平空载体。真的带了一组代号披露（或 Plan 真的声明了工具），
+        // 就是另一次输入——否则换一组候选重放会命中旧请求。
+        assertNotEquals(
+            ModelTaskLogicalOperationFingerprint.of(planInput()),
+            ModelTaskLogicalOperationFingerprint.of(codedPlanInput()),
+        )
+        assertNotEquals(
+            ModelTaskLogicalOperationFingerprint.of(respondInput()),
+            ModelTaskLogicalOperationFingerprint.of(
+                respondInput().copy(
+                    knowledgeCodes = listOf(
+                        TutorKnowledgeCode(
+                            knowledgeNodeId = "kc-peifang",
+                            displayName = "配方法",
+                            role = TutorKnowledgeCodeRole.CONFIRMED_BINDING,
+                            code = "K1",
+                        ),
+                    ),
+                ),
+            ),
+        )
+    }
+
+    @Test
+    fun aLegacySchemaRequestCannotCarryTheKnowledgeCodeChannelOrPlanToolRounds() {
+        val planRejected = runCatching {
+            ModelTaskRequest(
+                schemaVersion = ModelTaskRequest.TUTOR_KNOWN_ROUND_QUESTION_SCHEMA_VERSION,
+                requestId = "plan:legacy-with-codes",
+                input = planInput().copy(
+                    knowledgeCodes = listOf(
+                        TutorKnowledgeCode(
+                            knowledgeNodeId = "kc-peifang",
+                            displayName = "配方法",
+                            role = TutorKnowledgeCodeRole.CONFIRMED_BINDING,
+                        ),
+                    ),
+                ),
+                occurredAtEpochMillis = 1_000,
+            )
+        }
+        val planToolRejected = runCatching {
+            ModelTaskRequest(
+                schemaVersion = ModelTaskRequest.TUTOR_KNOWN_ROUND_QUESTION_SCHEMA_VERSION,
+                requestId = "plan:legacy-with-tools",
+                input = planInput().copy(toolDeclarations = listOf(TutorToolName.NOTEBOOK_READ)),
+                occurredAtEpochMillis = 1_000,
+            )
+        }
+        val planLoadFailedRejected = runCatching {
+            ModelTaskRequest(
+                schemaVersion = ModelTaskRequest.TUTOR_KNOWN_ROUND_QUESTION_SCHEMA_VERSION,
+                requestId = "plan:legacy-with-load-failed",
+                input = planInput().copy(teachingReferencesLoadFailed = true),
+                occurredAtEpochMillis = 1_000,
+            )
+        }
+        val respondRejected = runCatching {
+            ModelTaskRequest(
+                schemaVersion = ModelTaskRequest.TUTOR_KNOWN_ROUND_QUESTION_SCHEMA_VERSION,
+                requestId = "respond:legacy-with-codes",
+                input = respondInput().copy(
+                    knowledgeCodes = listOf(
+                        TutorKnowledgeCode(
+                            knowledgeNodeId = "kc-peifang",
+                            displayName = "配方法",
+                            role = TutorKnowledgeCodeRole.CONFIRMED_BINDING,
+                        ),
+                    ),
+                ),
+                occurredAtEpochMillis = 1_000,
+            )
+        }
+        assertTrue("v12 Plan 行不得携带代号披露", planRejected.isFailure)
+        assertTrue("v12 Plan 行不得携带工具声明", planToolRejected.isFailure)
+        assertTrue("v12 Plan 行不得携带加载失败标志", planLoadFailedRejected.isFailure)
+        assertTrue("v12 Respond 行不得携带代号披露", respondRejected.isFailure)
+    }
+
     private fun sha256Hex(value: String): String = MessageDigest.getInstance("SHA-256")
         .digest(value.toByteArray(StandardCharsets.UTF_8))
         .joinToString(separator = "") { byte -> "%02x".format(byte) }
@@ -448,6 +675,7 @@ class ModelTaskFingerprintStabilityTest {
         .replace(",\"toolRoundResults\":[]", "")
         .replace(",\"priorDigest\":null", "")
         .replace(",\"boundQuestionCandidates\":[]", "")
+        .replace(",\"knowledgeCodes\":[]", "")
 
     private val legacyFingerprintJson = kotlinx.serialization.json.Json {
         classDiscriminator = "type"
@@ -455,6 +683,17 @@ class ModelTaskFingerprintStabilityTest {
         explicitNulls = true
         ignoreUnknownKeys = false
     }
+
+    /**
+     * 旧 v12 Plan 行当年算**逻辑**指纹时用的那份输入编码：今天的编码减掉 v13 新键。
+     * （逻辑指纹链对 v6/v10/v11/v12 引入的键已有无条件 strip，那些在这里不用重复。）
+     */
+    private fun legacyPlanInputJson(input: ModelTaskInput): String = legacyFingerprintJson
+        .encodeToString(ModelTaskInput.serializer(), input)
+        .replace(",\"knowledgeCodes\":[]", "")
+        .replace(",\"toolDeclarations\":[]", "")
+        .replace(",\"toolRoundResults\":[]", "")
+        .replace(",\"teachingReferencesLoadFailed\":false", "")
 
     private fun relatedCandidate() = RelatedProblemCandidate(
         problemId = "problem-other",

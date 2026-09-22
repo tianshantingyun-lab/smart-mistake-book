@@ -13,6 +13,7 @@ import com.tingyun.smartmistakebook.core.data.tutor.LobbyMessageImageIntakeFacto
 import com.tingyun.smartmistakebook.core.data.backup.RestoreStartupOutcome
 import com.tingyun.smartmistakebook.core.data.backup.attentionRequired
 import com.tingyun.smartmistakebook.core.data.knowledge.BundledKnowledgeBaseInstaller
+import com.tingyun.smartmistakebook.core.data.knowledge.TutorKnowledgeContextLoaderFactory
 import com.tingyun.smartmistakebook.core.data.knowledge.TutorTeachingReferenceRepositoryFactory
 import com.tingyun.smartmistakebook.core.data.library.LibraryCatalogRepositoryFactory
 import com.tingyun.smartmistakebook.core.data.tutor.TutorRoundQuestionRetrieverFactory
@@ -52,6 +53,7 @@ import com.tingyun.smartmistakebook.core.data.splitimport.SplitImportRepositoryF
 import com.tingyun.smartmistakebook.core.domain.TutorInteractionRepository
 import com.tingyun.smartmistakebook.core.domain.LobbyMessageImageIntake
 import com.tingyun.smartmistakebook.core.domain.TutorConversationRepository
+import com.tingyun.smartmistakebook.core.domain.TutorKnowledgeContextLoader
 import com.tingyun.smartmistakebook.core.domain.TutorTeachingReferenceRepository
 import com.tingyun.smartmistakebook.core.domain.visual.VisualInteractionEventSink
 import com.tingyun.smartmistakebook.feature.capture.CaptureCacheMaintenance
@@ -129,6 +131,10 @@ class SmartMistakeBookApplication : Application() {
     lateinit var tutorTeachingReferenceRepository: TutorTeachingReferenceRepository
         private set
 
+    /** 讲题会话知识点代号通道的预披露取数（两段式检索，拍照/错题讲题共用）。 */
+    lateinit var tutorKnowledgeContextLoader: TutorKnowledgeContextLoader
+        private set
+
     lateinit var libraryCatalogRepository: LibraryCatalogRepository
         private set
 
@@ -189,6 +195,7 @@ class SmartMistakeBookApplication : Application() {
             lobbyMessageImageIntake = LobbyMessageImageIntakeFactory.create(this, database)
             tutorTeachingReferenceRepository =
                 TutorTeachingReferenceRepositoryFactory.create(database)
+            tutorKnowledgeContextLoader = TutorKnowledgeContextLoaderFactory.create(database)
             libraryCatalogRepository = LibraryCatalogRepositoryFactory.create(database)
             val roomSplitImportRepository = SplitImportRepositoryFactory.createConcrete(database)
             splitImportRepository = roomSplitImportRepository
@@ -328,6 +335,9 @@ class SmartMistakeBookApplication : Application() {
         applicationScope.launch {
             try {
                 BundledKnowledgeBaseInstaller.install(database)
+                // R4a：调和全部完成，数据已在 Room——释放包对象图驻留（~40MB 级）。
+                // 后续 install() 命中快路径（戳一致）时零解析，释放安全。
+                BundledKnowledgeBaseInstaller.releaseResidentPacks()
                 studyRepository.initialize()
                 if (startupState.value is StartupState.Ready) {
                     startupState.value = StartupState.Ready
@@ -390,6 +400,8 @@ class SmartMistakeBookApplication : Application() {
                 // 知识包失败是横幅重试唯一有实效的场景：重新安装，成功则收起横幅。
                 try {
                     BundledKnowledgeBaseInstaller.install(database)
+                    // 与启动协程同口径：重试成功后驻留对象图同样释放。
+                    BundledKnowledgeBaseInstaller.releaseResidentPacks()
                     if (startupState.value == currentStartup) {
                         startupState.value = StartupState.Ready
                     }

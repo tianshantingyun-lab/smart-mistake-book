@@ -761,6 +761,9 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     },
                     onBack = navController::popBackStack,
                     onEndedWithoutSave = { navController.popBackStack() },
+                    // 拍照讲题知识注入（ADR 0001 / D5、审计 R2 断链一）：两段式检索候选 + 材料。
+                    knowledgeContextLoader = application.tutorKnowledgeContextLoader,
+                    teachingReferenceRepository = application.tutorTeachingReferenceRepository,
                 )
             }
             composable(Routes.MistakeDetail) { entry ->

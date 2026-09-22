@@ -62,7 +62,7 @@ $uppercaseSha256 = '^[A-F0-9]{64}$'
 
 if ([string]::IsNullOrWhiteSpace($RegisterPath)) {
     $RegisterPath = Join-Path $ProjectRoot (
-        'core\data\src\main\resources\knowledge\source-register-2025-v1.json'
+        'knowledge-production\source-register-2025-v1.json'
     )
 }
 

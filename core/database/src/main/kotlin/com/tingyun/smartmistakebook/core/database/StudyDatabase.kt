@@ -13,6 +13,7 @@ import com.tingyun.smartmistakebook.core.database.dao.ImmutableLearningFactDao
 import com.tingyun.smartmistakebook.core.database.dao.KnowledgeGroundingDao
 import com.tingyun.smartmistakebook.core.database.dao.KnowledgeNodeRelationDao
 import com.tingyun.smartmistakebook.core.database.dao.KnowledgeResearchReviewDao
+import com.tingyun.smartmistakebook.core.database.dao.KnowledgeSearchIndexStateDao
 import com.tingyun.smartmistakebook.core.database.dao.KnowledgeTeachingMaterialDao
 import com.tingyun.smartmistakebook.core.database.dao.LearningDao
 import com.tingyun.smartmistakebook.core.database.dao.LibraryFtsSearchDao
@@ -117,11 +118,12 @@ import com.tingyun.smartmistakebook.core.database.entity.TutorAnswerExposureOutc
 import com.tingyun.smartmistakebook.core.database.entity.AppliedTutorAnswerExposureRecordEntity
 import com.tingyun.smartmistakebook.core.database.dao.ContentInstallStateDao
 import com.tingyun.smartmistakebook.core.database.entity.ContentInstallStateEntity
+import com.tingyun.smartmistakebook.core.database.entity.KnowledgeSearchIndexStateEntity
 import com.tingyun.smartmistakebook.core.database.entity.TutorConversationEntity
 import com.tingyun.smartmistakebook.core.database.entity.TutorMessageEntity
 import com.tingyun.smartmistakebook.core.database.entity.TutorMessageSourceAssetEntity
 
-internal const val STUDY_DATABASE_VERSION = 49
+internal const val STUDY_DATABASE_VERSION = 51
 
 /** Split-import status values mirrored into [SplitImportMigration]. */
 internal object SplitImportLedgerStrings {
@@ -216,6 +218,7 @@ internal object SplitImportLedgerStrings {
         LlmTeachingAdvisoryEntity::class,
         com.tingyun.smartmistakebook.core.database.entity.LearnerChatEvidenceEntity::class,
         ContentInstallStateEntity::class,
+        KnowledgeSearchIndexStateEntity::class,
     ],
     version = STUDY_DATABASE_VERSION,
     exportSchema = true,
@@ -234,6 +237,8 @@ internal abstract class StudyDatabase : RoomDatabase() {
     abstract fun knowledgeTeachingMaterialDao(): KnowledgeTeachingMaterialDao
 
     abstract fun contentInstallStateDao(): ContentInstallStateDao
+
+    abstract fun knowledgeSearchIndexStateDao(): KnowledgeSearchIndexStateDao
 
     abstract fun mistakeDetailDao(): MistakeDetailDao
 
@@ -342,6 +347,8 @@ object StudyDatabaseFactory {
             TUTOR_MESSAGE_THINKING_MIGRATION_46_47,
             BATCH_IMPORT_SPLIT_STATE_MIGRATION_47_48,
             TUTOR_MESSAGE_BOUND_QUESTION_MIGRATION_48_49,
+            CHAT_EVIDENCE_ANCHOR_CLASS_MIGRATION_49_50,
+            KNOWLEDGE_SEARCH_INDEX_STATE_MIGRATION_50_51,
         )
             .setDriver(AndroidSQLiteDriver())
             .build()

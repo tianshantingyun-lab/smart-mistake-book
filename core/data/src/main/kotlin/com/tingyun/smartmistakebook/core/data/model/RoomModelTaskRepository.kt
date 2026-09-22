@@ -3,12 +3,10 @@ package com.tingyun.smartmistakebook.core.data.model
 import com.tingyun.smartmistakebook.core.database.CreateModelTaskCommand
 import com.tingyun.smartmistakebook.core.database.ReserveModelTaskRemoteDispatchCommand
 import com.tingyun.smartmistakebook.core.domain.TUTOR_TOOL_DECLARATIONS
-import com.tingyun.smartmistakebook.core.domain.TutorRoundQuestionBindingPolicy
-import com.tingyun.smartmistakebook.core.domain.TUTOR_QUESTION_ROUND_ONLY_READS
-import com.tingyun.smartmistakebook.core.domain.TUTOR_WRITE_TOOLS
 import com.tingyun.smartmistakebook.core.model.disclosesQuestionCandidates
-import com.tingyun.smartmistakebook.core.model.disclosesQuestionEvidence
-import com.tingyun.smartmistakebook.core.domain.tutorRoundToolAvailable
+import com.tingyun.smartmistakebook.core.model.TutorKnowledgeCode
+import com.tingyun.smartmistakebook.core.model.TutorTeachingReference
+import com.tingyun.smartmistakebook.core.data.study.TutorKnowledgeCodeRegistry
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.database.TransitionModelTaskCommand
 import com.tingyun.smartmistakebook.core.domain.ModelGateway
@@ -76,6 +74,14 @@ class RoomModelTaskRepository internal constructor(
     internal val toolRunner = RoomTutorToolRunner(database)
 
     /**
+     * 会话级知识点代号注册表（单一代号通道，ADR 0001 / D5）：sessionId → 注册表，进程内
+     * 内存。Plan/Respond 的 execute() 入口先对输入赋码（持久化形状即赋码形状），工具环的
+     * MASTERY_UPDATE 白名单与 runner 的代号解析都读同一份。大厅没有科目上下文与预披露节点，
+     * 不建注册表（其 MASTERY_UPDATE 白名单为空 → 任何代号结构性拒）。
+     */
+    private val knowledgeCodeRegistries = ConcurrentHashMap<String, TutorKnowledgeCodeRegistry>()
+
+    /**
      * 生成中的逐 token 实时文本，只存在内存里：它是"此刻屏幕上该显示什么"，不是事实来源，
      * 所以既不落库也不写审计行（那两样是持久化进度帧的代价，也是实时文本此前必须稀疏的原因）。
      */
@@ -109,6 +115,10 @@ class RoomModelTaskRepository internal constructor(
     ): Flow<List<ModelTaskSnapshot>> = database.observeRecentModelTasks(subjectId, kind, limit)
 
     override fun execute(request: ModelTaskRequest): Flow<ModelTaskSnapshot> = flow {
+        // 单一代号通道（D5）：Plan/Respond 输入的预披露条目（派发方给的未赋码条目，或重试
+        // 时存库行带回的已赋码条目）在此统一过会话注册表——首现顺序分配 K1..Kn、会话内
+        // 稳定，教学参考的代号字段一并填上。赋码后的形状才是持久化与指纹的形状。
+        val request = request.withSessionKnowledgeCodes()
         val requestFingerprint = ModelTaskFingerprint.of(request)
         val operationFingerprint = ModelTaskLogicalOperationFingerprint.of(request)
         val initial = database.createModelTask(
@@ -337,10 +347,16 @@ class RoomModelTaskRepository internal constructor(
                 // prompt 里堆到 18k。模型仍可对每次查询表达"需要更大预算"（语义），但放大几次由本地
                 // 定——与本项目"模型给语义、本地给数值"的划分一致。
                 var extendedResultUsed = false
+                // 单一代号通道（D5）：MASTERY_UPDATE 的 enum 白名单 = 本会话已披露代号集。
+                // Route A 的 schema 约束解码是前哨，这里是 Route B（json_object 信封）与
+                // 越界复述的背底：非法/编造/未披露代号结构性拒，不进执行器、不进门。
+                val disclosedKnowledgeCodes = sessionKnowledgeCodeRegistry(roundRequest.input)
+                    ?.disclosedCodes()
+                    .orEmpty()
                 val outcomes = tutorToolRoundOutcomes(
                     calls = requests.calls,
                     authorizedTools = authorization.allowedTools,
-                    input = roundRequest.input,
+                    disclosedKnowledgeCodes = disclosedKnowledgeCodes,
                     runTool = { call, allowsExtendedResult ->
                         toolRunner.run(
                             call,
@@ -368,10 +384,14 @@ class RoomModelTaskRepository internal constructor(
                 )
                 // 收敛声明集：保留本轮已声明且仍允许的工具（非空），配额由轮次守卫保证。
                 val converged = toolDeclarationsFor(roundRequest.input).toList()
+                // KNOWLEDGE_READ 本轮追加披露的节点已进注册表：下一轮输入带**全会话**披露集
+                // （只增不减），映射表才能在前缀区保持稳定、模型引用的 K6 在下一轮仍可见。
+                val sessionKnowledgeCodes = sessionKnowledgeCodeRegistry(roundRequest.input)?.disclosed()
                 roundRequest = roundRequest.copy(
                     input = roundRequest.input.withToolRoundProgress(
                         newRounds = toolRoundResults,
                         convergedDeclarations = converged,
+                        sessionKnowledgeCodes = sessionKnowledgeCodes,
                     ),
                     egressManifest = roundRequest.egressManifest,
                 )
@@ -735,32 +755,93 @@ class RoomModelTaskRepository internal constructor(
             .joinToString(separator = "") { byte -> "%02x".format(byte) }
 
     /**
-     * 同页声明**全量五个**工具（`docs/tutor-surface-unification.md` §5.6）：大厅与讲题会话是同一个
-     * 页面，声明集按页面给，可用性交给门控（意图 × 置信度 × 声明集，写工具另需本轮有绑定题）。
+     * 同页声明**全量五个**工具（`docs/tutor-surface-unification.md` §5.6；2026-09-21 裁定
+     * D7/D8 把 Plan 也纳入）：智能体页所有模型调用（Plan / Respond / 大厅）同一工具面，
+     * 声明集按页面给，**代码零场景分叉**。
      *
-     * 此前 lobby 只声明 NOTEBOOK_READ，于是同一个页面上"能查什么"随轮次类型跳变：学生在无题轮
-     * 里问"我错题本里有没有类似的题"，模型根本没有可申请的工具。声明全量不等于授权全量——
-     * 授权矩阵仍逐次裁决，写工具仍被绑定门控拦住。
+     * 声明全量不等于放行全量——逐次裁决只剩两条，都取自模型自己这一轮的语义输出：意图授权
+     * 矩阵（意图 × 置信度 × 声明集）与 MASTERY_UPDATE 的代号白名单（本会话已披露集合）。
+     * 无题轮不再结构性拒写（D6）：写不写由模型语义判定，低置信/无引文写入由统一本地门挡。
      */
-    private fun toolDeclarationsFor(input: ModelTaskInput): Set<TutorToolName> = when (input) {
-        is TutorRespondInput, is TutorLobbyInput -> TUTOR_TOOL_DECLARATIONS
+    internal fun toolDeclarationsFor(input: ModelTaskInput): Set<TutorToolName> = when (input) {
+        is TutorPlanInput, is TutorRespondInput, is TutorLobbyInput -> TUTOR_TOOL_DECLARATIONS
         else -> emptySet()
     }
 
-    /** 把已执行的工具轮结果与收敛声明集写回输入，供下一轮派遣携带（spec §3.4）。 */
+    /**
+     * 把已执行的工具轮结果、收敛声明集与会话代号披露集写回输入，供下一轮派遣携带（spec §3.4）。
+     *
+     * [sessionKnowledgeCodes] 为 null = 该输入种类没有代号通道（大厅）；非 null 时以注册表的
+     * 全会话披露集**整体替换**输入的 knowledgeCodes（只增不减：工具发现的新节点也带着它们的
+     * 代号进下一轮，模型引用的代号永远查得到映射表）。
+     */
     private fun ModelTaskInput.withToolRoundProgress(
         newRounds: List<TutorToolRoundResult>,
         convergedDeclarations: List<TutorToolName>,
+        sessionKnowledgeCodes: List<TutorKnowledgeCode>?,
     ): ModelTaskInput = when (this) {
         is TutorLobbyInput -> copy(
             toolRoundResults = newRounds,
             toolDeclarations = convergedDeclarations,
         )
+        is TutorPlanInput -> copy(
+            toolRoundResults = newRounds,
+            toolDeclarations = convergedDeclarations,
+            knowledgeCodes = sessionKnowledgeCodes ?: this.knowledgeCodes,
+        )
         is TutorRespondInput -> copy(
             toolRoundResults = newRounds,
             toolDeclarations = convergedDeclarations,
+            knowledgeCodes = sessionKnowledgeCodes ?: this.knowledgeCodes,
         )
         else -> this
+    }
+
+    /** 该输入的会话代号注册表；大厅没有科目上下文与预披露节点，不建（白名单为空）。 */
+    private fun sessionKnowledgeCodeRegistry(input: ModelTaskInput): TutorKnowledgeCodeRegistry? = when (input) {
+        is TutorPlanInput -> knowledgeCodeRegistries[input.sessionId]
+        is TutorRespondInput -> knowledgeCodeRegistries[input.sessionId]
+        else -> null
+    }
+
+    /**
+     * 派生前对 Plan/Respond 输入做代号赋码（[TutorKnowledgeCodeRegistry.adopt]：已赋码条目
+     * 按原码登记、未赋码条目按列表顺序首次分配），并把教学参考的代号字段填上（材料绑定多个
+     * 节点时取其中已披露的第一个）。返回的才是持久化 / 指纹 / 提示词用的形状。
+     */
+    private fun ModelTaskRequest.withSessionKnowledgeCodes(): ModelTaskRequest {
+        val input = this.input
+        val sessionId = when (input) {
+            is TutorPlanInput -> input.sessionId
+            is TutorRespondInput -> input.sessionId
+            else -> return this
+        }
+        val registry = knowledgeCodeRegistries.getOrPut(sessionId) { TutorKnowledgeCodeRegistry() }
+        return when (input) {
+            is TutorPlanInput -> copy(
+                input = input.copy(
+                    knowledgeCodes = registry.adopt(input.knowledgeCodes),
+                    reviewedTeachingReferences = input.reviewedTeachingReferences
+                        .withSessionCodes(registry),
+                ),
+            )
+            is TutorRespondInput -> copy(
+                input = input.copy(
+                    knowledgeCodes = registry.adopt(input.knowledgeCodes),
+                    reviewedTeachingReferences = input.reviewedTeachingReferences
+                        .withSessionCodes(registry),
+                ),
+            )
+            else -> this
+        }
+    }
+
+    private fun List<TutorTeachingReference>.withSessionCodes(
+        registry: TutorKnowledgeCodeRegistry,
+    ): List<TutorTeachingReference> = map { reference ->
+        val code = reference.code ?: reference.knowledgeNodeIds
+            .firstNotNullOfOrNull { nodeId -> registry.codeFor(nodeId) }
+        if (code == null) reference else reference.copy(code = code)
     }
 
 
@@ -768,23 +849,28 @@ class RoomModelTaskRepository internal constructor(
         input: ModelTaskInput,
         requestId: String,
         allowsExtendedResult: Boolean,
-    ): RoomTutorToolRunner.Context =
-        RoomTutorToolRunner.Context(
-            subject = (input as? TutorRespondInput)?.subject,
+    ): RoomTutorToolRunner.Context {
+        // Plan 与 Respond 同一工具环（D8）：会话锚、科目上下文按同一规则取；大厅没有
+        // sessionId/subject，相关上下文保持 null（runner 按 no_subject / no_conversation
+        // 的既有边界失败关闭）。
+        val respond = input as? TutorRespondInput
+        val plan = input as? TutorPlanInput
+        val sessionId = respond?.sessionId ?: plan?.sessionId
+        return RoomTutorToolRunner.Context(
+            subject = respond?.subject ?: plan?.subject,
             // 扩展结果预算的轮内裁决：见 execute 里每轮只放一次的守卫。
             allowsExtendedResult = allowsExtendedResult,
             // 会话锚：讲题会话的 conversationId 由 sessionId 确定性推导
             // （CapturedTutorSessionRoute 的 CreateTutorConversationCommand 同规则），
             // 供 MASTERY_UPDATE 的冷却/配额/审计按会话粒度工作。
-            conversationId = (input as? TutorRespondInput)?.sessionId
-                ?.let(TutorConversationIds::captured),
+            conversationId = sessionId?.let(TutorConversationIds::captured),
             // 裸 sessionId：NOTEBOOK_WRITE 用它 resolve 对应的 capture draft。
             // sessionId（"tutor-session-..."）≠ draftId（"draft-..."），写路径需
             // readTutorSession(sessionId) 拿 draftId 再 readProblemDraft(draftId)。
             // MASTERY_UPDATE 的客观交叉核对也用它回读本轮检查题作答。
-            tutorSessionId = (input as? TutorRespondInput)?.sessionId,
+            tutorSessionId = sessionId,
             // 客观交叉核对只数当前轮：新一轮重教时上一轮的答错不该永久作废正向判断。
-            cycleOrdinal = (input as? TutorRespondInput)?.cycleOrdinal ?: 1,
+            cycleOrdinal = respond?.cycleOrdinal ?: plan?.cycleOrdinal ?: 1,
             // 幂等命名空间：同一 model-task request 的重试/多轮共享同一 evidenceId 命名空间，
             // 让 MASTERY_UPDATE 的 evidence_id 确定性派生（重试不重复落库）。
             evidenceIdNamespace = requestId,
@@ -793,7 +879,10 @@ class RoomModelTaskRepository internal constructor(
             // 判据取自请求本身（与清单侧核对 includesQuestionCandidates 用的是同一条），
             // 不看解析路由、不看执行位置。
             roundDisclosesQuestionCandidates = input.disclosesQuestionCandidates(),
+            // 会话代号注册表：KNOWLEDGE_READ 的追加披露与 MASTERY_UPDATE 的代号解析都走它。
+            knowledgeCodeRegistry = sessionKnowledgeCodeRegistry(input),
         )
+    }
 }
 
 object ModelTaskRepositoryFactory {
@@ -807,67 +896,65 @@ object ModelTaskRepositoryFactory {
 }
 
 /**
- * 工具环里**一轮工具调用**的判定与执行，整体抽出来是为了可测：这一段是"写工具只能在锚住题时
- * 执行"这条不变量的**唯一**落地点，而它此前长在 `execute()` 里、只有仪器化用例够得着——把
- * 判定删掉不会有任何本机可跑的用例转红（复核意见二）。
+ * 工具环里**一轮工具调用**的判定与执行，整体抽出来是为了可测：这一段长在 `execute()` 里
+ * 只有仪器化用例够得着，而"被拒的调用不触达执行器"的接线此前没有任何本机可跑的用例钉住
+ * （复核意见二），所以判定与执行一起抽成具名函数。
  *
- * 判定分两层，两层都取自**请求/调用本身**，不取自解析路由：
- * - 写工具（[TUTOR_WRITE_TOOLS]）：这一次调用必须锚住本轮的题
- *   （[TutorRoundQuestionBindingPolicy.callIsAnchoredToRoundQuestion]）——模型声明经两条本地
- *   校验（候选在派发前的菜单内、锚词在学生消息里逐字出现且在该题自身文本里可核对），
- *   或模型没复述时回退到**请求侧已知的题锚**（[com.tingyun.smartmistakebook.core.model.TutorRespondInput.knownRoundQuestion]：
- *   学生本轮显式添加的题 / 上一轮已校验的绑定）。原生 `tool_calls` 路由的标准形态 content=null，
- *   整轮信封无处放声明，逐次锚与请求侧已知锚是两条路由都能表达的落点。
- * - 只被题轮披露集合覆盖的读工具（[TUTOR_QUESTION_ROUND_ONLY_READS]）：本轮派发的披露面必须
- *   覆盖它们的产出（[com.tingyun.smartmistakebook.core.model.disclosesQuestionEvidence]）。
+ * 2026-09-21 裁定（ADR 0001 / D6/D7）之后，这里**没有场景维度**——不判"这一轮来自哪个入口"，
+ * 也不判"这一轮有没有题"（无题轮不再结构性拒写；写不写由模型语义判定，系统提示词教会，
+ * 低置信/无引文的写入由统一本地门 MasteryWriteGate 挡）。逐次裁决只剩两条，都取自
+ * **调用本身**：
+ * - 意图授权矩阵：[authorizedTools]（模型这一轮自己的意图 × 置信度 × 声明集，
+ *   [com.tingyun.smartmistakebook.core.model.tutorToolAuthorization] 的产物）；
+ * - 单一代号通道（D5）：MASTERY_UPDATE 的 `terms[0]` 必须在本会话已披露代号集合
+ *   （[disclosedKnowledgeCodes]）内——非法/编造/未披露代号结构性拒，走协议错误路径
+ *   （[INVALID_KNOWLEDGE_CODE]），不进执行器、不进门。Route A 的 schema enum 约束解码
+ *   是前哨，这里是 Route B（json_object 信封）与越界复述的背底。
  *
- * 其余读工具不受限。被拒的调用**不会**触达 [runTool]。
+ * 其余读工具（含 MASTERY_READ / KNOWLEDGE_READ）不受限（D7：MASTERY_READ 无场景分支，
+ * 输出形态/轮预算按旧裁定不变）；没有科目上下文的边界由 runner 自己失败关闭
+ * （no_subject），不在轮次层分叉。被拒的调用**不会**触达 [runTool]。
  *
  * @param consumeExtendedResult 调用方在"一次扩展结果预算被用掉"时调用；同一轮只放一次。
  */
 internal suspend fun tutorToolRoundOutcomes(
     calls: List<TutorToolCall>,
     authorizedTools: Set<TutorToolName>,
-    input: ModelTaskInput,
+    disclosedKnowledgeCodes: Set<String>,
     runTool: suspend (TutorToolCall, Boolean) -> TutorToolOutcome,
     consumeExtendedResult: () -> Unit,
 ): List<TutorToolOutcome> {
-    val respondInput = input as? TutorRespondInput
-    val candidates = respondInput?.boundQuestionCandidates.orEmpty()
-    val studentMessage = respondInput?.studentMessage.orEmpty()
-    val knownRoundQuestion = respondInput?.knownRoundQuestion
-    val roundDisclosesQuestionEvidence = input.disclosesQuestionEvidence()
     var extendedResultUsed = false
     return calls.map { call ->
-        val callIsAnchored = TutorRoundQuestionBindingPolicy.callIsAnchoredToRoundQuestion(
-            declaration = call.boundQuestion,
-            candidates = candidates,
-            studentMessage = studentMessage,
-            knownRoundQuestion = knownRoundQuestion,
-        )
-        val available = tutorRoundToolAvailable(
-            tool = call.tool,
-            callIsAnchoredToRoundQuestion = callIsAnchored,
-            roundDisclosesQuestionEvidence = roundDisclosesQuestionEvidence,
-        )
-        if (call.tool !in authorizedTools || !available) {
-            TutorToolOutcome(
+        when {
+            call.tool !in authorizedTools -> TutorToolOutcome(
                 tool = call.tool,
                 ok = false,
                 summaryMarkdown = "该意图下未授权此查询。",
                 errorKind = "not_authorized",
             )
-        } else {
-            val allowsExtendedResult = !extendedResultUsed
-            val outcome = runTool(call, allowsExtendedResult)
-            if (call.extendedResult && allowsExtendedResult) {
-                extendedResultUsed = true
-                consumeExtendedResult()
+            call.tool == TutorToolName.MASTERY_UPDATE &&
+                call.terms.firstOrNull() !in disclosedKnowledgeCodes -> TutorToolOutcome(
+                tool = call.tool,
+                ok = false,
+                summaryMarkdown = "该代号不在本会话已披露的知识点中，未执行。",
+                errorKind = INVALID_KNOWLEDGE_CODE,
+            )
+            else -> {
+                val allowsExtendedResult = !extendedResultUsed
+                val outcome = runTool(call, allowsExtendedResult)
+                if (call.extendedResult && allowsExtendedResult) {
+                    extendedResultUsed = true
+                    consumeExtendedResult()
+                }
+                outcome
             }
-            outcome
         }
     }
 }
+
+/** MASTERY_UPDATE 的代号不在本会话已披露集合：协议层结构性拒（不是门控语义拒）。 */
+internal const val INVALID_KNOWLEDGE_CODE = "invalid_knowledge_code"
 
 private class ConcurrentModelTaskTransition : RuntimeException()
 

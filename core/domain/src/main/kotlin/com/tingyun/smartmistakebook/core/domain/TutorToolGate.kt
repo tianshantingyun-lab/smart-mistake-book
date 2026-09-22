@@ -3,13 +3,18 @@ package com.tingyun.smartmistakebook.core.domain
 import com.tingyun.smartmistakebook.core.model.TutorToolName
 
 /**
- * 工具声明的**同一页口径**与轮次级可用性。
+ * 工具声明的**同一页口径**（`docs/tutor-surface-unification.md` §5.6）。
  *
- * 这一层要解决的是"声明什么"与"放行什么"必须能被分开表达：声明集是**页面级**的（大厅与讲题
- * 会话是同一个页面，`docs/tutor-surface-unification.md` §5.6），可用性是**调用/轮次级**的。
- * 把两者混在一处，就会出现此前那种局面：同一个页面上"模型能申请什么"随轮次类型跳变。
+ * 2026-09-21 裁定（ADR 0001 / D6/D7）之后，这里只剩下"声明什么"：智能体页所有模型调用
+ * （Plan / Respond / 大厅）同一 5 工具面。**"放行什么"不再有场景维度**——
  *
- * 放在 core:domain 而不是 core:data：声明集与可用性同时被数据层（工具环）与界面层（派发装配）
+ * - 写不写由模型语义判定（系统提示词教会），代码零场景分叉（D6）：无题轮不再结构性拒写；
+ * - MASTERY_READ 无场景分支（D7）：输出形态 / 聚合口径 / 24 解析上限 / 轮预算按旧裁定不变；
+ * - 唯一剩下的逐次裁决是意图授权矩阵（core:model 的 `tutorToolAuthorization`：意图 × 置信度
+ *   × 声明集）与 MASTERY_UPDATE 的代号白名单（本会话已披露集合，服务端结构性拒非法代号）——
+ *   两者都取自模型自己这一轮的语义输出，不取自"这次调用来自哪个入口"。
+ *
+ * 放在 core:domain 而不是 core:data：声明集同时被数据层（工具环）与界面层（派发装配）
  * 读到，而 feature 模块看不到 core:data 的 internal。
  */
 
@@ -22,55 +27,14 @@ val TUTOR_TOOL_DECLARATIONS: Set<TutorToolName> = linkedSetOf(
     TutorToolName.NOTEBOOK_WRITE,
 )
 
-/** 会**落库**的两个工具：它们的准入不是"声明集里有"，而是这一**次**调用真的锚住了题。 */
+/**
+ * 会**落库**的两个工具。它们的逐次准入不再是"本轮有没有绑定题"（2026-09-21 裁定 D6 废除
+ * 那道场景门），而是：
+ * - MASTERY_UPDATE：`terms[0]` 必须在本会话已披露的代号集合内（enum 白名单，服务端解析
+ *   代号→id 后走统一本地门 MasteryWriteGate）；
+ * - NOTEBOOK_WRITE：意图授权矩阵仍要求学生明确命令（explicitActionRequest）。
+ */
 val TUTOR_WRITE_TOOLS: Set<TutorToolName> = setOf(
     TutorToolName.MASTERY_UPDATE,
     TutorToolName.NOTEBOOK_WRITE,
 )
-
-/**
- * 产出**只被题轮披露集合覆盖**的读工具（学习证据与学科知识库）。
- *
- * 无题轮的 `TUTOR_LOBBY_DISCLOSURE` 只有"学生消息 + 会话上下文"，装不下它们的产出
- * （`TutorLobbyTasks.ALLOWED_LOCAL_CAPABILITIES` 早已为掌握度读取写下同一条理由），所以
- * 无题轮里它们不发。`NOTEBOOK_READ` **不在此列**：错题本条目一直是大厅轮次的能力
- * （大厅自始声明并使用它，同一条能力边界注释里也只把掌握度读取列为不可覆盖）。
- *
- * 但"能力保留"不等于"产出形态不变"：错题本条目的标题与科目属于
- * `RELATED_QUESTION_CANDIDATES` 这一类，无题轮的披露集合把它列为**禁止**，所以无题轮的
- * NOTEBOOK_READ 只回条数与检索词，不列任何标题（见 core:data 的
- * `RoomTutorToolRunner.notebookRead`）。放行与否由本函数裁决，产出形态由披露范围决定——
- * 要更丰富的错题本结果，得先由用户裁定放宽披露边界。
- */
-val TUTOR_QUESTION_ROUND_ONLY_READS: Set<TutorToolName> = setOf(
-    TutorToolName.MASTERY_READ,
-    TutorToolName.KNOWLEDGE_READ,
-)
-
-/**
- * 轮次/调用级可用性：声明集里的工具这一次到底能不能执行。
- *
- * - 写工具（[TUTOR_WRITE_TOOLS]）：要求这**一次调用**锚住了本轮的题
- *   （[callIsAnchoredToRoundQuestion] = [com.tingyun.smartmistakebook.core.model.TutorToolCall.boundQuestion]
- *   经本地两条校验 resolve 通过，**或**模型没复述时回退到本轮请求侧已知的题锚
- *   [com.tingyun.smartmistakebook.core.model.TutorRespondInput.knownRoundQuestion]）——它们会落库，
- *   没有题目锚点就是无主证据。
- * - 产出口袋被题轮披露集合覆盖的读工具（[TUTOR_QUESTION_ROUND_ONLY_READS]）：要求本轮派发的
- *   披露面覆盖它们的产出。
- * - 其余读工具不受限。
- *
- * 两个参数都取自**请求/调用本身**，不取自"这一轮由哪种解析路由产出"：原生 tool_calls 路由的
- * 表达位置是每次调用的 arguments（或请求侧已知锚），json_object 信封路由是同一份调用对象的
- * 字段——两条路由都能满足上面每一条。
- *
- * 具名函数而不是内联在工具环里，是为了让它可被单测直接钉死。
- */
-fun tutorRoundToolAvailable(
-    tool: TutorToolName,
-    callIsAnchoredToRoundQuestion: Boolean,
-    roundDisclosesQuestionEvidence: Boolean,
-): Boolean = when (tool) {
-    in TUTOR_WRITE_TOOLS -> callIsAnchoredToRoundQuestion
-    in TUTOR_QUESTION_ROUND_ONLY_READS -> roundDisclosesQuestionEvidence
-    else -> true
-}

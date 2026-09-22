@@ -33,7 +33,7 @@ import argparse
 from collections import defaultdict
 from pathlib import Path
 
-from kb_build import pack_io, tables, textfix, update_manifest
+from kb_build import pack_io, tables, textfix
 
 
 def load_verdicts() -> tuple[list[dict], list[dict]]:
@@ -157,8 +157,7 @@ def main(argv: list[str] | None = None) -> int:
             for q in sorted(qs):
                 w.writerow([s, p, q])
     pack_io.dump_json(pack, path)
-    update_manifest.main(["--stamp"])
-    print("→ prereq_map.csv 已重建；已写回成品包并刷新内容戳")
+    print("→ prereq_map.csv 已重建；已写回 staging 包（内容戳由晋升时刷新）")
     # 幂等复放
     reloaded = pack_io.load_json(path)
     stats2 = apply(reloaded, prereq_rows, boundary_rows)

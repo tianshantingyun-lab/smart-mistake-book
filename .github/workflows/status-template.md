@@ -57,6 +57,28 @@
 | `strictOffline-debug.apk` | {{STRICT_OFFLINE_DEBUG_APK_SHA}} |
 | `strictOffline-release.apk` | {{STRICT_OFFLINE_RELEASE_APK_SHA}} |
 
+## Knowledge Base
+
+### Content Quality Gates（22 道门，kb_build.gate 对随包成品实测）
+
+| Gate key | 门 | 状态 | 缺陷数 |
+|----------|----|------|--------|
+{{KB_GATE_ROWS}}
+
+通过 {{GATES_OK_COUNT}} 项；全部为 0 才算绿。
+
+### Tools Tests（Python，tools/tests 套件）
+
+| 总数 | 通过 | 失败 |
+|------|------|------|
+| {{TOOLS_TESTS_TOTAL}} | {{TOOLS_TESTS_PASSED}} | {{TOOLS_TESTS_FAILED}} |
+
+### Retrieval Benchmark（:core:data 单测写入 build/benchmark-metrics.txt，逐字嵌入）
+
+```
+{{BENCHMARK_METRICS}}
+```
+
 ## Performance Metrics
 
 ### Macrobenchmark (Real Device)
@@ -99,6 +121,8 @@
 ## Overall Status
 
 **{{OVERALL_STATUS}}**
+
+{{OVERALL_BREAKDOWN}}
 
 ---
 

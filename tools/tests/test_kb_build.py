@@ -284,20 +284,6 @@ class TablesTest(unittest.TestCase):
         self.assertTrue(tables.is_declared_prereq(mapping, "函数的概念", "集合的概念"))
         self.assertFalse(tables.is_declared_prereq(mapping, "函数的概念", "别的"))
 
-    def test_bad_action_is_rejected(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            original = tables.TABLES_DIR
-            try:
-                tables.TABLES_DIR = Path(tmp)
-                (Path(tmp) / tables.NODE_ACTIONS).write_text(
-                    "subject,slug,action,new_name,new_slug\nMATH,a,explode,,\n",
-                    encoding="utf-8",
-                )
-                with self.assertRaises(ValueError):
-                    tables.load_node_actions()
-            finally:
-                tables.TABLES_DIR = original
-
     def test_duplicate_material_binding_is_rejected(self):
         """合同要求每个材料恰好 1 条 PRIMARY 绑定。"""
         with tempfile.TemporaryDirectory() as tmp:

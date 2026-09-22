@@ -87,7 +87,6 @@ def _builder(**overrides) -> Builder:
         pack=_pack(),
         sidecars=[(None, {"schemaVersion": 2, "packId": PACK_ID, "sources": [],
                           "materials": []})],
-        actions={},
         chapters={"某来源": {"book": "某册", "chapter": "第一章 某章", "decision": "fix"}},
         aliases={},
         # 边界表的键与新增点一致：生产路径下它由 new_points.csv 的 boundary 列预置，

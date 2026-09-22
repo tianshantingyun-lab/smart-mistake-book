@@ -1,5 +1,7 @@
 package com.tingyun.smartmistakebook.core.model
 
+import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 
 /**
@@ -9,6 +11,7 @@ import kotlinx.serialization.Serializable
  * authority to create learning evidence. A reference may contain a complete worked example because
  * examples and method models are teaching material, not a pool of questions to assign.
  */
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 data class TutorTeachingReference(
     val materialId: String,
@@ -20,6 +23,16 @@ data class TutorTeachingReference(
     val contentMarkdown: String,
     val boundaryMarkdown: String,
     val knowledgeNodeIds: List<String>,
+    /**
+     * 该材料对应知识点的**本会话代号**（单一代号通道，ADR 0001 / D5）：材料绑定多个节点时
+     * 取其中已披露的第一个。由 core:data 的会话注册表在派生前填上；null = 尚未赋码
+     * （旧行读回 / 无代号的派发），prompt 渲染时省略该键。
+     *
+     * `@EncodeDefault(NEVER)`：null 不落键，旧行编码形状不变——指纹空载体抹平
+     * （bf8be888 教训）在这一层直接成立，不需要额外的 strip。
+     */
+    @EncodeDefault(EncodeDefault.Mode.NEVER)
+    val code: String? = null,
 ) {
     init {
         materialId.requireSafeModelText(
@@ -62,6 +75,7 @@ data class TutorTeachingReference(
                 false,
             )
         }
+        code?.let { TutorKnowledgeCode.requireCodeShape(it) }
     }
 
     val markdownChars: Int

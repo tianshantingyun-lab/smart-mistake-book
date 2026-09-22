@@ -46,6 +46,15 @@ data class LearnerChatEvidenceEntity(
      */
     val rejected_reason: String? = null,
     val rejected_at_epoch_millis: Long? = null,
+    /**
+     * v50（ADR 0001 / D10）：写入时目标知识点的**锚定等级**，三值由系统机械确立
+     * （CONFIRMED 当前题确认绑定 / CANDIDATE 当前题检索候选 / DISCLOSED 其余披露），
+     * 不依赖模型声称。**纯数据列（审计用）**：投影积分只读 `weight`——非 CONFIRMED 的降权
+     * （×0.5，D9 唯一数值分支）在写入时已施加在 weight 上，本列只留"这条证据是哪一档来路"
+     * 供校准。NULL = 无代号通道的行（legacy 行，列引入前写入；或客观作答通道
+     * `source_kind=KNOWLEDGE_QUIZ` 的直写行），一律按全权重对待，不追溯降权。
+     */
+    val anchor_class: String? = null,
 ) {
     /** True when this row is a rejected (observation-only, non-projected) evidence. */
     val isRejected: Boolean

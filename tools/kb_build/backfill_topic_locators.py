@@ -31,7 +31,7 @@ import argparse
 from collections import Counter
 from pathlib import Path
 
-from kb_build import pack_io, update_manifest
+from kb_build import pack_io
 
 PLACEHOLDER = "待补章表"
 
@@ -101,7 +101,6 @@ def main(argv: list[str] | None = None) -> int:
         print("\n（未写盘；加 --write 生效）")
         return 0
     pack_io.dump_json(pack, path)
-    update_manifest.main(["--stamp"])
     if applied:
         print(f"\n→ 已补录 {applied} 个，跳过 {skipped} 个；写回 {path}")
     else:

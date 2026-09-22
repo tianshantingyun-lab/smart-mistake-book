@@ -2,33 +2,28 @@
 """按权威表生成新知识包。默认只写 staging，不覆盖成品。
 
 稳字优先的设计：
-- 默认输出到 build/kb-staging/，必须显式 --promote 才会写回
-  core/data/src/main/resources/knowledge/。成品包被 App 启动时按"逐字段相等"
-  校验，写坏会让老安装直接启动失败，所以不允许误覆盖。
+- 输出到 build/kb-staging/；写成品目录 core/data/src/main/resources/knowledge/
+  的唯一通道是 kb_build.promote（22 门 + 表↔包一致性 + roundtrip 全绿才落盘）。
+  成品包被 App 启动时按"逐字段相等"校验，写坏会让老安装直接启动失败，所以不允许误覆盖。
 - 生成前先验不变量（见 check_invariants），任何一条不过就拒绝生成。
 - 生成后再验一遍，并打印与现行成品的差异摘要。
 
-材料绑定的一致性（否则 codec 会拒绝整个包）：
-- merge 掉的节点：绑定自动改指保留者（确定性的）
-- delete 掉的节点：绑定无法机械改指，置为待重绑 → 该材料变成未绑定，
-  由聚合层过滤，不产生悬空引用；Batch B 会重绑它们
+节点增删改不由本生成器执行：原权威输入 `node_actions.csv` 已作废（C-09：与成品包
+不同坐标系），节点的改名/删除/合并走五张权威动作表 + 幂等手术工具直接改成品
+（见 `tables/node_actions.README.md`）。本生成器只施加章节/别名/边界/前置表与
+新增内容，且整体**停用**——它不是成品的生成器，只是历史拓扑。
 """
 
 from __future__ import annotations
 
 import argparse
-import copy
-import csv
-import json
 import re
-from collections import Counter, defaultdict
+from collections import Counter
 from pathlib import Path
 
 from kb_build import new_content, pack_io, tables
 
-STAGING = pack_io.REPO / "build" / "kb-staging"
-# 影响评估的产物落在独立目录：它包含未定稿的行，绝不能与可发布的 staging 混淆
-ASSESS_DIR = pack_io.REPO / "build" / "kb-assess"
+STAGING = pack_io.STAGING_DIR
 
 # 生成物必须满足的键集合（来自 ReviewedKnowledgePackJsonCodec）
 POINT_KEYS = ("slug", "name", "aliases", "kind", "boundary", "sourceLocator", "prerequisiteSlugs")
@@ -52,14 +47,13 @@ class Builder:
     不适合逐条构造断言）。
     """
 
-    def __init__(self, pack=None, sidecars=None, *, actions=None, chapters=None,
-                 aliases=None, boundaries=None, prereqs=None, allow_review=False,
+    def __init__(self, pack=None, sidecars=None, *, chapters=None,
+                 aliases=None, boundaries=None, prereqs=None,
                  new_points=None, new_point_placements=None, new_materials=None,
                  material_bindings=None):
         self.pack = pack if pack is not None else pack_io.load_json(pack_io.pack_path())
         self.sidecars = (sidecars if sidecars is not None
                          else [(p, pack_io.load_json(p)) for p in pack_io.sidecar_paths()])
-        self.actions = actions if actions is not None else tables.load_node_actions()
         self.chapters = chapters if chapters is not None else tables.load_chapter_by_source()
         self.chapters_by_node = tables.load_chapter_map()
         self.aliases = aliases if aliases is not None else tables.load_alias_map()
@@ -81,9 +75,6 @@ class Builder:
             self.new_point_placements = new_point_placements
         self.new_materials = (new_content.load_new_materials(known_slugs=self._post_build_slugs())
                               if new_materials is None else new_materials)
-        # allow_review 只用于"影响评估"：跳过未定稿行算出改动量。它永远不能落盘——
-        # 未审完的行一旦进包，就是把没定稿的内容推给 App。
-        self.allow_review = allow_review
         self.notes: list[str] = []
 
     # ---------- 节点层 ----------
@@ -91,60 +82,13 @@ class Builder:
     def _post_build_slugs(self) -> set[tuple[str, str]]:
         """本次生成**之后**仍存在的节点集，用作材料绑定的校验目标。
 
-        不能拿成品包现读：成品里还有成批待删、待并的抽取残片（node_actions.csv）。
-        绑到那些节点上的材料会随节点一起消失，导入时被静默剔除——等于白写。
-        所以校验集必须减掉 delete/merge 的键，再加上本次新增的点。
+        不能拿成品包现读就完事：本次新增的点还不存在于成品里，
+        校验集必须加上它们，否则新点绑材料会被误判成悬空。
         """
         surviving = {(subject, point["slug"])
                      for subject, _topic, point in pack_io.iter_points(self.pack)}
-        for key, row in self.actions.items():
-            if row["action"] in ("delete", "merge"):
-                surviving.discard(key)
         surviving |= set(self.new_points)
         return surviving
-
-    def _apply_node_actions(self) -> tuple[dict, dict]:
-        """返回 (merge_map, deleted) —— 键是 (subject, slug)。"""
-        pending = {k: v for k, v in self.actions.items() if v["action"] == "review"}
-        if pending and not self.allow_review:
-            raise InvariantError(
-                f"权威表还有 {len(pending)} 条 review 未定稿，拒绝生成。"
-                f"样例：{list(pending)[:3]}"
-            )
-        if pending:
-            self.notes.append(f"评估模式：跳过 {len(pending)} 条未定稿行（节点保持原名）")
-
-        merge_map: dict[tuple[str, str], tuple[str, str]] = {}
-        deleted: set[tuple[str, str]] = set()
-        for (subject, slug), row in self.actions.items():
-            if row["action"] == "merge":
-                merge_map[(subject, slug)] = (subject, row["new_slug"])
-            elif row["action"] == "delete":
-                deleted.add((subject, slug))
-
-        # 合并目标本身不得被合并或删除（否则形成链或悬空）
-        for key, target in merge_map.items():
-            if target in deleted:
-                raise InvariantError(f"{key} 合并到已被删除的 {target}")
-            if target in merge_map:
-                raise InvariantError(f"{key} 合并到另一个被合并的节点 {target}，形成合并链")
-        return merge_map, deleted
-
-    def _rename_points(self) -> None:
-        rename = {k: v["new_name"] for k, v in self.actions.items()
-                  if v["action"] == "rename" and v["new_name"]}
-        for subject in self.pack["subjects"]:
-            for topic in subject["topics"]:
-                for point in topic.get("knowledgePoints") or []:
-                    key = (subject["subject"], point["slug"])
-                    if key in rename:
-                        point["name"] = rename[key]
-                    if key in self.aliases:
-                        point["aliases"] = self.aliases[key]
-                    elif key not in rename:
-                        pass
-                    if key in self.boundaries:
-                        point["boundary"] = self.boundaries[key]
 
     def _apply_alias_and_boundary(self) -> None:
         """按表覆盖别名与边界；未定稿的部分走安全默认值。
@@ -191,48 +135,6 @@ class Builder:
                                 f"{point['slug']} 的前置 {prereq} 不在同科节点集里")
                     point["prerequisiteSlugs"] = list(declared)
 
-    def _drop_removed_points(self, merge_map, deleted) -> None:
-        """删除节点、把被合并节点的身份去掉，并处理指向它们的绑定。
-
-        被合并的节点与被删除的节点一样要从包里消失，只是绑定改指保留者。
-        不能只在"同一 topic 内且保留者已出现"时才删——跨 topic 合并或保留者排在
-        后面时，被合并的节点会残留，重复就没真正消掉。
-        """
-        removed = set(deleted) | set(merge_map)
-        for subject in self.pack["subjects"]:
-            subject_name = subject["subject"]
-            for topic in subject["topics"]:
-                topic["knowledgePoints"] = [
-                    point for point in topic.get("knowledgePoints") or []
-                    if (subject_name, point["slug"]) not in removed
-                ]
-
-    def _rebind_materials(self, merge_map, deleted) -> None:
-        """把指向被合并节点的绑定改指保留者；指向被删节点的绑定移除。"""
-        pack_id = self.pack["packId"]
-        retargeted = removed = 0
-        for _path, doc in self.sidecars:
-            for material in doc["materials"]:
-                kept = []
-                for binding in material.get("bindings") or []:
-                    node_id = binding["knowledgeNodeId"]
-                    # id 形如 kb:<packId>:<subject>:atomic:<slug>
-                    parts = node_id.split(":")
-                    slug = parts[-1] if parts else ""
-                    subject = parts[-3].upper() if len(parts) >= 4 else ""
-                    key = (subject, slug)
-                    if key in deleted:
-                        removed += 1
-                        continue
-                    target = merge_map.get(key)
-                    if target:
-                        binding = dict(binding)
-                        binding["knowledgeNodeId"] = _node_id(pack_id, *target)
-                        retargeted += 1
-                    kept.append(binding)
-                material["bindings"] = kept
-        self.notes.append(f"绑定改指保留者 {retargeted} 条；因节点删除而解除 {removed} 条")
-
     # ---------- 新增内容（五三炼化） ----------
 
     def _apply_new_points(self) -> None:
@@ -271,9 +173,11 @@ class Builder:
     def _apply_new_materials(self) -> None:
         """把 materials.jsonl 的材料追加进侧车，并登记其来源。
 
-        侧车清单在 Kotlin 侧是**硬编码**的（BundledKnowledgePackResources.
-        teachingSidecarsByPack）。因此这里宁可拒绝也不新开侧车文件——新开的文件
-        不会被 App 加载，材料会静默消失，而静默消失比生成失败难发现得多。
+        四科包的侧车清单在 Kotlin 侧由索引文件给出（BundledKnowledgePackResources
+        读 moe-2025-teaching-support-v2-index.json；只有 2020 样例包仍走硬编码的
+        teachingSidecarsByPack），pack_io.sidecar_paths 读的是同一份索引。
+        因此这里宁可拒绝也不新开侧车文件——开新卷必须"写新文件 + 更新索引"一起做，
+        漏了索引更新，App 不会加载新卷，材料会静默消失，而静默消失比生成失败难发现得多。
         """
         if not self.new_materials:
             return
@@ -291,8 +195,8 @@ class Builder:
                     break
             else:
                 raise InvariantError(
-                    f"侧车已满（{len(self.sidecars)} × {cap}）；新开侧车文件必须同时改 "
-                    f"BundledKnowledgePackResources.teachingSidecarsByPack，本生成器不代劳。"
+                    f"侧车已满（{len(self.sidecars)} × {cap}）；新开侧车文件必须同时更新侧车索引"
+                    f"（moe-2025-teaching-support-v2-index.json），本生成器不代劳。"
                 )
         # 来源按 codec 要求与材料同侧车登记，且跨侧车共享同一 id；
         # 指纹按**该来源实际贡献的材料正文**算，内容一改指纹就变。
@@ -686,14 +590,9 @@ class Builder:
     # ---------- 执行 ----------
 
     def build(self) -> dict:
-        merge_map, deleted = self._apply_node_actions()
-        self._rename_points()
-        self._drop_removed_points(merge_map, deleted)
         self._apply_new_points()
         self._apply_new_materials()
         self._apply_material_bindings()
-        # 改指/解绑放在新增之后：新增材料也要享受与既有材料一致的合并/删除处置
-        self._rebind_materials(merge_map, deleted)
         self._apply_alias_and_boundary()
         self._apply_prereq()
         self._repair_material_text()
@@ -703,21 +602,15 @@ class Builder:
         # 别的任何字段（slug 一个字节都不动）。
         from kb_build import shorten_topic_names
         shorten_topic_names.shorten(self.pack)
-        return {"merge": len(merge_map), "deleted": len(deleted),
-                "new_points": len(self.new_points), "new_materials": len(self.new_materials)}
+        return {"new_points": len(self.new_points),
+                "new_materials": len(self.new_materials)}
 
-    def write(self, promote: bool) -> list[Path]:
-        if promote and self.allow_review:
-            raise InvariantError("评估模式的产物不允许写回成品目录；未定稿的行不能进包")
-        if promote:
-            target_dir = pack_io.KNOWLEDGE_DIR
-        elif self.allow_review:
-            target_dir = ASSESS_DIR
-        else:
-            target_dir = STAGING
-        written = [pack_io.dump_json(self.pack, target_dir / pack_io.PACK_NAME)]
+    def write(self) -> list[Path]:
+        """只写 staging。成品目录唯一写者是 promote.py（门全绿才落盘）。"""
+        STAGING.mkdir(parents=True, exist_ok=True)
+        written = [pack_io.dump_json(self.pack, STAGING / pack_io.PACK_NAME)]
         for path, doc in self.sidecars:
-            written.append(pack_io.dump_json(doc, target_dir / path.name))
+            written.append(pack_io.dump_json(doc, STAGING / path.name))
         return written
 
 
@@ -732,7 +625,7 @@ def summarize(builder: Builder, stats: dict) -> None:
         after["nodes"] += len(subject["topics"])
         for topic in subject["topics"]:
             after["points"] += len(topic.get("knowledgePoints") or [])
-    print(f"  知识点 {before['points']} -> {after['points']}（删 {stats['deleted']}，合并 {stats['merge']}）")
+    print(f"  知识点 {before['points']} -> {after['points']}（新增 {stats['new_points']}）")
     print(f"  topic  {before['nodes']} -> {after['nodes']}")
     for note in builder.notes:
         print(f"  说明：{note}")
@@ -740,14 +633,10 @@ def summarize(builder: Builder, stats: dict) -> None:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--promote", action="store_true",
-                        help="写回 core/data/src/main/resources/knowledge/（默认只写 staging）")
-    parser.add_argument("--write", action="store_true", help="真的落盘")
-    parser.add_argument("--assess", action="store_true",
-                        help="影响评估：允许跳过未定稿行，只算改动量；产物写 build/kb-assess/")
+    parser.add_argument("--write", action="store_true", help="真的落盘（只写 staging）")
     args = parser.parse_args(argv)
 
-    builder = Builder(allow_review=args.assess)
+    builder = Builder()
     try:
         stats = builder.build()
     except InvariantError as exc:
@@ -766,10 +655,10 @@ def main(argv: list[str] | None = None) -> int:
 
     if not args.write:
         print()
-        print("（dry-run，未落盘。加 --write 写 staging，加 --promote 才写回成品目录）")
+        print("（dry-run，未落盘。加 --write 写 staging；晋升走 kb_build.promote）")
         return 0
 
-    written = builder.write(promote=args.promote)
+    written = builder.write()
     print()
     print(f"已写出 {len(written)} 个文件到 {written[0].parent}")
     return 0

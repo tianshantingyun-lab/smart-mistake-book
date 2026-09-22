@@ -63,6 +63,9 @@ class KnowledgeContextRetrievalInstrumentedTest {
 
             var hitCount = 0
             cases.forEach { case ->
+                // B 路召回网宽 = v1 生产形状（limit=64，2026-09-22 曾统一为 512 宽召回，
+                // 金标实测净伤害后当日回滚，见 docs/kb-vector-topic-decision.md §3.2 / KD-24）：
+                // 历史基线即 v1 索引 × B64→A 19/19。select 的 limit=64 是断言窗口，保持不变。
                 val candidates = store.readSubjectKnowledgeRecallCandidates(
                     subject = case.subject,
                     searchFeatures = KnowledgeSearchFeatureExtractor.fromQuestion(case.question),

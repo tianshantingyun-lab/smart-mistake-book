@@ -1,6 +1,7 @@
 package com.tingyun.smartmistakebook.core.data.study
 
 import com.tingyun.smartmistakebook.core.database.KnowledgeNodeSeedRecord
+import com.tingyun.smartmistakebook.core.database.KnowledgeTeachingMaterialNodeBindingRecord
 import com.tingyun.smartmistakebook.core.database.LibraryCatalogRow
 import com.tingyun.smartmistakebook.core.database.TutorMessageRecord
 import com.tingyun.smartmistakebook.core.database.TutorTurnResponseRecord
@@ -8,6 +9,8 @@ import com.tingyun.smartmistakebook.core.database.port.MasteryAggregateRecord
 import com.tingyun.smartmistakebook.core.database.port.SubjectMasteryRecord
 import com.tingyun.smartmistakebook.core.domain.MasteryWriteGate
 import com.tingyun.smartmistakebook.core.model.TutorEvidenceDirection
+import com.tingyun.smartmistakebook.core.model.TutorKnowledgeCode
+import com.tingyun.smartmistakebook.core.model.TutorKnowledgeCodeRole
 import com.tingyun.smartmistakebook.core.model.TutorToolCall
 import com.tingyun.smartmistakebook.core.model.TutorToolName
 import com.tingyun.smartmistakebook.core.model.TutorToolOutcome
@@ -47,20 +50,42 @@ class RoomTutorToolRunnerTest {
         )
     }
 
-    private fun context() = RoomTutorToolRunner.Context(
-        subject = "MATH",
+    /** 会话注册表：K1 = 当前题确认绑定的"函数单调性"（CONFIRMED 锚定等级）。 */
+    private fun confirmedRegistry() = TutorKnowledgeCodeRegistry().apply {
+        adopt(
+            listOf(
+                TutorKnowledgeCode(
+                    knowledgeNodeId = "kc-monotonicity",
+                    displayName = "函数单调性",
+                    role = TutorKnowledgeCodeRole.CONFIRMED_BINDING,
+                ),
+            ),
+        )
+    }
+
+    private fun context(
+        subject: String = "MATH",
+        registry: TutorKnowledgeCodeRegistry? = confirmedRegistry(),
+    ) = RoomTutorToolRunner.Context(
+        subject = subject,
         learnerId = learnerId,
         conversationId = "tutor-conv-1",
+        knowledgeCodeRegistry = registry,
     )
 
+    /**
+     * 单一代号通道（D5）：terms[0] 是**代号**（默认 K1 = 确认绑定的 kc-monotonicity），
+     * 原始 id 不进工具参数。
+     */
     private fun masteryCall(
         rationale: String,
         understanding: TutorUnderstandingTier = TutorUnderstandingTier.MASTERED,
         direction: TutorEvidenceDirection = TutorEvidenceDirection.POSITIVE,
+        terms: String = "K1",
     ) = TutorToolCall(
         tool = TutorToolName.MASTERY_UPDATE,
         rationale = rationale,
-        terms = listOf("kc-monotonicity"),
+        terms = listOf(terms),
         direction = direction,
         understanding = understanding,
         confidence = 0.9,
@@ -86,6 +111,203 @@ class RoomTutorToolRunnerTest {
         assertEquals(TutorEvidenceDirection.POSITIVE.name, evidence.direction)
         assertEquals(MasteryWriteGate.WEIGHT_MASTERED_POSITIVE, evidence.weight, 1e-9)
         assertNull(evidence.rejected_reason)
+    }
+
+    // ---- 单一代号通道验收（ADR 0001 / D5-D10）----
+
+    @Test
+    fun `a legal code write succeeds with the confirmed anchor class`() = runBlocking {
+        // 验收①：合法代号（K1 = 当前题确认绑定）写入成功，anchor_class 正确（CONFIRMED，
+        // 全权重）。
+        val port = anchoredPort()
+        port.tutorMessages += studentMessage("我把两边都乘以了2")
+        port.tutorMessages += studentMessage("因为斜率相等所以平行")
+
+        val outcome = RoomTutorToolRunner(port).run(
+            masteryCall(
+                rationale = "学生说\"我把两边都乘以了2\"，随后独立写出\"因为斜率相等所以平行\"。",
+            ),
+            sessionContext(),
+        )
+
+        assertTrue("expected accepted outcome but was $outcome", outcome.ok)
+        val evidence = port.recordedChatEvidence.single()
+        assertEquals("CONFIRMED", evidence.anchor_class)
+        assertEquals(MasteryWriteGate.WEIGHT_MASTERED_POSITIVE, evidence.weight, 1e-9)
+        assertEquals("kc-monotonicity", evidence.knowledge_node_id)
+    }
+
+    @Test
+    fun `a fabricated code is structurally refused without an evidence row`() = runBlocking {
+        // 验收②：编造代号（不在本会话已披露集合）结构性拒——协议错误路径，不进统一门、
+        // 不落任何证据行（没有可挂靠审计的知识节点）。
+        val port = anchoredPort()
+        port.tutorMessages += studentMessage("我把两边都乘以了2")
+
+        val outcome = RoomTutorToolRunner(port).run(
+            masteryCall(
+                rationale = "学生说\"我把两边都乘以了2\"。",
+                understanding = TutorUnderstandingTier.CONFIDENT,
+                terms = "K9",
+            ),
+            sessionContext(),
+        )
+
+        assertEquals(false, outcome.ok)
+        assertEquals("invalid_knowledge_code", outcome.errorKind)
+        assertTrue("结构性拒不得落任何证据行", port.recordedChatEvidence.isEmpty())
+    }
+
+    @Test
+    fun `a cross-subject node behind a legal code is rejected as unanchored`() = runBlocking {
+        // 验收③：代号合法但目标节点跨科目（数学会话里写 PHYSICS 节点）——KC 锚定的科目
+        // 边界仍拒（gate 拒因 KNOWLEDGE_NODE_NOT_ANCHORED，落 rejected 观察行）。
+        val port = FakeStudyDatabasePort().apply {
+            knowledgeNodes += KnowledgeNodeSeedRecord(
+                knowledgeNodeId = "kc-physics-momentum",
+                stableCode = "physics.momentum",
+                subject = "PHYSICS",
+                displayName = "动量守恒",
+                parentKnowledgeNodeId = null,
+                taxonomyVersion = "cn-highschool-m1-v1",
+                createdAtEpochMillis = 1_000,
+                canonicalName = "动量守恒",
+            )
+        }
+        val registry = TutorKnowledgeCodeRegistry().apply {
+            adopt(
+                listOf(
+                    TutorKnowledgeCode(
+                        knowledgeNodeId = "kc-physics-momentum",
+                        displayName = "动量守恒",
+                        role = TutorKnowledgeCodeRole.RETRIEVAL_CANDIDATE,
+                    ),
+                ),
+            )
+        }
+        port.tutorMessages += studentMessage("动量守恒我推导过了")
+
+        val outcome = RoomTutorToolRunner(port).run(
+            masteryCall(
+                rationale = "学生说\"动量守恒我推导过了\"。",
+                understanding = TutorUnderstandingTier.CONFIDENT,
+            ),
+            context(registry = registry, subject = "MATH"),
+        )
+
+        assertEquals("rejected:KNOWLEDGE_NODE_NOT_ANCHORED", outcome.errorKind)
+        assertEquals(
+            "KNOWLEDGE_NODE_NOT_ANCHORED",
+            port.recordedChatEvidence.single().rejected_reason,
+        )
+    }
+
+    @Test
+    fun `an unconfirmed candidate anchor write persists the halved weight`() = runBlocking {
+        // 验收④：无确认锚（CANDIDATE）写入 → D9 降权安全垫在**写入时**施加：
+        // 存库 weight = 档位权重 × 0.5，anchor_class 落库（投影按存库值逐位积分）。
+        val port = anchoredPort()
+        port.tutorMessages += studentMessage("我把两边都乘以了2")
+        val registry = TutorKnowledgeCodeRegistry().apply {
+            adopt(
+                listOf(
+                    TutorKnowledgeCode(
+                        knowledgeNodeId = "kc-monotonicity",
+                        displayName = "函数单调性",
+                        role = TutorKnowledgeCodeRole.CONFIRMED_BINDING,
+                    ),
+                    TutorKnowledgeCode(
+                        knowledgeNodeId = "kc-peifang",
+                        displayName = "配方法",
+                        role = TutorKnowledgeCodeRole.RETRIEVAL_CANDIDATE,
+                    ),
+                ),
+            )
+        }
+        port.knowledgeNodes += knowledgeNode("kc-peifang", "配方法", "MATH")
+
+        val outcome = RoomTutorToolRunner(port).run(
+            masteryCall(
+                rationale = "学生说\"我把两边都乘以了2\"。",
+                understanding = TutorUnderstandingTier.CONFIDENT,
+                terms = "K2",
+            ),
+            sessionContext(registry = registry),
+        )
+
+        assertTrue("expected accepted outcome but was $outcome", outcome.ok)
+        val evidence = port.recordedChatEvidence.single()
+        assertEquals("CANDIDATE", evidence.anchor_class)
+        assertEquals(MasteryWriteGate.WEIGHT_CONFIDENT_POSITIVE * 0.5, evidence.weight, 1e-9)
+    }
+
+    @Test
+    fun `a disclosed tool-found anchor write also persists the halved weight`() = runBlocking {
+        // 验收④的 DISCLOSED 半边（工具发现节点）：与 CANDIDATE 同吃安全垫，
+        // 区分只用于审计。
+        val port = anchoredPort()
+        port.tutorMessages += studentMessage("我把两边都乘以了2")
+        val discovered = knowledgeNode("kc-discovered", "二次函数图像", "MATH")
+        port.knowledgeNodes += discovered
+        val registry = TutorKnowledgeCodeRegistry().apply {
+            assign(TutorKnowledgeCode("kc-discovered", "二次函数图像", TutorKnowledgeCodeRole.TOOL_DISCOVERED))
+        }
+
+        val outcome = RoomTutorToolRunner(port).run(
+            masteryCall(
+                rationale = "学生说\"我把两边都乘以了2\"。",
+                understanding = TutorUnderstandingTier.CONFIDENT,
+                terms = "K1",
+            ),
+            sessionContext(registry = registry),
+        )
+
+        assertTrue("expected accepted outcome but was $outcome", outcome.ok)
+        val evidence = port.recordedChatEvidence.single()
+        assertEquals("DISCLOSED", evidence.anchor_class)
+        assertEquals(MasteryWriteGate.WEIGHT_CONFIDENT_POSITIVE * 0.5, evidence.weight, 1e-9)
+    }
+
+    @Test
+    fun `knowledgeReadReturnsCodesBoundaryAndMaterialDigestAndAppendsDisclosure`() = runBlocking {
+        // D5 读侧：KNOWLEDGE_READ 返回代号+名称+边界前 80 字+绑定材料摘要；新发现节点
+        // 追加披露（K2）；原始 id 不进结果文本（模型没有产生 id 的渠道）。
+        val port = FakeStudyDatabasePort()
+        val nodeA = knowledgeNode("kc-a", "函数单调性", "MATH").copy(
+            boundaryMarkdown = "讨论函数在区间上的增减性；不含导数应用题。",
+        )
+        val nodeB = knowledgeNode("kc-b", "导数与切线", "MATH").copy(
+            boundaryMarkdown = "导数的几何意义与切线方程。",
+        )
+        port.recallCandidates += nodeA
+        port.recallCandidates += nodeB
+        port.teachingMaterials += teachingMaterial("mat-a", "kc-a")
+        port.materialNodeBindings += KnowledgeTeachingMaterialNodeBindingRecord(
+            materialId = "mat-a",
+            knowledgeNodeId = "kc-a",
+            role = "PRIMARY",
+        )
+        val registry = TutorKnowledgeCodeRegistry().apply {
+            adopt(listOf(TutorKnowledgeCode("kc-a", "函数单调性", TutorKnowledgeCodeRole.CONFIRMED_BINDING)))
+        }
+
+        // 两个检索词各锚一个召回节点：路由 = v1 生产形状（裸 B 路 limit=5，B512→select
+        // 统一路由已回滚，见 KD-24）——fake port 按插入序返回候选，两个节点都进 top-5。
+        val outcome = RoomTutorToolRunner(port)
+            .run(knowledgeReadCall(terms = listOf("单调性", "切线")), context(registry = registry))
+
+        assertTrue("expected ok outcome but was $outcome", outcome.ok)
+        val text = outcome.summaryMarkdown
+        assertTrue("已披露节点保持原码: $text", text.contains("K1. 函数单调性"))
+        assertTrue("新发现节点追加披露: $text", text.contains("K2. 导数与切线"))
+        assertTrue("边界前 80 字进结果: $text", text.contains("讨论函数在区间上的增减性"))
+        assertTrue("绑定材料摘要进结果: $text", text.contains("材料："))
+        assertFalse("原始 id 不进结果文本: $text", text.contains("kc-a") || text.contains("kc-b"))
+        assertEquals(setOf("K1", "K2"), registry.disclosedCodes())
+        assertEquals("K2", registry.codeFor("kc-b"))
+        assertEquals(TutorKnowledgeCodeRole.TOOL_DISCOVERED, registry.resolve("K2")?.role)
+        // 结果仍受单工具 2k 预算约束。
+        assertTrue(text.length <= TutorToolOutcome.MAX_TOOL_RESULT_CHARS)
     }
 
     @Test
@@ -722,6 +944,12 @@ class RoomTutorToolRunnerTest {
         boundQuestionCount = 1,
     )
 
+    /**
+     * 模拟生产 B 路召回的输出形态：召回 SQL 只返回 trusted 状态（CURATED /
+     * SOURCE_GROUNDED / USER_CONFIRMED）的非退役节点。KNOWLEDGE_READ / MASTERY_READ
+     * 聚焦解析 = v1 生产形状（裸 B 路，B512→select 统一路由已回滚，见 KD-24）——
+     * 工具执行器直接消费这份候选，不再过 A 路精排。
+     */
     private fun knowledgeNode(nodeId: String, name: String, subject: String) = KnowledgeNodeSeedRecord(
         knowledgeNodeId = nodeId,
         stableCode = nodeId,
@@ -731,6 +959,9 @@ class RoomTutorToolRunnerTest {
         taxonomyVersion = "taxonomy-v1",
         createdAtEpochMillis = 1_000,
         canonicalName = name,
+        nodeKind = "CONCEPT",
+        granularity = "ATOMIC",
+        verificationStatus = "CURATED",
     )
 
     private fun studentMessage(body: String, role: String = "STUDENT") = TutorMessageRecord(
@@ -747,11 +978,40 @@ class RoomTutorToolRunnerTest {
         errorCode = null,
     )
 
-    private fun sessionContext(cycleOrdinal: Int = 1) = context().copy(
+    private fun sessionContext(
+        cycleOrdinal: Int = 1,
+        registry: TutorKnowledgeCodeRegistry? = confirmedRegistry(),
+    ) = context(registry = registry).copy(
         tutorSessionId = TUTOR_SESSION_ID,
         conversationId = CONVERSATION_ID,
         cycleOrdinal = cycleOrdinal,
     )
+
+    private fun knowledgeReadCall(
+        terms: List<String> = listOf("单调性"),
+    ) = TutorToolCall(
+        tool = TutorToolName.KNOWLEDGE_READ,
+        rationale = "看这道题相关的知识点",
+        terms = terms,
+    )
+
+    private fun teachingMaterial(materialId: String, nodeId: String) =
+        com.tingyun.smartmistakebook.core.database.KnowledgeTeachingMaterialRecord(
+            materialId = materialId,
+            stableCode = "mat-$nodeId",
+            subject = "MATH",
+            materialType = "METHOD_MODEL",
+            title = "方法模型：${nodeId}",
+            summaryMarkdown = "该材料讲解对应知识点的核心方法与典型误区。",
+            applicabilityMarkdown = "适用于该知识点的讲题。",
+            contentMarkdown = "正文。",
+            boundaryMarkdown = "边界。",
+            derivationKind = "EXTRACT",
+            sourceId = "source-1",
+            sourceLocator = "locator-1",
+            contentFingerprint = "fp-$materialId",
+            reviewedAtEpochMillis = 1_000,
+        )
 
     private fun turnResponse(
         cycleOrdinal: Int,

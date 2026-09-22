@@ -2,8 +2,11 @@ package com.tingyun.smartmistakebook.core.data.study
 
 import com.tingyun.smartmistakebook.core.database.CommitProblemDraftCommand
 import com.tingyun.smartmistakebook.core.database.CommitTutorSessionCommand
+import com.tingyun.smartmistakebook.core.database.KnowledgeNodeSeedRecord
 import com.tingyun.smartmistakebook.core.database.KnowledgeSearchFeatureExtractor
+import com.tingyun.smartmistakebook.core.database.KnowledgeTeachingMaterialRecord
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
+import com.tingyun.smartmistakebook.core.database.KnowledgeTeachingMaterialNodeBindingRecord
 import com.tingyun.smartmistakebook.core.database.port.MasteryAggregateRecord
 import com.tingyun.smartmistakebook.core.database.port.SubjectMasteryRecord
 import com.tingyun.smartmistakebook.core.database.TutorMessageRecord
@@ -12,8 +15,12 @@ import com.tingyun.smartmistakebook.core.database.entity.LearnerChatEvidenceEnti
 import com.tingyun.smartmistakebook.core.domain.MasteryWriteGate
 import com.tingyun.smartmistakebook.core.domain.tutorSessionObjectiveRecord
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocumentValidator
+import com.tingyun.smartmistakebook.core.model.KnowledgeAnchorClass
+import com.tingyun.smartmistakebook.core.model.KnowledgeMaterialNodeRole
 import com.tingyun.smartmistakebook.core.model.TutorEvidenceDirection
 import com.tingyun.smartmistakebook.core.model.TutorEvidenceRecency
+import com.tingyun.smartmistakebook.core.model.TutorKnowledgeCode
+import com.tingyun.smartmistakebook.core.model.TutorKnowledgeCodeRole
 import com.tingyun.smartmistakebook.core.model.TutorToolCall
 import com.tingyun.smartmistakebook.core.model.TutorToolName
 import com.tingyun.smartmistakebook.core.model.TutorToolOutcome
@@ -125,6 +132,16 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
          * 默认 false 是 fail-closed：直调者没说是哪一档就不列别的题。
          */
         val roundDisclosesQuestionCandidates: Boolean = false,
+        /**
+         * 会话代号注册表（单一代号通道，D5）：
+         * - KNOWLEDGE_READ 对新发现节点追加披露（分配/复用代号），输出只给代号+名称+摘要，
+         *   原始 id 不进结果文本；
+         * - MASTERY_UPDATE 的 `terms[0]` 是代号，由此解析回原始 id 后才进门（anchor_class
+         *   按角色机械确立，非 CONFIRMED 的权重减半在写入时施加）。
+         * null = 直调/无会话（大厅）：KNOWLEDGE_READ 无代号可发（回退序号形态），
+         * MASTERY_UPDATE 没有已披露代号 → 结构性拒。
+         */
+        val knowledgeCodeRegistry: TutorKnowledgeCodeRegistry? = null,
     ) {
         init {
             require(attentionFactor in 0.0..1.0) { "Attention factor must be in 0..1" }
@@ -146,7 +163,7 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
                         errorKind = "no_subject",
                     )
                 } else {
-                    knowledgeRead(subject, call.terms)
+                    knowledgeRead(subject, call.terms, context)
                 }
             }
             TutorToolName.NOTEBOOK_READ -> notebookRead(call.terms, context)
@@ -166,12 +183,33 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
     }
     }
 
-    private suspend fun knowledgeRead(subject: String, terms: List<String>): TutorToolOutcome {
-        val features = KnowledgeSearchFeatureExtractor.fromQuestion(terms.joinToString(" "))
+    /**
+     * 读知识点（KNOWLEDGE_READ）：检索 → 返回**代号 + 名称 + 边界前 80 字 + 绑定材料摘要**。
+     *
+     * 路由 = **v1 生产形状：裸 B 路 limit=[KNOWLEDGE_READ_NODE_LIMIT]**（SQL 倒排二值 TF 排序，
+     * 无 A 路精排）。2026-09-22 曾统一成 B512→A 精排（与归类/拍照同源），但金标实测显示该
+     * 路由在主集上 0.5222→0.3444、p95 663ms 超预算，是净伤害（详见
+     * docs/kb-vector-topic-decision.md §3.2 与 KD-24），当日回滚到本形状——零回归。
+     * B 路二值 TF 的"少公共 gram 精确节点排不进前 5"偏置是已知词面缺陷（登记册 D-01），
+     * 按 D12 预注册由已开启的 dense 兜底议题解决，不在词面路由上打补丁。
+     *
+     * 单一代号通道（D5，关审计断链 E-03）：此前只回"名字+边界"，模型没有任何渠道拿到可写入的
+     * 知识点标识，MASTERY_UPDATE 因此在聊天路径结构性不可达。现在每个返回节点都带本会话代号
+     * （新发现节点在此**追加披露**——注册表分配 K(n+1) 起的新码，仓库把追加集写回下一轮输入
+     * 的映射表），原始 id 不进结果文本。材料摘要让模型"知道这个知识点讲什么"而不必再发一轮
+     * 查询，单条预算内（总结果仍受 2k 轮工具结果预算约束）。
+     */
+    private suspend fun knowledgeRead(
+        subject: String,
+        terms: List<String>,
+        context: Context,
+    ): TutorToolOutcome {
+        val questionText = terms.joinToString(" ")
+        val features = KnowledgeSearchFeatureExtractor.fromQuestion(questionText)
         val nodes = port.readSubjectKnowledgeRecallCandidates(
             subject = subject,
             searchFeatures = features,
-            limit = 5,
+            limit = KNOWLEDGE_READ_NODE_LIMIT,
         )
         if (nodes.isEmpty()) {
             return TutorToolOutcome(
@@ -180,15 +218,70 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
                 summaryMarkdown = "知识库里没有匹配的知识点。",
             )
         }
+        val registry = context.knowledgeCodeRegistry
+        val materialSummaries = nodeMaterialSummaries(subject, nodes)
         val lines = nodes.mapIndexed { index, node ->
+            val code = registry?.assign(
+                TutorKnowledgeCode(
+                    knowledgeNodeId = node.knowledgeNodeId,
+                    displayName = node.displayName,
+                    role = TutorKnowledgeCodeRole.TOOL_DISCOVERED,
+                ),
+            )
+            val marker = code ?: "${index + 1}"
             val boundary = node.boundaryMarkdown?.take(80)
-            "${index + 1}. ${node.displayName}${boundary?.let { "：$it" } ?: ""}"
+            val material = materialSummaries[node.knowledgeNodeId]
+                ?.let { "｜材料：${it.take(KNOWLEDGE_READ_MATERIAL_DIGEST_CHARS)}" }
+                .orEmpty()
+            "$marker. ${node.displayName}${boundary?.let { "：$it" } ?: ""}$material"
+        }
+        val header = if (registry != null) {
+            "知识点候选 ${nodes.size} 个（代号 K1..Kn 本会话有效，写掌握度时 terms 填代号）："
+        } else {
+            "知识点候选 ${nodes.size} 个："
         }
         return TutorToolOutcome(
             tool = TutorToolName.KNOWLEDGE_READ,
             ok = true,
-            summaryMarkdown = "知识点候选 ${nodes.size} 个：\n${lines.joinToString("\n")}",
+            summaryMarkdown = "$header\n${lines.joinToString("\n")}",
         )
+    }
+
+    /**
+     * 每个节点取一条**PRIMARY 绑定优先**的材料摘要（无 PRIMARY 取第一条），供 KNOWLEDGE_READ
+     * 结果内联。只读 summary 字段（材料全文走教学参考/材料卷通道），保持 2k 预算内。
+     */
+    private suspend fun nodeMaterialSummaries(
+        subject: String,
+        nodes: List<KnowledgeNodeSeedRecord>,
+    ): Map<String, String> {
+        val nodeIds = nodes.mapTo(linkedSetOf()) { it.knowledgeNodeId }
+        val materials = port.readKnowledgeTeachingMaterialsForNodes(
+            subject = subject,
+            knowledgeNodeIds = nodeIds,
+            limit = nodes.size,
+        )
+        if (materials.isEmpty()) return emptyMap()
+        val bindings = port.readKnowledgeTeachingMaterialNodeBindings(
+            materials.mapTo(linkedSetOf()) { it.materialId },
+        )
+        val primaryByNode = bindings
+            .filter { it.role == KnowledgeMaterialNodeRole.PRIMARY.name }
+            .groupBy(KnowledgeTeachingMaterialNodeBindingRecord::knowledgeNodeId)
+        val byNode = bindings.groupBy(KnowledgeTeachingMaterialNodeBindingRecord::knowledgeNodeId)
+        val materialById = materials.associateBy(KnowledgeTeachingMaterialRecord::materialId)
+        return nodes.mapNotNull { node ->
+            val materialId = primaryByNode[node.knowledgeNodeId]?.firstOrNull()?.materialId
+                ?: byNode[node.knowledgeNodeId]?.firstOrNull()?.materialId
+            materialId?.let { id -> materialById[id]?.summaryMarkdown }
+                ?.let { summary -> node.knowledgeNodeId to summary }
+        }.toMap()
+    }
+
+    private companion object {
+        /** 裸 B 路召回的最终展示条数（v1 生产形状；B512→A 统一路由已回滚，见 KD-24）。 */
+        const val KNOWLEDGE_READ_NODE_LIMIT = 5
+        const val KNOWLEDGE_READ_MATERIAL_DIGEST_CHARS = 60
     }
 
     /**
@@ -422,6 +515,10 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
      * Resolves the model's words to knowledge nodes of the current subject via
      * the reviewed search index, keeping the display names so a node that has no
      * evidence yet can still be reported by name rather than as an opaque id.
+     *
+     * 路由 = **v1 生产形状：裸 B 路 limit=[MASTERY_FOCUS_RESOLUTION_LIMIT]**（聚焦的
+     * 输出形态与条数上限不变，D7）。2026-09-22 曾统一成 B512→A 精排，金标实测净伤害
+     * 后当日回滚（docs/kb-vector-topic-decision.md §3.2、KD-24）。
      */
     private suspend fun resolveFocusNodes(subject: String, terms: List<String>): Map<String, String> {
         val features = KnowledgeSearchFeatureExtractor.fromQuestion(terms.joinToString(" "))
@@ -535,13 +632,29 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
 
 
     private suspend fun masteryUpdate(call: TutorToolCall, context: Context): TutorToolOutcome {
-        // 模型只给语义元素（direction/understanding/锚定 terms），weight 与
+        // 模型只给语义元素（direction/understanding/代号锚），weight 与
         // 一切门控由本地 MasteryWriteGate 决定——模型无数值权，无关键词猜测。
         // TutorToolCall.init 已强制 MASTERY_UPDATE 必须带 direction/understanding；
         // 此处仍按"宁漏记"防御：缺字段时拒写而非默认负向。
         val direction = call.direction
         val understanding = call.understanding
-        val knowledgeNodeId = call.terms.firstOrNull().orEmpty()
+        // 单一代号通道（D5）：terms[0] 是**本会话代号**（K1..Kn），不是原始 id。
+        // 白名单前哨在仓库的轮次判定（Route B 背底）与 native schema enum（Route A 约束
+        // 解码）；这里是解析落点——代号 → 原始 id + 角色（anchor_class 由角色机械确立）。
+        val codeTerm = call.terms.firstOrNull().orEmpty()
+        val resolved = context.knowledgeCodeRegistry?.resolve(codeTerm)
+        if (resolved == null) {
+            // 结构性拒（协议错误路径）：编造/未披露代号没有可解析的目标，不进 gate、
+            // 不落任何观察行（没有知识节点可以挂靠审计）。
+            return TutorToolOutcome(
+                tool = TutorToolName.MASTERY_UPDATE,
+                ok = false,
+                summaryMarkdown = "该代号不在本会话已披露的知识点中，未执行。",
+                errorKind = "invalid_knowledge_code",
+            )
+        }
+        val knowledgeNodeId = resolved.knowledgeNodeId
+        val anchorClass = KnowledgeAnchorClass.of(resolved.role).name
         val now = System.currentTimeMillis()
         // 幂等 evidence_id：同 request 命名空间内同工具+知识点映射同 id——
         // 重试不重复落库（Room IGNORE 兜底，见 masteryUpdateEvidenceId）。
@@ -574,11 +687,11 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
             ?.let { port.countAcceptedChatEvidenceInConversation(it) }
             ?: 0
 
-        // KC 锚定：terms[0] 必须命中真实知识节点（防模型臆测节点），且——当存在当前题
-        // 科目上下文时（Respond 派遣）——目标节点必须属于该科目。写工具只允许落到当前
-        // 教学上下文相关的知识点；游离/跨科目的 KC 写入一律视为未锚定拒写，防止模型在
-        // 一个科目会话里把证据写进无关科目。Lobby/无科目时不强加科目匹配（但 repository
-        // 层已保证写工具不会在 Lobby 派遣里到达这里）。
+        // KC 锚定：代号解析出的 id 必须命中真实知识节点（防代号指向已退役/不存在的节点），
+        // 且——当存在科目上下文时——目标节点必须属于该科目。写工具只允许落到当前教学
+        // 上下文相关的知识点；跨科目的 KC 写入一律视为未锚定拒写，防止模型在一个科目
+        // 会话里把证据写进无关科目。无科目上下文（大厅直调）时不强加科目匹配——大厅本身
+        // 没有已披露代号，[resolved == null] 的结构性拒会先于这里生效。
         val knowledgeNode = if (knowledgeNodeId.isBlank()) {
             null
         } else {
@@ -588,7 +701,6 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
             (context.subject == null || knowledgeNode.subject == context.subject)
 
         val input = MasteryWriteGate.GateInput(
-            intentConfidence = 0.9, // 意图门已在 repository 层由 tutorToolAuthorization 把关
             evidenceConfidence = call.confidence,
             direction = direction,
             understanding = understanding,
@@ -624,27 +736,36 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
         )
         when (val result = MasteryWriteGate.evaluate(input)) {
             is MasteryWriteGate.GateResult.Accepted -> {
+                // D9 降权安全垫（写口唯一数值分支）：anchor_class≠CONFIRMED（且非 NULL）时
+                // 权重减半，**写入时**施加——存库 weight 即生效权重，投影/重放按存库值逐位
+                // 进行。CONFIRMED 与 legacy NULL 走全权重（历史不追溯降权）。
+                val effectiveWeight = MasteryWriteGate.effectiveEvidenceWeight(
+                    baseWeight = result.weight,
+                    anchorClass = anchorClass,
+                )
                 val entry = LearnerChatEvidenceEntity(
                     evidence_id = evidenceId,
                     learner_id = context.learnerId,
                     conversation_id = conversationId.orEmpty(),
                     knowledge_node_id = knowledgeNodeId,
                     direction = direction.name,
-                    weight = result.weight,
+                    weight = effectiveWeight,
                     reason_markdown = call.rationale,
                     confidence = input.evidenceConfidence,
                     source_kind = "MODEL_CHAT",
                     created_at_epoch_millis = now,
+                    anchor_class = anchorClass,
                 )
                 port.recordChatEvidence(listOf(entry))
                 return TutorToolOutcome(
                     tool = TutorToolName.MASTERY_UPDATE,
                     ok = true,
-                    summaryMarkdown = "学习证据已记录：${direction.name} weight=${result.weight}",
+                    summaryMarkdown = "学习证据已记录：${direction.name} weight=$effectiveWeight",
                 )
             }
             is MasteryWriteGate.GateResult.Rejected -> {
                 // 被拒 ≠ 删除：落 rejected 审计行（不进投影），outcome 返回拒因。
+                // anchor_class 一并落上——校准要能区分"哪一档来路的证据被拒得最多"。
                 val entry = LearnerChatEvidenceEntity(
                     evidence_id = evidenceId,
                     learner_id = context.learnerId,
@@ -658,6 +779,7 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
                     created_at_epoch_millis = now,
                     rejected_reason = result.reason.name,
                     rejected_at_epoch_millis = now,
+                    anchor_class = anchorClass,
                 )
                 port.recordChatEvidence(listOf(entry))
                 return TutorToolOutcome(

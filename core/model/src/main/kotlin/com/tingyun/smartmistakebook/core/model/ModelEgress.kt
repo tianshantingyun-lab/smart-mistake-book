@@ -40,11 +40,14 @@ enum class ModelEgressDataClass {
 /** One source of truth for the prompt whose exact scope the student approved. */
 object ModelPromptPolicyVersions {
     const val CAPTURE_DOCUMENT = "capture-document-policy-v1"
-    const val TUTOR_PLAN = "tutor-plan-v11-reteach-material-priority"
-    const val TUTOR_RESPOND = "tutor-respond-v18-notebook-read-scope"
+    /** v12：单一代号通道映射表 + Plan 工具环 + 教学材料加载失败披露（ADR 0001 / D5-D8）。 */
+    const val TUTOR_PLAN = "tutor-plan-v12-knowledge-code-channel"
+    /** v19：写工具改收代号（原始 id 退出提示词）+ 代号映射表 + 无题轮不结构性拒写（D5/D6）。 */
+    const val TUTOR_RESPOND = "tutor-respond-v19-knowledge-code-channel"
     const val TUTOR_VISUAL_GENERATE = "tutor-visual-generate-v1-bounded-semantic-document"
     const val TUTOR_VISUAL_REVIEW = "tutor-visual-review-v1-one-repair"
-    const val TUTOR_LOBBY = "tutor-lobby-v7-notebook-read-scope"
+    /** v8：工具面教学口径随 D6/D7 更新（写不写由模型语义判定；代号用法）。 */
+    const val TUTOR_LOBBY = "tutor-lobby-v8-knowledge-code-channel"
     const val LEARNING_SUMMARIZE = "learning-summarize-v1-tutor-debrief"
     const val PROBLEM_ORGANIZATION = "problem-organization-v4-atomic"
     const val KNOWLEDGE_QUIZ = "knowledge-quiz-v1-boundary-anchored"
@@ -126,22 +129,11 @@ object TutorRoundDisclosure {
 }
 
 /**
- * 本轮派发的披露集合是否覆盖题面 / 学习证据 / 学科知识库——只有**题轮**（
- * [TutorRespondInput] 派遣）如此，无题轮（[TutorLobbyInput]）的集合里没有这三类。
- *
- * 它回答的是"这一轮的披露面装不装得下某个工具的产出"，而不是"这一轮的学生在说哪一道题"。
- * 两者必须分开：`TUTOR_LOBBY_DISCLOSURE` 覆盖不到掌握度明细与学科知识库，所以那两个读工具
- * 在无题轮一律不放行（见 core:domain 的 tutorRoundToolAvailable）——这条判据取自披露集合
- * 本身，不取自解析路由。
- */
-fun ModelTaskInput.disclosesQuestionEvidence(): Boolean = this is TutorRespondInput
-
-/**
  * 本轮披露集合是否覆盖**候选菜单**（错题本里别的题面，`RELATED_QUESTION_CANDIDATES`）。
  *
- * 它回答的是"这一轮的披露面装不装得下别的题的可识别内容"，与 [disclosesQuestionEvidence]
- * （装不装得下本题的题面与学习证据）是两个问题，取的是同一个请求侧事实：本轮**真的**带了菜单
- * （`TutorRespondInput.boundQuestionCandidates` 非空）才算覆盖。无题轮没有菜单字段，一票否决。
+ * 它回答的是"这一轮的披露面装不装得下别的题的可识别内容"，取的是同一个请求侧事实：
+ * 本轮**真的**带了菜单（`TutorRespondInput.boundQuestionCandidates` 非空）才算覆盖。
+ * 无题轮没有菜单字段，一票否决。
  *
  * 谁在消费它：
  * - 清单侧：`requireAuthorizes` 的 Respond 分支按它核对 `includesQuestionCandidates`（多了少了都拒）；

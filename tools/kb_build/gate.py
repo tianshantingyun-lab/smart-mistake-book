@@ -107,45 +107,12 @@ _REAL_LATEX_COMMANDS = {
     "nprec", "nsucc", "nvdash", "nvDash", "nVdash", "ntriangleleft", "ntriangleright",
 }
 
-_LATEX_TOKEN = re.compile(r"\\([A-Za-z]+)")
-
-# 第三种损坏形态：命令位于 token 开头，前面没有可吞并的命令，于是剥掉转义字符后
-# 只剩光秃秃的残片（$rac{...}、$ec{...}）。
-# 只列在中文散文里不会误伤的残片：`ar`（\bar）与 `eta`（\beta）在英文单词里
-# 遍地都是，无法与普通文字区分，交人工确认，不在此列。
-_BARE_TAILS = ("rac{", "ec{", "arphi", "ar{", "lpha", "orall", "ngle",
-               "arnothing", "egin{", "arallel", "arphi{")
-
-
-def _bare_tail_positions(text: str):
-    """裸残片的位置：前面既不是反斜杠，也不是 ASCII 字母。"""
-    for tail in _BARE_TAILS:
-        start = 0
-        while True:
-            i = text.find(tail, start)
-            if i < 0:
-                break
-            start = i + 1
-            if i == 0 or not (text[i - 1] == "\\" or
-                              (text[i - 1].isascii() and text[i - 1].isalpha())):
-                yield tail, i
-
-
 def _is_latex_damaged(text: str) -> bool:
-    """按命令 token 与裸残片判定损坏。
+    """逐残片回扫判定损坏（2026-09-12 普查口径）。
 
-    不逐残片回扫，避免把 \\theta 算成 "htheta"、把 \\notin 算成 "notin" 这类自伤。
+    本文件曾有第二份同名实现（按命令 token 判定）定义在前、被这份静默覆盖，
+    那份连同它的 `_BARE_TAILS` 辅助已删——判定只留一份，门的行为才有单一来源。
     """
-    for match in _LATEX_TOKEN.finditer(text):
-        name = match.group(1)
-        if name in _REAL_LATEX_COMMANDS:
-            continue
-        if any(name.endswith(tail) for tail in _LATEX_TAILS):
-            return True
-    return next(_bare_tail_positions(text), None) is not None
-
-
-def _is_latex_damaged(text: str) -> bool:
     for tail in _LATEX_TAILS:
         start = 0
         while True:
@@ -572,7 +539,7 @@ def evaluate() -> list[Metric]:
     # 实测 2026-09-19：包里有 4 个 topic 的父级排在它后面（`MATH·综合` 在 `MATH` 之前等），
     # 于是**全新安装直接失败**（旧导入路径同样会踩，不是新机制引入的）。
     # "数组顺序"既不是包契约的一部分、原本也没被任何门钉住，而它决定安装能否成功。
-    m16 = Metric("topic_parent_after_child", "topic 的父级排在它之后（会让安装撞外键）")
+    m_topic_parent = Metric("topic_parent_after_child", "topic 的父级排在它之后（会让安装撞外键）")
     for subject in pack["subjects"]:
         topics = subject["topics"]
         position = {topic["slug"]: index for index, topic in enumerate(topics)}
@@ -581,17 +548,17 @@ def evaluate() -> list[Metric]:
             if parent is None:
                 continue
             if parent not in position:
-                m16.value += 1
-                if len(m16.detail) < 40:
-                    m16.detail.append(f"[{subject['subject']}] {topic['slug'][:40]} 的父级不存在")
+                m_topic_parent.value += 1
+                if len(m_topic_parent.detail) < 40:
+                    m_topic_parent.detail.append(f"[{subject['subject']}] {topic['slug'][:40]} 的父级不存在")
             elif position[parent] > index:
-                m16.value += 1
-                if len(m16.detail) < 40:
-                    m16.detail.append(
+                m_topic_parent.value += 1
+                if len(m_topic_parent.detail) < 40:
+                    m_topic_parent.detail.append(
                         f"[{subject['subject']}] 子 {topic['slug'][:32]}（第{index}）"
                         f" 排在父 {parent[:32]}（第{position[parent]}）之前"
                     )
-    metrics.append(m16)
+    metrics.append(m_topic_parent)
 
     # 15) 主题名必须只承载本层信息，路径由树（parentSlug）表达。
     # 改前 445 个 topic 里有 421 个的名字重复了父名全文，于是逐层展开时同一段文字会被
@@ -599,17 +566,17 @@ def evaluate() -> list[Metric]:
     # 避免门与工具各写一份规则后漂移。
     from kb_build import shorten_topic_names
     offenders = shorten_topic_names.names_carrying_parent_path(pack)
-    m15 = Metric("topic_name_carries_path", "主题名重复了父名的路径")
-    m15.value = len(offenders)
-    m15.detail = offenders[:40]
-    metrics.append(m15)
+    m_topic_name = Metric("topic_name_carries_path", "主题名重复了父名的路径")
+    m_topic_name.value = len(offenders)
+    m_topic_name.detail = offenders[:40]
+    metrics.append(m_topic_name)
 
-    # 16) 章层不挂知识点（规范 §2.1：章只作空壳分组，不挂知识点）。
+    # 17) 章层不挂知识点（规范 §2.1：章只作空壳分组，不挂知识点）。
     # 深度按 parentSlug 计：册=0、章=1、主题=2、子主题=3。章层（深度 1）直接挂的
     # 知识点 = 没归位到任何主题的残留。化学选择性必修2/3 集中违规（物质结构与性质
     # 37、有机化学基础 108），数学/物理章层为 0。归位需语义判断（每个点归哪个主题），
     # 不在此自动下移——本指标只让它可见、可跟踪。
-    m16 = Metric("chapter_layer_has_points", "章层直接挂了知识点（应归到主题）")
+    m_chapter_layer = Metric("chapter_layer_has_points", "章层直接挂了知识点（应归到主题）")
     for subject in pack["subjects"]:
         by_slug = {t["slug"]: t for t in subject["topics"]}
         memo: dict[str, int] = {}
@@ -623,12 +590,12 @@ def evaluate() -> list[Metric]:
 
         for topic in subject["topics"]:
             if depth(topic["slug"]) == 1 and topic.get("knowledgePoints"):
-                m16.value += len(topic["knowledgePoints"])
-                if len(m16.detail) < 40:
-                    m16.detail.append(
+                m_chapter_layer.value += len(topic["knowledgePoints"])
+                if len(m_chapter_layer.detail) < 40:
+                    m_chapter_layer.detail.append(
                         f"[{subject['subject']}] {topic['name'][:40]}: {len(topic['knowledgePoints'])} 点"
                     )
-    metrics.append(m16)
+    metrics.append(m_chapter_layer)
 
     return metrics
 

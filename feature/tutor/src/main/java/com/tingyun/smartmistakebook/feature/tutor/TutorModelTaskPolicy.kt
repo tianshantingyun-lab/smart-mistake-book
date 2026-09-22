@@ -111,6 +111,18 @@ internal data class TutorQuestionContext(
     val reviewedTeachingReferences: List<TutorTeachingReference> = emptyList(),
     /** Stored model advisories for this question (three-store loop read side). */
     val priorTeachingAdvisories: List<String> = emptyList(),
+    /**
+     * 知识点代号通道的**预披露**条目（ADR 0001 / D5，未赋码：code = null）——
+     * 错题讲题 = 已确认绑定 + 前置；拍照讲题 = 两段式检索候选 + 前置。
+     * K1..Kn 的赋码是会话级状态，由 core:data 仓库在 execute() 入口统一做。
+     * 空 = 本轮没有任何预披露（检索零命中即空注入，合法）。
+     */
+    val knowledgeCodes: List<com.tingyun.smartmistakebook.core.model.TutorKnowledgeCode> = emptyList(),
+    /**
+     * 教学材料/知识上下文**加载失败**（区别于检索零命中的合法空注入）：true 时
+     * Plan prompt 显式披露"教学材料未加载"，模型不得假装手里有资料。
+     */
+    val teachingReferencesLoadFailed: Boolean = false,
 ) {
     init {
         require(sessionId.isNotBlank())
@@ -122,6 +134,16 @@ internal data class TutorQuestionContext(
             reference.subject == subject &&
                 reference.knowledgeNodeIds.any(relatedKnowledgeNodeIds::contains)
         })
+        require(knowledgeCodes.size <= com.tingyun.smartmistakebook.core.model.MAX_SESSION_KNOWLEDGE_CODES) {
+            "Question context discloses too many knowledge codes"
+        }
+        require(
+            knowledgeCodes.map { it.knowledgeNodeId }.distinct().size == knowledgeCodes.size,
+        ) { "Question context knowledge-code node ids must be unique" }
+        require(knowledgeCodes.all { it.code == null }) {
+            "Question context knowledge codes must be uncoded (the session registry assigns them)"
+        }
+        // 前置条目允许落在 relatedKnowledgeNodeIds 之外（它不注入材料，只是代号披露）。
     }
 }
 
@@ -314,6 +336,11 @@ internal fun buildTutorPlanRequest(
         priorCycleStudentMessages = priorCycleStudentMessages,
         turnOrdinal = priorTurns.size + 1,
         priorTurns = priorTurns,
+        // 全 5 工具面（D8：Plan 复用 Respond 的工具环）。
+        toolDeclarations = com.tingyun.smartmistakebook.core.domain.TUTOR_TOOL_DECLARATIONS.toList(),
+        // 单一代号通道（D5）：预披露条目未赋码，仓库 execute() 入口赋 K1..Kn。
+        knowledgeCodes = question.knowledgeCodes,
+        teachingReferencesLoadFailed = question.teachingReferencesLoadFailed,
     )
     // 配置模型 = 全局同意：外部 agent-eligible 类型不再携带逐次披露清单，
     // 授权由 authorize() 的 ProviderConsented 分支依据 agentConsentGranted 判定。
@@ -437,6 +464,8 @@ internal fun buildTutorRespondRequest(
         ),
         boundQuestionCandidates = boundQuestionCandidates,
         knownRoundQuestion = knownRoundQuestion,
+        // 单一代号通道（D5）：与会话内历次派发同源的预披露条目（未赋码）。
+        knowledgeCodes = question.knowledgeCodes,
     )
     // 配置模型 = 全局同意：外部 agent-eligible 类型不再携带逐次披露清单。
     return ModelTaskRequest(

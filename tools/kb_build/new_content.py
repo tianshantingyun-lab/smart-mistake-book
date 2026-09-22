@@ -192,7 +192,7 @@ def load_new_points(existing: dict[str, set[str]] | None = None, path: Path | No
             if (subject, slug) in seen_slug:
                 raise NewContentError(f"new_points.csv: {subject} 内 slug 重复 {slug!r}")
             if slug in existing.get(subject, set()):
-                raise NewContentError(f"new_points.csv: {subject} 已有同名 slug {slug!r}，应走 node_actions 改名/合并")
+                raise NewContentError(f"new_points.csv: {subject} 已有同名 slug {slug!r}，应走 point_rename.csv / point_merge.csv")
             if (subject, name) in seen_name:
                 raise NewContentError(f"new_points.csv: {subject} 内名称重复「{name}」")
             seen_slug.add((subject, slug))

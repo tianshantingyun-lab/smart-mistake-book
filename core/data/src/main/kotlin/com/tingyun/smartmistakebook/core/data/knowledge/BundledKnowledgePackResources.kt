@@ -64,11 +64,44 @@ internal object BundledKnowledgePackResources {
         root["sidecars"]?.jsonArray?.map { it.jsonPrimitive.content }
             ?: error("Teaching sidecar index has no sidecars list")
     }
-    private val bundledPacks by lazy {
-        resourceNames.map(::loadResource)
+    /**
+     * 解析结果的驻留 holder。不再是 `by lazy`：lazy 进程内永不释放，而解析出的对象图
+     * （30M+ 字符 + 3.5 万对象，实测驻留见 `.jez/artifacts/r4a-startup-baseline-2026-09-22.md`）
+     * 在调和进 Room 后使命就结束了——`BundledKnowledgeBaseInstaller.releaseResidentPacks()`
+     * 把它置空。全仓唯一生产消费方是 installer（grep `BundledKnowledgePackResources` 核实），
+     * 归类路径经 installer 的快路径在戳一致时零解析，因此释放安全。
+     */
+    @Volatile
+    private var residentPacks: List<KnowledgeBasePack>? = null
+
+    /** 进程内全量解析次数（累计，clear 不重置）：快路径命中时它不该增长，单测据此钉死。 */
+    private val fullParseCounter = java.util.concurrent.atomic.AtomicInteger()
+
+    val fullParseCount: Int
+        get() = fullParseCounter.get()
+
+    fun load(): List<KnowledgeBasePack> {
+        residentPacks?.let { return it }
+        return synchronized(this) {
+            residentPacks ?: run {
+                val parseStartedAt = System.nanoTime()
+                val packs = resourceNames.map(::loadResource)
+                // 常驻观测：全量解析耗时（30M+ 字符 JSON + 逐包 validate）。R4 快路径跳过它。
+                android.util.Log.d(
+                    "KnowledgeInstall",
+                    "packs fully parsed in ${elapsedMillis(parseStartedAt)} ms (${packs.size} packs)",
+                )
+                fullParseCounter.incrementAndGet()
+                residentPacks = packs
+                packs
+            }
+        }
     }
 
-    fun load(): List<KnowledgeBasePack> = bundledPacks
+    /** 释放驻留对象图。由 install 完成后的进程编排侧调用（数据已在 Room）。可重复调用。 */
+    fun clear() {
+        residentPacks = null
+    }
 
     /**
      * 取代映射台账（哪个知识点退役了、被谁取代）。
@@ -78,9 +111,16 @@ internal object BundledKnowledgePackResources {
      * 重定向，历史界面按"显示旧名"处理。文件在但**内容不合规**则直接报错——
      * 那是"我们以为记了、其实记错了"，比缺失更危险。
      */
-    val updateManifest: KnowledgeUpdateManifest? by lazy {
-        val raw = runCatching { readClasspathResource(UPDATE_MANIFEST) }.getOrNull() ?: return@lazy null
-        ReviewedKnowledgeUpdateManifestJsonCodec.decode(raw)
+    val updateManifest: KnowledgeUpdateManifest? by lazy { loadManifestOnly() }
+
+    /**
+     * 只解析 update-manifest（111KB 小文件），不触发整包解析。
+     * install 快路径（D13）先读它再对进度戳：manifest 与包解析物理分离，
+     * 戳一致时整包（50MB 级）一个字符都不读。
+     */
+    fun loadManifestOnly(): KnowledgeUpdateManifest? {
+        val raw = runCatching { readClasspathResource(UPDATE_MANIFEST) }.getOrNull() ?: return null
+        return ReviewedKnowledgeUpdateManifestJsonCodec.decode(raw)
     }
 
     private fun loadResource(resourceName: String): KnowledgeBasePack {
@@ -106,6 +146,9 @@ internal object BundledKnowledgePackResources {
             teachingMaterialBindings = sidecars.flatMap(ReviewedTeachingMaterialSidecar::bindings),
         ).also(KnowledgeBasePack::validate)
     }
+
+    private fun elapsedMillis(startedAtNano: Long): Long =
+        (System.nanoTime() - startedAtNano) / 1_000_000
 
     private fun readClasspathResource(resourceName: String): String {
         val stream = BundledKnowledgePackResources::class.java.classLoader

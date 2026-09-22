@@ -417,6 +417,218 @@ class RoomModelTaskToolLoopInstrumentedTest {
         }
     }
 
+    // ---- Plan 复用 Respond 工具环（D8）+ 大厅全工具面（D7）----
+
+    private val planProvider = provider.copy(supportedTasks = setOf(ModelTaskKind.TUTOR_PLAN))
+
+    private fun planRequest(requestId: String): ModelTaskRequest = ModelTaskRequest(
+        requestId = requestId,
+        input = com.tingyun.smartmistakebook.core.model.TutorPlanInput(
+            sessionId = "plan-loop-session",
+            draftRevisionNumber = 1,
+            subject = "MATH",
+            questionDocument = QuestionDocument(
+                id = "question-plan",
+                blocks = listOf(ContentBlock.Paragraph("stem-plan", "求二次函数的最值。")),
+            ),
+            relevantLearningEvidence = emptyList(),
+            projectionIsCurrent = true,
+            toolDeclarations = com.tingyun.smartmistakebook.core.domain.TUTOR_TOOL_DECLARATIONS.toList(),
+            knowledgeCodes = listOf(
+                com.tingyun.smartmistakebook.core.model.TutorKnowledgeCode(
+                    knowledgeNodeId = "kc-plan",
+                    displayName = "二次函数",
+                    role = com.tingyun.smartmistakebook.core.model.TutorKnowledgeCodeRole.RETRIEVAL_CANDIDATE,
+                ),
+            ),
+        ),
+        occurredAtEpochMillis = 1_000,
+        egressManifest = null,
+    )
+
+    private fun planKnowledgeReadRequest() = com.tingyun.smartmistakebook.core.model.TutorToolRequestsOutput(
+        intentDecision = com.tingyun.smartmistakebook.core.model.TutorIntentDecision(
+            intent = com.tingyun.smartmistakebook.core.model.TutorMessageIntent.CURRENT_QUESTION_HELP,
+            confidence = 0.95,
+            explicitActionRequest = false,
+            memoryPreference = com.tingyun.smartmistakebook.core.model.TutorMemoryPreference.UNCHANGED,
+            requestedLocalCapability = com.tingyun.smartmistakebook.core.model.TutorRequestedLocalCapability.NONE,
+        ),
+        calls = listOf(
+            TutorToolCall(
+                tool = TutorToolName.KNOWLEDGE_READ,
+                rationale = "学生问二次函数最值，查一下相关知识点",
+                terms = listOf("二次函数"),
+            ),
+        ),
+        modelVersion = "tool-loop-model-v1",
+    )
+
+    private fun planFinalOutput() = com.tingyun.smartmistakebook.core.model.TutorPlanOutput(
+        sessionId = "plan-loop-session",
+        draftRevisionNumber = 1,
+        questionDocumentId = "question-plan",
+        plan = com.tingyun.smartmistakebook.core.model.TutorTurnPlan(
+            openingMarkdown = "先看清这道二次函数的结构。",
+            solutionMarkdown = "完整讲解：配方后求最值。",
+            alternateMethodMarkdown = "另一种方法：用顶点式直接读最值。",
+            difficultyReasonMarkdown = "难点在对称轴的确定。",
+            targetedEvidenceLabels = emptyList(),
+            inferredKnowledgeLabels = listOf("二次函数"),
+        ),
+        modelVersion = "tool-loop-model-v1",
+    )
+
+    @Test
+    fun aPlanRoundAnswersDirectlyWithoutAnyToolCalls() = runBlocking {
+        // D8 直通路径：Plan 0 次工具调用 → 一轮终答，声明集不改变既有行为。
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val databaseName = "plan-loop-direct-${System.nanoTime()}.db"
+        context.deleteDatabase(databaseName)
+        val database = StudyDatabaseFactory.open(context, databaseName)
+        try {
+            val gateway = ScriptedGateway(planProvider, listOf(planFinalOutput()))
+            val repository = com.tingyun.smartmistakebook.core.data.model.RoomModelTaskRepository(
+                database = database,
+                gateway = gateway,
+                clock = { 2_000L },
+            )
+            val snapshots = repository.execute(planRequest("tutor-plan:direct")).toList()
+
+            val final = snapshots.last()
+            assertEquals(ModelTaskStatus.SUCCEEDED, final.status)
+            assertTrue(final.output is com.tingyun.smartmistakebook.core.model.TutorPlanOutput)
+            assertEquals("直通路径只派遣一轮", 1, gateway.dispatchCount)
+            assertEquals(0, repository.toolRunner.executedCallCount)
+        } finally {
+            database.close()
+            context.deleteDatabase(databaseName)
+        }
+    }
+
+    @Test
+    fun aPlanRoundRunsOneKnowledgeReadThenAnswers() = runBlocking {
+        // D8 工具路径：Plan 一轮 KNOWLEDGE_READ → 结果与赋码后的代号集写回第二轮输入。
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val databaseName = "plan-loop-kread-${System.nanoTime()}.db"
+        context.deleteDatabase(databaseName)
+        val database = StudyDatabaseFactory.open(context, databaseName)
+        try {
+            val gateway = ScriptedGateway(planProvider, listOf(planKnowledgeReadRequest(), planFinalOutput()))
+            val repository = com.tingyun.smartmistakebook.core.data.model.RoomModelTaskRepository(
+                database = database,
+                gateway = gateway,
+                clock = { 2_000L },
+            )
+            val snapshots = repository.execute(planRequest("tutor-plan:kread")).toList()
+
+            val final = snapshots.last()
+            assertEquals(ModelTaskStatus.SUCCEEDED, final.status)
+            assertTrue(final.output is com.tingyun.smartmistakebook.core.model.TutorPlanOutput)
+            assertEquals("应派遣两轮", 2, gateway.dispatchCount)
+            assertEquals(1, repository.toolRunner.executedCallCount)
+
+            val second = gateway.dispatchLog[1].input as com.tingyun.smartmistakebook.core.model.TutorPlanInput
+            assertTrue("第二轮应携带工具轮结果", second.toolRoundResults.isNotEmpty())
+            val outcome = second.toolRoundResults[0].outcomes.single()
+            assertEquals(TutorToolName.KNOWLEDGE_READ, outcome.tool)
+            // 空知识库：KNOWLEDGE_READ 正常返回"没有匹配"（不是场景拒、不是 no_subject）。
+            assertTrue(outcome.ok)
+            assertEquals(
+                "预披露条目在派生前已赋码（K1）",
+                "K1",
+                second.knowledgeCodes.single().code,
+            )
+        } finally {
+            database.close()
+            context.deleteDatabase(databaseName)
+        }
+    }
+
+    @Test
+    fun aLobbyRoundSecondDispatchDeclaresAllFiveTools() = runBlocking {
+        // D7 大厅全工具面：第二轮输入的声明集就是同一页的全量五个。
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val databaseName = "lobby-five-tools-${System.nanoTime()}.db"
+        context.deleteDatabase(databaseName)
+        val database = StudyDatabaseFactory.open(context, databaseName)
+        try {
+            val gateway =
+                ScriptedGateway(provider, listOf(toolRequestOutput(), finalAnswerOutput()))
+            val repository = com.tingyun.smartmistakebook.core.data.model.RoomModelTaskRepository(
+                database = database,
+                gateway = gateway,
+                clock = { 2_000L },
+            )
+            repository.execute(request()).toList()
+
+            val second = gateway.dispatchLog[1].input as TutorLobbyInput
+            assertEquals(
+                com.tingyun.smartmistakebook.core.domain.TUTOR_TOOL_DECLARATIONS.toList(),
+                second.toolDeclarations,
+            )
+            assertEquals(5, second.toolDeclarations.size)
+        } finally {
+            database.close()
+            context.deleteDatabase(databaseName)
+        }
+    }
+
+    @Test
+    fun aLobbyRoundMasteryReadReachesTheRunnerAndFailsOnSubjectBoundary() = runBlocking {
+        // D7 MASTERY_READ 无场景分支的端到端证明：大厅轮次申请 MASTERY_READ 不再被
+        // 轮次层 not_authorized 拒发——它到达执行器，按科目边界失败关闭（no_subject），
+        // 与题内同一条 renderMasteryRead 路径。
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val databaseName = "lobby-mastery-read-${System.nanoTime()}.db"
+        context.deleteDatabase(databaseName)
+        val database = StudyDatabaseFactory.open(context, databaseName)
+        try {
+            val gateway = ScriptedGateway(
+                provider,
+                listOf(masteryReadLobbyRequest(), finalAnswerOutput()),
+            )
+            val repository = com.tingyun.smartmistakebook.core.data.model.RoomModelTaskRepository(
+                database = database,
+                gateway = gateway,
+                clock = { 2_000L },
+            )
+            repository.execute(request()).toList()
+
+            assertEquals(1, repository.toolRunner.executedCallCount)
+            val second = gateway.dispatchLog[1].input as TutorLobbyInput
+            val outcome = second.toolRoundResults[0].outcomes.single()
+            assertEquals(TutorToolName.MASTERY_READ, outcome.tool)
+            assertEquals(
+                "大厅 MASTERY_READ 到达执行器，按科目边界失败（不是场景拒）：${outcome.errorKind}",
+                "no_subject",
+                outcome.errorKind,
+            )
+        } finally {
+            database.close()
+            context.deleteDatabase(databaseName)
+        }
+    }
+
+    private fun masteryReadLobbyRequest() = com.tingyun.smartmistakebook.core.model.TutorToolRequestsOutput(
+        intentDecision = com.tingyun.smartmistakebook.core.model.TutorIntentDecision(
+            intent = com.tingyun.smartmistakebook.core.model.TutorMessageIntent.LEARNING_PROGRESS_LOOKUP,
+            confidence = 0.9,
+            explicitActionRequest = true,
+            memoryPreference = com.tingyun.smartmistakebook.core.model.TutorMemoryPreference.UNCHANGED,
+            requestedLocalCapability =
+                com.tingyun.smartmistakebook.core.model.TutorRequestedLocalCapability.NONE,
+        ),
+        calls = listOf(
+            TutorToolCall(
+                tool = TutorToolName.MASTERY_READ,
+                rationale = "学生想了解掌握情况",
+                terms = emptyList(),
+            ),
+        ),
+        modelVersion = "tool-loop-model-v1",
+    )
+
     @Test
     fun toolLoopBeyondRoundBudgetFailsFastWithoutSuccess() = runBlocking {
         val context = ApplicationProvider.getApplicationContext<Context>()

@@ -186,10 +186,52 @@ object MasteryWriteGate {
     /** Negative-evidence weight — a lapse is a lapse regardless of claimed understanding. */
     fun negativeWeight(): Double = WEIGHT_STRUGGLING
 
+    // ---- Anchor-class safety padding (ADR 0001 / D9) ----
+
+    /** `learner_chat_evidence.anchor_class` 落库值：当前题已确认绑定的知识点。 */
+    const val ANCHOR_CLASS_CONFIRMED = "CONFIRMED"
+
+    /** `learner_chat_evidence.anchor_class` 落库值：当前题本地检索候选（未确认绑定）。 */
+    const val ANCHOR_CLASS_CANDIDATE = "CANDIDATE"
+
+    /** `learner_chat_evidence.anchor_class` 落库值：其余披露（前置 / 工具发现）。 */
+    const val ANCHOR_CLASS_DISCLOSED = "DISCLOSED"
+
+    /**
+     * 写口上**唯一**的数值分支（D9 降权安全垫）：写入代号锚定等级不是 [ANCHOR_CLASS_CONFIRMED]
+     * （且非 NULL）时，门已放行的档位权重减半。
+     *
+     * NULL（anchor_class 列引入前写入的 legacy 行）按**全权重**对待——历史不追溯降权
+     * （向后兼容用例钉在 MasteryWriteGateTest 与投影层）。CANDIDATE 与 DISCLOSED 数值待遇
+     * 相同，二者区分只用于审计与后续校准（ADR 0001 §6）。
+     */
+    const val UNCONFIRMED_ANCHOR_WEIGHT_FACTOR = 0.5
+
+    /**
+     * 一条被门放行的写入**落库**的证据权重：[anchorClass] 为 NULL 或
+     * [ANCHOR_CLASS_CONFIRMED] → 全权重；CANDIDATE / DISCLOSED → 减半。
+     *
+     * 降权在**写入时**施加（core:data 的 runner），`learner_chat_evidence.weight` 列存的就是
+     * 减半后的值：账本事件、投影器积分、重放都按存库权重逐位进行，投影层不再感知
+     * anchor_class——"唯一数值分支"只有一个落点，不会出现两处各减一次。
+     */
+    fun effectiveEvidenceWeight(baseWeight: Double, anchorClass: String?): Double =
+        if (anchorClass != null && anchorClass != ANCHOR_CLASS_CONFIRMED) {
+            baseWeight * UNCONFIRMED_ANCHOR_WEIGHT_FACTOR
+        } else {
+            baseWeight
+        }
+
     // ---- Rejection reasons ----
 
     enum class RejectReason {
-        /** intent confidence below the routing threshold (spec §9.4). */
+        /**
+         * intent confidence below the routing threshold (spec §9.4)。
+         *
+         * 历史审计值：`evaluate` 不再产出它（意图门在授权层，2026-09-21 起 GateInput 也删掉了
+         * 那个只供对照的常量），但旧 rejected 行的 `rejected_reason` 列可能仍是这个字符串，
+         * 展示层（feature:review 的拒因→文案映射）要继续认它。
+         */
         INTENT_BELOW_ROUTE_CONFIDENCE,
         /** evidence confidence below θ_evidence. */
         EVIDENCE_BELOW_CONFIDENCE,
@@ -217,7 +259,6 @@ object MasteryWriteGate {
     }
 
     data class GateInput(
-        val intentConfidence: Double,
         val evidenceConfidence: Double,
         val direction: TutorEvidenceDirection,
         val understanding: TutorUnderstandingTier,
@@ -253,7 +294,6 @@ object MasteryWriteGate {
         val attentionFactor: Double,
     ) {
         init {
-            require(intentConfidence in 0.0..1.0) { "Intent confidence must be in 0..1" }
             require(evidenceConfidence in 0.0..1.0) { "Evidence confidence must be in 0..1" }
             require(attentionFactor in 0.0..1.0) { "Attention factor must be in 0..1" }
             require(evidenceAnchorCount >= 0) { "Evidence anchor count must not be negative" }
@@ -336,7 +376,4 @@ object MasteryWriteGate {
         }
         return GateResult.Accepted(weight)
     }
-
-    /** The intent-authorization route threshold, mirrored here for one-stop visibility. */
-    const val ROUTE_CONFIDENCE_THRESHOLD = 0.45
 }

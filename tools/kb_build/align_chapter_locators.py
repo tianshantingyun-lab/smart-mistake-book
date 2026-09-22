@@ -35,7 +35,7 @@
 ## 用法
 
     PYTHONPATH=tools python -m kb_build.align_chapter_locators            # 报告（含单元映射）
-    PYTHONPATH=tools python -m kb_build.align_chapter_locators --write    # 写回成品包
+    PYTHONPATH=tools python -m kb_build.align_chapter_locators --write    # 写回 staging 包
 """
 
 from __future__ import annotations
@@ -45,7 +45,7 @@ import re
 from collections import defaultdict
 from pathlib import Path
 
-from kb_build import pack_io, report_chapter_locator_mismatch as R, update_manifest
+from kb_build import pack_io, report_chapter_locator_mismatch as R
 
 LOCATOR = re.compile(r"^定位：(?P<body>[^。]*)")
 
@@ -99,7 +99,7 @@ def apply(pack: dict, changes: list[dict]) -> int:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--write", action="store_true", help="写回成品包（默认只报告）")
+    parser.add_argument("--write", action="store_true", help="写回 staging 包（默认只报告）")
     parser.add_argument("--root", type=Path, default=None)
     args = parser.parse_args(argv)
 
@@ -162,8 +162,7 @@ def main(argv: list[str] | None = None) -> int:
     print(f"\n无损校验通过：{applied} 条只改了 `定位：` 那一段，其余字段与 `。` 之后逐字节不变")
 
     pack_io.dump_json(pack, path)
-    update_manifest.main(["--stamp"])
-    print(f"→ 已写回 {path}")
+    print(f"→ 已写回 {path}（内容戳由晋升时刷新）")
 
     # 幂等：重跑一遍必须 0 改动
     reloaded = pack_io.load_json(path)

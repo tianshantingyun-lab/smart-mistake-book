@@ -17,3 +17,6 @@ staging（章层挂点 167→352）。裁定见 `docs/kb-problem-register-2026-0
 | 单元级章表 | `chapter_by_source.csv` |
 
 本文件保留仅为溯源（它记录的是候选层时代的操作意图），不再被执行。
+
+**2026-09-22（R5 死重清理）**：`node_actions.csv` 与 `node_actions_reviewed.csv` 已从仓库
+物理删除（读取路径代码一并清除，git 历史可查全文）；本 README 是这两张表的唯一留存。

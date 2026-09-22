@@ -3,7 +3,9 @@
 
 - --verify-roundtrip  证明生成器能忠实重放现行成品（不改任何文件）
 - --gate              跑内容质量门，输出缺陷归零指标（不改任何文件）
-- --build             依权威表生成成品包（写入前必须 round-trip 通过）
+
+生成器（--build）已随 kb_build.build 停用；写盘拓扑改为 staging → promote：
+手术工具写 build/kb-staging/，`kb_build.promote` 门全绿后晋升到成品目录。
 """
 
 from __future__ import annotations
@@ -24,7 +26,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--json", action="store_true",
                         help="把 --gate 结果按 JSON 输出")
     parser.add_argument("--root", default=None,
-                        help="读取根（默认成品目录）；用于对 build/kb-staging 验证")
+                        help="读取根（默认 staging；干净检出上即成品镜像）")
     args = parser.parse_args(argv)
 
     if args.root:

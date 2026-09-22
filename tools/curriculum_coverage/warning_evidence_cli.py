@@ -31,7 +31,7 @@ def build_argument_parser() -> argparse.ArgumentParser:
         "--source-register",
         type=Path,
         default=Path(
-            "core/data/src/main/resources/knowledge/"
+            "knowledge-production/"
             "source-register-2025-v1.json"
         ),
     )

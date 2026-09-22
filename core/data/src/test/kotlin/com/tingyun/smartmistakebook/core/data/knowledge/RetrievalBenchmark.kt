@@ -1,7 +1,9 @@
 package com.tingyun.smartmistakebook.core.data.knowledge
 
 import com.tingyun.smartmistakebook.core.database.KnowledgeNodeSeedRecord
+import com.tingyun.smartmistakebook.core.database.KnowledgeSearchFeatureExtractor
 import com.tingyun.smartmistakebook.core.model.KnowledgeNodeGranularity
+import com.tingyun.smartmistakebook.core.model.KnowledgeNodeVerificationStatus
 
 /**
  * 四科检索评测的**同一套题面与同一套口径**，供两个基准共用：
@@ -164,4 +166,207 @@ internal object RetrievalBenchmark {
     /** 只取原子节点做候选——与两个基准原先的取法一致。 */
     fun atomicNodes(nodes: List<KnowledgeNodeSeedRecord>): List<KnowledgeNodeSeedRecord> =
         nodes.filter { it.granularity == KnowledgeNodeGranularity.ATOMIC.name }
+
+    // ---------------------------------------------------------------------
+    // 金标集（tools/kb_coverage/tables/golden_queries_v1.json，sha256 冻结）的
+    // 双路评测：A 路精排（参考上界）/ B 路镜像（生产 v1 形状：裸 B 路 limit=5，
+    // 2026-09-22 的 B512→A 统一路由实验实测净伤害、当日回滚）。口径写死在这里，
+    // 测试文件只负责取数与落盘。
+    // ---------------------------------------------------------------------
+
+    /** 金标集一条：题面 + 预期节点 slug + 所属章。字段与冻结 JSON 逐字对应。 */
+    data class GoldenCase(
+        val chapter: String,
+        val expectedSlug: String,
+        val query: String,
+        val subject: String,
+    )
+
+    /** 单条金标在一条路线上的判分结果。 */
+    data class GoldenScore(
+        val case: GoldenCase,
+        val hit: Boolean,
+        /** 预期节点在 top-5 内的 1 起始名次；未命中为 0。 */
+        val rank: Int,
+        /** 前 3 名候选的规范名（落盘用，与判分同一次计算）。 */
+        val top3: List<String>,
+    )
+
+    /** 一条路线跑完全套金标的汇总。 */
+    data class GoldenRouteResult(
+        val route: String,
+        val scores: List<GoldenScore>,
+    ) {
+        val total: Int get() = scores.size
+        val hits: Int get() = scores.count { it.hit }
+        val recallAt5: Double get() = if (total == 0) 0.0 else hits.toDouble() / total
+        val mrr: Double get() =
+            if (total == 0) 0.0 else scores.sumOf { if (it.rank > 0) 1.0 / it.rank else 0.0 } / total
+        /** 逐章 Recall@5（章 → 命中率），按金标集自身顺序。 */
+        val byChapter: List<Pair<String, Double>> get() =
+            scores.groupBy { it.case.chapter }.entries.map { (chapter, list) ->
+                chapter to list.count { it.hit }.toDouble() / list.size
+            }
+    }
+
+    /** 判分口径：预期 slug 的原子节点是否落在该路线返回的前 [SCORED_TOP_K] 名。 */
+    fun scoreGolden(
+        routeName: String,
+        cases: List<GoldenCase>,
+        route: (GoldenCase) -> List<KnowledgeNodeSeedRecord>,
+    ): GoldenRouteResult {
+        val scores = cases.map { case ->
+            val selected = route(case).take(SCORED_TOP_K)
+            val rank = selected.indexOfFirst {
+                it.knowledgeNodeId.endsWith(ATOMIC_ID_SUFFIX + case.expectedSlug)
+            }.let { if (it < 0) 0 else it + 1 }
+            GoldenScore(case, rank > 0, rank, selected.map { it.canonicalName }.take(3))
+        }
+        return GoldenRouteResult(route = routeName, scores = scores)
+    }
+
+    private const val SCORED_TOP_K = 5
+    private const val ATOMIC_ID_SUFFIX = ":atomic:"
+
+    /**
+     * **B 路（生产 SQL 倒排）的 JVM 镜像**——SQL 排序的 JVM 镜像，真 SQL 以仪表化为准。
+     *
+     * 逐条对齐 `RoomKnowledgeBaseStore.readSubjectKnowledgeRecallCandidates` 的生产语义：
+     * - 索引内容 = `KnowledgeSearchFeatureExtractor.fromNode` 的真实输出（与
+     *   `toSearchFeatures` 写库的同一份），按 `subject + search_feature` 二值 TF；
+     * - 候选过滤 = `verification_status IN (CURATED, SOURCE_GROUNDED, USER_CONFIRMED)`
+     *   且非退役（`ProblemOrganizationDao.searchSubjectKnowledgeRecallCandidates`）；
+     * - 排序 = `ORDER BY COUNT(DISTINCT search_feature) DESC,
+     *   CASE granularity WHEN 'ATOMIC' THEN 0 ELSE 1 END, canonical_name ASC,
+     *   knowledge_node_id ASC`（与 DAO 逐字一致）；
+     * - 空查询特征 = 回退 `readSubjectKnowledgeNodes` 的顺序（verification CASE →
+     *   granularity → canonical_name → id，limit 压到 256）；
+     * - 返回 = `parents + matched`（匹配节点的父 topic 前置——生产 store 的真实返回形态，
+     *   父节点在生产的行序是 rowid 序，镜像按包内出现序取，保证 JVM 侧确定性可复现）。
+     *
+     * 它回答的问题：生产 v1 形状（裸 B 路 limit=5，SQL 倒排二值 TF 排序）在 JVM 上
+     * 保真到什么程度——[goldenBRoute] 在它上面跑同一判分口径（top-5 裸排序），与
+     * 真 SQL 仪表化（GoldenRetrievalInstrumentedTest）逐题对照。B512→A 统一路由实验
+     * 2026-09-22 实测净伤害已回滚（其数封存于 docs/kb-vector-topic-decision.md §3.1 /
+     * KD-24）。索引内容跟随 [KnowledgeSearchFeatureExtractor.fromNode] 的当前规则
+     * （回滚后 = v1 截断），A/B 两条数必须**同一次构建、同一份包、同一套题面**才有
+     * 可比性（P3 的教训）。
+     */
+    class BRouteMirrorIndex(nodes: List<KnowledgeNodeSeedRecord>) {
+        private val nodeFeatures: Map<String, Set<String>> =
+            nodes.associate { it.knowledgeNodeId to KnowledgeSearchFeatureExtractor.fromNode(it) }
+        private val nodesInPackOrder = nodes
+        private val TRUSTED = setOf(
+            KnowledgeNodeVerificationStatus.CURATED.name,
+            KnowledgeNodeVerificationStatus.SOURCE_GROUNDED.name,
+            KnowledgeNodeVerificationStatus.USER_CONFIRMED.name,
+        )
+
+        val totalFeatureRows: Long = nodeFeatures.values.sumOf { it.size.toLong() }
+        val maxFeaturesPerNode: Int = nodeFeatures.values.maxOfOrNull { it.size } ?: 0
+
+        fun recall(subject: String, questionText: String, limit: Int): List<KnowledgeNodeSeedRecord> {
+            val queryFeatures = KnowledgeSearchFeatureExtractor.fromQuestion(questionText)
+            val trusted = nodesInPackOrder.filter {
+                it.subject == subject && it.verificationStatus in TRUSTED
+            }
+            if (queryFeatures.isEmpty()) {
+                // 镜像 store 的空特征回退（readSubjectKnowledgeNodes 的顺序）
+                return trusted.sortedWith(
+                    compareBy(
+                        { verificationOrder(it.verificationStatus) },
+                        { if (it.granularity == KnowledgeNodeGranularity.ATOMIC.name) 0 else 1 },
+                        { it.canonicalName },
+                        { it.knowledgeNodeId },
+                    ),
+                ).take(limit.coerceAtMost(256))
+            }
+            val counted: List<Pair<KnowledgeNodeSeedRecord, Int>> = trusted
+                .map { node ->
+                    node to nodeFeatures.getValue(node.knowledgeNodeId).count { it in queryFeatures }
+                }
+                .filter { (_, matchedCount) -> matchedCount > 0 }
+            val matched = counted
+                .sortedWith(
+                    compareByDescending<Pair<KnowledgeNodeSeedRecord, Int>> { it.second }
+                        .thenBy { (node, _) -> if (node.granularity == KnowledgeNodeGranularity.ATOMIC.name) 0 else 1 }
+                        .thenBy { (node, _) -> node.canonicalName }
+                        .thenBy { (node, _) -> node.knowledgeNodeId },
+                )
+                .take(limit)
+                .map { (node, _) -> node }
+            val matchedIds = matched.mapTo(HashSet<String>()) { it.knowledgeNodeId }
+            val parentSet = matched.mapNotNullTo(HashSet<String>()) { it.parentKnowledgeNodeId }
+            val parentIds = parentSet.minus(matchedIds)
+            val parents = nodesInPackOrder.filter { it.knowledgeNodeId in parentIds }
+            return (parents + matched).distinctBy { it.knowledgeNodeId }
+        }
+
+        private fun verificationOrder(status: String): Int = when (status) {
+            KnowledgeNodeVerificationStatus.CURATED.name -> 0
+            KnowledgeNodeVerificationStatus.SOURCE_GROUNDED.name -> 1
+            else -> 2
+        }
+    }
+
+    /** A 路（内存精排）金标口径：与守门基准同一取法——按科隔离的原子节点全集进 [KnowledgeContextRetriever.select]。 */
+    fun goldenARoute(
+        candidates: List<KnowledgeNodeSeedRecord>,
+        cases: List<GoldenCase>,
+    ): GoldenRouteResult = scoreGolden("A-route-rerank", cases) { case ->
+        KnowledgeContextRetriever.select(
+            candidates = candidates.filter { it.subject == case.subject },
+            questionText = case.query,
+            limit = SCORED_TOP_K,
+        )
+    }
+
+    /**
+     * 生产 v1 形状（裸 B 路 limit=5，无 A 路精排）的金标 JVM 镜像口径：
+     * 与 `GoldenRetrievalInstrumentedTest` 的真 SQL 判分目标同构（2026-09-22 的
+     * B512→A 统一路由实验实测净伤害、当日回滚，KD-24），镜像只做交叉核对、不作判定
+     * 依据（判定以真 SQL 为准，漂移纪律见 docs/kb-vector-topic-decision.md §5）。
+     */
+    fun goldenBRoute(
+        index: BRouteMirrorIndex,
+        cases: List<GoldenCase>,
+    ): GoldenRouteResult = scoreGolden("B-route-mirror(v1-bare-B5)", cases) { case ->
+        index.recall(
+            case.subject,
+            case.query,
+            limit = SCORED_TOP_K,
+        )
+    }
+
+    /** 金标 JVM 指标文件。测量台性质——**不含阈值断言**（预注册判据见 docs/kb-vector-topic-decision.md）。 */
+    fun goldenMetricsFile(
+        packId: String,
+        nodeCount: Int,
+        indexInfo: String,
+        goldenInfo: String,
+        a: GoldenRouteResult,
+        b: GoldenRouteResult,
+    ): String = buildString {
+        appendLine("# golden-jvm-metrics — GoldenRetrievalJvmTest 测量台（不断言阈值，D12 预注册判据见 docs/kb-vector-topic-decision.md）")
+        appendLine("# pack=$packId nodes=$nodeCount")
+        appendLine("# index: $indexInfo")
+        appendLine("# golden: $goldenInfo")
+        for (result in listOf(a, b)) {
+            appendLine("")
+            appendLine("== ${result.route} ==")
+            appendLine("Recall@5(主集)=${result.recallAt5} (${result.hits}/${result.total})")
+            appendLine("MRR=${result.mrr}")
+            appendLine("逐章 Recall@5:")
+            result.byChapter.forEach { (chapter, value) -> appendLine("  $chapter = $value") }
+        }
+        appendLine("")
+        appendLine("== 逐题 ==")
+        a.scores.forEachIndexed { i, sa ->
+            val sb = b.scores[i]
+            appendLine(
+                "[${sa.case.subject}] ${sa.case.query} -> A=hit:${sa.hit} rank:${sa.rank} " +
+                    "B=hit:${sb.hit} rank:${sb.rank} | A-top3=${sa.top3} B-top3=${sb.top3}",
+            )
+        }
+    }
 }

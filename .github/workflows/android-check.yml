@@ -15,6 +15,10 @@ on:
       # Gate scripts themselves: without this a PR that only edits a checker
       # would not run the workflow that executes it.
       - "tools/**"
+      # 知识库内容目录（显式列出：knowledge/** 供将来顶层 knowledge/ 使用，
+      # resources/knowledge/** 被 core/** 覆盖，写全防止"路径改了触发就失效"）
+      - "knowledge/**"
+      - "core/data/src/main/resources/knowledge/**"
   push:
     branches: [main]
 
@@ -39,12 +43,20 @@ jobs:
           distribution: temurin
           java-version: "21"
       # 2026-09-17：新版 GitHub runner 移除了 tools 包，setup-android@v3 强下
-      # cmdline-tools 后 sdkmanager exit 1（run 35244477722 / 35247418029 /
-      # 35248118845，Node 20 回退无效）。官方 v4.0.2 当日发布修复（"Fix for
+      # cmdline-tools 后 sdkmanager exit 1（run 35244477722 / 35244418029 /
+      # 35244418845，Node 20 回退无效）。官方 v4.0.2 当日发布修复（"Fix for
       # removed tools package"），升级到 v4。
       - uses: android-actions/setup-android@v4
       - name: Grant Gradle wrapper permission
         run: chmod +x gradlew
+      # 知识库构建侧：30+ 手术工具 + 22 道质量门 + 五张权威表一致性 + roundtrip。
+      # 纯 stdlib Python，不需要 Android 工具链；放在 Gradle 步骤前，让"门红"
+      # 在几分钟内可见而不是等完整构建。CI 无 staging（build/ 不入版本控制），
+      # run_kb_checks 自动回退到成品目录校验。
+      - name: Knowledge build toolchain tests
+        run: python3 -m unittest discover -s tools/tests -t tools
+      - name: Knowledge pack gate and table-pack consistency
+        run: python3 tools/ci/run_kb_checks.py
       - name: Room schema drift check
         run: git diff --exit-code -- core/database/schemas
       - name: Unit tests
@@ -54,7 +66,7 @@ jobs:
         run: >
           ./gradlew testLocalFirstDebugUnitTest testStrictOfflineDebugUnitTest
           :core:domain:test :core:model:test :core:visual-runtime:test
-          :quality:visual-benchmark:test :knowledge-production:test
+          :quality:visual-benchmark:test
           :core:data:testDebugUnitTest :core:database:testDebugUnitTest
           :core:export:testDebugUnitTest :core:visual-ui:testDebugUnitTest
           :feature:capture:testDebugUnitTest :feature:library:testDebugUnitTest
@@ -80,8 +92,6 @@ jobs:
         run: python3 tools/ci/check_release_manifest.py
       - name: Compile macrobenchmark and baseline profile module
         run: ./gradlew :benchmark:assemble --console=plain
-      - name: Build knowledge-production module
-        run: ./gradlew :knowledge-production:build --console=plain
       - name: Lint
         # App flavors plus every Android library module. `lint<Flavor>Debug`
         # only matches :app (it is the only module with product flavors), so the

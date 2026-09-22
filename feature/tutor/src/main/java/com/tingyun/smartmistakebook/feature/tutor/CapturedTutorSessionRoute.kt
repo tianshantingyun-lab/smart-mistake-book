@@ -32,6 +32,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -63,16 +64,20 @@ import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
 import com.tingyun.smartmistakebook.core.domain.TutorConversationAnchorKind
 import com.tingyun.smartmistakebook.core.domain.TutorConversationRepository
 import com.tingyun.smartmistakebook.core.domain.TutorInteractionRepository
+import com.tingyun.smartmistakebook.core.domain.TutorKnowledgeContextLoader
 import com.tingyun.smartmistakebook.core.domain.TutorSessionDisposition
+import com.tingyun.smartmistakebook.core.domain.TutorTeachingReferenceRepository
 import com.tingyun.smartmistakebook.core.domain.TutorTurnResponse
 import com.tingyun.smartmistakebook.core.domain.TutorVisualSourceAssetScope
 import com.tingyun.smartmistakebook.core.domain.toContiguousTutorHistory
 import com.tingyun.smartmistakebook.core.domain.toTutorConversationMemory
+import android.util.Log
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
+import com.tingyun.smartmistakebook.core.model.QuestionDocumentMarkdownProjection
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.AttachedImage
 import com.tingyun.smartmistakebook.core.model.TutorConversationMemory
@@ -82,7 +87,9 @@ import com.tingyun.smartmistakebook.core.model.TutorPlanInput
 import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
 import com.tingyun.smartmistakebook.core.model.TutorRespondOutput
+import com.tingyun.smartmistakebook.core.model.TutorKnowledgeCode
 import com.tingyun.smartmistakebook.core.model.TutorSuggestedMove
+import com.tingyun.smartmistakebook.core.model.TutorTeachingReference
 import com.tingyun.smartmistakebook.core.model.TutorTurnHistoryEntry
 import com.tingyun.smartmistakebook.core.model.TutorVisualDocumentScene
 import com.tingyun.smartmistakebook.core.model.TutorVisualGenerateInput
@@ -136,6 +143,9 @@ fun CapturedTutorSessionRoute(
     onOpenProfile: () -> Unit = {},
     onBack: () -> Unit,
     onEndedWithoutSave: () -> Unit = onBack,
+    /** 拍照讲题知识注入（D5/审计 R2 断链一）；null 时维持零注入旧行为。 */
+    knowledgeContextLoader: TutorKnowledgeContextLoader? = null,
+    teachingReferenceRepository: TutorTeachingReferenceRepository? = null,
     modifier: Modifier = Modifier,
 ) {
     var showEndConfirmation by rememberSaveable(sessionId) { mutableStateOf(false) }
@@ -186,6 +196,8 @@ fun CapturedTutorSessionRoute(
         onOpenMistakeNotebook = onOpenMistakeNotebook,
         onOpenProfile = onOpenProfile,
         onBack = onBack,
+        knowledgeContextLoader = knowledgeContextLoader,
+        teachingReferenceRepository = teachingReferenceRepository,
         modifier = modifier,
     )
 
@@ -245,9 +257,11 @@ private fun CapturedTutorSessionContent(
     onLongTermWritesBlocked: () -> Unit,
     onOpenModelSettings: () -> Unit,
     onOpenHistory: (() -> Unit)? = null,
-    onOpenMistakeNotebook: () -> Unit,
-    onOpenProfile: () -> Unit,
+    onOpenMistakeNotebook: () -> Unit = {},
+    onOpenProfile: () -> Unit = {},
     onBack: () -> Unit,
+    knowledgeContextLoader: TutorKnowledgeContextLoader? = null,
+    teachingReferenceRepository: TutorTeachingReferenceRepository? = null,
     modifier: Modifier = Modifier,
 ) {
     when (state) {
@@ -276,6 +290,8 @@ private fun CapturedTutorSessionContent(
                 onOpenMistakeNotebook = onOpenMistakeNotebook,
                 onOpenProfile = onOpenProfile,
                 onBack = onBack,
+                knowledgeContextLoader = knowledgeContextLoader,
+                teachingReferenceRepository = teachingReferenceRepository,
                 modifier = modifier.testTag("captured_tutor_session_screen"),
             )
 
@@ -356,12 +372,85 @@ internal fun ReadyCapturedSession(
     onOpenMistakeNotebook: () -> Unit = {},
     onOpenProfile: () -> Unit = {},
     onBack: () -> Unit = {},
+    /**
+     * 拍照讲题的知识注入（ADR 0001 / D5、审计 R2 断链一）：两段式检索出当前题候选节点
+     * （未确认绑定 → RETRIEVAL_CANDIDATE 角色），材料走既有 referencesFor / 20k 预算
+     * 选择器。null 时维持旧行为（零注入）——正常接线由 app 层提供。
+     */
+    knowledgeContextLoader: TutorKnowledgeContextLoader? = null,
+    teachingReferenceRepository: TutorTeachingReferenceRepository? = null,
     clock: () -> Long = System::currentTimeMillis,
     modifier: Modifier = Modifier,
 ) {
     var sourceExpanded by rememberSaveable(session.sessionId) { mutableStateOf(false) }
+    // 模板照抄 SavedMistakeTutorRoute 的 produceState 取数，但 catch{emptyList()} 的
+    // 静默降级改成 Log.w + 输入里的 loadFailed 标志（prompt 披露"教学材料未加载"）；
+    // 检索零命中是合法空注入（loadFailed 保持 false，维持现状语义）。
+    val knowledgeContext by produceState<CapturedTutorKnowledgeContext>(
+        initialValue = CapturedTutorKnowledgeContext(
+            preDisclosures = emptyList(),
+            candidateNodeIds = emptyList(),
+            reviewedTeachingReferences = emptyList(),
+            loadFailed = false,
+        ),
+        key1 = session,
+        key2 = knowledgeContextLoader,
+        key3 = teachingReferenceRepository,
+    ) {
+        val loader = knowledgeContextLoader
+        val references = teachingReferenceRepository
+        if (loader == null || references == null) return@produceState
+        val questionText = QuestionDocumentMarkdownProjection.project(
+            session.questionDocument.document,
+        )
+        try {
+            val pre = loader.knowledgePreDisclosure(
+                subject = session.subject,
+                confirmedBindingNodeIds = emptyList(),
+                questionText = questionText,
+            )
+            var refsFailed = false
+            val refs = if (pre.loadFailed || pre.candidateNodeIds.isEmpty()) {
+                emptyList()
+            } else {
+                try {
+                    references.referencesFor(
+                        subject = session.subject,
+                        knowledgeNodeIds = pre.candidateNodeIds.toSet(),
+                    )
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (failure: Throwable) {
+                    Log.w("CapturedTutorSession", "teaching references load failed: $failure")
+                    refsFailed = true
+                    emptyList()
+                }
+            }
+            value = CapturedTutorKnowledgeContext(
+                preDisclosures = pre.preDisclosures,
+                candidateNodeIds = pre.candidateNodeIds,
+                reviewedTeachingReferences = refs,
+                loadFailed = pre.loadFailed || refsFailed,
+            )
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (failure: Throwable) {
+            Log.w("CapturedTutorSession", "knowledge context load failed: $failure")
+            value = CapturedTutorKnowledgeContext(
+                preDisclosures = emptyList(),
+                candidateNodeIds = emptyList(),
+                reviewedTeachingReferences = emptyList(),
+                loadFailed = true,
+            )
+        }
+    }
     TutorModelPanel(
-        question = session.toTutorQuestionContext(),
+        question = session.toTutorQuestionContext().copy(
+            relatedKnowledgeNodeIds = knowledgeContext.candidateNodeIds.toSet(),
+            reviewedTeachingReferences = knowledgeContext.reviewedTeachingReferences,
+            knowledgeCodes = knowledgeContext.preDisclosures,
+            teachingReferencesLoadFailed = knowledgeContext.loadFailed,
+        ),
         profile = profile,
         modelTasks = modelTasks,
         visualSourceAssetsReader = visualSourceAssetsReader,
@@ -576,3 +665,11 @@ private fun EndedTutorSessionNotice() {
         }
     }
 }
+
+/** 拍照会话的知识注入取数结果（两段式检索候选 + 材料 + 失败标志）。 */
+private data class CapturedTutorKnowledgeContext(
+    val preDisclosures: List<TutorKnowledgeCode>,
+    val candidateNodeIds: List<String>,
+    val reviewedTeachingReferences: List<TutorTeachingReference>,
+    val loadFailed: Boolean,
+)

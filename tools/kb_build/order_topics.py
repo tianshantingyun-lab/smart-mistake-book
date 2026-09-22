@@ -69,7 +69,7 @@ def reorder(pack: dict) -> int:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="把 topic 数组排成父级先序")
-    parser.add_argument("--write", action="store_true", help="写回成品包（默认只报告）")
+    parser.add_argument("--write", action="store_true", help="写回 staging 包（默认只报告）")
     parser.add_argument("--root", type=Path, default=None)
     args = parser.parse_args(argv)
 

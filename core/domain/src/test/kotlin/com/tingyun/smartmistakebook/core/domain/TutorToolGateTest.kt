@@ -2,101 +2,57 @@ package com.tingyun.smartmistakebook.core.domain
 
 import com.tingyun.smartmistakebook.core.model.TutorToolName
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * 写权限按题锚：**没锚住的调用仍然被拒**。
+ * 智能体页工具面常量（同一页口径，`docs/tutor-surface-unification.md` §5.6）。
  *
- * 缺陷现场（改造前）：写工具的准入写成"输入类型是 Respond"。在轮次级绑定之前那句碰巧等价于
- * "有题"；绑定下移到轮次之后就不等价了——Respond 也可以是无题轮（声明缺失、候选不在菜单内、
- * 锚词核不过），而那时题面只是会话带进来的上下文，不是学生这一轮在说的题。写进去的学习证据
- * 因此没有主人。
+ * **本文件此前的断言对象已经不存在了**：`tutorRoundToolAvailable`（按"本轮有没有题"
+ * 放行写工具 / 按"披露面装不装得下"放行读工具的场景门）被 2026-09-21 裁定（ADR 0001 /
+ * D6/D7）废除——无题轮不再结构性拒写、MASTERY_READ 无场景分支。逐次准入现在只剩两条，
+ * 都取自模型自己这一轮的语义输出，不取自场景：
+ * - 意图授权矩阵（core:model `tutorToolAuthorization`：意图 × 置信度 × 声明集，
+ *   NOTEBOOK_WRITE 另要求学生明确命令）；
+ * - MASTERY_UPDATE 的代号白名单（本会话已披露集合，core:data 仓库轮次判定 +
+ *   runner 解析，编造代号结构性拒）。
  *
- * 判据落在**每一次调用**上，由 `TutorRoundQuestionBindingPolicy.callIsAnchoredToRoundQuestion`
- * 判定：模型声明（`TutorToolCall.boundQuestion`）经两条本地校验通过，**或**模型没复述时回退到
- * 本轮请求侧已知的题锚（`TutorRespondInput.knownRoundQuestion`，学生显式添加的题 / 上一轮已校验的
- * 绑定）。原生 tool_calls 路由的标准形态 content=null，整轮的信封声明无处可放，逐次调用对象与请求侧
- * 已知锚都是两条路由都能表达的落点；两者都没有（真的无题轮）仍然被拒——本文件断言的是这张表本身
- * （参数为 false 即拒），回退来源的判定另有 `TutorRoundQuestionBindingPolicyTest` 与
- * `TutorToolRoundGateTest` 钉住。
- *
- * 同一张表还挡下"产出只被题轮披露集合覆盖"的读工具：无题轮的披露集合
- * （`TUTOR_LOBBY_DISCLOSURE`：仅学生消息 + 会话上下文）装不下掌握度明细与学科知识库，
- * `TutorLobbyTasks.ALLOWED_LOCAL_CAPABILITIES` 早已为掌握度读取写下同一条理由。
+ * 那两张表的钉住分别在 `TutorToolAuthorizationTest`（core:model）与
+ * `TutorToolRoundGateTest`（core:data）；这里钉住的是声明面本身——同一页、全量五个、
+ * 写口概念不漂移。
  */
 class TutorToolGateTest {
 
     @Test
-    fun `a write call without an anchored question is refused`() {
-        TUTOR_WRITE_TOOLS.forEach { tool ->
-            assertFalse(
-                "$tool 会落库；没有题锚就没有题目上下文，必须被拒",
-                tutorRoundToolAvailable(
-                    tool = tool,
-                    callIsAnchoredToRoundQuestion = false,
-                    roundDisclosesQuestionEvidence = true,
-                ),
-            )
-        }
+    fun `the page declares the full five tool surface for every entry`() {
+        // D7/D8：Plan / Respond / 大厅同一 5 工具面，不随场景分叉。
+        assertEquals(
+            setOf(
+                TutorToolName.KNOWLEDGE_READ,
+                TutorToolName.NOTEBOOK_READ,
+                TutorToolName.MASTERY_READ,
+                TutorToolName.MASTERY_UPDATE,
+                TutorToolName.NOTEBOOK_WRITE,
+            ),
+            TUTOR_TOOL_DECLARATIONS,
+        )
+    }
+
+    @Test
+    fun `the write tools are the two that persist`() {
+        // 写口概念保留（落库的两个），但准入不再看"本轮有没有题"。
         assertEquals(
             setOf(TutorToolName.MASTERY_UPDATE, TutorToolName.NOTEBOOK_WRITE),
             TUTOR_WRITE_TOOLS,
         )
+        assertTrue("写工具必须都在声明面内", TUTOR_WRITE_TOOLS.all { it in TUTOR_TOOL_DECLARATIONS })
     }
 
     @Test
-    fun `an anchored write call is allowed in a question round`() {
-        TUTOR_WRITE_TOOLS.forEach { tool ->
-            assertTrue(
-                tutorRoundToolAvailable(
-                    tool = tool,
-                    callIsAnchoredToRoundQuestion = true,
-                    roundDisclosesQuestionEvidence = true,
-                ),
-            )
-        }
-    }
-
-    @Test
-    fun `reads whose output only a question round discloses need a question round`() {
-        assertEquals(
-            setOf(TutorToolName.MASTERY_READ, TutorToolName.KNOWLEDGE_READ),
-            TUTOR_QUESTION_ROUND_ONLY_READS,
-        )
-        TUTOR_QUESTION_ROUND_ONLY_READS.forEach { tool ->
-            assertFalse(
-                tutorRoundToolAvailable(tool, callIsAnchoredToRoundQuestion = false, roundDisclosesQuestionEvidence = false),
-            )
-            assertTrue(
-                tutorRoundToolAvailable(tool, callIsAnchoredToRoundQuestion = false, roundDisclosesQuestionEvidence = true),
-            )
-        }
-    }
-
-    @Test
-    fun `the notebook read stays available in a no-question round`() {
-        // 大厅一直声明并使用它：收紧到"必须有题"会把既有的无题轮能力一起拿走。
-        // 它的产出（错题本条目标题）按大厅契约属于会话上下文——同一条能力边界注释里
-        // 只把掌握度读取列为不可覆盖（TutorLobbyTasks.ALLOWED_LOCAL_CAPABILITIES）。
-        assertTrue(
-            tutorRoundToolAvailable(
-                tool = TutorToolName.NOTEBOOK_READ,
-                callIsAnchoredToRoundQuestion = false,
-                roundDisclosesQuestionEvidence = false,
-            ),
-        )
-    }
-
-    @Test
-    fun `every declared tool is classified by the gate`() {
-        // 声明集是页面级的，可用性是调用/轮次级：每个声明的工具都必须能回答"这一轮能不能用"，
-        // 而不是漏在两张表之外被默认放行。
-        val gated = TUTOR_WRITE_TOOLS + TUTOR_QUESTION_ROUND_ONLY_READS
-        assertEquals(
-            setOf(TutorToolName.NOTEBOOK_READ),
-            TUTOR_TOOL_DECLARATIONS - gated,
-        )
+    fun `mastery read has no scene branch`() {
+        // D7：MASTERY_READ 与 KNOWLEDGE_READ 在声明面内、不再被任何场景常量挑出来；
+        // "没有科目上下文"的边界由 runner 失败关闭（no_subject），不是轮次层拒发。
+        assertTrue(TutorToolName.MASTERY_READ in TUTOR_TOOL_DECLARATIONS)
+        assertTrue(TutorToolName.KNOWLEDGE_READ in TUTOR_TOOL_DECLARATIONS)
     }
 }

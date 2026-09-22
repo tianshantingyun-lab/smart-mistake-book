@@ -1,7 +1,8 @@
 {
- "schemaVersion": 1,
+ "schemaVersion": 2,
  "packId": "moe-2025-four-subjects-v1",
- "contentVersion": "742d7487bcfc46cd",
+ "version": 1,
+ "contentVersion": "89415663d45b018b",
  "retired": [
   {
    "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:dna是主要的遗传物质-x1",
@@ -107,7 +108,7 @@
   },
   {
    "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:无氧呼吸-x2",
-   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:无氧呼吸-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:无氧呼吸",
    "kind": "MERGE",
    "reason": "同章同名去重副本 细胞与生命活动"
   },
@@ -125,7 +126,7 @@
   },
   {
    "nodeId": "kb:moe-2025-four-subjects-v1:biology:atomic:有氧呼吸-x2",
-   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:有氧呼吸-x1",
+   "supersededBy": "kb:moe-2025-four-subjects-v1:biology:atomic:有氧呼吸",
    "kind": "MERGE",
    "reason": "同章同名去重副本 细胞与生命活动"
   },

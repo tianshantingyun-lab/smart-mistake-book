@@ -5,9 +5,6 @@
 表不存在 = 该项未定稿，生成器与门禁都按"未声明"处理（因此修前必然不通过）。
 
 字段约定：
-  node_actions.csv      subject,slug,action,new_name,new_slug
-                        action ∈ keep | rename | merge | delete
-                        merge 时 new_slug 为目标 slug；delete 时其余留空
   chapter_map.csv       subject,slug,volume,chapter,theme
                         章节归属的唯一权威；未列出的节点继承基线归属
   alias_map.csv         subject,slug,alias        一行一条别名；未列出的节点别名清空
@@ -29,10 +26,6 @@ from typing import Any, Iterable
 
 TABLES_DIR: Path = Path(__file__).resolve().parent / "tables"
 
-NODE_ACTIONS = "node_actions.csv"
-# 人工定稿覆盖：只放已逐条读上下文定下来的行，覆盖 node_actions.csv 里的同名 slug。
-# 分成两个文件是为了让"机器提案"与"人工定稿"各自可审，且定稿记录集中在一处。
-NODE_ACTIONS_OVERRIDE = "node_actions_reviewed.csv"
 CHAPTER_MAP = "chapter_map.csv"
 # 来源定位单元 -> 教材（册, 章），章节归属的主表（101 行，人工核对）
 CHAPTER_BY_SOURCE = "chapter_by_source.csv"
@@ -40,10 +33,6 @@ ALIAS_MAP = "alias_map.csv"
 BOUNDARY_MAP = "boundary_map.csv"
 PREREQ_MAP = "prereq_map.csv"
 MATERIAL_BINDINGS = "material_bindings.csv"
-
-_VALID_ACTIONS = {"keep", "rename", "merge", "delete", "review"}
-# review 表示"已分类但尚未定稿"：提案阶段用它标出需要读上下文才能定名的节点。
-# builder 不应用 review 行（节点保持原样），但它会被记进表里，便于核对进度。
 
 
 def _read(name: str) -> list[dict[str, str]]:
@@ -61,47 +50,6 @@ def _require_columns(name: str, rows: list[dict[str, str]], required: Iterable[s
     missing = set(required) - present
     if missing:
         raise ValueError(f"{name} 缺少列：{sorted(missing)}")
-
-
-def load_node_actions() -> dict[tuple[str, str], dict[str, str]]:
-    """机器提案 + 人工定稿覆盖。
-
-    覆盖文件里出现的 slug 以定稿为准（包括把 review 改成 rename/merge/delete）。
-    """
-    rows = _read(NODE_ACTIONS)
-    _require_columns(NODE_ACTIONS, rows, ("subject", "slug", "action"))
-    out: dict[tuple[str, str], dict[str, str]] = {}
-    for row in rows:
-        action = (row.get("action") or "").strip()
-        if action not in _VALID_ACTIONS:
-            raise ValueError(f"{NODE_ACTIONS}: 非法 action {action!r}")
-        out[(row["subject"].strip(), row["slug"].strip())] = {
-            "action": action,
-            "new_name": (row.get("new_name") or "").strip(),
-            "new_slug": (row.get("new_slug") or "").strip(),
-            "reason": (row.get("reason") or "").strip(),
-        }
-
-    overrides = _read(NODE_ACTIONS_OVERRIDE)
-    _require_columns(NODE_ACTIONS_OVERRIDE, overrides, ("subject", "slug", "action"))
-    for row in overrides:
-        action = (row.get("action") or "").strip()
-        if action not in _VALID_ACTIONS:
-            raise ValueError(f"{NODE_ACTIONS_OVERRIDE}: 非法 action {action!r}")
-        key = (row["subject"].strip(), row["slug"].strip())
-        if key not in out:
-            raise ValueError(f"{NODE_ACTIONS_OVERRIDE}: {key} 不是 node_actions.csv 里的节点")
-        out[key] = {
-            "action": action,
-            "new_name": (row.get("new_name") or "").strip(),
-            "new_slug": (row.get("new_slug") or "").strip(),
-            "reason": (row.get("reason") or "").strip(),
-        }
-    return out
-
-
-def unresolved_review_count(actions: dict[tuple[str, str], dict[str, str]]) -> int:
-    return sum(1 for v in actions.values() if v["action"] == "review")
 
 
 def load_chapter_by_source() -> dict[str, dict[str, str]]:
@@ -208,5 +156,5 @@ def load_material_bindings() -> dict[str, str]:
 
 def table_status() -> dict[str, int]:
     """各表当前行数，用于报告审校进度。"""
-    names = (NODE_ACTIONS, CHAPTER_MAP, ALIAS_MAP, BOUNDARY_MAP, PREREQ_MAP, MATERIAL_BINDINGS)
+    names = (CHAPTER_MAP, ALIAS_MAP, BOUNDARY_MAP, PREREQ_MAP, MATERIAL_BINDINGS)
     return {name: len(_read(name)) for name in names}

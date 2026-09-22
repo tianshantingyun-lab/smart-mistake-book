@@ -23,7 +23,7 @@
 ## 用法
 
     PYTHONPATH=tools python -m kb_build.relocate_points            # 报告
-    PYTHONPATH=tools python -m kb_build.relocate_points --write    # 写回成品包
+    PYTHONPATH=tools python -m kb_build.relocate_points --write    # 写回 staging 包
 """
 
 from __future__ import annotations

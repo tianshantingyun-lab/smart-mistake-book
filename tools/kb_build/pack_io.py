@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""知识包 JSON 的读写。
+"""知识包 JSON 的读写（staging → promote → 成品 拓扑）。
 
 契约来自 ReviewedKnowledgePackJsonCodec（BundledKnowledgePackResources.kt）：
 - 根键（schema 2）恰好：schemaVersion, packId, taxonomyVersion, sourceNamespace,
@@ -10,11 +10,21 @@
 - point 键恰好 7 个：slug, name, aliases, kind, boundary, sourceLocator, prerequisiteSlugs
 - 同科内 topic slug 唯一、point slug 唯一；prerequisite 必须引用同科 point
 本模块只负责忠实读写；语义校验在 gate.py。
+
+写盘拓扑（2026-09-22 单一晋升路径定案）：
+- 所有工具默认读写 **staging**（`build/kb-staging/`，成品目录的镜像）；
+  staging 不存在时从成品目录复制基线（`seed_staging`）。
+- **成品目录对工具只读**：唯一能写成品目录的是 `promote.py`（跑全部门后才落盘）。
+  因此本模块只把 `KNOWLEDGE_DIR`（成品）暴露给 `release_dir()` / 种子复制，
+  工具一律走 `work_dir()` 派生的路径。`path-guard` 测试（tools/tests）
+  扫描本包源码，断言除 promote.py 外无人引用成品写路径。
 """
 
 from __future__ import annotations
 
 import json
+import os
+import shutil
 from pathlib import Path
 from typing import Any
 
@@ -23,20 +33,68 @@ _JSON_KW = dict(ensure_ascii=False, indent=1)
 
 REPO: Path = Path(__file__).resolve().parents[2]
 KNOWLEDGE_DIR: Path = REPO / "core" / "data" / "src" / "main" / "resources" / "knowledge"
+STAGING_DIR: Path = REPO / "build" / "kb-staging"
 
 PACK_NAME = "moe-2025-four-subjects-v1.json"
 SIDECAR_TMPL = "moe-2025-teaching-support-v2-{i:02d}.json"
 SIDECAR_INDEX_NAME = "moe-2025-teaching-support-v2-index.json"
 
+# staging 是"整个成品目录的镜像"：种子只复制 JSON（包家族 + 样例包），
+# staging 里工具产出的 CSV 报告/判定单不在此列、也不被种子覆盖。
+_SEED_SUFFIX = ".json"
+
+_dir_override: Path | None = None
+
 
 def use_directory(path: Path) -> None:
-    """把读取根切到别处（例如 build/kb-staging）。
+    """把工作目录切到别处（测试夹具 / 验证某个生成结果）。
 
-    仅供"验证生成结果"这类只读比较使用；写回一律走 dump_json 的显式路径参数，
-    不会因为改了这里而误覆盖成品。
+    切走后 `pack_path()` 等全部派生路径以 `path` 为根；
+    `reset_directory()` 恢复默认（staging）。
     """
-    global KNOWLEDGE_DIR
-    KNOWLEDGE_DIR = path
+    global _dir_override
+    _dir_override = _inside_repo(path)
+
+
+def reset_directory() -> None:
+    """撤销 use_directory 的覆盖，恢复默认工作目录。"""
+    global _dir_override
+    _dir_override = None
+
+
+def release_dir() -> Path:
+    """成品目录（core/data 资源）。对工具**只读**；唯一写者是 promote.py。"""
+    return KNOWLEDGE_DIR
+
+
+def seed_staging(dst: Path | None = None, src: Path | None = None) -> Path:
+    """把成品目录的 JSON 复制到 staging，建立工作基线。
+
+    逐文件"先写临时文件再原子替换"：staging 是共享工作区，双会话并发
+    种子时不能留下半截文件。已存在的同名文件会被覆盖（staging 是镜像，
+    基线永远来自成品）。返回 dst。
+    """
+    dst = dst or STAGING_DIR
+    src = src or KNOWLEDGE_DIR
+    dst = _inside_repo(dst)
+    src = _inside_repo(src)
+    dst.mkdir(parents=True, exist_ok=True)
+    for p in sorted(src.iterdir()):
+        if not p.is_file() or p.suffix != _SEED_SUFFIX:
+            continue
+        tmp = dst / (p.name + ".seedtmp")
+        shutil.copy2(p, tmp)
+        os.replace(tmp, dst / p.name)
+    return dst
+
+
+def work_dir() -> Path:
+    """默认工作目录：staging；首次使用且缺包文件时从成品复制基线。"""
+    if _dir_override is not None:
+        return _dir_override
+    if not (STAGING_DIR / PACK_NAME).exists():
+        seed_staging()
+    return STAGING_DIR
 
 
 def _inside_repo(path: Path) -> Path:
@@ -48,11 +106,11 @@ def _inside_repo(path: Path) -> Path:
 
 
 def pack_path() -> Path:
-    return KNOWLEDGE_DIR / PACK_NAME
+    return work_dir() / PACK_NAME
 
 
 def sidecar_index_path() -> Path:
-    return KNOWLEDGE_DIR / SIDECAR_INDEX_NAME
+    return work_dir() / SIDECAR_INDEX_NAME
 
 
 def sidecar_paths() -> list[Path]:
@@ -63,10 +121,10 @@ def sidecar_paths() -> list[Path]:
     idx = sidecar_index_path()
     if idx.exists():
         doc = load_json(idx)
-        return [KNOWLEDGE_DIR / name.rsplit("/", 1)[-1] for name in doc["sidecars"]]
+        return [work_dir() / name.rsplit("/", 1)[-1] for name in doc["sidecars"]]
     import re
     pat = re.compile(r"moe-2025-teaching-support-v2-\d{2}\.json$")
-    return sorted(p for p in KNOWLEDGE_DIR.glob("moe-2025-teaching-support-v2-*.json")
+    return sorted(p for p in work_dir().glob("moe-2025-teaching-support-v2-*.json")
                   if pat.search(p.name))
 
 
@@ -76,7 +134,7 @@ def next_sidecar_path() -> Path:
     i = 1
     while SIDECAR_TMPL.format(i=i) in used:
         i += 1
-    return KNOWLEDGE_DIR / SIDECAR_TMPL.format(i=i)
+    return work_dir() / SIDECAR_TMPL.format(i=i)
 
 
 def write_sidecar_index(paths: list[Path]) -> None:

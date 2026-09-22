@@ -41,7 +41,6 @@ internal class KnowledgeQuizFeedbackWriter(
         require(conversationId.isNotBlank()) { "Knowledge quiz conversation id must not be blank" }
         val acceptedInConversation = database.countAcceptedChatEvidenceInConversation(conversationId)
         val input = MasteryWriteGate.GateInput(
-            intentConfidence = 1.0, // 本地确定的客观作答，非模型意图路由
             evidenceConfidence = 1.0, // 客观对错，置信满
             direction = verdict.direction,
             understanding = verdict.understanding,

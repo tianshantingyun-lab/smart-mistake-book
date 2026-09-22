@@ -36,6 +36,7 @@ import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
 import com.tingyun.smartmistakebook.core.domain.StudyQuestionMemory
 import com.tingyun.smartmistakebook.core.domain.TutorConversationRepository
 import com.tingyun.smartmistakebook.core.domain.TutorInteractionRepository
+import com.tingyun.smartmistakebook.core.domain.TutorKnowledgeContextLoader
 import com.tingyun.smartmistakebook.core.domain.TutorRoundQuestionRetriever
 import com.tingyun.smartmistakebook.core.domain.TutorSessionProblemAnchor
 import com.tingyun.smartmistakebook.core.domain.TutorTeachingReferenceRepository
@@ -44,6 +45,7 @@ import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.TutorPlanOutput
 import com.tingyun.smartmistakebook.core.model.QuestionDocumentMarkdownProjection
 import com.tingyun.smartmistakebook.core.model.TutorDebriefOutput
+import com.tingyun.smartmistakebook.core.model.TutorKnowledgeCode
 import com.tingyun.smartmistakebook.core.model.TutorTeachingReference
 import com.tingyun.smartmistakebook.core.ui.InkSecondary
 import com.tingyun.smartmistakebook.core.ui.Ink
@@ -76,6 +78,11 @@ fun SavedMistakeTutorRoute(
      * null 时菜单只剩"上一轮绑定的题"，本轮多半是无题轮。
      */
     roundQuestionRetriever: TutorRoundQuestionRetriever? = null,
+    /**
+     * 知识点代号通道的预披露取数（D5）：已确认绑定节点 + 前置 → 未赋码条目；
+     * null 时维持旧行为（无代号披露）。
+     */
+    knowledgeContextLoader: TutorKnowledgeContextLoader? = null,
     profile: StudyProfileOverview,
     learningMemory: StudyQuestionMemory? = null,
     /** 学生消息附图的资产读取器；null 时会话页不提供附图入口。 */
@@ -139,6 +146,33 @@ fun SavedMistakeTutorRoute(
             }
         }
     }
+    // 代号通道预披露（D5）：已确认绑定 + 前置（未赋码；K1..Kn 由仓库会话注册表分配）。
+    // 与材料取数同样不静默：失败只影响代号披露（映射表空），不阻塞讲题。
+    val knowledgePreDisclosures by produceState<List<TutorKnowledgeCode>>(
+        initialValue = emptyList(),
+        key1 = organization,
+        key2 = state,
+        key3 = knowledgeContextLoader,
+    ) {
+        val ready = state as? MistakeDetailState.Ready
+        val confirmed = organization
+        val loader = knowledgeContextLoader
+        if (ready == null || confirmed == null || loader == null) {
+            value = emptyList()
+            return@produceState
+        }
+        try {
+            value = loader.knowledgePreDisclosure(
+                subject = ready.detail.identity.subject,
+                confirmedBindingNodeIds = confirmed.knowledgeNodeIds.toList(),
+                questionText = null,
+            ).preDisclosures
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (_: Throwable) {
+            value = emptyList()
+        }
+    }
 
     when (val current = state) {
         is MistakeDetailState.Ready -> if (organization == null) {
@@ -168,6 +202,7 @@ fun SavedMistakeTutorRoute(
                 imageIntake = imageIntake,
                 relatedKnowledgeNodeIds = requireNotNull(organization).knowledgeNodeIds,
                 reviewedTeachingReferences = teachingReferences,
+                knowledgePreDisclosures = knowledgePreDisclosures,
                 onOpenMistakeNotebook = onOpenMistakeNotebook,
                 onOpenProfile = onOpenProfile,
                 onOpenModelSettings = onOpenModelSettings,
@@ -237,6 +272,7 @@ internal fun SavedMistakeTutorContent(
     imageIntake: LobbyMessageImageIntake? = null,
     relatedKnowledgeNodeIds: Set<String> = emptySet(),
     reviewedTeachingReferences: List<TutorTeachingReference> = emptyList(),
+    knowledgePreDisclosures: List<TutorKnowledgeCode> = emptyList(),
     onOpenMistakeNotebook: () -> Unit = {},
     onOpenProfile: () -> Unit = {},
     onOpenModelSettings: () -> Unit,
@@ -265,6 +301,7 @@ internal fun SavedMistakeTutorContent(
         learningMemory,
         relatedKnowledgeNodeIds,
         reviewedTeachingReferences,
+        knowledgePreDisclosures,
     ) {
         savedMistakeTutorQuestion(
             state = state,
@@ -272,6 +309,7 @@ internal fun SavedMistakeTutorContent(
             relatedKnowledgeNodeIds = relatedKnowledgeNodeIds,
             reviewedTeachingReferences = reviewedTeachingReferences,
             priorTeachingAdvisories = priorTeachingAdvisories,
+            knowledgeCodes = knowledgePreDisclosures,
         )
     }
     val identity = state.detail.identity
@@ -424,6 +462,7 @@ internal fun savedMistakeTutorQuestion(
     relatedKnowledgeNodeIds: Set<String> = emptySet(),
     reviewedTeachingReferences: List<TutorTeachingReference> = emptyList(),
     priorTeachingAdvisories: List<String> = emptyList(),
+    knowledgeCodes: List<TutorKnowledgeCode> = emptyList(),
 ): TutorQuestionContext {
     val identity = state.detail.identity
     state.detail.tutorConversation?.let { conversation ->
@@ -436,6 +475,7 @@ internal fun savedMistakeTutorQuestion(
             learningMemory = learningMemory,
             relatedKnowledgeNodeIds = relatedKnowledgeNodeIds,
             reviewedTeachingReferences = reviewedTeachingReferences,
+            knowledgeCodes = knowledgeCodes,
         )
     }
     val stableSessionId = MessageDigest.getInstance("SHA-256")
@@ -455,6 +495,7 @@ internal fun savedMistakeTutorQuestion(
         relatedKnowledgeNodeIds = relatedKnowledgeNodeIds,
         reviewedTeachingReferences = reviewedTeachingReferences,
         priorTeachingAdvisories = priorTeachingAdvisories,
+        knowledgeCodes = knowledgeCodes,
     )
 }
 

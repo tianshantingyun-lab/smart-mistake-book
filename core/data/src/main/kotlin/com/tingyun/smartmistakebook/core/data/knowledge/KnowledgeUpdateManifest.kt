@@ -2,8 +2,10 @@ package com.tingyun.smartmistakebook.core.data.knowledge
 
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.longOrNull
 
 /**
  * 取代映射台账：哪个知识点退役了、被谁取代。
@@ -16,6 +18,14 @@ import kotlinx.serialization.json.jsonPrimitive
  *
  * 形状校验与 Python 侧 `_require_shape` 一一对应：MERGE 必须有取代目标、DELETE 必须没有。
  * 写反了运行时会去解析一个不存在或不该存在的重定向。
+ *
+ * schema 2（2026-09-22 定案，与 Python 侧同步）：
+ * - 根键多一个**单调整数 `version`**：只在晋升（promote）时 +1。全量内容哈希
+ *   （contentVersion）防不了回滚/冻结，单调版本才防；
+ * - **一跳到底**：任何 MERGE 条目的 `supersededBy` 指向的节点自身不得在 `retired` 里
+ *   （生成器写入时压平；MediaWiki 红线"A double redirect does not work"——双跳重定向
+ *   会把学生数据解析到一个已退役的节点）。schema 1 是历史形态，解码保持兼容、
+ *   不强制一跳（存量台账里存在真实多级链）。
  */
 internal data class KnowledgeContentRetirement(
     val nodeId: String,
@@ -29,13 +39,16 @@ internal data class KnowledgeUpdateManifest(
     val packId: String,
     val contentVersion: String,
     val retired: List<KnowledgeContentRetirement>,
+    /** 晋升计数（schema 2）；schema 1 解码为 0。 */
+    val version: Long = 0,
 ) {
     /** nodeId -> supersededBy。调和用它给退役节点写重定向。 */
     val retirementByNodeId: Map<String, String?> = retired.associate { it.nodeId to it.supersededBy }
 }
 
 internal object ReviewedKnowledgeUpdateManifestJsonCodec {
-    private const val SCHEMA_VERSION = 1L
+    private const val LEGACY_SCHEMA_VERSION = 1L
+    private const val CURRENT_SCHEMA_VERSION = 2L
     internal const val KIND_MERGE = "MERGE"
     internal const val KIND_DELETE = "DELETE"
 
@@ -48,10 +61,21 @@ internal object ReviewedKnowledgeUpdateManifestJsonCodec {
     fun decode(rawJson: String): KnowledgeUpdateManifest {
         val root = json.parseToJsonElement(rawJson).jsonObjectOrNull()
             ?: error("Knowledge update manifest must be a JSON object")
-        root.requireOnlyKeys("schemaVersion", "packId", "contentVersion", "retired")
         val schemaVersion = root.requiredLong("schemaVersion")
-        require(schemaVersion == SCHEMA_VERSION) {
-            "Unsupported knowledge update manifest schema $schemaVersion"
+        when (schemaVersion) {
+            LEGACY_SCHEMA_VERSION ->
+                root.requireOnlyKeys("schemaVersion", "packId", "contentVersion", "retired")
+            CURRENT_SCHEMA_VERSION ->
+                root.requireOnlyKeys("schemaVersion", "packId", "version", "contentVersion", "retired")
+            else ->
+                error("Unsupported knowledge update manifest schema $schemaVersion")
+        }
+        // schema 2 的 version 必须是**非负整数本体**：字符串 "1"、负数、小数都拒——
+        // 单调版本号是回滚判据，宽松解析会让"1"与"01"与 1 混同。
+        val version = if (schemaVersion == CURRENT_SCHEMA_VERSION) {
+            root.requiredNonNegativeLong("version")
+        } else {
+            0L
         }
         val retired = root["retired"]?.jsonArray
             ?: error("Knowledge update manifest has no retired list")
@@ -85,11 +109,24 @@ internal object ReviewedKnowledgeUpdateManifestJsonCodec {
         require(entries.map(KnowledgeContentRetirement::nodeId).distinct().size == entries.size) {
             "Knowledge update manifest retires a node more than once"
         }
+        if (schemaVersion == CURRENT_SCHEMA_VERSION) {
+            // 一跳到底：MERGE 目标自身不得已退役。生成器写入时压平，这里兜底——
+            // 解码一个双跳台账 = 把学生数据重定向到一个墓碑节点。
+            val retiredIds = entries.map(KnowledgeContentRetirement::nodeId).toSet()
+            val chainJump = entries.firstOrNull {
+                it.kind == KIND_MERGE && it.supersededBy != null && it.supersededBy in retiredIds
+            }
+            require(chainJump == null) {
+                "Schema-2 manifest must resolve in one hop: " +
+                    "${chainJump?.nodeId} -> ${chainJump?.supersededBy} (target itself retired)"
+            }
+        }
 
         return KnowledgeUpdateManifest(
             packId = root.requiredString("packId"),
             contentVersion = root.requiredString("contentVersion"),
             retired = entries,
+            version = version,
         )
     }
 
@@ -109,4 +146,16 @@ internal object ReviewedKnowledgeUpdateManifestJsonCodec {
     private fun JsonObject.requiredLong(key: String): Long =
         requiredString(key).toLongOrNull()
             ?: error("Knowledge update manifest '$key' is not a number")
+
+    private fun JsonObject.requiredNonNegativeLong(key: String): Long {
+        val primitive = this[key]?.jsonPrimitive
+            ?: error("Knowledge update manifest has no '$key'")
+        require(!primitive.isString && primitive.booleanOrNull == null) {
+            "Knowledge update manifest '$key' must be an integer, not ${primitive}"
+        }
+        val value = primitive.longOrNull
+            ?: error("Knowledge update manifest '$key' is not an integer: ${primitive}")
+        require(value >= 0) { "Knowledge update manifest '$key' must be non-negative: $value" }
+        return value
+    }
 }

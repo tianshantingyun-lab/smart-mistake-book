@@ -57,7 +57,7 @@
 ## 当前来源登记
 
 机器可读登记位于
-`core/data/src/main/resources/knowledge/source-register-2025-v1.json`。登记把
+`knowledge-production/source-register-2025-v1.json`。登记把
 “发现到来源”“只核对了元数据”“已经取得但未审校”“正文已取得并审校”分成不同状态；
 解读文章、目录或实施通知不会获得课标正文的覆盖权。
 

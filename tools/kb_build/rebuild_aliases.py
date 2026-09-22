@@ -25,7 +25,7 @@
 ## 用法
 
     PYTHONPATH=tools python -m kb_build.rebuild_aliases            # 试算（不写）
-    PYTHONPATH=tools python -m kb_build.rebuild_aliases --write    # 写表并回写成品包
+    PYTHONPATH=tools python -m kb_build.rebuild_aliases --write    # 写表并回写 staging 包
 """
 
 from __future__ import annotations

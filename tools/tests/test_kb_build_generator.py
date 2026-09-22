@@ -1,13 +1,18 @@
 # -*- coding: utf-8 -*-
 """build.Builder 的契约测试：用合成夹具验证变换保持编解码不变量。
 
-用合成夹具而不是真实数据，是因为真实包 2573 个节点无法逐条断言；
+用合成夹具而不是真实数据，是因为真实包有数千个节点无法逐条断言；
 这里要证明的是"变换本身正确"，真实数据的正确性由 gate 与 round-trip 保证。
+
+（2026-09-22，C-09 收口的 R5 清理：原夹具注入的 `actions`（rename/merge/delete/review
+行）与 node_actions.csv 同属一条已作废的读取路径——那张表与成品包不同坐标系，
+其变换逻辑连同 6 条专属用例（review 拒生成、合并链拒、并入已删节点拒、改名/删除
+落地、绑随并删改指/解除、绑定目标必须是生成后节点集）一并删除。节点增删改现在
+走五张权威动作表 + 幂等手术工具直接改成品，不经本生成器。）
 """
 
 from __future__ import annotations
 
-import copy
 import unittest
 
 from kb_build.build import Builder, InvariantError
@@ -46,7 +51,6 @@ def _pack() -> dict:
                 "sourceLocator": "某来源",
                 "knowledgePoints": [
                     _point("alpha", "甲"),
-                    _point("alpha-star", "甲★★★"),
                     _point("beta", "乙"),
                     _point("junk", "预测："),
                 ],
@@ -79,12 +83,7 @@ def _sidecars(bindings: dict[str, list[str]]) -> list:
 def _builder(**overrides) -> Builder:
     kwargs = dict(
         pack=_pack(),
-        sidecars=_sidecars({"m1": ["alpha-star"], "m2": ["junk"]}),
-        actions={
-            ("MATH", "alpha-star"): {"action": "merge", "new_name": "", "new_slug": "alpha"},
-            ("MATH", "junk"): {"action": "delete", "new_name": "", "new_slug": ""},
-            ("MATH", "beta"): {"action": "rename", "new_name": "乙（改）", "new_slug": ""},
-        },
+        sidecars=_sidecars({"m1": ["alpha"], "m2": ["junk"]}),
         chapters={},
         aliases={},
         boundaries={},
@@ -102,17 +101,10 @@ def _builder(**overrides) -> Builder:
 
 
 class BuilderTest(unittest.TestCase):
-    def test_review_rows_block_generation(self):
-        """未定稿就拒绝生成——否则会把没审完的包推给 App。"""
-        actions = {("MATH", "beta"): {"action": "review", "new_name": "", "new_slug": ""}}
-        with self.assertRaises(InvariantError):
-            _builder(actions=actions).build()
+    def test_binding_table_reattaches_a_misbound_material(self):
+        """绑错节点的材料没有别的机械修正通道，绑定表就是它唯一的修正口。
 
-    def test_binding_table_reattaches_an_orphan_material(self):
-        """无绑定材料进不了库（导入时被整条剔除），绑定表是它们唯一的修正通道。
-
-        夹具里 m2 绑的是待删节点 junk，删除后绑定被解除、材料变孤儿；
-        绑定表把它接到 beta 上，它才回得来。
+        夹具里 m2 绑的是残渣点 junk，绑定表把它改接到 beta 上，它才绑对。
         """
         builder = _builder(material_bindings={"m2": "beta"})
         builder.build()
@@ -125,10 +117,6 @@ class BuilderTest(unittest.TestCase):
 
         用在逐条读过正文、确认现绑节点讲的是另一回事、同科目里又找不到正确归属的
         材料上：讲题时把不相关材料当依据，比检索不到更糟，而且用户无从发现。
-
-        断言的是**顺序**——`_apply_material_bindings` 跑在 `_rebind_materials` 之前，
-        夹具里 m1 原本绑的 alpha-star 会并入 alpha，若解绑发生在改指之后，
-        m1 会被重新接到 alpha 上，这条就红了。
         """
         builder = _builder(material_bindings={"m1": "", "m2": "beta"})
         builder.build()
@@ -137,38 +125,15 @@ class BuilderTest(unittest.TestCase):
         self.assertEqual([f"kb:{PACK_ID}:math:atomic:beta"],
                          [b["knowledgeNodeId"] for b in materials["m2"]["bindings"]])
 
-    def test_binding_table_target_must_survive_the_build(self):
-        """绑到待删/待并的节点上等于白写：节点没了绑定会随之解除，材料又成孤儿。
-        所以校验目标是生成后的节点集，不是成品包现读的节点集。"""
-        with self.assertRaises(InvariantError):
-            _builder(material_bindings={"m2": "junk"}).build()
-
     def test_binding_table_unknown_material_is_refused(self):
         with self.assertRaises(InvariantError):
             _builder(material_bindings={"nosuch": "beta"}).build()
 
-    def test_merge_into_deleted_is_rejected(self):
-        actions = {
-            ("MATH", "alpha"): {"action": "delete", "new_name": "", "new_slug": ""},
-            ("MATH", "alpha-star"): {"action": "merge", "new_name": "", "new_slug": "alpha"},
-        }
-        with self.assertRaises(InvariantError):
-            _builder(actions=actions).build()
-
-    def test_merge_chain_is_rejected(self):
-        actions = {
-            ("MATH", "alpha"): {"action": "merge", "new_name": "", "new_slug": "beta"},
-            ("MATH", "alpha-star"): {"action": "merge", "new_name": "", "new_slug": "alpha"},
-        }
-        with self.assertRaises(InvariantError):
-            _builder(actions=actions).build()
-
     def test_binding_target_is_the_post_build_node_set(self):
         """材料绑定的校验目标必须是**生成后**仍存在的节点集。
 
-        成品包里还有成批待删、待并的抽取残片。对着成品现读来校验，材料就会绑到
-        即将消失的节点上，导入时被静默剔除——那是「写完了但什么都没留下」的失败，
-        比生成报错难发现得多。
+        本次新增的点还不存在于成品包里；对着成品现读来校验，材料就会绑到"校验集
+        里没有"的新节点上被误拒——那是「写完了但什么都没留下」的失败。
         """
         builder = _builder(
             new_points={("MATH", "gamma"): _point("gamma", "丙")},
@@ -176,31 +141,7 @@ class BuilderTest(unittest.TestCase):
         )
         known = builder._post_build_slugs()
         self.assertIn(("MATH", "alpha"), known)
-        self.assertNotIn(("MATH", "alpha-star"), known)   # 被合并，包里不再存在
-        self.assertNotIn(("MATH", "junk"), known)         # 被删除
         self.assertIn(("MATH", "gamma"), known)           # 本次新增，可绑
-
-    def test_rename_and_delete_applied(self):
-        builder = _builder()
-        builder.build()
-        points = {p["slug"]: p for _s, _t, p in
-                  [(s["subject"], t, p) for s in builder.pack["subjects"]
-                   for t in s["topics"] for p in t["knowledgePoints"]]}
-        self.assertEqual("乙（改）", points["beta"]["name"])
-        self.assertNotIn("junk", points)
-        self.assertNotIn("alpha-star", points)
-
-    def test_material_binding_retargets_on_merge_and_drops_on_delete(self):
-        builder = _builder()
-        builder.build()
-        materials = {m["slug"]: m for _p, doc in builder.sidecars for m in doc["materials"]}
-        # 合并：绑定改指保留者
-        self.assertEqual(
-            [f"kb:{PACK_ID}:math:atomic:alpha"],
-            [b["knowledgeNodeId"] for b in materials["m1"]["bindings"]],
-        )
-        # 删除：绑定解除（不产生悬空引用，聚合层会过滤掉这条材料）
-        self.assertEqual([], materials["m2"]["bindings"])
 
     def test_invariants_pass_after_build(self):
         builder = _builder()
@@ -239,7 +180,7 @@ class DryRunTest(unittest.TestCase):
         before = pack_io.pack_path().read_bytes()
         builder = _builder()
         stats = builder.build()
-        self.assertEqual({"merge": 1, "deleted": 1, "new_points": 0, "new_materials": 0}, stats)
+        self.assertEqual({"new_points": 0, "new_materials": 0}, stats)
         self.assertEqual(before, pack_io.pack_path().read_bytes(), "dry-run 改动了成品文件")
 
 

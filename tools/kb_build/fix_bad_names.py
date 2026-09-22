@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-"""一次性：修掉由机械 rename 造出来的坏节点名，并处理题干/属性条目节点。
+"""坏名分流定稿（M-05）的决策记录。
 
-**缺陷的来路**：`node_actions.csv` 里 312 条机械 rename 中有一批的规则是"把 slug 的
-连字符换成标点"，比如 `技巧-实验数据-与-9-3-3-1及其变式-间的转化方法` →
-`技巧“实验数据”与“9`。它只是给残句加了标点，名字并没有成形，却让名字变短、
-绕过了门禁的 `_is_bad_name`（该判据以 24 字为界），于是满库残句名而 `bad_names` 显示 0。
+**缺陷的来路**：`node_actions.csv`（已作废、已删除，见 `tables/node_actions.README.md`）
+里 312 条机械 rename 中有一批的规则是"把 slug 的连字符换成标点"，比如
+`技巧-实验数据-与-9-3-3-1及其变式-间的转化方法` → `技巧“实验数据”与“9`。它只是给残句
+加了标点，名字并没有成形，却让名字变短、绕过了门禁的 `_is_bad_name`（该判据以 24 字为界），
+于是满库残句名而 `bad_names` 显示 0。
 
 同一个来路还漏出两类：`定义：…`/`表达式：…`/`应用：…` 是**知识点的属性条目**被提成了
 独立节点（主节点都在库里，应当并入）；`…能否颠倒？为什么？` 一类是**题干**。
@@ -15,17 +16,13 @@
 - **merge**：属性条目并入它所属的主节点，绑定改指主节点。
 - **delete**：题干/答案原文、抽取截断，节点不含知识点。
 
-  用法： PYTHONPATH=tools python tools/kb_build/fix_bad_names.py [--write]
+2026-09-19 收口：这些定稿已移植进权威动作表（`point_rename.csv` / `point_merge.csv` /
+`point_delete.csv`）并对成品执行完毕，不再经由（已作废的）`node_actions.csv` 落盘。
+本模块现在只是 FIXES 决策记录本身，`tools/tests/test_kb_bad_name_actions.py` 用它钉住
+"每条 slug 在成品里的定稿要么已生效、要么在显式例外表里"，防决策停在纸上。
 """
 
 from __future__ import annotations
-
-import argparse
-import csv
-
-from kb_build import pack_io
-
-TABLE = pack_io.REPO / "tools" / "kb_build" / "tables" / "node_actions.csv"
 
 _SLUG = "残句当名称（机械 rename 只把 slug 的连字符换成标点，名字并未成形）"
 _MERGE = "知识点的属性条目被提成独立节点（定义：/表达式：/应用：），并入主节点"
@@ -152,102 +149,3 @@ FIXES: list[tuple[str, str, str, str, str, str]] = [
     ("PHYSICS", "对称性", "rename", "简谐运动的对称性", "", _LABEL
      + "原边界：A 与 B 间运动，O 为平衡位置，C 与 D 关于 O 对称，tOB＝tOA"),
 ]
-
-
-def _retarget_tables(fixes: list[tuple[str, str, str, str, str, str]]) -> None:
-    """把**其它权威表**里指向被并/被删节点的行改指目标或删掉。
-
-    删一个节点不止删它自己：章节覆盖、别名、边界、前置、材料绑定五张表都可能按 slug
-    引用它，引用留着就是悬空行——门禁会报（`validate_chapter_map_slugs` 会直接拒绝），
-    而生成器只是安静跳过。改一处要连同它牵动的引用一起改。
-    """
-    merge_target = {(s, slug): (s, new_slug) for s, slug, act, _n, new_slug, _r in fixes
-                    if act == "merge"}
-    gone = {(s, slug) for s, slug, act, _n, _ns, _r in fixes if act in ("merge", "delete")}
-
-    # 表名 -> 含节点 slug 的列；prereq 的第三列也要一起改，否则前置悬空
-    tables: dict[str, tuple[str, ...]] = {
-        "chapter_map.csv": ("slug",),
-        "alias_map.csv": ("slug",),
-        "boundary_map.csv": ("slug",),
-        "prereq_map.csv": ("slug", "prerequisite"),
-        "material_bindings.csv": ("point_slug",),
-    }
-    for name, columns in tables.items():
-        path = TABLE.parent / name
-        if not path.exists():
-            continue
-        with path.open(encoding="utf-8", newline="") as fh:
-            rows = list(csv.DictReader(fh))
-        if not rows:
-            continue
-        header = list(rows[0].keys())
-        kept, changed, dropped = [], 0, 0
-        for row in rows:
-            subject = row.get("subject", "")
-            hit = any((subject, row.get(col, "")) in gone for col in columns)
-            if not hit:
-                kept.append(row)
-                continue
-            # 被并：本行改指目标；被删：整行丢弃
-            retargeted = False
-            for col in columns:
-                target = merge_target.get((subject, row.get(col, "")))
-                if target:
-                    row[col] = target[1]
-                    retargeted = True
-            if retargeted:
-                kept.append(row)
-                changed += 1
-            else:
-                dropped += 1
-        # 改指后可能产生完全相同的两行，按**整行**去重。
-        # 不能按"第一列"去重：各表主键不同，material_bindings 的第一列是 point_slug，
-        # 多条材料绑到同一节点会被误当成重复删掉（实测误删 9 行）。
-        deduped = list({tuple(sorted(row.items())): row for row in kept}.values())
-        if changed or dropped or len(deduped) != len(rows):
-            with path.open("w", encoding="utf-8", newline="") as fh:
-                writer = csv.DictWriter(fh, fieldnames=header)
-                writer.writeheader()
-                writer.writerows(deduped)
-            print(f"  {name}: 改指 {changed} 行、删除 {dropped} 行、去重后 {len(deduped)} 行")
-
-
-def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--write", action="store_true")
-    args = parser.parse_args(argv)
-
-    with TABLE.open(encoding="utf-8", newline="") as fh:
-        rows = list(csv.reader(fh))
-    header, body = rows[0], rows[1:]
-    index = {(r[0], r[1]): i for i, r in enumerate(body) if len(r) >= 2}
-
-    added = updated = 0
-    for subject, slug, action, new_name, new_slug, reason in FIXES:
-        row = [subject, slug, action, new_name, new_slug, reason]
-        key = (subject, slug)
-        if key in index:
-            if body[index[key]] != row:
-                body[index[key]] = row
-                updated += 1
-        else:
-            body.append(row)
-            added += 1
-
-    print(f"node_actions.csv：新增 {added} 行、改写 {updated} 行"
-          f"（rename {sum(1 for f in FIXES if f[2] == 'rename')}、"
-          f"merge {sum(1 for f in FIXES if f[2] == 'merge')}、"
-          f"delete {sum(1 for f in FIXES if f[2] == 'delete')}）")
-    if args.write:
-        with TABLE.open("w", encoding="utf-8", newline="") as fh:
-            writer = csv.writer(fh)
-            writer.writerow(header)
-            writer.writerows(body)
-        print(f"已写入 {TABLE}（现共 {len(body)} 行）")
-        _retarget_tables(FIXES)
-    return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())

@@ -76,16 +76,15 @@ data class TutorToolCall(
     /** Model-judged difficulty tier (advisory, audited with the evidence). */
     val difficultyTier: TutorDifficultyTier? = null,
     /**
-     * 这一**次调用**锚在哪一道题（写工具准入的一条来源，非唯一）。
+     * 这一**次调用**声明锚在哪一道题（逐次题锚，两种解析路由都能表达的落点）。
      *
      * 判据与轮次声明完全相同（候选必须在派发前的菜单内、锚词必须在学生消息里逐字出现且在该题
      * 自身文本里可核对），但落点不同：轮次声明要整轮的信封才能表达，而原生 tool_calls 路由的
      * 标准形态 content=null，轮次声明无处可放；逐次锚把复述放回**两种路由都能表达**的地方。
      *
-     * 为空只是"模型没说"，不等于"这一轮没有题"：准入的判定是
-     * `TutorRoundQuestionBindingPolicy.callIsAnchoredToRoundQuestion`——模型没复述时回退到
-     * 本轮请求侧已知的题锚（[TutorRespondInput.knownRoundQuestion]，学生显式添加的题 /
-     * 上一轮已校验的绑定）；两者都没有才是真的无题轮，写工具照旧被拒。
+     * 2026-09-21 裁定（D6）之后它**不再是写工具准入的来源**：无题轮不再结构性拒写，写不写
+     * 由模型语义判定，MASTERY_UPDATE 的准入改为代号白名单（本会话已披露集合）。此字段仍被
+     * 解析（模型可能照旧复述），保留供审计与轮次绑定的旁证；不消费它做放/拒判定。
      */
     val boundQuestion: TutorRoundQuestionDeclaration? = null,
     /**
@@ -188,10 +187,12 @@ data class TutorToolOutcome(
          * subject carries on the order of a few hundred knowledge nodes *with*
          * mastery state, and one compact line each fits well under this.
          *
-         * The total-across-a-round budget is a separate question and stays
-         * unimplemented (spec §3.1 asks for ≤4k/round; the pipeline only bounds
-         * each outcome). The executor additionally honours at most one extended
-         * call per round, which is what keeps the worst case near `2·2k + 6k`.
+         * The total-across-a-round budget is a separate, implemented concern:
+         * [TutorToolRoundResult.MAX_TOOL_ROUND_RESULT_CHARS] caps a round at
+         * 4k — spec §3.1's ≤4k/round — plus
+         * [TutorToolRoundResult.EXTENDED_ROUND_RESULT_INCREMENT_CHARS] when the
+         * round spent its single extended call. [tutorToolRoundResult] applies
+         * the cap; the executor honours at most one extended call per round.
          */
         const val MAX_TOOL_RESULT_CHARS_EXTENDED = 6_000
     }

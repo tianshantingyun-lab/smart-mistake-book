@@ -24,7 +24,6 @@ class MasteryWriteGateTest {
         writesThisLearnerInWindow: Int = 0,
         attentionFactor: Double = 1.0,
     ) = GateInput(
-        intentConfidence = 0.9,
         evidenceConfidence = evidenceConfidence,
         direction = direction,
         understanding = understanding,
@@ -389,6 +388,49 @@ class MasteryWriteGateTest {
         assertEquals(0.4, MasteryWriteGate.MIN_ATTENTION_FACTOR, 1e-9)
         // 档2：MASTERED 的证据锚门槛与档1 prompt 规范第 1 条（"逐字引用≥2条"）同值。
         assertEquals(2, MasteryWriteGate.REQUIRED_EVIDENCE_ANCHORS_FOR_MASTERED)
+    }
+
+    // ---- D9 降权安全垫：写口唯一数值分支（anchor_class→权重系数）----
+
+    @Test
+    fun `unconfirmed anchor classes halve the accepted weight`() {
+        // 唯一数值分支：非 CONFIRMED（且非 NULL）的锚定等级把门放行的档位权重减半。
+        // CANDIDATE 与 DISCLOSED 数值待遇相同（区分只用于审计/校准）。
+        assertEquals(
+            MasteryWriteGate.WEIGHT_CONFIDENT_POSITIVE * 0.5,
+            MasteryWriteGate.effectiveEvidenceWeight(
+                MasteryWriteGate.WEIGHT_CONFIDENT_POSITIVE,
+                MasteryWriteGate.ANCHOR_CLASS_CANDIDATE,
+            ),
+            1e-9,
+        )
+        assertEquals(
+            MasteryWriteGate.WEIGHT_MASTERED_POSITIVE * 0.5,
+            MasteryWriteGate.effectiveEvidenceWeight(
+                MasteryWriteGate.WEIGHT_MASTERED_POSITIVE,
+                MasteryWriteGate.ANCHOR_CLASS_DISCLOSED,
+            ),
+            1e-9,
+        )
+    }
+
+    @Test
+    fun `confirmed anchor and legacy null keep the full weight`() {
+        // CONFIRMED 走全权重；NULL（legacy 行 / 客观作答通道）不得被追溯降权——
+        // 这是"向后兼容"的一半：旧行读回仍按存库权重积分。
+        assertEquals(
+            MasteryWriteGate.WEIGHT_CONFIDENT_POSITIVE,
+            MasteryWriteGate.effectiveEvidenceWeight(
+                MasteryWriteGate.WEIGHT_CONFIDENT_POSITIVE,
+                MasteryWriteGate.ANCHOR_CLASS_CONFIRMED,
+            ),
+            1e-9,
+        )
+        assertEquals(
+            MasteryWriteGate.WEIGHT_CONFIDENT_POSITIVE,
+            MasteryWriteGate.effectiveEvidenceWeight(MasteryWriteGate.WEIGHT_CONFIDENT_POSITIVE, null),
+            1e-9,
+        )
     }
 
     private companion object {

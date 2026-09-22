@@ -10,6 +10,7 @@ import com.tingyun.smartmistakebook.core.database.entity.KnowledgeNodeEntity
 import com.tingyun.smartmistakebook.core.database.entity.KnowledgeNodeRelationEntity
 import com.tingyun.smartmistakebook.core.database.entity.KnowledgeNodeSourceBindingEntity
 import com.tingyun.smartmistakebook.core.database.entity.KnowledgeSearchFeatureEntity
+import com.tingyun.smartmistakebook.core.database.entity.KnowledgeSearchIndexStateEntity
 import com.tingyun.smartmistakebook.core.database.entity.KnowledgeSourceEntity
 import com.tingyun.smartmistakebook.core.database.entity.KnowledgeTeachingMaterialEntity
 import com.tingyun.smartmistakebook.core.database.entity.KnowledgeTeachingMaterialNodeBindingEntity
@@ -131,16 +132,45 @@ internal class RoomKnowledgeBaseStore(
             .map(KnowledgeNodeEntity::toSeedRecord)
     }
 
+    /**
+     * 检索索引自愈，两级门：
+     *
+     * 1. **版本锚点**（`knowledge_search_index_state`）：节点侧抽取规则变化时见
+     *    [KnowledgeSearchFeatureExtractor.INDEX_VERSION]（当前 = v1 的 16 片段 / 192 特征
+     *    截断；2026-09-22 的 v2 去截断实验实测净伤害、当日回滚）——锚点缺失或**不等**
+     *    （两个方向都换血：legacy 库无锚点、v2 实验库锚点=2 当前=1）⇒ **整科重建**。
+     *    必须整科换血：旧截断行在"已索引数 ≥ 已审校数"检查下是满的，没有锚点会永远留下。
+     * 2. **只补缺**（原语义）：同版本下新增节点按需补建——节点内容不可变，
+     *    只增不删（`OnConflictStrategy.IGNORE`）是正确的。
+     *
+     * 崩溃安全照 `content_install_state` 的纪律：锚点**最后写**，
+     * "锚点当前"⟺"上一次重建完整跑完"；崩在中途则锚点没推进，下次重跑收敛。
+     */
     private suspend fun ensureKnowledgeSearchIndex(subject: String) {
         val dao = database.problemOrganizationDao()
-        val reviewedCount = dao.countReviewedKnowledgeNodesBySubject(subject)
-        if (reviewedCount == 0 || dao.countIndexedKnowledgeNodesBySubject(subject) >= reviewedCount) return
+        val stateDao = database.knowledgeSearchIndexStateDao()
+        if (stateDao.readVersion(subject) == KnowledgeSearchFeatureExtractor.INDEX_VERSION) {
+            val reviewedCount = dao.countReviewedKnowledgeNodesBySubject(subject)
+            if (reviewedCount == 0 || dao.countIndexedKnowledgeNodesBySubject(subject) >= reviewedCount) return
+            database.withWriteTransaction {
+                val missingCheckCount = dao.countReviewedKnowledgeNodesBySubject(subject)
+                if (dao.countIndexedKnowledgeNodesBySubject(subject) < missingCheckCount) {
+                    val nodes = dao.readSubjectKnowledgeRecallCandidates(subject, missingCheckCount)
+                    dao.insertKnowledgeSearchFeatures(nodes.flatMap(KnowledgeNodeEntity::toSearchFeatures))
+                }
+            }
+            return
+        }
         database.withWriteTransaction {
-            val missingCheckCount = dao.countReviewedKnowledgeNodesBySubject(subject)
-            if (dao.countIndexedKnowledgeNodesBySubject(subject) < missingCheckCount) {
-                val nodes = dao.readSubjectKnowledgeRecallCandidates(subject, missingCheckCount)
+            val reviewedCount = dao.countReviewedKnowledgeNodesBySubject(subject)
+            if (reviewedCount > 0) {
+                dao.deleteSearchFeaturesForSubject(subject)
+                val nodes = dao.readSubjectKnowledgeRecallCandidates(subject, reviewedCount)
                 dao.insertKnowledgeSearchFeatures(nodes.flatMap(KnowledgeNodeEntity::toSearchFeatures))
             }
+            stateDao.replace(
+                KnowledgeSearchIndexStateEntity(subject, KnowledgeSearchFeatureExtractor.INDEX_VERSION),
+            )
         }
     }
 

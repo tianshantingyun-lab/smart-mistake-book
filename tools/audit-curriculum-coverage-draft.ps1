@@ -54,7 +54,7 @@ if ([string]::IsNullOrWhiteSpace($LedgerPath)) {
 }
 if ([string]::IsNullOrWhiteSpace($SourceRegisterPath)) {
     $SourceRegisterPath = Join-Path $ProjectRoot (
-        'core\data\src\main\resources\knowledge\source-register-2025-v1.json'
+        'knowledge-production\source-register-2025-v1.json'
     )
 }
 

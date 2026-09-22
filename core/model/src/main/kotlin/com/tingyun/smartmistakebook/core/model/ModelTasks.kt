@@ -413,6 +413,17 @@ data class ModelTaskRequest(
             schemaVersion >= TUTOR_KNOWN_ROUND_QUESTION_SCHEMA_VERSION ||
                 (input as? TutorRespondInput)?.knownRoundQuestion == null,
         ) { "Legacy tutor requests cannot carry a known round question" }
+        val planInput = input as? TutorPlanInput
+        val respondInput = input as? TutorRespondInput
+        require(
+            schemaVersion >= TUTOR_KNOWLEDGE_CODE_CHANNEL_SCHEMA_VERSION ||
+                (planInput == null ||
+                    (planInput.knowledgeCodes.isEmpty() &&
+                        planInput.toolDeclarations.isEmpty() &&
+                        planInput.toolRoundResults.isEmpty() &&
+                        !planInput.teachingReferencesLoadFailed)) &&
+                (respondInput == null || respondInput.knowledgeCodes.isEmpty()),
+        ) { "Legacy tutor requests cannot carry the knowledge-code channel or plan tool rounds" }
         require(requestId.isNotBlank()) { "Model task request id must not be blank" }
         require(requestId.length <= MAX_ID_CHARS) { "Model task request id exceeds budget" }
         require(input.subjectId.isNotBlank()) { "Model task subject id must not be blank" }
@@ -442,7 +453,14 @@ data class ModelTaskRequest(
          * model did not restate an anchor in a native `tool_calls` round.
          */
         const val TUTOR_KNOWN_ROUND_QUESTION_SCHEMA_VERSION = 12
-        const val CURRENT_SCHEMA_VERSION = TUTOR_KNOWN_ROUND_QUESTION_SCHEMA_VERSION
+        /**
+         * Schema at which the single knowledge-code channel (ADR 0001 / D5) and the Plan tool
+         * loop (D8) exist: `knowledgeCodes` on Plan/Respond, `toolDeclarations` +
+         * `toolRoundResults` + `teachingReferencesLoadFailed` on Plan, and the optional
+         * `TutorTeachingReference.code` (EncodeDefault NEVER — an absent key, not a carrier).
+         */
+        const val TUTOR_KNOWLEDGE_CODE_CHANNEL_SCHEMA_VERSION = 13
+        const val CURRENT_SCHEMA_VERSION = TUTOR_KNOWLEDGE_CODE_CHANNEL_SCHEMA_VERSION
         const val MAX_ID_CHARS = 256
     }
 }
@@ -712,7 +730,9 @@ object ModelTaskLogicalOperationFingerprint {
                     .withoutEmptyLobbyImageRefs(input)
                     .withoutEmptyLobbyContext(input)
                     .withoutEmptyBoundQuestionCandidates(input)
-                    .withoutEmptyKnownRoundQuestion(input),
+                    .withoutEmptyKnownRoundQuestion(input)
+                    .withoutEmptyKnowledgeCodes(input)
+                    .withoutEmptyPlanToolCarrier(input),
             )
         }
 }
@@ -748,6 +768,10 @@ private fun ModelTaskRequest.fingerprintPayload(): String =
             .withoutLegacyTutorStudentContext(input)
             .withoutEmptyPageComparison(input)
             .withoutEmptyToolCarrier(input)
+            // v1 编码器不认识 schema 13 引入的键（代号通道 / Plan 工具环载体）——
+            // 与上面几条同一条纪律：旧行读回必须按"当年没有这些键"重算指纹。
+            .withoutEmptyKnowledgeCodes(input)
+            .withoutEmptyPlanToolCarrier(input)
     } else {
         ModelTaskCodec.encodeRequest(this).let { encoded ->
             encoded
@@ -803,6 +827,20 @@ private fun ModelTaskRequest.fingerprintPayload(): String =
                 .let {
                     if (schemaVersion < ModelTaskRequest.TUTOR_KNOWN_ROUND_QUESTION_SCHEMA_VERSION) {
                         it.withoutEmptyKnownRoundQuestion(input)
+                    } else {
+                        it
+                    }
+                }
+                .let {
+                    if (schemaVersion < ModelTaskRequest.TUTOR_KNOWLEDGE_CODE_CHANNEL_SCHEMA_VERSION) {
+                        it.withoutEmptyKnowledgeCodes(input)
+                    } else {
+                        it
+                    }
+                }
+                .let {
+                    if (schemaVersion < ModelTaskRequest.TUTOR_KNOWLEDGE_CODE_CHANNEL_SCHEMA_VERSION) {
+                        it.withoutEmptyPlanToolCarrier(input)
                     } else {
                         it
                     }
@@ -909,6 +947,40 @@ private fun String.withoutEmptyBoundQuestionCandidates(input: ModelTaskInput): S
 private fun String.withoutEmptyKnownRoundQuestion(input: ModelTaskInput): String =
     if (input is TutorRespondInput) {
         replace(",\"knownRoundQuestion\":null", "")
+    } else {
+        this
+    }
+
+/**
+ * 去掉 Plan/Respond 的"知识点代号通道"空载体键（schema 13 引入）。
+ *
+ * 与 [withoutEmptyKnownRoundQuestion] 同一条教训（提交 bf8be888）：两个指纹路径都以
+ * `encodeDefaults = true` 编码当前输入，旧 v12 行存的是不含该键的编码——不抹平空载体，
+ * 升级后读回任意一条旧 Plan/Respond 行都会算出与存库不同的哈希，`toSnapshot` 直接抛
+ * `LearningLedgerIntegrityException`。非空披露只可能出现在 v13 行（构造契约里有
+ * `require`），所以 strip 不会削弱新行的指纹区分度。
+ *
+ * 注意嵌套的 `TutorTeachingReference.code` 不需要本 helper：它用 `@EncodeDefault(NEVER)`，
+ * null 从不落键，空载体在编码层就不存在。
+ */
+private fun String.withoutEmptyKnowledgeCodes(input: ModelTaskInput): String =
+    if (input is TutorPlanInput || input is TutorRespondInput) {
+        replace(",\"knowledgeCodes\":[]", "")
+    } else {
+        this
+    }
+
+/**
+ * 去掉 Plan 的"工具环 + 教学材料加载失败"空载体键（schema 13 引入，D8：Plan 复用
+ * Respond 的工具环）。[withoutEmptyToolCarrier] 只覆盖 Lobby/Respond（schema 6 引入的那
+ * 对键）；Plan 的同名键是 13 才出现的，且多一个布尔载体，所以单列一条：
+ * 请求级指纹按 `schemaVersion < 13` 门控调用，逻辑级指纹无条件调用（无 schema 可看）。
+ */
+private fun String.withoutEmptyPlanToolCarrier(input: ModelTaskInput): String =
+    if (input is TutorPlanInput) {
+        replace(",\"toolDeclarations\":[]", "")
+            .replace(",\"toolRoundResults\":[]", "")
+            .replace(",\"teachingReferencesLoadFailed\":false", "")
     } else {
         this
     }

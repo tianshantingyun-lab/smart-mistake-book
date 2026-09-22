@@ -33,5 +33,4 @@ include(
     ":feature:profile",
     ":quality:visual-benchmark",
     ":benchmark",
-    ":knowledge-production",
 )

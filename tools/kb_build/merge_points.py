@@ -258,13 +258,14 @@ def main(argv: list[str] | None = None) -> int:
             pack_io.dump_json(sc, sp)
         purged = _purge_table_refs(pack)
         pt = "、".join(f"{k} {v}" for k, v in purged.items() if v) or "无"
-        print(f"→ 已写回成品包 + {len(sidecars)} 个 sidecar；清除外部表悬空引用 {pt}")
+        print(f"→ 已写回 staging 包 + {len(sidecars)} 个 sidecar；清除外部表悬空引用 {pt}")
 
+        # 台账条目落 staging 台账（record 时已压平到终局）；**不刷内容戳**——
+        # 戳只在晋升路径（promote）刷新，门全绿那一刻才算数。
         doc = update_manifest.load_or_empty(pack["packId"])
         added = update_manifest.record(doc, stats["retired"])
-        doc["contentVersion"] = update_manifest.content_version(pack, sidecars)
         update_manifest.write(doc)
-        print(f"→ 取代台账 +{added} 条（共 {len(doc['retired'])} 条退役）；内容戳 {doc['contentVersion']}")
+        print(f"→ 取代台账 +{added} 条（共 {len(doc['retired'])} 条退役）；内容戳由晋升时刷新")
     return 0
 
 

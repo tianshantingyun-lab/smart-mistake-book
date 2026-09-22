@@ -263,6 +263,38 @@ class LearningProjectorTest {
     }
 
     @Test
+    fun `legacy chat evidence without an anchor class projects at its stored full weight`() {
+        // D9 降权安全垫是**写入时**口径（ADR 0001）：非 CONFIRMED 锚定等级在写入时已把
+        // 存库 weight 减半（`MasteryWriteGate.effectiveEvidenceWeight`，runner 施加），
+        // 账本事件与投影器都不感知 anchor_class——重放逐位稳定。本用例钉住向后兼容的
+        // 另一半：legacy 行（anchor_class = NULL，当年按全权重写入）读回后不得被追溯降权，
+        // 存 0.15 就积 0.15。
+        val projected = projector.project(
+            LearnerSnapshot.empty("learner-1"),
+            listOf(chatEvidence("chat-ev-legacy", 1, LearningEvidenceDirection.POSITIVE, 0.15)),
+            1,
+        )
+        assertEquals(
+            0.15,
+            projected.snapshot.knowledgeMasteryStates.getValue("kc-a").evidenceMass,
+            1e-9,
+        )
+
+        // 对照：一条"未确认锚"的新写入存的是减半后的值（0.15 × 0.5 = 0.075），投影按
+        // 存库值积分——两次写入的投影差异恰好是安全垫，而不是投影器里的第二个分支。
+        val projectedWithHalved = projector.project(
+            LearnerSnapshot.empty("learner-1"),
+            listOf(chatEvidence("chat-ev-halved", 1, LearningEvidenceDirection.POSITIVE, 0.075)),
+            1,
+        )
+        assertEquals(
+            0.075,
+            projectedWithHalved.snapshot.knowledgeMasteryStates.getValue("kc-a").evidenceMass,
+            1e-9,
+        )
+    }
+
+    @Test
     fun `full replay produces the same chat-evidence clock as incremental projection`() {
         // 升级路径依赖这条等价性：projector 版本 bump 会让已有库走
         // StudyProjectionDrainer 的全量重放（`replay`）而不是增量投影。若两条路

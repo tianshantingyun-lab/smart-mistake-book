@@ -131,7 +131,7 @@ def canonical_pairs() -> dict[str, set[tuple[str, str]]]:
 
 def _pack_chapters() -> list[tuple[str, str, str]]:
     """包里的 (科目, 册, 章) —— 章层 = 父节点是册层的那一层。"""
-    for root in (pack_io.REPO / "build" / "kb-staging", pack_io.KNOWLEDGE_DIR):
+    for root in (pack_io.work_dir(), pack_io.release_dir()):
         path = root / pack_io.PACK_NAME
         if not path.exists():
             continue

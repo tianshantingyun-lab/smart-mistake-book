@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""在成品包新增知识点节点（生物缺节点时用它，配合 rebind_materials 改绑）。
+"""在 staging 包新增知识点节点（生物缺节点时用它，配合 rebind_materials 改绑）。
 
 ## 它消灭的失败
 

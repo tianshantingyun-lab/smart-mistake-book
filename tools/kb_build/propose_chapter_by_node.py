@@ -85,19 +85,11 @@ def build() -> tuple[list[dict[str, str]], list[dict[str, str]]]:
         by_subject[row["subject"]].append(row)
 
     pack = pack_io.load_json(pack_io.pack_path())
-    actions = tables.load_node_actions()
-
-    def final_name(subject: str, slug: str, original: str) -> str:
-        row = actions.get((subject, slug))
-        if row and row["action"] == "rename" and row["new_name"]:
-            return row["new_name"]
-        return original
-
     units: dict[str, list[dict[str, str]]] = defaultdict(list)
     for subject, _topic, point in pack_io.iter_points(pack):
         if subject not in by_subject:
             continue
-        name = final_name(subject, point["slug"], point["name"])
+        name = point["name"]
         section, score = best_section(name, by_subject[subject])
         units[_source_unit(point.get("sourceLocator", ""))].append({
             "subject": subject,

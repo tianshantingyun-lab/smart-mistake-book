@@ -75,8 +75,7 @@ import com.tingyun.smartmistakebook.core.model.TutorFormulaDerivationScene
 import com.tingyun.smartmistakebook.core.model.TutorFormulaDerivationStep
 import com.tingyun.smartmistakebook.core.model.TutorIntentDecision
 import com.tingyun.smartmistakebook.core.model.TutorToolCall
-import com.tingyun.smartmistakebook.core.domain.TUTOR_WRITE_TOOLS
-import com.tingyun.smartmistakebook.core.model.TutorRoundQuestionDeclaration
+import com.tingyun.smartmistakebook.core.model.nativePurposeDescription
 import com.tingyun.smartmistakebook.core.model.TutorToolName
 import com.tingyun.smartmistakebook.core.model.TutorToolRequestsOutput
 import com.tingyun.smartmistakebook.core.model.TutorEvidenceDirection
@@ -271,9 +270,19 @@ internal object OpenAiModelProtocol {
         val declarations = when (input) {
             is com.tingyun.smartmistakebook.core.model.TutorRespondInput -> input.toolDeclarations
             is com.tingyun.smartmistakebook.core.model.TutorLobbyInput -> input.toolDeclarations
+            // Plan 复用 Respond 的工具环（D8）：同一 5 工具面。
+            is com.tingyun.smartmistakebook.core.model.TutorPlanInput -> input.toolDeclarations
             else -> return null
         }
         if (declarations.isEmpty()) return null
+        // 单一代号通道（D5）：MASTERY_UPDATE 的 terms[0] 用本会话已披露代号做 enum 白名单
+        // （Structured Outputs 约束解码——非法代号在解码层即不可产生）；空集合（大厅 /
+        // 无预披露）不出 enum，越界仍由服务端结构性拒兜底。
+        val disclosedCodes = when (input) {
+            is com.tingyun.smartmistakebook.core.model.TutorPlanInput -> input.knowledgeCodes
+            is com.tingyun.smartmistakebook.core.model.TutorRespondInput -> input.knowledgeCodes
+            else -> emptyList()
+        }.mapNotNull { entry -> entry.code }
         return buildJsonArray {
             declarations.forEach { tool ->
                 add(
@@ -283,10 +292,10 @@ internal object OpenAiModelProtocol {
                             "function",
                             buildJsonObject {
                                 put("name", tool.name)
-                                put("description", nativeToolDescription(tool))
+                                put("description", tool.nativePurposeDescription())
                                 put(
                                     "parameters",
-                                    strictFunctionSchema(tool),
+                                    strictFunctionSchema(tool, disclosedCodes),
                                 )
                             },
                         )
@@ -296,26 +305,24 @@ internal object OpenAiModelProtocol {
         }
     }
 
-    private fun nativeToolDescription(tool: com.tingyun.smartmistakebook.core.model.TutorToolName): String = when (tool) {
-        com.tingyun.smartmistakebook.core.model.TutorToolName.KNOWLEDGE_READ -> "读取当前题相关知识点讲解材料"
-        com.tingyun.smartmistakebook.core.model.TutorToolName.NOTEBOOK_READ ->
-            "检索错题本中匹配的错题（只查错题库，不含掌握情况）"
-        com.tingyun.smartmistakebook.core.model.TutorToolName.MASTERY_READ ->
-            "读取学生对相关知识的掌握情况（terms 留空＝本科目全部清单，填关键词＝聚焦并附历史聚合；不含错题条目）"
-        com.tingyun.smartmistakebook.core.model.TutorToolName.MASTERY_UPDATE -> "提交一条学习证据（模型判 direction/understanding/confidence，权重本地定）"
-        com.tingyun.smartmistakebook.core.model.TutorToolName.NOTEBOOK_WRITE -> "写入错题本（需学生明确命令，环内不可自主执行）"
-    }
-
     /**
      * Strict-mode function schema (spec model-intent-routing §3.3): every
      * advertised property is required and additional properties are rejected,
      * so the required array must exactly match the property set. MASTERY_UPDATE
      * adds the model-judged semantic fields the model layer's
-     * [TutorToolCall] contract mandates (direction + understanding non-null);
-     * MASTERY_READ adds the extended-result flag it alone may set; the other
-     * read tools stay minimal (terms + rationale).
+     * [TutorToolCall] contract mandates (direction + understanding non-null),
+     * and its terms[0] is constrained to the session's disclosed knowledge codes
+     * (D5 enum 白名单); MASTERY_READ adds the extended-result flag it alone may
+     * set; the other read tools stay minimal (terms + rationale).
+     *
+     * 写工具**不再**带逐次题锚字段（problemId/problemRevisionId/anchorTerms）：
+     * 2026-09-21 裁定（D6）废除"无题轮结构性拒写"之后，题锚不再是写准入事实；
+     * 轮次绑定仍走最终回答信封的 boundQuestion（F3 答案暴露守卫的基底，原样保留）。
      */
-    private fun strictFunctionSchema(tool: com.tingyun.smartmistakebook.core.model.TutorToolName): JsonObject {
+    private fun strictFunctionSchema(
+        tool: com.tingyun.smartmistakebook.core.model.TutorToolName,
+        disclosedKnowledgeCodes: List<String>,
+    ): JsonObject {
         val masterySemantics = tool == com.tingyun.smartmistakebook.core.model.TutorToolName.MASTERY_UPDATE
         val extendedResult = tool == com.tingyun.smartmistakebook.core.model.TutorToolName.MASTERY_READ
         return buildJsonObject {
@@ -331,11 +338,34 @@ internal object OpenAiModelProtocol {
                                 "items",
                                 buildJsonObject {
                                     put("type", "string")
-                                    put("description", "学生原话派生词元，不得臆测")
+                                    if (masterySemantics) {
+                                        put("description", "本会话已披露知识点的代号（K1..Kn），绝不编造")
+                                        // enum 白名单 = 本会话已披露集合（D5 约束解码前哨）；
+                                        // 空集合不出 enum（大厅/无预披露），服务端结构性拒兜底。
+                                        if (disclosedKnowledgeCodes.isNotEmpty()) {
+                                            put(
+                                                "enum",
+                                                buildJsonArray {
+                                                    disclosedKnowledgeCodes.forEach { code ->
+                                                        add(JsonPrimitive(code))
+                                                    }
+                                                },
+                                            )
+                                        }
+                                    } else {
+                                        put("description", "学生原话派生词元，不得臆测")
+                                    }
                                 },
                             )
                             put("maxItems", TutorIntentDecision.MAX_LOOKUP_TERMS)
-                            put("description", "直接来自学生消息原词的简短筛选词")
+                            put(
+                                "description",
+                                if (masterySemantics) {
+                                    "第一个元素必须是已披露知识点代号"
+                                } else {
+                                    "直接来自学生消息原词的简短筛选词"
+                                },
+                            )
                         },
                     )
                     put(
@@ -354,39 +384,6 @@ internal object OpenAiModelProtocol {
                                     "description",
                                     "本条查询可能需要更大的结果预算时置 true（本地决定实际上限）",
                                 )
-                            },
-                        )
-                    }
-                    if (tool in TUTOR_WRITE_TOOLS) {
-                        // 写工具的逐次题锚：字段名与 json_object 信封路由一致，两条路由共用同一套
-                        // 本地校验（core:domain 的 TutorRoundQuestionBindingPolicy）。
-                        put(
-                            "problemId",
-                            buildJsonObject {
-                                put("type", "string")
-                                put("description", "本次写入锚定的题目 id，取自 boundQuestionCandidates")
-                            },
-                        )
-                        put(
-                            "problemRevisionId",
-                            buildJsonObject {
-                                put("type", "string")
-                                put("description", "本次写入锚定的题面修订 id，与 problemId 成对")
-                            },
-                        )
-                        put(
-                            "anchorTerms",
-                            buildJsonObject {
-                                put("type", "array")
-                                put(
-                                    "items",
-                                    buildJsonObject {
-                                        put("type", "string")
-                                        put("description", "逐字来自学生消息、且能在该题文本里找到的词")
-                                    },
-                                )
-                                put("maxItems", TutorRoundQuestionDeclaration.MAX_ANCHOR_TERMS)
-                                put("description", "该题的锚词（逐字，不得臆测）")
                             },
                         )
                     }
@@ -442,9 +439,6 @@ internal object OpenAiModelProtocol {
                         add(JsonPrimitive("direction"))
                         add(JsonPrimitive("understanding"))
                         add(JsonPrimitive("confidence"))
-                        add(JsonPrimitive("problemId"))
-                        add(JsonPrimitive("problemRevisionId"))
-                        add(JsonPrimitive("anchorTerms"))
                     },
                 )
             } else if (extendedResult) {
@@ -454,17 +448,6 @@ internal object OpenAiModelProtocol {
                         add(JsonPrimitive("terms"))
                         add(JsonPrimitive("rationale"))
                         add(JsonPrimitive("extendedResult"))
-                    },
-                )
-            } else if (tool in TUTOR_WRITE_TOOLS) {
-                put(
-                    "required",
-                    buildJsonArray {
-                        add(JsonPrimitive("terms"))
-                        add(JsonPrimitive("rationale"))
-                        add(JsonPrimitive("problemId"))
-                        add(JsonPrimitive("problemRevisionId"))
-                        add(JsonPrimitive("anchorTerms"))
                     },
                 )
             } else {
@@ -521,11 +504,9 @@ internal object OpenAiModelProtocol {
      * it, later rounds re-derive). Standard native tool_calls carry content=null,
      * so the intent is derived from the dispatch kind instead — native tools
      * never over-authorize because the repository still intersects with the
-     * declared set, and a write additionally needs its question anchor: the
-     * per-call one carried in the call's arguments, or — when the model did not
-     * restate it — the anchor the round's request already knows
-     * (`TutorRespondInput.knownRoundQuestion`, schema 12). The parsing layer
-     * itself never invents an anchor.
+     * declared set. MASTERY_UPDATE 的写准入是代号白名单（本会话已披露集合，
+     * 服务端结构性拒编造代号），与题锚无关（2026-09-21 裁定 D5/D6：题锚不再是
+     * 写准入事实）。解析层自己从不发明任何锚。
      */
     private fun List<JsonElement>.toTutorToolRequestsOutput(
         input: com.tingyun.smartmistakebook.core.model.ModelTaskInput,
@@ -574,8 +555,8 @@ internal object OpenAiModelProtocol {
      * page now (`TUTOR_TOOL_DECLARATIONS`), but the declared set is only intersected
      * last — it never widens the matrix.
      *
-     * 题锚不走这里：写工具的准入看每次调用的 arguments，或回退到本轮请求侧已知的题锚
-     * （`TutorRespondInput.knownRoundQuestion`），两条路由都能表达。
+     * 写准入不走这里：MASTERY_UPDATE 看每次调用 terms[0] 的代号是否在本会话已披露集合内
+     * （D5），题锚绑定只服务于轮次语义（答案暴露守卫的基底），两条路由同参。
      */
     private fun nativeToolRoundIntent(
         input: com.tingyun.smartmistakebook.core.model.ModelTaskInput,

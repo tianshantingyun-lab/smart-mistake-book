@@ -209,12 +209,10 @@ def main(argv: list[str] | None = None) -> int:
             for subj, slug in removed_keys
             if (subj, slug) in deletes
         ]
-        sidecars = [pack_io.load_json(sp) for sp in pack_io.sidecar_paths()]
         doc = update_manifest.load_or_empty(pack["packId"])
         added = update_manifest.record(doc, entries)
-        doc["contentVersion"] = update_manifest.content_version(pack, sidecars)
         update_manifest.write(doc)
-        print(f"→ 取代台账 +{added} 条（共 {len(doc['retired'])} 条退役）；内容戳 {doc['contentVersion']}")
+        print(f"→ 取代台账 +{added} 条（共 {len(doc['retired'])} 条退役）；内容戳由晋升时刷新")
     return 0
 
 

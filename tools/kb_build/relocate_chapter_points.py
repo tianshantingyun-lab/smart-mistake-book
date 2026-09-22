@@ -26,7 +26,7 @@ build.py 的 `node_actions` 表与成品包 slug **不同坐标系**（实测 32
 
     # 报告（会移动几个）
     PYTHONPATH=tools python -m kb_build.relocate_chapter_points
-    # 写回成品
+    # 写回 staging 包
     PYTHONPATH=tools python -m kb_build.relocate_chapter_points --write
 """
 

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import json
 import unittest
+from pathlib import Path
 
 from curriculum_coverage.artifacts import knowledge_base_boundary
 from curriculum_coverage.extractor import parse_item_start, remove_parent_items
@@ -381,6 +383,36 @@ class HumanReviewPromotionGateTest(unittest.TestCase):
 
         with self.assertRaisesRegex(ValueError, "missing decisions"):
             review_promotion_status(evidence, proposals, decisions)
+
+
+class SourceRegisterLocationTest(unittest.TestCase):
+    """来源登记已迁出 APK 资源（R5：Kotlin 零引用，只有 Python 生产管线在读）。
+
+    4 个 CLI 的 `--source-register` 默认参数都指向这个新路径
+    （curriculum_coverage/cli.py、curriculum_coverage/warning_evidence_cli.py、
+    teaching_sources/epub_cli.py、teaching_sources/review_inventory_cli.py），
+    路径一旦回退或丢失，默认值就全部指向空。这条用例钉住：
+    新路径可读且是同一份登记（按 registerId 认身份），旧路径不再存在
+    （存在 = 它还会被打进 APK 资源，迁移等于没做）。
+    """
+
+    @staticmethod
+    def _repo_root() -> Path:
+        return Path(__file__).resolve().parents[2]
+
+    def test_source_register_lives_in_knowledge_production_and_reads(self) -> None:
+        path = self._repo_root() / "knowledge-production" / "source-register-2025-v1.json"
+        self.assertTrue(path.is_file(), f"来源登记不在新路径：{path}")
+        register = json.loads(path.read_text(encoding="utf-8"))
+        self.assertEqual("high-school-knowledge-source-register-2025-v1",
+                         register["registerId"])
+        self.assertTrue(register["sources"])
+
+    def test_source_register_is_not_packaged_as_apk_resource(self) -> None:
+        old_path = (self._repo_root() / "core" / "data" / "src" / "main"
+                    / "resources" / "knowledge" / "source-register-2025-v1.json")
+        self.assertFalse(old_path.exists(),
+                         "来源登记还留在 APK 资源里（会随包发行，迁移未生效）")
 
 
 if __name__ == "__main__":

@@ -116,6 +116,11 @@ class ModelEgressTest {
             .replace(",\"priorCycleStudentMessages\":[]", "")
             .replace(",\"egressManifest\":null", "")
             .replace(",\"agentConsentGranted\":false", "")
+            // schema 1 时代还没有 schema 13 引入的 Plan 载体键——当年的编码不含它们。
+            .replace(",\"toolDeclarations\":[]", "")
+            .replace(",\"toolRoundResults\":[]", "")
+            .replace(",\"knowledgeCodes\":[]", "")
+            .replace(",\"teachingReferencesLoadFailed\":false", "")
         val decoded = ModelTaskCodec.decodeRequest(legacyJson)
         val expected = MessageDigest.getInstance("SHA-256")
             .digest(legacyJson.toByteArray(StandardCharsets.UTF_8))
@@ -165,6 +170,11 @@ class ModelEgressTest {
         val encoded = ModelTaskCodec.encodeRequest(request)
         val legacyJson = encoded.replace(",\"priorCycleStudentMessages\":[]", "")
             .replace(",\"agentConsentGranted\":false", "")
+            // schema 2 时代还没有 schema 13 引入的 Plan 载体键——当年的编码不含它们。
+            .replace(",\"toolDeclarations\":[]", "")
+            .replace(",\"toolRoundResults\":[]", "")
+            .replace(",\"knowledgeCodes\":[]", "")
+            .replace(",\"teachingReferencesLoadFailed\":false", "")
         val expectedFingerprint = MessageDigest.getInstance("SHA-256")
             .digest(legacyJson.toByteArray(StandardCharsets.UTF_8))
             .joinToString("") { "%02x".format(it) }

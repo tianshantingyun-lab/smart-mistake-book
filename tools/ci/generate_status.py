@@ -11,6 +11,7 @@ import glob
 import hashlib
 import os
 import re
+import subprocess
 import sys
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
@@ -165,6 +166,77 @@ def kover_coverage(module: str) -> tuple[str, str]:
     return percentage("LINE"), percentage("BRANCH")
 
 
+def kb_gate_rows() -> tuple[str, bool, int]:
+    """Run the 22 knowledge-base content gates (kb_build.gate) on the bundled pack.
+
+    Returns (template table rows, all-green, ok count). A crash while evaluating
+    is reported as red, never as unmeasured: F-05's lesson is that a status
+    report which cannot say what happened must not say "PASS".
+    """
+    try:
+        sys.path.insert(0, str(REPO / "tools"))
+        from kb_build import gate
+        metrics = gate.evaluate()
+    except Exception as exc:  # noqa: BLE001 - crash = red, with the reason visible
+        return f"| gate evaluation crashed | FAIL | {exc} |", False, 0
+    rows = []
+    ok_count = 0
+    for metric in metrics:
+        if metric.ok:
+            ok_count += 1
+        rows.append(
+            f"| `{metric.key}` | {metric.title} | {'OK' if metric.ok else 'FAIL'} | {metric.value} |"
+        )
+    return "\n".join(rows), ok_count == len(metrics), ok_count
+
+
+def tools_test_summary() -> tuple[str, str, str, bool]:
+    """Run the Python tools test suite (tools/tests) and summarize total/passed/failed.
+
+    Runs in a subprocess so test code cannot mutate this process' globals
+    (several tests rebind tables.TABLES_DIR). A crash or a hung run is red,
+    never "not measured".
+    """
+    env = dict(os.environ)
+    env["PYTHONPATH"] = "tools" + os.pathsep + env.get("PYTHONPATH", "")
+    try:
+        proc = subprocess.run(
+            [sys.executable, "-m", "unittest", "discover", "-s", "tools/tests"],
+            cwd=REPO, env=env, capture_output=True, text=True, timeout=900,
+        )
+    except Exception as exc:  # noqa: BLE001
+        return f"RUN_FAILED ({type(exc).__name__})", NOT_MEASURED, NOT_MEASURED, False
+    stderr = proc.stderr
+    total_match = re.search(r"Ran (\d+) tests?", stderr)
+    if total_match is None:
+        tail = stderr.strip().splitlines()
+        detail = tail[-1][:160] if tail else f"exit={proc.returncode}"
+        return f"RUN_FAILED ({detail})", NOT_MEASURED, NOT_MEASURED, False
+    total = int(total_match.group(1))
+    failed = 0
+    for marker in ("failures=", "errors="):
+        match = re.search(rf"{marker}(\d+)", stderr)
+        if match:
+            failed += int(match.group(1))
+    if proc.returncode != 0:
+        failed = max(failed, 1)
+    return str(total), str(total - failed), str(failed), failed == 0
+
+
+def benchmark_metrics_text() -> str:
+    """Verbatim content of the retrieval benchmark written by
+    :core:data's FourSubjectRetrievalBenchmarkTest (module-relative
+    build/benchmark-metrics.txt). Staleness detection is R3's job; here the
+    report only refuses to pretend the measurement does not exist."""
+    path = gradle_dir(":core:data") / "build" / "benchmark-metrics.txt"
+    if not path.exists():
+        return NOT_MEASURED
+    try:
+        return path.read_text(encoding="utf-8").strip() or NOT_MEASURED
+    except OSError:
+        return NOT_MEASURED
+
+
 def main() -> int:
     if not TEMPLATE.exists():
         print(f"template missing: {TEMPLATE}", file=sys.stderr)
@@ -259,8 +331,30 @@ def main() -> int:
         release_rows.setdefault("AAB_SIZE_PLACEHOLDER", f"{first_aab / (1024 * 1024):.1f} MB")
     values.update(release_rows)
 
-    overall = "PASS" if os.environ.get("JOB_STATUS", "success") == "success" else "FAIL"
+    # Knowledge base: the 22 content gates run here (kb_build.gate), the Python
+    # tools suite is summarized here, and the retrieval benchmark file written
+    # by :core:data's JVM test is embedded verbatim. Overall must not be PASS
+    # unless all of these are measured AND green — that is the F-05 root fix:
+    # a PASS that only tracked the build job's status could never reflect the
+    # state of the knowledge base at all.
+    gates_rows, gates_ok, gates_ok_count = kb_gate_rows()
+    tools_total, tools_passed, tools_failed, tools_ok = tools_test_summary()
+    values["KB_GATE_ROWS"] = gates_rows
+    values["GATES_OK_COUNT"] = f"{gates_ok_count}/22"
+    values["TOOLS_TESTS_TOTAL"] = tools_total
+    values["TOOLS_TESTS_PASSED"] = tools_passed
+    values["TOOLS_TESTS_FAILED"] = tools_failed
+    values["BENCHMARK_METRICS"] = benchmark_metrics_text()
+
+    job_ok = os.environ.get("JOB_STATUS", "success") == "success"
+    overall = "PASS" if (job_ok and gates_ok and tools_ok) else "FAIL"
     values["OVERALL_STATUS"] = overall
+    values["OVERALL_BREAKDOWN"] = " · ".join((
+        f"build job: {'OK' if job_ok else 'FAIL'}",
+        f"KB 22 gates: {'all OK' if gates_ok else f'{gates_ok_count}/22 OK or crashed'}",
+        f"tools tests: {tools_passed}/{tools_total} passed"
+        if tools_ok else f"tools tests: {tools_failed}/{tools_total} failed or run failed",
+    ))
 
     # Known measurements first, then anything still unresolved in the
     # template is genuinely unmeasured. The sweep must run AFTER value

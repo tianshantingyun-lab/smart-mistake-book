@@ -857,3 +857,61 @@ that the draft is reachable or resolved.
 （46 个文本列；非文本列指纹比对不变、仍受损行 0）。
 
 **Reopen condition.** 门 `latex_damage` 非 0。
+
+## KD-24 (open) · 去截断实验（v2）净伤害词面路由已回滚——公共 gram 通胀打掉窄路召回（19 例自由落体）+ 宽路 p95 663ms 超预算；别名截断缺陷（62% 节点）改由已开启的 dense 兜底议题结构性消灭，词面侧不再以去截断方式修
+
+**Symptom.** 2026-09-22 第四轮按 D12 施工去截断索引（v2：删
+`MAX_SEARCH_FRAGMENTS=16` / `MAX_NODE_FEATURES=192`）并把 KNOWLEDGE_READ / MASTERY_READ
+聚焦解析统一成 B512→A 路由后，档 2 真机两次复跑（数据确定性插入，两次出数一致）实测
+两条路都是净伤害：
+
+- **v2 索引 × 裸 B5**：金标主集 0.5222（47/90）尚可，但 **19 例回归的自由落体例在
+  v2 窄路失败**——去截断放大公共 gram 通胀（大别名量节点的二值 TF count 被公共
+  2/3-gram 抬高），把少公共 gram 的精确节点（"自由落体运动"，题面公共特征只有
+  "自由" → count=1）挤出 64 宽网，窄路召回被打掉；
+- **v2 索引 × B512→A（统一路由）**：19 例恢复 19/19（`bundled-knowledge-recall
+  regression: hit=19/19, cross-subject=0`），但金标主集 **0.3444（31/90）**（比裸 B5
+  更差）、**p95=663ms / 695ms**（两次复跑，超 150ms 预算 4.4×；同设备同形路由的
+  2 万合成点控制测 p95=62ms——成本来自宽召回 + A 对 512 候选的 Kotlin 计数打分，
+  非设备故障）。
+
+**Evidence.** 档 2 复测#1/#2 仪表化日志（逐字存档于 `docs/kb-vector-topic-decision.md`
+§3.1）：`route=B512->A-select->top5(生产统一路由) indexVersion=2 cases=90
+samplesPerQuery=5`；p95=663ms/p50=457ms/max=40901/overBudget=444/450 与
+p95=695ms/p50=467ms/max=35253/overBudget=446/450；v2 索引规模
+`totalFeatureRows=873465 maxFeaturesPerNode=1672`（v1 同包：`totalFeatureRows=583271
+maxFeaturesPerNode=192`）。JVM 镜像与真 SQL 两次复跑漂移 0，排除镜像口径问题。
+
+**Resolution (2026-09-22, 形状回滚 / FIX2).** 生产回零回归形状，测量设施全保留：
+
+1. 索引回 v1 语义：`KnowledgeSearchFeatureExtractor` 恢复节点侧截断
+   （`MAX_SEARCH_FRAGMENTS=16` / `MAX_NODE_FEATURES=192`），`INDEX_VERSION` 2→1；
+   WP4 的版本锚点表 `knowledge_search_index_state`（v51 迁移，保留基建）按
+   "锚点缺失或不等 ⇒ 整科换血"自动触发——v2 实验库（锚点=2）首次召回即回建 v1，
+   Room 51 迁移本身不滚；
+2. 路由回滚：KNOWLEDGE_READ（裸 B 路 limit=5）与 MASTERY_READ 聚焦解析（裸 B 路
+   limit=24）回到 FIX 前生产形状；归类/拍照路径的 B512→A 不动（既有、消费者不同）；
+3. 19 例回归 limit 512→64 回原形状（断言一字不改，v1 上 19/19——历史即 v1-B64→A
+   19/19）；金标判分目标回 v1 裸 B5（真 SQL + JVM 镜像同步，零漂移纪律与预注册
+   阈值一字不动）；
+4. 提取器 v1 截断行为有独立钉（`KnowledgeSearchFeatureExtractorTest`：178 片段
+   节点选 16 入预算、特征 ≤192）。
+
+**为什么词面侧不再以去截断方式修。** 去截断的意图是消灭"62% 节点别名不全入索引"
+（审计 §1.4），但实测它放大的是同一个二值 TF 排序的病（D-01 无 IDF/无长度归一化）：
+公共 gram 通胀挤掉窄路召回，宽路又买不起 p95。词面栈内两条形状（v2-裸B5、
+v2-B512→A）都已实测，均不及或不及 v1 生产形状（三组数并列见
+`docs/kb-vector-topic-decision.md` §3.2）。
+
+**缺陷的归宿（结构性消灭，不是掩盖）。** 别名截断缺陷改由 D12 首测已触发开启的
+**同层 dense 兜底议题**解决：28,932 条向量（3,572 知识点 + 25,360 别名，审计
+§2.4-1 口径）×512 维全扫 1.4–2.8ms（内存带宽估算），向量侧**无截断损失**——
+"别名只有一部分进了索引"这一失败类在 dense 兜底里不存在，词面索引的截断因此
+不再承载召回正确性，只承载 p95 与体积预算。议题形态预案（bge-small-zh int8 +
+LiteRT ≈30MB / RRF / 无 ANN）见决策文档 §4，立项需另一次用户裁定。
+
+**Reopen condition.** 任何一条：(i) 再次尝试词面侧去截断/宽召回统一路由而未经金标
+三组数对照（`GoldenRetrievalInstrumentedTest` + `GoldenRetrievalJvmTest` 零漂移）；
+(ii) `INDEX_VERSION` 被改动但锚点换血语义（不等即重建）被弱化；(iii) 19 例回归
+（v1 索引 × B64→A）跌破 19/19——那是窄路召回的真实回归，不是设备噪声（KD-2 的
+预算系数不覆盖召回命中断言）。

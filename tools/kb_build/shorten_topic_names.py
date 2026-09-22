@@ -25,7 +25,7 @@
 ## 用法
 
     PYTHONPATH=tools python -m kb_build.shorten_topic_names            # 报告会改几个
-    PYTHONPATH=tools python -m kb_build.shorten_topic_names --write    # 写回成品包
+    PYTHONPATH=tools python -m kb_build.shorten_topic_names --write    # 写回 staging 包
 """
 
 from __future__ import annotations
@@ -146,12 +146,13 @@ def names_carrying_parent_path(pack: dict, base_dir: Path | None = None) -> list
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="把 topic 名还原成层内名")
-    parser.add_argument("--write", action="store_true", help="写回成品包（默认只报告）")
+    parser.add_argument("--write", action="store_true", help="写回 staging 包（默认只报告）")
     parser.add_argument("--root", type=Path, default=None, help="改写别的目录下的包")
     args = parser.parse_args(argv)
 
-    target = args.root or pack_io.KNOWLEDGE_DIR
-    path = target / pack_io.PACK_NAME
+    if args.root:
+        pack_io.use_directory(args.root)
+    path = pack_io.pack_path()
     pack = pack_io.load_json(path)
 
     before = _snapshot(pack)
