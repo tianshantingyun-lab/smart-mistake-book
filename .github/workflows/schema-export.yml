@@ -34,7 +34,7 @@ jobs:
     outputs:
       exported: ${{ steps.pushcheck.outputs.exported }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-java@v6
         with:
           distribution: temurin
@@ -73,7 +73,7 @@ jobs:
     # Emulator boot can take a while plus one connected test task.
     timeout-minutes: 90
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-java@v6
         with:
           distribution: temurin
