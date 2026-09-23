@@ -103,6 +103,7 @@
 - **结论（本轮的正式读法）**：**在生产口径下 FTS5+bm25 排序未带来 Recall 增益（0.5333 < 0.5444），增益只在改变返回形态（matched 优先）后才出现（0.6556）**——表观的 +0.1112 来自返回形态（父节点占席被消除），不是排序增益；同样一条 FTS5 排序，只换返回形态：生产形 0.5333 → matched 优先 0.6556（+0.1222）。
 - **是否改返回形态列为待用户裁定项（D1）**：`(parents + matched)` 是 KNOWLEDGE_READ / MASTERY_READ 聚焦解析的既有语义（父 topic 占席，供上层解释），改形态要逐一复核消费者（`RoomTutorToolRunner`、`RoomTutorKnowledgeContextLoader`、`RoomMistakeOrganizationRepository`）——不在本轮实验范围内，本轮不擅自改。
 - 因此本文件与任何引用本轮的记录中，**不得出现未限定口径的"FTS5 严格更优"或"+11.1pp"之类表述**：正确表述是"matched-only 口径下 0.6556 vs 生产口径基线 0.5444；生产口径下 0.5333 vs 0.5444"。
+- **【追加指针，2026-09-24；本节其余字面为历史记录，不改】** 生产形态已于 Stage-2（计划日 2026-09-23，代码注释的落地日 2026-09-24）**改为 matched 优先**（`RoomKnowledgeBaseStore.kt:131` = `return (matched + parents)`）：matched-only 口径与生产判分口径**自此同窗口**，真 SQL 新基线 **0.6444（58/90）/ MRR 0.5637 / 逐章最小 0.2222**（旧生产形 0.5444 / 0.1511 留档）。上表各臂的判分数（如臂 A 0.6556）在新形态下**就是**其生产口径分；判读线、`chosenArm` 与本轮结论一字未动。见 `docs/kb-stage2-report-2026-09-23.md`。
 
 ### 7.3 A ↔ A' 一致性（验收硬项：容差 0）
 

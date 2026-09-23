@@ -179,7 +179,7 @@ class Stage1LexicalLabTest {
             assertTrue("报告缺 A/A' 一致性结论行", report.contains("主集/MRR 一致（容差 0） = true"))
             assertTrue("报告缺 trigram 失配诊断", report.contains("trigram 对照："))
 
-            // ---- §10 口径对照（诊断段）：四组数互相钉住，且不许"报告写一套、判分另一套" ----
+            // ---- §10 口径对照（诊断段）：六组数互相钉住，且不许"报告写一套、判分另一套" ----
             val paradigm = artifacts.paradigm
             val v1Prod = paradigm.single {
                 it.route == Stage1Experiment.V1_ROUTE && it.shape == Stage1Experiment.SHAPE_PRODUCTION
@@ -187,36 +187,55 @@ class Stage1LexicalLabTest {
             val v1MatchedOnly = paradigm.single {
                 it.route == Stage1Experiment.V1_ROUTE && it.shape == Stage1Experiment.SHAPE_MATCHED_ONLY
             }
-            val v1D1 = paradigm.single {
-                it.route == Stage1Experiment.V1_ROUTE && it.shape == Stage1Experiment.SHAPE_D1
-            }
             val aProd = paradigm.single {
                 it.route == Stage1Experiment.A_ROUTE && it.shape == Stage1Experiment.SHAPE_PRODUCTION
             }
             val aMatchedOnly = paradigm.single {
                 it.route == Stage1Experiment.A_ROUTE && it.shape == Stage1Experiment.SHAPE_MATCHED_ONLY
             }
-            val aD1 = paradigm.single {
-                it.route == Stage1Experiment.A_ROUTE && it.shape == Stage1Experiment.SHAPE_D1
-            }
-            // (b) v1 生产形（parents+matched）= 本会话基线测量（同一镜像、两条独立计算路径），
-            //     且必须复现预注册基线 0.5444（4 位小数；49/90 = 0.544444…，容差 1e-4）。
+            // (b) v1 生产形（**D1 落地后 = matched 优先**：`matched+parents`）= 本会话基线测量
+            //     （同一镜像、两条独立计算路径）；同一张表里**旧生产形（parents 前置）按历史记账保留**，
+            //     其值必须仍复现预注册基线（主集 0.5444 = 49/90、MRR 0.1511；容差 1e-4）。
             assertEquals("§10 的 v1 生产形态行主集应等于基线测量（同一镜像）", baseline.main, v1Prod.main, 0.0)
             assertEquals("§10 的 v1 生产形态行 MRR 应等于基线测量", baseline.mrr, v1Prod.mrr, 0.0)
             assertEquals("§10 的 v1 生产形态行命中数应等于基线测量", baseline.hits, v1Prod.hits)
-            assertEquals("v1 生产口径主集应复现预注册基线 0.5444", Stage1LexicalLab.BASELINE_MAIN, v1Prod.main, 1e-4)
-            // (c) 臂 A 两套数一致：matched-only 口径 = 臂 A 的判分数；生产形 = scan-A-parentprefix。
+            val v1LegacyProd = paradigm.single {
+                it.route == Stage1Experiment.V1_ROUTE && it.shape == Stage1Experiment.SHAPE_LEGACY_PRODUCTION
+            }
+            assertEquals(
+                "v1 旧生产形（parents 前置）主集应复现预注册基线 0.5444（历史记账，D1 前形状）",
+                Stage1LexicalLab.BASELINE_MAIN, v1LegacyProd.main, 1e-4,
+            )
+            assertEquals(
+                "v1 旧生产形（parents 前置）命中数应为预注册基线的 49/90（历史记账，D1 前形状）",
+                49, v1LegacyProd.hits,
+            )
+            assertEquals(
+                // 0.1517 = 本镜像（JVM 侧）历史 MRR 0.1516666…；真 SQL 的预注册 MRR 0.1511 由仪表化
+                // 金标测试（GoldenRetrievalInstrumentedTest）锚定，两侧 MRR 的历史小差是镜像保真度事实。
+                "v1 旧生产形（parents 前置）MRR 应复现镜像历史值 0.1517（历史记账，D1 前形状）",
+                0.1517, v1LegacyProd.mrr, 1e-4,
+            )
+            // (c) 臂 A 两套数一致：matched-only 口径 = 臂 A 的判分数；旧生产形 = scan-A-parentprefix。
             assertEquals("§10 的 A matched-only 行应等于臂 A 的判分数（同一口径）", a.main, aMatchedOnly.main, 0.0)
             assertEquals("§10 的 A matched-only 行 MRR 应等于臂 A 的 MRR", a.mrr, aMatchedOnly.mrr, 0.0)
             assertEquals("§10 的 A matched-only 行命中数应等于臂 A 的命中数", a.hits, aMatchedOnly.hits)
             val parentPrefixScan = scans.single { it.name == "scan-A-parentprefix" }
-            assertEquals("§10 的 A 生产形行应等于 scan-A-parentprefix 主集", parentPrefixScan.main, aProd.main, 0.0)
-            assertEquals("§10 的 A 生产形行应等于 scan-A-parentprefix MRR", parentPrefixScan.mrr, aProd.mrr, 0.0)
-            assertEquals("§10 的 A 生产形行应等于 scan-A-parentprefix 命中数", parentPrefixScan.hits, aProd.hits)
-            // (d) D1 形态（matched 前置、父节点排其后）：判分窗口的前 5 全在 matched 侧，窗口不变窄。
+            val aLegacyProd = paradigm.single {
+                it.route == Stage1Experiment.A_ROUTE && it.shape == Stage1Experiment.SHAPE_LEGACY_PRODUCTION
+            }
+            assertEquals("§10 的 A 旧生产形行应等于 scan-A-parentprefix 主集", parentPrefixScan.main, aLegacyProd.main, 0.0)
+            assertEquals("§10 的 A 旧生产形行应等于 scan-A-parentprefix MRR", parentPrefixScan.mrr, aLegacyProd.mrr, 0.0)
+            assertEquals("§10 的 A 旧生产形行应等于 scan-A-parentprefix 命中数", parentPrefixScan.hits, aLegacyProd.hits)
+            // (d) 生产形（D1 落地后 = matched 优先、父节点排其后）：判分窗口的前 5 全在 matched 侧，
+            //     父节点不再挤占窗口 ⇒ 不得低于 matched-only，也不得低于旧生产形（D1 的收益方向）。
             assertTrue(
-                "D1 形态的命中数不应低于 matched-only（父节点排在 matched 之后）",
-                aD1.hits >= aMatchedOnly.hits,
+                "生产形（matched 优先）的命中数不应低于 matched-only（父节点排在 matched 之后）",
+                aProd.hits >= aMatchedOnly.hits,
+            )
+            assertTrue(
+                "生产形（matched 优先）的命中数不应低于旧生产形 parents 前置（D1 的收益方向）",
+                aProd.hits >= aLegacyProd.hits,
             )
             // 产物契约：报告 §10 的表必须与判分结果同源（每格的路由×形态与主集数都要在表里）。
             val section10 = report.substringAfter("## 10. 口径对照").substringBefore("## 11. 判读")
@@ -239,8 +258,12 @@ class Stage1LexicalLabTest {
                 )
             }
             println(
-                "  D1/matched-only 形态对比：A D1=${aD1.hits}/${aD1.total} vs A matched-only=${aMatchedOnly.hits}/${aMatchedOnly.total}；" +
-                    "v1 D1=${v1D1.hits}/${v1D1.total} vs v1 matched-only=${v1MatchedOnly.hits}/${v1MatchedOnly.total}",
+                "  生产形态对比（D1 落地后 = 新生产形 matched 优先）：A 新生产形=${aProd.hits}/${aProd.total}" +
+                    " vs A matched-only=${aMatchedOnly.hits}/${aMatchedOnly.total}" +
+                    " vs A 旧生产形=${aLegacyProd.hits}/${aLegacyProd.total}；" +
+                    "v1 新生产形=${v1Prod.hits}/${v1Prod.total}" +
+                    " vs v1 matched-only=${v1MatchedOnly.hits}/${v1MatchedOnly.total}" +
+                    " vs v1 旧生产形=${v1LegacyProd.hits}/${v1LegacyProd.total}",
             )
 
             // ---- 逐字出数日志（Gradle 控制台留痕；与报告同一份数据） ----

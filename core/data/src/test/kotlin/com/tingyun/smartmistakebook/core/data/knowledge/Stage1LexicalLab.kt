@@ -897,6 +897,8 @@ internal object Stage1LexicalLab {
     fun verdictOf(arms: List<Arm>, chosen: Arm, agree: Boolean, notes: String): Verdict = Verdict(
         // 预注册判读基线（docs/kb-lexical-stage1-experiments.md §1）：v1 裸 B5 真 SQL
         // 主集 0.5444（49/90）、MRR 0.1511。**不是**本轮某个臂的数。
+        // 该值是**旧生产形（parents 前置，D1 落地前）**的真 SQL 测量；D1 落地（2026-09-24）
+        // 后生产形态改为 matched 优先，预注册基线**一字未动**（只作历史对照）。
         baselineMain = BASELINE_MAIN,
         baselineMrr = BASELINE_MRR,
         arms = arms.map {
@@ -917,7 +919,10 @@ internal object Stage1LexicalLab {
 
     fun verdictJson(verdict: Verdict): String = JSON.encodeToString(verdict)
 
-    /** 预注册判读基线（§1）：v1 裸 B5（真 SQL）主集与 MRR。 */
+    /**
+     * 预注册判读基线（§1）：v1 裸 B5（真 SQL，**旧生产形 parents 前置**）主集与 MRR。
+     * D1 落地后生产形态改 matched 优先，本基线值不动（历史锚点，见 [verdictOf] 注释）。
+     */
     const val BASELINE_MAIN = 0.5444
     const val BASELINE_MRR = 0.1511
 

@@ -15,7 +15,8 @@ import java.io.File
  * **显式标注非判读数**，不参与 chosenArm（§3）。
  *
  * 报告第 10 节是**口径对照**（[paradigmCells]）：同一判分口径下把"候选排序 × 返回形态"两维摆开，
- * 回答"臂 A 的 matched-only 判分数在**生产口径**（store 的 `parents + matched` 取前 5）下还剩多少"。
+ * 回答"臂 A 的 matched-only 判分数在**生产口径**（store 的 `matched + parents` 取前 5，
+ * D1 已落地）下还剩多少"，并把 D1 之前的旧生产形（`parents + matched`）按历史记账列在同一张表里。
  * 它同样是**诊断段**——不改判读线、不进 chosenArm、不写进 `arms`。
  */
 internal class Stage1Experiment(
@@ -133,15 +134,18 @@ internal class Stage1Experiment(
     fun retrieveTrigram(case: RetrievalBenchmark.GoldenCase, limit: Int): List<KnowledgeNodeSeedRecord> =
         retrieveFts(trigramFts, termsOf(case), case.subject, limit, chapter = null, coverage = null)
 
-    /** 形状敏感性诊断（非判读数）：A 的得分前 5 + 生产镜像的"父节点前置"返回形态。 */
+    /**
+     * 形状敏感性诊断（非判读数）：A 的得分前 5 + **旧生产形**（D1 落地前）的"父节点前置"返回形态。
+     * D1 已落地，这不是生产现状——只作历史记账（预注册基线 0.5444 钉的是这一形状）。
+     */
     fun retrieveAWithParentPrefix(case: RetrievalBenchmark.GoldenCase, limit: Int): List<KnowledgeNodeSeedRecord> =
         aWithParents(case, limit, parentsFirst = true)
 
-    /** 形状敏感性诊断（非判读数）：A 的得分前 5 + 父节点排在其后（D1 候选返回形态）。 */
+    /** 形状敏感性诊断（非判读数）：A 的得分前 5 + 父节点排在其后（**= 当前生产形态**，D1 已落地）。 */
     fun retrieveAWithParentSuffix(case: RetrievalBenchmark.GoldenCase, limit: Int): List<KnowledgeNodeSeedRecord> =
         aWithParents(case, limit, parentsFirst = false)
 
-    /** A 排序 + 父节点：只换父节点在序列里的位置（前置 = 生产镜像；后置 = D1 候选）。 */
+    /** A 排序 + 父节点：只换父节点在序列里的位置（前置 = 旧生产形（D1 前）；后置 = 当前生产形）。 */
     private fun aWithParents(
         case: RetrievalBenchmark.GoldenCase,
         limit: Int,
@@ -185,11 +189,13 @@ internal class Stage1Experiment(
      * **FTS5 排序相对 v1 的增益，在生产口径下是否还在**。
      *
      * 三种返回形态（排序与候选过滤三者逐字相同，只有序列位置不同）：
-     * - `生产形 parents+matched` = 生产 store 的真实返回（`RoomKnowledgeBaseStore.kt:125-133`），
-     *   仪表化判分取该序列前 5 ⇒ **生产口径**；
+     * - `生产形 matched+parents` = 生产 store 的真实返回（D1 落地后的
+     *   `RoomKnowledgeBaseStore.kt:130-132`）：matched 在前、父 topic 随后（仍全部返回，
+     *   供上层解释），仪表化判分取该序列前 5 ⇒ **生产口径**；
      * - `matched-only` = 只返回排序后的 matched（**不是生产判分口径，只作诊断**）——各臂的
      *   判分数（如臂 A 的 0.6556）出自这个口径；
-     * - `D1 候选 matched 前置` = matched 在前、父节点排其后（父节点仍返回，供上层解释）。
+     * - `旧生产形 parents+matched` = D1 落地前（2026-09-24 之前）的生产形态：父 topic 前置。
+     *   **只作历史记账**（预注册基线 0.5444 钉的是这一形状），不是生产现状。
      *
      * 本方法**只出数**：它不进 [runAll] 的参评臂集、不进 `chosenArm`、不动 §1 判读线。
      */
@@ -213,16 +219,16 @@ internal class Stage1Experiment(
         val v1MatchedOnly = { case: RetrievalBenchmark.GoldenCase, limit: Int ->
             v1Mirror.matchedOnly(case.subject, case.query, limit)
         }
-        val v1MatchedFirst = { case: RetrievalBenchmark.GoldenCase, limit: Int ->
-            v1Mirror.matchedFirst(case.subject, case.query, limit)
+        val v1ParentsFirst = { case: RetrievalBenchmark.GoldenCase, limit: Int ->
+            v1Mirror.parentsFirst(case.subject, case.query, limit)
         }
         return listOf(
-            cell(V1_ROUTE, SHAPE_PRODUCTION, "基线排序 + 生产真实返回形态（仪表化判分口径）", v1Production),
-            cell(V1_ROUTE, SHAPE_MATCHED_ONLY, "基线排序 + 诊断口径（无父节点前置）", v1MatchedOnly),
-            cell(V1_ROUTE, SHAPE_D1, "基线排序 + D1 候选形态（matched 前置）", v1MatchedFirst),
-            cell(A_ROUTE, SHAPE_PRODUCTION, "FTS5 排序 + 生产真实返回形态", ::retrieveAWithParentPrefix),
+            cell(V1_ROUTE, SHAPE_PRODUCTION, "基线排序 + 生产真实返回形态（D1 后：matched 优先；仪表化判分口径）", v1Production),
+            cell(V1_ROUTE, SHAPE_MATCHED_ONLY, "基线排序 + 诊断口径（无父节点注入）", v1MatchedOnly),
+            cell(V1_ROUTE, SHAPE_LEGACY_PRODUCTION, "基线排序 + D1 前旧生产形（父节点前置；历史记账，非生产现状）", v1ParentsFirst),
+            cell(A_ROUTE, SHAPE_PRODUCTION, "FTS5 排序 + 生产真实返回形态（D1 后：matched 优先）", ::retrieveAWithParentSuffix),
             cell(A_ROUTE, SHAPE_MATCHED_ONLY, "FTS5 排序 + 诊断口径（= 臂 A 判分数所在口径）", ::retrieveA),
-            cell(A_ROUTE, SHAPE_D1, "FTS5 排序 + D1 候选形态（matched 前置）", ::retrieveAWithParentSuffix),
+            cell(A_ROUTE, SHAPE_LEGACY_PRODUCTION, "FTS5 排序 + D1 前旧生产形（父节点前置；历史记账，非生产现状）", ::retrieveAWithParentPrefix),
         )
     }
 
@@ -233,7 +239,7 @@ internal class Stage1Experiment(
     fun runAll(): List<Stage1LexicalLab.Arm> {
         collectDiagnostics()
         val evidenceBase = "FTS5($UNICODE61) 全量节点 ${corpus.nodes.size} 篇；查询=fromQuestion 特征 OR；" +
-            "ORDER BY bm25 ASC, node_id ASC；top5 无父节点前置"
+            "ORDER BY bm25 ASC, node_id ASC；top5 为 matched-only（无父节点注入）"
         val arms = listOf(
             Stage1LexicalLab.score("A", ROUTE_A, true, evidenceBase, cases, ::retrieveA),
             Stage1LexicalLab.score(
@@ -506,11 +512,12 @@ internal class Stage1Experiment(
                 },
             )
         }
-        // 形状敏感性：A + 生产镜像的父节点前置（不是排序变体，是返回形态变体）。
+        // 形状敏感性：A + 旧生产形（D1 之前）的父节点前置（不是排序变体，是返回形态变体）。
         scanArms.add(
             Stage1LexicalLab.score(
                 "scan-A-parentprefix", "scan-A-parentprefix", false,
-                "非判读数：A 的排序 + 生产镜像的父节点前置返回形态", cases, ::retrieveAWithParentPrefix,
+                "非判读数：A 的排序 + 旧生产形（D1 前，父节点前置）返回形态；非生产现状", cases,
+                ::retrieveAWithParentPrefix,
             ),
         )
         // 臂 B 的去覆盖层（只留扩展词）——分离"扩展"与"组覆盖排序"各自的作用。
@@ -554,7 +561,7 @@ internal class Stage1Experiment(
         val verdictFile = File(buildDir, "stage1-verdict.json")
         verdictFile.writeText(
             Stage1LexicalLab.verdictJson(
-                Stage1LexicalLab.verdictOf(arms, chosen, agree, verdictNotes(arms, chosen, baseline, scans)),
+                Stage1LexicalLab.verdictOf(arms, chosen, agree, verdictNotes(arms, chosen, baseline, scans, paradigm)),
             ),
         )
         return Artifacts(reportFile, verdictFile, chosen, agree, paradigm)
@@ -642,11 +649,13 @@ internal class Stage1Experiment(
         }
         appendLine()
         appendLine(
-            "基线对照（预注册，§1）：v1 裸 B5 真 SQL 主集 **$BASELINE_MAIN**（49/90）/ MRR **$BASELINE_MRR**；" +
-                "本会话同构建实测的 JVM 镜像 B 路（形状同构）：${baseline.label} 主集 ${baseline.main}（${baseline.hits}/${baseline.total}）/ MRR ${baseline.mrr}",
+            "基线对照（预注册，§1）：v1 裸 B5 真 SQL 主集 **$BASELINE_MAIN**（49/90）/ MRR **$BASELINE_MRR**" +
+                "（**旧生产形（父节点前置）**的历史值——D1 落地后生产形态改为 matched 优先，" +
+                "预注册基线本身一字未动，只作历史对照）；本会话同构建实测的 JVM 镜像 B 路" +
+                "（新生产形，D1 后）：${baseline.label} 主集 ${baseline.main}（${baseline.hits}/${baseline.total}）/ MRR ${baseline.mrr}",
         )
         appendLine()
-        appendLine("各臂相对基线的差（主集，基线 $BASELINE_MAIN）：")
+        appendLine("各臂相对预注册基线的差（主集，基线 $BASELINE_MAIN = 旧生产形真 SQL 值）：")
         arms.forEach { arm ->
             val delta = arm.main - BASELINE_MAIN
             appendLine("- ${arm.name}: ${"%.4f".format(java.util.Locale.ROOT, delta)}（主集 ${arm.main} − $BASELINE_MAIN）")
@@ -718,12 +727,14 @@ internal class Stage1Experiment(
         appendLine("## 10. 口径对照（**诊断段**：候选排序 × 返回形态；不改 §1 判读）")
         appendLine()
         appendLine(
-            "> **matched-only 口径不是生产判分口径，只作诊断。** 生产 store 返回 `(parents + matched)`" +
-                "（`core/database/.../RoomKnowledgeBaseStore.kt:125-133`），仪表化判分（`GoldenRetrievalInstrumentedTest`）" +
-                "取该序列前 5 = **生产口径**；matched-only 只返回排序后的 matched（无父节点前置）——" +
-                "各臂的判分数（如臂 A 的 0.6556/0.5569）出自这个口径。本节各格与 §1/§2 的判分口径" +
-                "（top-5、按科隔离、可信状态过滤、命中定义）逐字相同，只换**候选排序**与**返回形态**两维；" +
-                "它不参与 `chosenArm`、不进 §1 判读。" +
+            "> **matched-only 口径不是生产判分口径，只作诊断。** 生产 store 自 D1 落地（2026-09-24）起返回" +
+                " `(matched + parents)`（`core/database/.../RoomKnowledgeBaseStore.kt:130-132`）：matched 在前、" +
+                "父 topic 随后（仍全部返回，供上层解释）；仪表化判分（`GoldenRetrievalInstrumentedTest`）" +
+                "取该序列前 5 = **生产口径**。matched-only 只返回排序后的 matched（无父节点注入）——" +
+                "各臂的判分数（如臂 A 的 0.6556/0.5569）出自这个口径；**旧生产形 `(parents + matched)`**" +
+                "（D1 之前，父 topic 前置）在本表里**只作历史记账**（预注册基线 0.5444 钉的是这一形状），" +
+                "不是生产现状。本节各格与 §1/§2 的判分口径（top-5、按科隔离、可信状态过滤、命中定义）逐字相同，" +
+                "只换**候选排序**与**返回形态**两维；它不参与 `chosenArm`、不进 §1 判读。" +
                 "FTS5 两行是**实验台诊断**（FTS5 排序尚未上生产，生产现状仍是 v1 排序）：" +
                 "回答的是'把臂 A 的排序装进生产返回形态会是多少'；v1 两行是生产现状排序的 JVM 镜像。",
         )
@@ -739,29 +750,33 @@ internal class Stage1Experiment(
         appendLine()
         val v1Prod = paradigm.single { it.route == V1_ROUTE && it.shape == SHAPE_PRODUCTION }
         val v1MatchedOnly = paradigm.single { it.route == V1_ROUTE && it.shape == SHAPE_MATCHED_ONLY }
-        val v1D1 = paradigm.single { it.route == V1_ROUTE && it.shape == SHAPE_D1 }
+        val v1Legacy = paradigm.single { it.route == V1_ROUTE && it.shape == SHAPE_LEGACY_PRODUCTION }
         val aProd = paradigm.single { it.route == A_ROUTE && it.shape == SHAPE_PRODUCTION }
         val aMatchedOnly = paradigm.single { it.route == A_ROUTE && it.shape == SHAPE_MATCHED_ONLY }
-        val aD1 = paradigm.single { it.route == A_ROUTE && it.shape == SHAPE_D1 }
+        val aLegacy = paradigm.single { it.route == A_ROUTE && it.shape == SHAPE_LEGACY_PRODUCTION }
         appendLine("读法（本节只作诊断，不改判读）：")
         appendLine(
-            "- **生产口径**（parents+matched 取前 5）：v1 ${v1Prod.main}（${v1Prod.hits}/${v1Prod.total}） vs " +
+            "- **生产口径**（= 新形态 matched+parents 取前 5，D1 已落地）：v1 ${v1Prod.main}（${v1Prod.hits}/${v1Prod.total}） vs " +
                 "臂 A ${aProd.main}（${aProd.hits}/${aProd.total}）⇒ 差 ${f4(aProd.main - v1Prod.main)}" +
                 "（${if (aProd.main > v1Prod.main) "FTS5 排序在生产口径下更高" else "FTS5 排序在生产口径下不更高"}）",
         )
         appendLine(
-            "- **返回形态的作用**（同一条排序，只换形态）：臂 A matched-only ${aMatchedOnly.main} − 生产形 " +
-                "${aProd.main} = ${f4(aMatchedOnly.main - aProd.main)}；v1 matched-only ${v1MatchedOnly.main} − 生产形 " +
-                "${v1Prod.main} = ${f4(v1MatchedOnly.main - v1Prod.main)}——生产口径下被父节点挤掉的名次" +
-                "（父节点不是金标预期节点的原子节点，占位即丢分）",
+            "- **旧生产形（parents+matched，D1 之前）历史记账**：v1 ${v1Legacy.main}（${v1Legacy.hits}/${v1Legacy.total}）、" +
+                "臂 A ${aLegacy.main}（${aLegacy.hits}/${aLegacy.total}）——预注册基线 $BASELINE_MAIN 与 §1 的历史叙述钉的是这一形状；" +
+                "新形态相对它的差 = ${f4(v1Prod.main - v1Legacy.main)}（v1）/ ${f4(aProd.main - aLegacy.main)}（臂 A）",
         )
         appendLine(
-            "- **D1 候选形态**（matched 前置、父节点排其后）：臂 A ${aD1.main}（${aD1.hits}/${aD1.total}）、" +
-                "v1 ${v1D1.main}（${v1D1.hits}/${v1D1.total}）——父节点仍在序列里（供上层解释），但不再进判分窗口前 5",
+            "- **返回形态的作用**（同一条排序，只换形态）：臂 A matched-only ${aMatchedOnly.main} − 旧生产形 " +
+                "${aLegacy.main} = ${f4(aMatchedOnly.main - aLegacy.main)}；v1 matched-only ${v1MatchedOnly.main} − 旧生产形 " +
+                "${v1Legacy.main} = ${f4(v1MatchedOnly.main - v1Legacy.main)}——旧形态下被父节点挤掉的名次" +
+                "（父节点不是金标预期节点的原子节点，占位即丢分）；D1 把父节点移到 matched 之后，这部分名次回到判分窗口",
         )
         appendLine(
-            "- 结论（诊断段口径）：**生产口径下 FTS5 排序相对 v1 的 Recall 增益不成立**——" +
-                "增益只在改变返回形态（matched 优先 / 后置父节点）后才出现；是否改返回形态属待裁项（D1）。",
+            "- 结论（诊断段口径）：**Stage-1 观测到的增益来自返回形态，不是排序**——新生产形下 v1 ${v1Prod.main}、" +
+                "臂 A ${aProd.main}，两条排序只差 ${aProd.hits - v1Prod.hits} 题（差 ${f4(aProd.main - v1Prod.main)}）；" +
+                "旧生产形下两侧同幅下降（v1 ${f4(v1MatchedOnly.main - v1Legacy.main)}、" +
+                "臂 A ${f4(aMatchedOnly.main - aLegacy.main)}），即父节点占席对两条排序的伤害一致。" +
+                "FTS5 排序本身是否值得替换 v1 排序，仍按 §11 判读线与预注册口径另判（本节不改判读）。",
         )
         appendLine()
         appendLine("## 11. 判读（按 §1 机械求值，判读线在出数前写死）")
@@ -791,6 +806,8 @@ internal class Stage1Experiment(
         chosen: Stage1LexicalLab.Arm,
         baseline: Measurement,
         scans: List<Stage1LexicalLab.Arm>,
+        /** §10 的逐格实测值（口径说明里的生产口径数从这里取，避免"备注写一个没测过的数"）。 */
+        paradigm: List<ParadigmCell>,
     ): String = buildString {
         append("chosenArm=").append(chosen.name)
         append("（可上生产臂中主集最高；参评集 = A/B/C-2stage/D）")
@@ -798,29 +815,32 @@ internal class Stage1Experiment(
         append("（FTS5 硬编码，不可调；判读线 主集≥").append(MAIN_THRESHOLD)
         append(" 且逐章≥").append(CHAPTER_MIN_THRESHOLD).append("）")
         append("；基线 = 预注册 v1 裸 B5 真 SQL 主集 ").append(BASELINE_MAIN).append("/MRR ").append(BASELINE_MRR)
-        append("，本会话同构建实测 JVM 镜像 B 路 主集 ").append(baseline.main).append("（").append(baseline.hits)
+        append("（旧生产形（父节点前置）的历史值；D1 落地后生产形态已改 matched 优先，预注册基线本身未动）")
+        append("，本会话同构建实测 JVM 镜像 B 路（新生产形）主集 ").append(baseline.main).append("（").append(baseline.hits)
         append("/").append(baseline.total).append("）/MRR ").append(baseline.mrr)
         append("；索引域 = 全量节点（含 TOPIC），按科/状态过滤写在 WHERE，故 bm25 的 N/avgdl/df 在整表域上算")
         append("；臂 B 的\"组间 AND\"落地为组覆盖排序键（本语料组=节点连通分量，覆盖∈{0,1}），硬 AND（取交集）不可用，差异已在报告 §7 注明")
         append("；臂 C-上界与臂 T 为非判读对照（不参评），A' 为 A 的一致性对照（同数即证 FTS5 排序口径被正确理解）")
-        append("；扫描诊断（k1/b 变体、K 变体、去覆盖层、父节点前置）全部标注非判读数，见报告 §9")
+        append("；扫描诊断（k1/b 变体、K 变体、去覆盖层、旧生产形父节点前置）全部标注非判读数，见报告 §9")
         val a = arms.single { it.name == "A" }
         val prim = arms.single { it.name == "A'" }
         append("；A/A' 一致性：主集 ").append(a.hits).append("/").append(a.total)
         append(" vs ").append(prim.hits).append("/").append(prim.total)
         append("，MRR ").append(a.mrr).append(" vs ").append(prim.mrr)
         append("，逐题名次与 top5 序列相等 = ").append(ftsVsCustomAgree(arms))
-        // 判分口径说明（2026-09-23 口径对照）：臂 A 的判分数是 matched-only 口径，生产 store 是
-        // parents+matched ⇒ 必须把"生产口径下 A 的实际值"与基线放在同一句里，免得把 0.6556 当成生产成绩。
+        // 判分口径说明（2026-09-24 D1 落地后）：臂 A 的判分数是 matched-only 口径，而生产 store
+        // 现为 matched+parents（父节点排在 matched 之后、不挤占判分窗口）⇒ 必须把"生产口径下 A 的
+        // 实际值"与基线放在同一句里，免得把 0.6556 当成生产成绩或把旧生产形的 0.5333 当成现状。
         val scanParentPrefix = scans.single { it.name == "scan-A-parentprefix" }
+        val aProdCell = paradigm.single { it.route == A_ROUTE && it.shape == SHAPE_PRODUCTION }
         append("；判分口径说明：臂 A 的 ").append(f4(a.main)).append("/").append(f4(a.mrr))
-        append(" 是 **matched-only 口径**（无父节点前置），**不是生产判分口径**；生产口径（store 的 ")
-        append("parents+matched 取前 5，RoomKnowledgeBaseStore.kt:125-133）下臂 A = ")
+        append(" 是 **matched-only 口径**（无父节点注入），**不是生产判分口径**；生产口径")
+        append("（D1 落地后 store 的 matched+parents 取前 5，RoomKnowledgeBaseStore.kt:130-132）= ")
+        append(f4(aProdCell.main)).append("/").append(f4(aProdCell.chapterMin)).append("/").append(f4(aProdCell.mrr))
+        append("；D1 之前的**旧生产形**（parents+matched，即预注册基线 $BASELINE_MAIN 所在形状）= ")
         append(f4(scanParentPrefix.main)).append("/").append(f4(scanParentPrefix.chapterMin))
-        append("/").append(f4(scanParentPrefix.mrr)).append("（scan-A-parentprefix），基线 v1 生产口径 = ")
-        append(BASELINE_MAIN).append("（").append(baseline.hits).append("/").append(baseline.total)
-        append("）/MRR ").append(BASELINE_MRR)
-        append("；四组口径对照（v1 × A，生产形 × matched-only）见报告 §10（诊断段，不改 §1 判读）")
+        append("/").append(f4(scanParentPrefix.mrr)).append("（scan-A-parentprefix，历史记账）")
+        append("；三组口径对照（v1 × A，新生产形 × matched-only × 旧生产形）见报告 §10（诊断段，不改 §1 判读）")
     }
 
     /** 报告文本用的 4 位小数（与 §3 基线段同一格式）。 */
@@ -848,9 +868,13 @@ internal class Stage1Experiment(
         /** §10 口径对照的两条候选排序与三种返回形态（渲染、断言与备注共用同一份字面量）。 */
         const val V1_ROUTE = "v1 COUNT(DISTINCT feature)（裸 B 路 SQL 排序镜像）"
         const val A_ROUTE = "FTS5 bm25（臂 A）"
-        const val SHAPE_PRODUCTION = "生产形 parents+matched"
+
+        /** 生产形（2026-09-24 D1 落地后）= matched 优先：matched 在前、父 topic 随后。 */
+        const val SHAPE_PRODUCTION = "生产形 matched+parents（D1 已落地）"
         const val SHAPE_MATCHED_ONLY = "matched-only（非生产口径·诊断）"
-        const val SHAPE_D1 = "D1 候选 matched 前置"
+
+        /** 旧生产形（D1 之前）= 父 topic 前置；只作历史记账（预注册基线 0.5444 钉的是这一形状）。 */
+        const val SHAPE_LEGACY_PRODUCTION = "旧生产形 parents+matched（历史记账）"
 
         const val ROUTE_A = "stage1-A-fts5-bm25"
         const val ROUTE_APRIM = "stage1-Aprim-custom-bm25-sql"

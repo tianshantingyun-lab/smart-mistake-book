@@ -175,7 +175,11 @@ class KnowledgeContextRetrievalInstrumentedTest {
                 )
             }
 
-            recall()
+            // 冷启动预热：首轮召回携带一次性成本（SQLite 语句准备、语句缓存与页
+            // 缓存预热、JIT）。与 mastery 腿对齐，预热轮次不计入统计，避免冷样本
+            // 把 p95 拉高。预热轮不校验结果——选中语义由下方 :195-201 的断言在
+            // 统计样本上负责。
+            repeat(RECALL_WARMUP_COUNT) { recall() }
             val elapsed = mutableListOf<Long>()
             var selected = emptyList<KnowledgeNodeSeedRecord>()
             val breakdowns = mutableListOf<String>()
@@ -196,6 +200,7 @@ class KnowledgeContextRetrievalInstrumentedTest {
                 selected.mapTo(mutableSetOf(), KnowledgeNodeSeedRecord::verificationStatus),
             )
             assertTrue(
+                // 预算 150ms 一字未动：KD-25 只改分位口径、样本数与预热，不改预算。
                 "Room recall p95 was ${elapsed.percentile95()}ms; samples=$elapsed",
                 elapsed.percentile95() < RECALL_P95_BUDGET_MILLIS,
             )
@@ -340,10 +345,45 @@ class KnowledgeContextRetrievalInstrumentedTest {
     private fun elapsedMillis(startedAtNanos: Long): Long =
         (SystemClock.elapsedRealtimeNanos() - startedAtNanos) / 1_000_000
 
+    /**
+     * p95 口径 = `((size - 1) * 95) / 100`（最近秩），与 review 腿
+     * `KnowledgeResearchReviewInstrumentedTest.kt:140` 逐字一致。
+     *
+     * **为什么改口径（KD-25，2026-09-24）。** 旧口径 `((size * 95 + 99) / 100 - 1)`
+     * 在 n=10 时恒等于 `max`（算术：`(10*95+99)/100 - 1 = 9` → sorted[9]），
+     * 而 recall 腿当时无首样本剔除、预热仅 1 轮（且无注释），mastery 腿预热 3 轮，
+     * 两条腿共用本函数，于是任一离群样本即把墙钟门打成红。档 2 三轮误红逐字样本
+     * （错误消息 `Room recall p95 was …ms; samples=…`）：
+     *
+     * ```
+     * run1 [492, 44, 46, 57, 57, 53, 50, 45, 50, 49]     旧口径 p95 = 492   （红）
+     * run2 [74, 21718, 180, 55, 51, 45, 52, 50, 45, 41]  旧口径 p95 = 21718 （红，双离群）
+     * run3 [1267, 54, 45, 46, 50, 52, 47, 53, 39, 43]    旧口径 p95 = 1267  （红）
+     * ```
+     *
+     * 稳态样本 39–57ms（约预算 1/3）；三次的确定性守卫（:122-135 EXPLAIN 索引/
+     * 无 SCAN feature、:195-201 选中语义）均通过，失败点在守卫之后的墙钟断言。
+     *
+     * **run2 是双离群，只排首样本救不了它（算术）。** 去首样本（74）后余 9 条
+     * `[21718, 180, 55, …]`，max 仍是 21718 > 150ms；即便再排最大，次大 180 > 150ms。
+     * 所以修复不能是"剔除首样本"（run1/run3 的离群恰好都在首位，那只是两次巧合），
+     * 只能是"改分位口径（容忍有限离群）+ 提高 n + 补足预热"。
+     *
+     * **本次修复（只改测量方法，预算一字不动）。** ① 口径改 `((size-1)*95)/100`：
+     * n=24 时取 sorted[21]（第 22 小），即容忍 2 个离群；② n 10→24；③ recall 腿
+     * 预热 1 轮→[RECALL_WARMUP_COUNT] 轮（≥3、不计入统计，对齐 mastery 腿）。
+     * 确定性守卫与全部断言语义保留；预算仍为 150/250ms × CI 系数（:522-523）。
+     *
+     * **残余风险。** 离群根因（设备侧调度/GC 停顿）未归因——本修复只保证"有限个
+     * 离群不再误红"，不保证门能把真实退化与噪声分开；真实退化的确定性判据仍是
+     * :122-135 的查询计划守卫与 :195-201 的选中语义断言。若离群数超过容忍额度
+     * 再次复现，按 KD-2 重开条件处理：改用 runner-relative 界（相对同轮稳态的
+     * 倍数）或把墙钟门移入 macrobenchmark 模块，查询计划断言留在原地。
+     */
     private fun List<Long>.percentile95(): Long {
         require(isNotEmpty())
         val sorted = sorted()
-        val index = ((sorted.size * 95 + 99) / 100 - 1).coerceIn(sorted.indices)
+        val index = ((sorted.size - 1) * 95) / 100
         return sorted[index]
     }
 
@@ -457,7 +497,8 @@ class KnowledgeContextRetrievalInstrumentedTest {
         const val PROJECTION_NAME = "knowledge-performance-v1"
         const val PROJECTOR_VERSION = "knowledge-performance-projector-v1"
         const val LEARNER_ID = "learner:knowledge-performance"
-        const val PERFORMANCE_SAMPLE_COUNT = 10
+        const val PERFORMANCE_SAMPLE_COUNT = 24
+        const val RECALL_WARMUP_COUNT = 3
         const val MASTERY_READ_WARMUP_COUNT = 3
 
         /**

@@ -105,6 +105,7 @@ internal class RoomKnowledgeBaseStore(
         }
     }
 
+    /** matched 优先、父 topic 随后（供上层解释）；D1 落地依据见 docs/kb-stage2-report-2026-09-23.md */
     suspend fun readSubjectKnowledgeRecallCandidates(
         subject: String,
         searchFeatures: Set<String>,
@@ -127,7 +128,7 @@ internal class RoomKnowledgeBaseStore(
         val parents = dao.readKnowledgeNodesByIds(
             matched.mapNotNullTo(hashSetOf(), KnowledgeNodeEntity::parentKnowledgeNodeId) - matchedIds,
         )
-        return (parents + matched)
+        return (matched + parents)
             .distinctBy(KnowledgeNodeEntity::knowledgeNodeId)
             .map(KnowledgeNodeEntity::toSeedRecord)
     }

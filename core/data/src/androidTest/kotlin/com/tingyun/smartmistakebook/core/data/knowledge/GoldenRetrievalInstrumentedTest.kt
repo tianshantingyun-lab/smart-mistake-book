@@ -37,11 +37,14 @@ import java.security.MessageDigest
  *    的 v2 去截断实验实测净伤害、当日回滚，见 `docs/kb-vector-topic-decision.md` §3.2）：
  *    全新库无版本锚点，首次按科召回时整科建索引（预热轮吸收，不计 p95）。
  * 4. 判分 = 生产 KNOWLEDGE_READ 的 v1 形状：`readSubjectKnowledgeRecallCandidates`
- *    （limit=5，裸 B 路，无 A 路精排）的 `parents + matched` 返回形态直接取前 5（§1.1
- *    钉定的首测口径），命中 = 预期 slug 的原子节点在列。
- *    本测试出的是**缺失的 v1 基线数**（v1 索引 × 裸 B5 = 回滚后的生产形状）；
+ *    （limit=5，裸 B 路，无 A 路精排）的 `matched + parents` 返回形态直接取前 5
+ *    （**D1 落地后**（2026-09-24）：matched 在前、父 topic 随后，仍全部返回供上层解释；
+ *    首测（§1.1）钉的是 D1 之前的旧形态 `parents + matched`，其真 SQL 值 0.5444 见下）；
+ *    命中 = 预期 slug 的原子节点在列。
+ *    本测试出的是**生产形状的 v1 基线数**（v1 索引 × 裸 B5 = 回滚后的生产形状）；
+ *    D1 之前的旧生产形真 SQL 值 = 0.5444 / MRR 0.1511（历史记账，见回归地板段）；
  *    v2 实验的两组数（v2 索引 × 裸 B5 首测 0.5222、v2 索引 × B512→A 0.3444/p95 663ms）
- *    封存于同一文档 §3/§3.1，三组数并列对照。
+ *    封存于同一文档 §3/§3.1，与上面各组数并列对照。
  *
  * **测量台 + 一条性能门 + 两条回归地板**：Recall/MRR 的质量**判据**仍是 D12 预注册的
  * （`docs/kb-vector-topic-decision.md`，出数后一次性判定，本测试不参与）；这里额外钉的
@@ -55,7 +58,7 @@ import java.security.MessageDigest
  * `rank=N` ⇒ 预期节点在候选里、被更强的候选挤到第 N（排序问题）；`absent` ⇒ 放宽窗口
  * （本路线返回序列前 [MISS_PROBE_LIMIT] 名）内根本不存在（索引/特征问题）。
  * 窗口口径与 JVM 镜像逐字相同、清单格式也一致，两侧 MISS **集合**可逐题对照
- * （2026-09-23 实测对称差 0）；**名次**只在本侧窗口内解释——父节点前置块的条数与序不同
+ * （2026-09-23 实测对称差 0）；**名次**只在本侧窗口内解释——父节点随后块的条数与序不同
  * （镜像按包内出现序、真 SQL 按 rowid 序），同样的题可差 1~3 位。
  *
  * 说明：任务书写的"in-memory Room"在本模块不可达——`openInMemory` 是
@@ -107,8 +110,9 @@ class GoldenRetrievalInstrumentedTest {
                         "${case.subject} 召回出现跨科节点（披露边界被破坏）",
                         recall.all { it.subject == case.subject },
                     )
-                    // 判分口径与首测钉定（§1.1）：store 的 `parents + matched` 返回形态
-                    // **直接取前 5**——父 topic 占席是裸 B 路生产形态的既有语义。
+                    // 判分口径与首测钉定（§1.1）：store 的返回形态**直接取前 5**。D1 落地后
+                    // （2026-09-24）形态 = `matched + parents`：matched 在前、父 topic 随后
+                    // （父节点仍全部返回供上层解释，但不再挤占判分窗口）。
                     val candidates = recall.take(SCORED_TOP_K)
                     val rank = candidates.indexOfFirst {
                         it.knowledgeNodeId.endsWith(ATOMIC_SUFFIX + case.expectedSlug)
@@ -146,7 +150,7 @@ class GoldenRetrievalInstrumentedTest {
                     searchFeatures = KnowledgeSearchFeatureExtractor.fromQuestion(s.query),
                     limit = MISS_PROBE_LIMIT,
                 )
-                // `take` 不能省：store 返回"父节点前置 + matched"，序列可长过深度，
+                // `take` 不能省：store 返回"matched 优先 + 父节点随后"，序列可长过深度，
                 // 不截断就会报出超过声明深度的名次（2026-09-23 实测过一次 rank=284>256）。
                 val probeRank = probe.take(MISS_PROBE_LIMIT).indexOfFirst {
                     it.knowledgeNodeId.endsWith(ATOMIC_SUFFIX + s.expectedSlug)
@@ -164,7 +168,7 @@ class GoldenRetrievalInstrumentedTest {
             // 拼接形式在 dex 里是确定的字节码，排除这一类干扰。
             println("=== golden-instrumented (真 SQL，档 2) ===")
             println(
-                "route=B-bare->top5(v1生产形状) indexVersion=" +
+                "route=B-bare->top5(v1生产形状, matched-first) indexVersion=" +
                     KnowledgeSearchFeatureExtractor.INDEX_VERSION +
                     " cases=" + perCase.size + " samplesPerQuery=" + SAMPLES_PER_QUERY +
                     " p95=" + p95 + "ms p50=" + p50 + "ms max=" + elapsedMillis.max() +
@@ -197,19 +201,19 @@ class GoldenRetrievalInstrumentedTest {
                     )
                 }
             }
-            // 回归地板（**下界，不是质量目标**）：基线 = v1 生产形状实测 0.5444 / 0.1511
-            // （2026-09-22/23 多次复跑零漂移，docs/kb-vector-topic-decision.md §3.2）。
+            // 回归地板（**下界，不是质量目标**）：基线 = v1 生产形状（D1 落地后 = matched 优先）
+            // 真 SQL 实测 0.6444 / 0.5637（2026-09-24 复跑；D1 之前旧生产形 0.5444 / 0.1511 为历史记账）。
             // 地板故意贴紧基线下沿：这是"不得更差"的告示牌，任何真实退化都该立刻红，
             // 不是达标线；D12 预注册判据（主集 ≥0.75 且逐章 ≥0.60）另行一次性判定，
-            // 与本地板互不影响。基线提升后同步抬高并记录旧值（旧值：0.54 / 0.15）。
+            // 与本地板互不影响。基线提升后同步抬高并记录旧值（旧地板：0.54 / 0.15）。
             assertTrue(
                 "主集 Recall@5(全样本命中) = " + recallMainAll + " 低于回归地板 " + RECALL_MAIN_FLOOR +
-                    "（v1 生产形状基线 0.5444；这是不得更差的下界，不是质量目标）",
+                    "（v1 生产形状基线 0.6444；这是不得更差的下界，不是质量目标）",
                 recallMainAll >= RECALL_MAIN_FLOOR,
             )
             assertTrue(
                 "主集 MRR = " + mrrMain + " 低于回归地板 " + MRR_MAIN_FLOOR +
-                    "（v1 生产形状基线 0.1511；这是不得更差的下界，不是质量目标）",
+                    "（v1 生产形状基线 0.5637；这是不得更差的下界，不是质量目标）",
                 mrrMain >= MRR_MAIN_FLOOR,
             )
             assertTrue(
@@ -305,23 +309,23 @@ class GoldenRetrievalInstrumentedTest {
 
         /**
          * MISS 诊断的**放宽深度**——不是判分口径（判分固定 top-5）。
-         * 名次口径 = 候选放宽到本深度后，**返回序列（父节点前置 + matched）前 256 名**的窗口内位置。
+         * 名次口径 = 候选放宽到本深度后，**返回序列（matched 优先 + 父节点随后）前 256 名**的窗口内位置。
          * 与 JVM 镜像的 `RetrievalBenchmark.MISS_PROBE_LIMIT` 同值同口径：两侧 MISS 集合逐题
-         * 可对照；名次因父节点前置块的序不同（镜像按包内序、真 SQL 按 rowid 序）可差 1~3 位，
+         * 可对照；名次因父节点随后块的序不同（镜像按包内序、真 SQL 按 rowid 序）可差 1~3 位，
          * 只在本侧窗口内解释。
          */
         const val MISS_PROBE_LIMIT = 256
 
         /**
-         * 回归地板（**下界，不是质量目标**）：v1 生产形状（v1 截断索引 × 裸 B5）实测基线
-         * 主集 Recall@5 = 0.5444、MRR = 0.1511（多次复跑零漂移，见
-         * `docs/kb-vector-topic-decision.md` §3.2）。地板贴紧基线下沿是有意的：它是
-         * "不得更差"的告示牌，任何真实退化都该当场红。基线提升后同步抬高并记录旧值
-         * （当前记录：旧值 0.54 / 0.15）。与 D12 预注册判据（主集 ≥0.75 且逐章 ≥0.60）
-         * 互不影响，不得用本地板改判预注册结论。
+         * 回归地板（**下界，不是质量目标**）：v1 生产形状（v1 截断索引 × 裸 B5）真 SQL 基线
+         * 主集 Recall@5 = 0.6444、MRR = 0.5637（**D1 落地后**（2026-09-24）的 matched 优先形态，
+         * 本测试实测）。地板贴紧基线下沿是有意的：它是"不得更差"的告示牌，任何真实退化都该当场红。
+         * 基线提升后同步抬高并记录旧值 —— 旧值（D1 之前的 parents 前置形态）：
+         * 真 SQL 基线主集 0.5444 / MRR 0.1511 ⇒ 旧地板 0.54 / 0.15。
+         * 与 D12 预注册判据（主集 ≥0.75 且逐章 ≥0.60）互不影响，不得用本地板改判预注册结论。
          */
-        const val RECALL_MAIN_FLOOR = 0.54
-        const val MRR_MAIN_FLOOR = 0.15
+        const val RECALL_MAIN_FLOOR = 0.64
+        const val MRR_MAIN_FLOOR = 0.56
 
         /**
          * 与参照测试同源的门：150ms×CI 系数（CI 的 runner 模拟器慢 ~2-3x，

@@ -177,9 +177,9 @@ internal object RetrievalBenchmark {
 
     // ---------------------------------------------------------------------
     // 金标集（tools/kb_coverage/tables/golden_queries_v1.json，sha256 冻结）的
-    // 双路评测：A 路精排（参考上界）/ B 路镜像（生产 v1 形状：裸 B 路 limit=5，
-    // 2026-09-22 的 B512→A 统一路由实验实测净伤害、当日回滚）。口径写死在这里，
-    // 测试文件只负责取数与落盘。
+    // 双路评测：A 路精排（参考上界）/ B 路镜像（生产 v1 形状：裸 B 路 limit=5、
+    // 返回形态 = matched 优先（D1 落地后），2026-09-22 的 B512→A 统一路由实验实测净伤害、
+    // 当日回滚）。口径写死在这里，测试文件只负责取数与落盘。
     // ---------------------------------------------------------------------
 
     /** 金标集一条：题面 + 预期节点 slug + 所属章。字段与冻结 JSON 逐字对应。 */
@@ -226,11 +226,11 @@ internal object RetrievalBenchmark {
      * **rank=absent** = 该深度内根本没有（索引/特征问题，排序怎么调都救不回来）。
      *
      * **名次口径**（两侧必须逐字相同才可比）：把该路线的候选放宽到本深度后，取**返回序列
-     * （父节点前置后）的前 [MISS_PROBE_LIMIT] 名**当诊断窗口，名次是窗口内的 1 起始位置。
+     * （matched 优先、父节点随后）的前 [MISS_PROBE_LIMIT] 名**当诊断窗口，名次是窗口内的 1 起始位置。
      * 判分用的 top-5 结果**不从这里取**，所以放宽不会污染任何已出的分数。
      *
      * **跨侧对照纪律**（2026-09-23 实测）：两侧 MISS **集合**逐题一致（对称差 0）；**名次**
-     * 可差 1~3 位——父节点前置块的条数与序不同（镜像按包内出现序、真 SQL 按 rowid 序）会让
+     * 可差 1~3 位——父节点随后块的条数与序不同（镜像按包内出现序、真 SQL 按 rowid 序）会让
      * 窗口内位置整体位移。所以集合是两侧对齐的判据，名次只在本侧窗口内解释，不跨侧当同一口径。
      */
     const val MISS_PROBE_LIMIT = 256
@@ -249,7 +249,7 @@ internal object RetrievalBenchmark {
      * 免得清单被"命中的题"稀释）。[probe] 收到 `(题, 深度)`，返回该路线的候选序列——
      * 判分用的 top-5 结果**不从这里取**，所以放宽不会污染任何已出过的分数。
      * 名次取**返回序列的前 [MISS_PROBE_LIMIT] 名**内的位置（`take` 不能省：store 的返回形态
-     * 是"父节点前置 + matched"，序列本身可以长过深度，不截断就会报出超过声明深度的名次）。
+     * 是"matched 优先 + 父节点随后"，序列本身可以长过深度，不截断就会报出超过声明深度的名次）。
      */
     fun goldenMisses(
         result: GoldenRouteResult,
@@ -382,12 +382,14 @@ internal object RetrievalBenchmark {
      *   knowledge_node_id ASC`（与 DAO 逐字一致）；
      * - 空查询特征 = 回退 `readSubjectKnowledgeNodes` 的顺序（verification CASE →
      *   granularity → canonical_name → id，limit 压到 256）；
-     * - 返回 = `parents + matched`（匹配节点的父 topic 前置——生产 store 的真实返回形态，
+     * - 返回 = `matched + parents`（**D1 落地后的生产形态**（2026-09-24）：matched 在前、
+     *   匹配节点的父 topic 随后（供上层解释）——生产 store 的真实返回形态，
      *   父节点在生产的行序是 rowid 序，镜像按包内出现序取，保证 JVM 侧确定性可复现）。
-     *   另有两个**只作诊断**的返回形态：[matchedOnly]（不前置父节点——各臂判分数所在的口径）与
-     *   [matchedFirst]（D1 候选：matched 前置、父节点排其后）。排序与候选过滤三者逐字相同。
+     *   另有两个**只作诊断**的返回形态：[parentsFirst]（D1 落地前的旧生产形态：父 topic 前置，
+     *   只作历史记账/诊断）与 [matchedOnly]（不注入父节点——各臂判分数所在的口径）。
+     *   排序与候选过滤三者逐字相同。
      *
-     * 它回答的问题：生产 v1 形状（裸 B 路 limit=5，SQL 倒排二值 TF 排序）在 JVM 上
+     * 它回答的问题：生产 v1 形状（裸 B 路 limit=5，返回形态 = matched 优先，SQL 倒排二值 TF 排序）在 JVM 上
      * 保真到什么程度——[goldenBRoute] 在它上面跑同一判分口径（top-5 裸排序），与
      * 真 SQL 仪表化（GoldenRetrievalInstrumentedTest）逐题对照。B512→A 统一路由实验
      * 2026-09-22 实测净伤害已回滚（其数封存于 docs/kb-vector-topic-decision.md §3.1 /
@@ -403,11 +405,30 @@ internal object RetrievalBenchmark {
         val totalFeatureRows: Long = nodeFeatures.values.sumOf { it.size.toLong() }
         val maxFeaturesPerNode: Int = nodeFeatures.values.maxOfOrNull { it.size } ?: 0
 
-        /** 生产 store 的返回形态：`.distinctBy(id)` 后的 `parents + matched`。 */
+        /**
+         * **生产 store 的返回形态（D1 已落地）**：`.distinctBy(id)` 后的 `matched + parents`。
+         *
+         * 2026-09-24 D1 之前这里是 `parents + matched`（父 topic 前置）；改动只换序列位置，
+         * 集合与长度语义不变（生产侧同样不加 `take`）。旧形态留在 [parentsFirst] 作历史记账。
+         */
         fun recall(subject: String, questionText: String, limit: Int): List<KnowledgeNodeSeedRecord> {
             val queryFeatures = KnowledgeSearchFeatureExtractor.fromQuestion(questionText)
             if (queryFeatures.isEmpty()) {
-                // 镜像 store 的空特征回退（readSubjectKnowledgeNodes 的顺序）：生产此时不走倒排、也不前置父节点
+                // 镜像 store 的空特征回退（readSubjectKnowledgeNodes 的顺序）：生产此时不走倒排、也不注入父节点
+                return emptyQueryFallbackOrder(trustedPool(subject)).take(limit)
+            }
+            val matched = matchedRanked(subject, queryFeatures, limit)
+            return (matched + parentsOf(matched)).distinctBy { it.knowledgeNodeId }
+        }
+
+        /**
+         * **旧生产形态（D1 落地前，parents + matched）**——**不是当前生产形态，只作历史记账/诊断**：
+         * §10 口径对照表与预注册基线 0.5444 钉的是这一形状的数，D1 之后仍要能复算出同一个值。
+         * 排序与候选过滤与 [recall] 逐字相同，差别只在父 topic 是否挤占返回序列前部。
+         */
+        fun parentsFirst(subject: String, questionText: String, limit: Int): List<KnowledgeNodeSeedRecord> {
+            val queryFeatures = KnowledgeSearchFeatureExtractor.fromQuestion(questionText)
+            if (queryFeatures.isEmpty()) {
                 return emptyQueryFallbackOrder(trustedPool(subject)).take(limit)
             }
             val matched = matchedRanked(subject, queryFeatures, limit)
@@ -416,8 +437,8 @@ internal object RetrievalBenchmark {
 
         /**
          * **matched-only 口径**（**不是生产判分口径**，只作诊断）：只返回排序后的 matched 序列，
-         * **不前置父节点**。它是"排序本身有多好"的这一维——Stage-1 各臂的判分数（如臂 A 的
-         * 0.6556）都出自这个口径，而生产 store 返回的是 [recall] 的 `parents + matched`。
+         * **不注入父节点**。它是"排序本身有多好"的这一维——Stage-1 各臂的判分数（如臂 A 的
+         * 0.6556）都出自这个口径，而生产 store 返回的是 [recall] 的 `matched + parents`。
          */
         fun matchedOnly(subject: String, questionText: String, limit: Int): List<KnowledgeNodeSeedRecord> {
             val queryFeatures = KnowledgeSearchFeatureExtractor.fromQuestion(questionText)
@@ -426,21 +447,6 @@ internal object RetrievalBenchmark {
             } else {
                 matchedRanked(subject, queryFeatures, limit)
             }
-        }
-
-        /**
-         * **D1 候选返回形态**：matched 前置、父节点排在其后（`matched + parents`）。
-         *
-         * 与 [recall] 的差别只在序列位置：父节点仍返回（上层解释需要），但不再挤占判分窗口的
-         * 前 5；判分取前 5 时因此与 [matchedOnly] 同窗口。生产 SQL 只改返回顺序即可落地。
-         */
-        fun matchedFirst(subject: String, questionText: String, limit: Int): List<KnowledgeNodeSeedRecord> {
-            val queryFeatures = KnowledgeSearchFeatureExtractor.fromQuestion(questionText)
-            if (queryFeatures.isEmpty()) {
-                return emptyQueryFallbackOrder(trustedPool(subject)).take(limit)
-            }
-            val matched = matchedRanked(subject, queryFeatures, limit)
-            return (matched + parentsOf(matched)).distinctBy { it.knowledgeNodeId }
         }
 
         private fun trustedPool(subject: String): List<KnowledgeNodeSeedRecord> =
@@ -493,15 +499,15 @@ internal object RetrievalBenchmark {
     }
 
     /**
-     * 生产 v1 形状（裸 B 路 limit=5，无 A 路精排）的金标 JVM 镜像口径：
-     * 与 `GoldenRetrievalInstrumentedTest` 的真 SQL 判分目标同构（2026-09-22 的
-     * B512→A 统一路由实验实测净伤害、当日回滚，KD-24），镜像只做交叉核对、不作判定
-     * 依据（判定以真 SQL 为准，漂移纪律见 docs/kb-vector-topic-decision.md §5）。
+     * 生产 v1 形状（裸 B 路 limit=5，无 A 路精排；**D1 落地后返回形态 = matched 优先**）的
+     * 金标 JVM 镜像口径：与 `GoldenRetrievalInstrumentedTest` 的真 SQL 判分目标同构
+     * （2026-09-22 的 B512→A 统一路由实验实测净伤害、当日回滚，KD-24），镜像只做交叉核对、
+     * 不作判定依据（判定以真 SQL 为准，漂移纪律见 docs/kb-vector-topic-decision.md §5）。
      */
     fun goldenBRoute(
         index: BRouteMirrorIndex,
         cases: List<GoldenCase>,
-    ): GoldenRouteResult = scoreGolden("B-route-mirror(v1-bare-B5)", cases) { case ->
+    ): GoldenRouteResult = scoreGolden("B-route-mirror(v1-bare-B5, matched-first)", cases) { case ->
         index.recall(
             case.subject,
             case.query,
