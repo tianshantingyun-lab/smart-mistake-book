@@ -24,6 +24,14 @@
 只写 `extracted_chunks.jsonl` / `source_inventory.csv` / `extraction_state.csv` 三个既有存储，
 不碰成品包，不碰 `build/` 以外的临时目录。
 
+## 只收过闸页（闸门判定不在这里另写一套）
+
+入库前逐页查页级账本（`kb_coverage.transcription_ledger`）：**只有 `gate=pass` 的页才入块库**，
+闸门 fail / pending 的页、以及缺页码无法定位的条目一律不入，并在 stderr 逐科报出页号。
+这条过滤消灭的失败是：把已知有残迹（`\\1`/shell 展开/`$` 不成对）、截断、或条数不足的页
+当成"已存好"入块库——那样 S6 的"两块门 0 问题"就永远绿不了，而绿不了的根因会被掩盖成
+"下游判定问题"。过滤后账本仍是唯一判据来源，本工具不复制它的判据。
+
 用法：
     python tools/kb_coverage/store_53_transcripts.py --root <源根> [--dry-run]
 """
@@ -39,6 +47,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(REPO / "tools"))
+from kb_coverage import transcription_ledger as tl  # noqa: E402
+
 CHUNKS = REPO / "tools/kb_coverage/tables/extracted_chunks.jsonl"
 INV = REPO / "tools/kb_coverage/source_inventory.csv"
 STATE = REPO / "tools/kb_coverage/tables/extraction_state.csv"
@@ -56,6 +67,11 @@ def _fp(text: str) -> str:
 
 def _chunk_id(rel_path: str) -> str:
     return hashlib.sha256(rel_path.encode("utf-8")).hexdigest()[:10]
+
+
+def gate_map() -> dict[tuple[str, int], str]:
+    """(subject,page) -> gate。判据唯一来源是账本（`compute_gate`），此处不另立一套。"""
+    return {(r["subject"], r["page"]): r["gate"] for r in tl.build_rows()}
 
 
 def load_existing_fps() -> set[str]:
@@ -111,6 +127,7 @@ def main(argv: list[str] | None = None) -> int:
     state_rows = list(csv.DictReader(open(STATE, encoding="utf-8"))) if STATE.exists() else []
     state_seen = {r["rel_path"] for r in state_rows}
     existing_fps = load_existing_fps()
+    gates = gate_map()
 
     now = datetime.now(timezone.utc).astimezone().strftime("%Y-%m-%d %H:%M:%S")
     new_chunks: list[dict] = []
@@ -125,6 +142,7 @@ def main(argv: list[str] | None = None) -> int:
         tdir = TRANSCRIPTS / subject / stem
         lines = []
         skipped: list[str] = []
+        blocked: list[str] = []
         if tdir.exists():
             for f in sorted(tdir.glob("range_*.jsonl")):
                 for ln, raw in enumerate(f.read_text(encoding="utf-8").splitlines(), 1):
@@ -140,11 +158,22 @@ def main(argv: list[str] | None = None) -> int:
                     except json.JSONDecodeError as e:
                         skipped.append(f"{f.name}:L{ln} {e.msg}")
                         continue
-                    if (rec.get("text") or "").strip():
-                        lines.append(rec)
+                    if not (rec.get("text") or "").strip():
+                        continue
+                    page = rec.get("page")
+                    if not isinstance(page, int):
+                        blocked.append(f"{f.name}:L{ln} 无页码")
+                        continue
+                    if gates.get((subject, page)) != "pass":
+                        blocked.append(f"p{page}:{gates.get((subject, page), '不在账本')}")
+                        continue
+                    lines.append(rec)
         if skipped:
             print(f"  ! {subject} {stem}: {len(skipped)} 行解析失败（未入库）：{skipped[:3]}",
                   file=sys.stderr)
+        if blocked:
+            print(f"  ! {subject} {stem}: {len(blocked)} 页未过闸（未入库）：{blocked[:8]}"
+                  + ("…" if len(blocked) > 8 else ""), file=sys.stderr)
         base = _chunk_id(rel)
         added = 0
         for idx, rec in enumerate(lines):
@@ -182,7 +211,8 @@ def main(argv: list[str] | None = None) -> int:
                                "updated_at": now})
             state_seen.add(rel)
         summary.append({"subject": subject, "rel": rel, "points": len(lines),
-                        "chunks": added, "lines_skipped": len(skipped)})
+                        "chunks": added, "lines_skipped": len(skipped),
+                        "pages_blocked": len(blocked)})
         print(f"[{subject}] {stem}: 转写 {len(lines)} 条知识点 → 新块 {added}", file=sys.stderr)
 
     if not args.dry_run:
