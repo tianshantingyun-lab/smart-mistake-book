@@ -121,16 +121,27 @@ def main(argv: list[str] | None = None) -> int:
         stem = Path(sub["pdf_name"]).stem
         tdir = TRANSCRIPTS / subject / stem
         lines = []
+        skipped: list[str] = []
         if tdir.exists():
             for f in sorted(tdir.glob("range_*.jsonl")):
-                for raw in f.read_text(encoding="utf-8").splitlines():
-                    if raw.strip():
-                        try:
-                            rec = json.loads(raw)
-                        except json.JSONDecodeError:
-                            continue
-                        if (rec.get("text") or "").strip():
-                            lines.append(rec)
+                for ln, raw in enumerate(f.read_text(encoding="utf-8").splitlines(), 1):
+                    s = raw.strip()
+                    if not s:
+                        continue
+                    # 代理常把每行当 JSON 数组元素写，行尾多一个逗号 → JSONL 不接受尾逗号。
+                    # 容忍它（内容没坏），但**不再静默跳过**任何真解析不了的行。
+                    if s.endswith(","):
+                        s = s[:-1].rstrip()
+                    try:
+                        rec = json.loads(s)
+                    except json.JSONDecodeError as e:
+                        skipped.append(f"{f.name}:L{ln} {e.msg}")
+                        continue
+                    if (rec.get("text") or "").strip():
+                        lines.append(rec)
+        if skipped:
+            print(f"  ! {subject} {stem}: {len(skipped)} 行解析失败（未入库）：{skipped[:3]}",
+                  file=sys.stderr)
         base = _chunk_id(rel)
         added = 0
         for idx, rec in enumerate(lines):
@@ -167,7 +178,8 @@ def main(argv: list[str] | None = None) -> int:
                                "note": "2027版《53知识清单》彩色版扫描件，视觉转写，先存块库未入知识库",
                                "updated_at": now})
             state_seen.add(rel)
-        summary.append({"subject": subject, "rel": rel, "points": len(lines), "chunks": added})
+        summary.append({"subject": subject, "rel": rel, "points": len(lines),
+                        "chunks": added, "lines_skipped": len(skipped)})
         print(f"[{subject}] {stem}: 转写 {len(lines)} 条知识点 → 新块 {added}", file=sys.stderr)
 
     if not args.dry_run:
