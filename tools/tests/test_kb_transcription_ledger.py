@@ -31,6 +31,17 @@ class SignalsTest(unittest.TestCase):
         self.assertEqual(1, sig["uncertainties"])
         self.assertGreater(sig["chars"], 20)
 
+    def test_circled_marks_count_anywhere_but_formula_parens_do_not(self):
+        # 依据（2026-09-25 试点实测）：代理把一块内容写成一两行时，行内圈号（②离子方程式：…）
+        # 必须算；而行内 `f(2)`、`(0)` 这类公式括号不许算成编号。
+        sig = tl.signals("（左栏续）②离子方程式：见 $f(2)$ 与 $g(0)$ 的取值。\n①定义：$x>0$")
+        self.assertEqual(2, sig["numbered"], "行内圈号要算，公式括号不算")
+        self.assertEqual(2, sig["circled"])
+
+    def test_line_leading_digit_marks_count(self):
+        sig = tl.signals("1. 定义\n2) 性质\n（3）结论\n正文里的 4) 不算")
+        self.assertEqual(3, sig["numbered"])
+
     def test_empty_text_is_all_zero(self):
         sig = tl.signals("")
         self.assertEqual(0, sig["chars"])

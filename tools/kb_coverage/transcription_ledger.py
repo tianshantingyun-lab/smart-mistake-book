@@ -49,8 +49,15 @@ COLUMNS = ("subject", "pdf_rel", "page", "span", "status", "page_kind", "plan",
            "chars", "formulas", "figs", "numbered", "uncertainties", "truncated",
            "items_min", "verdict", "gate", "note")
 
-# 行首编号 / 圈号（版面编号条数的确定性判据）
-_NUMBERED = re.compile(r"(?m)^\s*(?:\(?\d{1,3}\)?[.、)）]|[①-⑳]|[⒈-⒛])")
+# 版面编号条数的确定性判据（进闸门分母的 `numbered`）。
+#
+# 两类标记分开处理，依据是**歧义性**（2026-09-25 试点实测倒逼）：
+#   · 圈号（①-⑳、⒈-⒛）在公式里不会出现，**出现在哪里都算**；
+#   · 数字编号（`1.`/`2)`/`（3）`）只在**行首**算——行内 `f(2)`、`(0)` 这类公式里的括号
+#     会被误算（实测 p162 "任意位置"口径多算 8 处假编号）。
+# 只按行首数也不行：代理把一块内容写成一两行时，行内编号（`②离子方程式：…`）会被漏掉，
+# 试点里 CHEMISTRY p27 因此从 34 掉到"低于应有多少"的假象。两个口径都错，所以要分开判。
+_ITEM_MARK = re.compile(r"(?m)(?:^\s*[（(]?\d{1,3}[.、)）])|(?:[①-⑳]|[⒈-⒛])")
 _CIRCLED = re.compile(r"[①-⑳]")
 _FORMULA = re.compile(r"\$[^$\n]{1,400}\$")
 
@@ -128,7 +135,7 @@ def signals(text: str) -> dict:
         "chars": len(t),
         "formulas": len(_FORMULA.findall(t)),
         "figs": t.count("【图"),
-        "numbered": len(_NUMBERED.findall(t)),
+        "numbered": len(_ITEM_MARK.findall(t)),
         "circled": len(_CIRCLED.findall(t)),
         "uncertainties": t.count("【不确定"),
     }
