@@ -51,3 +51,8 @@ tools/kb_coverage/tables/extracted_chunks.jsonl
 # 2027版《53知识清单》扫描件转写原文（教辅原文，按来源政策不入版本控制；与 extracted_chunks.jsonl 同口径）
 knowledge-production/2027-53-transcripts/
 knowledge-production/2027-53-transcripts-staged/
+
+# 53 扫描件试点的原始转写（与 2027-53-transcripts 同口径：教辅原文不入版本控制）
+knowledge-production/2027-53-pilot/**/*.jsonl
+knowledge-production/2027-53-pilot/**/*.counts.json
+knowledge-production/2027-53-pilot/**/*.reconcile.json
