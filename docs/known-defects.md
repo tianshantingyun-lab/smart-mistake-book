@@ -818,6 +818,12 @@ that the draft is reachable or resolved.
 `\`、`\ `、`\{`、`\}`、`\%`、`\,`、`\_`、`\|`、`\;`、`\:`、`\(` 都是真写法）；
 修复工具 `fix_invalid_escapes`（三类机械 + 表驱动语义）；写回器 `apply_text_fixes` 的三层独立复核。
 
+**口径订正（2026-09-24）.** 上面的 2,265 / 2,283 含一类**判据误报**：`\\`（双反斜杠行分隔）
+后面的第二个反斜杠被当成新转义起点，于是 `\begin{cases}a,\\2S_k\end{cases}` 里的 `\2` 被算成残迹。
+`find_invalid_escapes` 改为把 `\\` 整体消费后，在 `ec5656d6^` 上重测的真残迹是
+**1,854 处**（`\1` 1,832 / 行尾反斜杠 10 / `\'` 9 / 反斜杠+全角逗号 3）。**修复结论不变**：
+那 1,854 处是真残迹，485 条字段与损坏前提交逐字节相等的证据仍然成立。详见 §W-03。
+
 **Reopen condition.** `invalid_escape` 指标非 0（门里的哨兵 + `test_gate_reports_real_defects_not_zero`）。
 
 ## KD-22 (fixed 2026-09-19) · `$$` 被 shell 展开成 PID、`$0` 变成 /usr/bin/bash
@@ -1012,3 +1018,29 @@ run3 Room recall p95 was 1267ms;  samples=[1267, 54, 45, 46, 50, 52, 47, 53, 39,
 （离群数 > 2，或稳态整体上移）——前者按 KD-2 改用 runner-relative 界，后者按真实退化查；
 (ii) 若把墙钟门移入 macrobenchmark 模块，查询计划断言必须留在原地（KD-2 同款口径）；
 (iii) `ciSlowRunner` 系数被改动而未经 runner 实测支撑。
+
+## KD-26 (open 2026-09-24) · 20 条 `boundary` 断在公式中途，而门的 4 个文本判据只扫材料字段
+
+**Symptom.** `core/data/src/main/resources/knowledge/moe-2025-four-subjects-v1.json` 里 20 个知识点的
+`boundary` 带机械可判缺陷：20 处 `$` 不成对、4 处行尾悬空反斜杠（4 条同时两类）。长度 124–156 字符
+（字节 221–391，不是等宽上限），**全部断在公式中途**，例：
+
+- MATH t2 kp86「函数图象的识别」→ `…变化趋势要看 $x\to+\infty$ 与 $x\`
+- MATH t16 kp35「同构法」→ `…（或把 $b$ 写成 $\`
+- MATH t19 kp11「奔驰定理」→ `…对应哪个顶点的向量”（$S_{\`
+- MATH t28 kp33「双曲线焦点三角形」→ `…（椭圆是 $b^2\tan\frac{\`
+
+**Root cause.** 生成侧（boundary 是改写产物，不是原文）写这段时就断在公式中途；**不是**近期重建造成：
+HEAD~1 / HEAD~2 / HEAD~5 / HEAD~10 / HEAD~20 / f08fce92^ / f08fce92 七个版本上这 20 条逐字同长同缺陷，
+git 里没有全文可恢复。门的 `field_text_defects` 只被用在**材料**字段上，boundary / name 无判据——
+所以"22/22 全绿"是真的，4 处悬空反斜杠却能在全绿下随包分发（这些字段讲题时模型直接读到）。
+
+**Impact.** 断掉的公式让学生看到半截 LaTeX；不成对的 `$` 会让自研渲染器把后续正文当数学显示。
+
+**Fix (open).** ① 按该节点**已绑定材料**补全被切断的公式（只补尾、不改写前文，逐字可溯源，
+与 `ec5656d6` 的文本修复同款三层复核）；② 给门加 boundary 判据（与材料同源函数，
+`find_invalid_escapes` / `field_text_defects` 复用）。两件事**同一提交**落地（先加判据会让门红着进 CI）。
+**登记**：`docs/kb-problem-register-2026-09-15.md` §W-02。
+
+**Reopen condition.** 该判据加入门后若再次出现非 0 的 boundary 缺陷——说明补全只治了存量、
+生成侧仍在写截断文本，须回头改生成器（而不是再补一批）。

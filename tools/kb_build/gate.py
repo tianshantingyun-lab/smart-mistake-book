@@ -162,17 +162,31 @@ def find_invalid_escapes(text: str) -> list[tuple[int, str]]:
     """返回 (位置, 片段) —— 反斜杠后不是字母也不在 allowlist 的位置。
 
     片段取 3 个字符宽（`\\1_` 这类），便于人眼复核；调用方不必依赖宽度。
+
+    扫描时 `\\`（行分隔／换行命令）**整体消费**：紧跟它的第二个反斜杠不是"新的转义起点"。
+    漏掉这一步会把 `\\begin{cases}a,\\1&x=0\\end{cases}` 读成行分隔 + 残迹 `\\1`——
+    实测让 4 科扫描件里 14 页转写被误判"要重转"（2026-09-22，MATH p127/128/436/521 等），
+    正反用例见 `tools/tests/test_kb_transcription_ledger.py`。
     """
     out: list[tuple[int, str]] = []
-    for i, ch in enumerate(text):
-        if ch != "\\":
+    i = 0
+    n = len(text)
+    while i < n:
+        if text[i] != "\\":
+            i += 1
             continue
-        nxt = text[i + 1] if i + 1 < len(text) else ""
+        nxt = text[i + 1] if i + 1 < n else ""
+        if nxt == "\\":                 # 行分隔：整体消费，不看第二个反斜杠
+            i += 2
+            continue
         if nxt and nxt.isascii() and nxt.isalpha():
+            i += 1
             continue
         if nxt in _INVALID_ESCAPE_ALLOWED:
+            i += 1
             continue
         out.append((i, text[i:i + 3]))
+        i += 1
     return out
 
 
@@ -188,8 +202,11 @@ def _has_invalid_escape(text: str) -> bool:
 #     360919 / 339735 / 322028 / 353043；
 #   · 被误报的两例全是 5 位数：生物「发病率 1/10000 与 q²=1/10000」、统计「(m+n)²/40000」
 #     —— 它们是换算系数，同一数字本来就该出现两次；
-#   · 两次出现必须落在同一公式内（相距 ≤120 字且中间夹着公式记号），
-#     否则 `100个小方格…×100×400` 这类行文也会被算成公式。
+#   · 两次出现必须落在**同一公式内**：无 `$` 相隔（`$$…$$` 被展开时，两个 PID 就是原来的
+#     一对定界符，中间只剩公式体本身，绝不会再有 `$`）。曾只用"相距 ≤120 字且夹着公式记号"
+#     近似它，实测误报 MATH p368——`$…=192000$` 与后一句 `最小值为 $192000\ \mathrm{m}^2$`
+#     是同一道题的两个式子，192000 是真答案（2026-09-22）。加"无 `$` 相隔"后，真残迹
+#     `310243n = \frac{a-xb}{2}310243` 仍然命中。
 _PID_REPEAT = re.compile(r"(?<![\d.])(\d{6,7})(?![\d.])")
 _PID_MATH_MARKS = ("\\frac", "\\text{", "\\mathrm", "\\sqrt", "=", "_{", "^{")
 _PID_WINDOW = 120
@@ -202,7 +219,8 @@ def _has_pid_repeat(text: str) -> bool:
         number = match.group(1)
         if number in seen:
             gap = text[seen[number]:match.start()]
-            if len(gap) <= _PID_WINDOW and any(mark in gap for mark in _PID_MATH_MARKS):
+            if (len(gap) <= _PID_WINDOW and "$" not in gap
+                    and any(mark in gap for mark in _PID_MATH_MARKS)):
                 return True
         seen.setdefault(number, match.start())
     return False

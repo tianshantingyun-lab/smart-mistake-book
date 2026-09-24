@@ -224,6 +224,13 @@ class GateTest(unittest.TestCase):
             r"1mL细胞个数＝100×400×10000×稀释倍数；同法再乘 10000。",  # 5 位换算系数
             r"$f'(x)>0$",                                      # 撇号不是重音命令
             r"$S_m,S_{2m}-S_m$；$a\parallel b$",               # 正常公式
+            # 行分隔 `\\` 后跟数字/全角括号：`\\` 是一个命令，不能把它拆成"第二个反斜杠 + 残迹"。
+            # 实测教训（2026-09-22）：漏这一步让 4 科扫描件里 14 页转写被误判要重转。
+            r"$T_n=\begin{cases}S_n(n\leqslant k),\\2S_k-S_n(n>k)\end{cases}$",
+            r"$Y=\begin{cases}0,&X=0\\5,&X=100\\10,&X=200\end{cases}$",
+            r"$y=\begin{cases}a+b=4,\\3a+b=7\end{cases}$",
+            # 同一道题的两个不同式子各有同一个真数字：不是 `$$`→PID 残迹（MATH p368 实测）
+            r"$=\dfrac{5}{2}\times 76800=192000$，最小值为 $192000\ \mathrm{m}^2$。",
         )
         for text in must_pass:
             with self.subTest(text=text[:24]):
