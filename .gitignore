@@ -47,3 +47,7 @@ knowledge-research/
 
 # Phase 2 提取块队列（258MB，可从源文件确定性重生成；权威状态在 extraction_state.csv）
 tools/kb_coverage/tables/extracted_chunks.jsonl
+
+# 2027版《53知识清单》扫描件转写原文（教辅原文，按来源政策不入版本控制；与 extracted_chunks.jsonl 同口径）
+knowledge-production/2027-53-transcripts/
+knowledge-production/2027-53-transcripts-staged/

@@ -43,7 +43,10 @@ CHUNKS = REPO / "tools/kb_coverage/tables/extracted_chunks.jsonl"
 INV = REPO / "tools/kb_coverage/source_inventory.csv"
 STATE = REPO / "tools/kb_coverage/tables/extraction_state.csv"
 MANIFEST = REPO / "build/2027-53-pages/manifest.json"
-TRANSCRIPTS = REPO / "build/2027-53-transcripts"
+# 转写原文的**唯一工作目录**：`build/` 是 Gradle 输出目录、随时可能被 clean 清掉，
+# 故放 knowledge-production/ 下（并在 .gitignore 里排除——教辅原文不入版本控制，
+# 与 extracted_chunks.jsonl 同口径）。
+TRANSCRIPTS = REPO / "knowledge-production/2027-53-transcripts"
 CHUNK_CAP = 900  # 单块上限，超过则按段落切
 
 
