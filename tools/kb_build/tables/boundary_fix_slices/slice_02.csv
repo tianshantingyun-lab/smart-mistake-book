@@ -1,0 +1,6 @@
+subject,slug,name,action,materials,prefix_len,body_len,evidence_path,current_boundary
+MATH,角平分线定理,角平分线定理,补全尾（有材料证据）,13,127,135,D:\smart mistake book\tools\kb_build\tables\boundary_fix_evidence\06_MATH_角平分线定理.md,定位：数学必修第一册 第五章。定理适用于内角平分线与对边的交点，外角平分线的情形公式形式不同（需另记或用向量处理）；比例式中线段的对应关系不能颠倒（左邻边比右邻边等于左段比右段）；求出比例后往往还需结合余弦定理或面积公式才能解出具体边长；三种证明都要用到 $\angle
+MATH,裂项放缩,裂项放缩,补全尾（有材料证据）,11,135,138,D:\smart mistake book\tools\kb_build\tables\boundary_fix_evidence\07_MATH_裂项放缩.md,定位：数学选择性必修第二册 第四章。放缩方向必须与所求结论一致，且放缩后仍要能求和；$\frac{1}{n^2}<\frac{1}{n(n-1)}$ 一类式子在 $n=1$ 处无意义，需从 $n\ge 2$ 起用并把第一项单独保留；$q^n-m$ 型通项不能用等比放缩（$\f
+MATH,隐函数的求导,隐函数的求导,补全尾（有材料证据）,1,135,138,D:\smart mistake book\tools\kb_build\tables\boundary_fix_evidence\08_MATH_隐函数的求导.md,定位：数学选择性必修第二册 第五章。解出的 $y'$ 中允许保留 $y$（因为 $y$ 解不出来），但最后要按题目要求换成 $x$ 或保留原式；对 $\ln y$、$\sqrt y$ 求导时要按复合函数求导（如 $(\ln y)'=\frac{y'}{y}$），不要漏乘 $y
+MATH,同构法,同构法,补全尾（有材料证据）,41,135,138,D:\smart mistake book\tools\kb_build\tables\boundary_fix_evidence\09_MATH_同构法.md,定位：数学选择性必修第二册 第五章。同构的前提是变形后两侧结构完全一致（含系数、次数），否则不能构造出同一个函数；地位同等同构要求 $x_1<x_2$ 等大小关系明确，移项时注意不等号方向的改变；指对跨阶同构中把 $a$ 写成 $e^{\ln a}$（或把 $b$ 写成 $\
+MATH,等和线,等和线,补全尾（有材料证据）,13,133,135,D:\smart mistake book\tools\kb_build\tables\boundary_fix_evidence\10_MATH_等和线.md,定位：数学必修第二册 第六章。三点共线的充要条件是 $\lambda+\mu=1$，前提是 $O$、$A$、$B$ 三点不共线（否则 $\overrightarrow{OA}$ 与 $\overrightarrow{OB}$ 共线，表示不唯一）；系数和不为 1 时点 $
