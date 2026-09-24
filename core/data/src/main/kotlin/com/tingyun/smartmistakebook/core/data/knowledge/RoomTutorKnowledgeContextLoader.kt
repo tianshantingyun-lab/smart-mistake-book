@@ -47,6 +47,8 @@ internal class RoomTutorKnowledgeContextLoader(
                     subject = subject,
                     searchFeatures = features,
                     limit = MAX_KNOWLEDGE_RECALL_CANDIDATES,
+                    // 拍照讲题是产品主入口：把原始题面交给稠密腿（可选，未装配/不可用即纯词面）。
+                    queryText = text,
                 )
                 KnowledgeContextRetriever.select(
                     candidates = recall,

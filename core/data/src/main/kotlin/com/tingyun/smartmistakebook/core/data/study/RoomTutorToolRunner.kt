@@ -210,6 +210,7 @@ internal class RoomTutorToolRunner(private val port: StudyDatabasePort) {
             subject = subject,
             searchFeatures = features,
             limit = KNOWLEDGE_READ_NODE_LIMIT,
+            queryText = questionText,
         )
         if (nodes.isEmpty()) {
             return TutorToolOutcome(

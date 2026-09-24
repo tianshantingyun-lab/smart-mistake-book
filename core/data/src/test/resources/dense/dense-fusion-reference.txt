@@ -1,0 +1,13 @@
+# Stage-3 端侧 · 融合口径参考（生成脚本 tools/dense_build/gen_dense_device_fixture.py）
+# 期望次序由 tools/dense_build/stage3_expectation.py 的 minmax/best_first + α=0.5 加权现算
+# 列：[fusion] \t caseId \t domain(,) \t dense_raw(node=score;…) \t lex_raw(node=score;…) \t dense_norm \t lex_norm \t 期望次序(,) \t 逐节点融合分(node=score;…) \t 说明
+[fusion]	two_legs_normal	a,b,c	a=0.9;b=0.5;c=0.1	a=1.0;b=3.0;c=2.0	a=1.0;b=0.5;c=0.0	a=0.0;b=1.0;c=0.5	b,a,c	a=0.5;b=0.75;c=0.25	两腿都有分：min-max 后 α=0.5 加权
+[fusion]	dense_all_equal	a,b,c	a=0.4;b=0.4;c=0.4	a=1.0;b=2.0;c=3.0	a=0.0;b=0.0;c=0.0	a=0.0;b=0.5;c=1.0	c,b,a	a=0.0;b=0.25;c=0.5	min-max 上界=下界 ⇒ 该腿全体 0（hi<=lo 分支）
+[fusion]	single_node_domain	only	only=0.7	only=2.0	only=0.0	only=0.0	only	only=0.0	单元素域：两腿都退化为 0
+[fusion]	dense_missing	a,b		a=5.0;b=1.0		a=1.0;b=0.0	a,b	a=0.5;b=0.0	稠密腿整条缺失 ⇒ 全 0，不参与 min-max
+[fusion]	lex_missing	a,b	a=1.0;b=0.0		a=1.0;b=0.0		a,b	a=0.5;b=0.0	词面腿整条缺失 ⇒ 全 0
+[fusion]	partial_missing	a,b,c	a=0.8;c=0.2	b=4.0	a=1.0;c=0.0	b=0.0	a,b,c	a=0.5;b=0.0;c=0.0	两腿各自缺一个节点：缺的那个拿 0，且不进对方的 min-max
+[fusion]	tie_break	b,a,c	a=0.5;b=0.5;c=0.5	a=2.0;b=2.0;c=2.0	a=0.0;b=0.0;c=0.0	a=0.0;b=0.0;c=0.0	a,b,c	b=0.0;a=0.0;c=0.0	全并列 ⇒ 按 node_id 升序（best_first 的定序约定）
+[fusion]	negative_dense	a,b,c	a=-0.2;b=-0.6;c=-0.9	a=1.0;b=1.0;c=1.0	a=1.0;b=0.42857142857142866;c=0.0	a=0.0;b=0.0;c=0.0	a,b,c	a=0.5;b=0.21428571428571433;c=0.0	负分（余弦可为负）：min-max 在负区间上做
+[fusion]	empty_domain								空候选域 ⇒ 空序列
+[fusion]	domain_not_in_legs	x,a	a=0.3	a=1.0	a=0.0	a=0.0	a,x	x=0.0;a=0.0	域里有节点两腿都无分 ⇒ 该节点 0 分（仍留在域里）

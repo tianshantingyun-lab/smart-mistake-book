@@ -1,0 +1,64 @@
+{
+  "generatedBy": "python tools/dense_build/gen_tokenizer_fixture.py",
+  "reference": {
+    "library": "transformers",
+    "version": "5.17.0",
+    "tokenizerClass": "BertTokenizer",
+    "backend": "TokenizersBackend",
+    "kwargs": {
+      "do_lower_case": true,
+      "strip_accents": false
+    },
+    "normalizer": "BertNormalizer(clean_text=True, handle_chinese_chars=True, strip_accents=False, lowercase=True)",
+    "preTokenizer": "BertPreTokenizer()",
+    "model": "WordPiece(continuing_subword_prefix=##, unk_token=[UNK], max_input_chars_per_word=100)",
+    "postProcessor": "TemplateProcessing(single=[CLS]:0 $A:0 [SEP]:0)",
+    "truncation": "truncation=True, max_length=512（含 [CLS]/[SEP]）",
+    "padding": "padding=True（批式；fixture 记录剥掉尾部 PAD 的单条形式）",
+    "backendVersion": "0.23.2"
+  },
+  "inputs": {
+    "vocabPath": "tools/dense_build/vocab/bge-small-zh-v1.5-vocab.txt",
+    "vocabSha256": "45bbac6b341c319adc98a532532882e91a9cefc0329aa57bac9ae761c27b291c",
+    "tokenizerJsonPath": "tools/dense_build/vocab/bge-small-zh-v1.5-tokenizer.json",
+    "tokenizerJsonSha256": "48cea5d44424912a6fd1ea647bf4fe50b55ab8b1e5879c3275f80e339e8fae26",
+    "goldenPath": "tools/kb_coverage/tables/golden_queries_v1.json",
+    "goldenSha256": "7c004b763bdd49556e11ff1c9500c9461b09a7383b77f230fa8fd35754e6ae39",
+    "surfaceSample": {
+      "count": 200,
+      "seed": 20260924,
+      "universe": 28932,
+      "note": "从向量集 28,932 条文本（canonicalName + alias）按种子抽取、排序"
+    }
+  },
+  "counts": {
+    "total": 333,
+    "byKind": {
+      "query": 90,
+      "surface": 200,
+      "edge": 18,
+      "stage": 25
+    },
+    "stageRows": 68
+  },
+  "selfCheck": {
+    "batchPaddingEqualsSingle": true,
+    "note": "90 条查询按 export_bge_int8.py 的批式（padding=True）编码、剥尾部 PAD 后与单条逐条相等"
+  },
+  "honesty": {
+    "emptyInput": "参考实现（tokenizers backend）对空串直接 TypeError，没有可对拍的期望值：fixture 不含空串；端侧对空/纯空白输入只承诺**不崩**（由 Kotlin 自己的单测钉住）。实测 raisesTypeError=False",
+    "scope": "fixture 覆盖 90 条金标查询（带前缀）+ 200 条节点文本抽样（种子 20260924）+ 边界探针；spec §3.2 的 28,932 条全量对拍**不在本 fixture**（样本量按本轮任务书写死）"
+  },
+  "files": {
+    "cases": {
+      "path": "core/data/src/test/resources/dense/tokenizer-parity-cases.txt",
+      "sha256": "46a3adc79aa49d0c2f7d67acf00ea6cb47902e7e850efa04dd4c7606941989de",
+      "rows": 333
+    },
+    "stages": {
+      "path": "core/data/src/test/resources/dense/tokenizer-parity-stages.txt",
+      "sha256": "d53e7cd6ff65b8703a1645939a5d29880975559ac3f5d65451c20a4b5efdaaf5",
+      "rows": 68
+    }
+  }
+}

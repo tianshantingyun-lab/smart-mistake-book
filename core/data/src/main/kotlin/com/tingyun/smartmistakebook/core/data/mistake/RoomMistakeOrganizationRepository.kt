@@ -178,6 +178,7 @@ internal class RoomMistakeOrganizationRepository(
             subject = current.subject,
             searchFeatures = KnowledgeSearchFeatureExtractor.fromQuestion(questionText),
             limit = MAX_KNOWLEDGE_RECALL_CANDIDATES,
+            queryText = questionText,
         )
         val initialKnowledgeRecords = KnowledgeContextRetriever.select(
             candidates = recallCandidates,

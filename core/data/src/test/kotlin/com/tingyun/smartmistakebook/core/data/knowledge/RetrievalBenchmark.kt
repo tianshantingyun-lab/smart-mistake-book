@@ -455,6 +455,31 @@ internal object RetrievalBenchmark {
             }
 
         /**
+         * 生产 v1 排序的**全部带分候选**：`node → COUNT(DISTINCT feature)`，顺序 = 生产 SQL 的
+         * `ORDER BY COUNT(DISTINCT search_feature) DESC,` ATOMIC 优先, `canonical_name ASC,
+         * knowledge_node_id ASC`；只含 `count > 0` 的行（= SQL 里 INNER JOIN 的命中集）。
+         *
+         * **为什么它是 public**：生产词面腿的分数要导出给离线融合当输入（Stage-3 参考数，
+         * `build/production-lexical-leg.tsv`）。若导出侧自己再写一遍"计数 + 排序"，就等于
+         * 多出一份会悄悄漂移的第二实现——[matchedRanked] 与导出走的必须是这**同一份**。
+         * 它不改变任何既有判分数（[matchedRanked] 只是它 `take(limit)` 的投影）。
+         */
+        fun matchedScored(
+            subject: String,
+            queryFeatures: Set<String>,
+        ): List<Pair<KnowledgeNodeSeedRecord, Int>> = trustedPool(subject)
+            .map { node -> node to nodeFeatures.getValue(node.knowledgeNodeId).count { it in queryFeatures } }
+            .filter { entry -> entry.second > 0 }
+            .sortedWith(
+                compareByDescending<Pair<KnowledgeNodeSeedRecord, Int>> { it.second }
+                    .thenBy { entry ->
+                        if (entry.first.granularity == KnowledgeNodeGranularity.ATOMIC.name) 0 else 1
+                    }
+                    .thenBy { entry -> entry.first.canonicalName }
+                    .thenBy { entry -> entry.first.knowledgeNodeId },
+            )
+
+        /**
          * 生产 SQL 的排序镜像（`ORDER BY COUNT(DISTINCT search_feature) DESC,` ATOMIC 优先,
          * `canonical_name ASC, knowledge_node_id ASC`）取前 [limit]：matched 序列本身。
          */
@@ -462,17 +487,9 @@ internal object RetrievalBenchmark {
             subject: String,
             queryFeatures: Set<String>,
             limit: Int,
-        ): List<KnowledgeNodeSeedRecord> = trustedPool(subject)
-            .map { node -> node to nodeFeatures.getValue(node.knowledgeNodeId).count { it in queryFeatures } }
-            .filter { (_, matchedCount) -> matchedCount > 0 }
-            .sortedWith(
-                compareByDescending<Pair<KnowledgeNodeSeedRecord, Int>> { it.second }
-                    .thenBy { (node, _) -> if (node.granularity == KnowledgeNodeGranularity.ATOMIC.name) 0 else 1 }
-                    .thenBy { (node, _) -> node.canonicalName }
-                    .thenBy { (node, _) -> node.knowledgeNodeId },
-            )
+        ): List<KnowledgeNodeSeedRecord> = matchedScored(subject, queryFeatures)
             .take(limit)
-            .map { (node, _) -> node }
+            .map { entry -> entry.first }
 
         /**
          * matched 的父节点（去掉同时也在 matched 里的），按**包内出现序**——生产 `readKnowledgeNodesByIds`

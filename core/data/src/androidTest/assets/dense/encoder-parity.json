@@ -1,0 +1,51 @@
+{
+  "generatedBy": "python tools/dense_build/gen_device_parity_fixture.py",
+  "threshold": 0.999,
+  "thresholdMeaning": "端侧编码向量与参考向量的逐条 cosine 下限（任务书硬门）",
+  "dim": 512,
+  "count": 290,
+  "byKind": {
+    "query": 90,
+    "surface": 200
+  },
+  "textSource": {
+    "path": "core\\data\\src\\test\\resources\\dense\\tokenizer-parity-cases.txt",
+    "sha256": "46a3adc79aa49d0c2f7d67acf00ea6cb47902e7e850efa04dd4c7606941989de",
+    "note": "query 行含 BGE 查询前缀；surface 行是向量集原文（节点名/别名）"
+  },
+  "referenceVectors": {
+    "queries": {
+      "path": "build\\dense-model\\int8-queries.npy",
+      "sha256": "fac31f0c29c14a7eca8018840d0c388e84a4d29b834af7eb53111c23aaeb54fd"
+    },
+    "docs": {
+      "path": "build\\dense-model\\int8-docs.npy",
+      "sha256": "2bbc7fbee812dfaa80196f04be440515651af429ef7d02d0964117db2fa41c6a"
+    },
+    "producer": "onnxruntime 1.28.0 on build\\dense-model\\bge-small-zh-v1.5-int8.onnx",
+    "modelSha256": "4d3b31355a3df4ff923db83bc76181f8581592de10f67502be825f519d2fa213"
+  },
+  "golden": {
+    "path": "tools\\kb_coverage\\tables\\golden_queries_v1.json",
+    "sha256": "7c004b763bdd49556e11ff1c9500c9461b09a7383b77f230fa8fd35754e6ae39"
+  },
+  "alignmentSelfCheck": {
+    "note": "用同一份 int8 ONNX 现场重跑 fixture 的 ids，与冻结 npy 逐行比 cosine",
+    "min": 0.9999998807907104,
+    "median": 1.0,
+    "floor": 0.9999
+  },
+  "casesFile": {
+    "path": "core\\data\\src\\androidTest\\assets\\dense\\encoder-parity-cases.tsv",
+    "sha256": "b322c33b1402f8a52c33dcbfc1bdfb185a70d7accd50184ef72990320cafc4ef"
+  },
+  "vectorsFile": {
+    "path": "core\\data\\src\\androidTest\\assets\\dense\\encoder-parity-vectors.f32",
+    "sha256": "3d15902d3e1a7a1633b4375010beb1d7dfa5d573b5e02b26ccf38258c05644c0",
+    "layout": "little-endian float32, row-major, N×512",
+    "l2NormRange": [
+      0.999999463558197,
+      1.0000004768371582
+    ]
+  }
+}

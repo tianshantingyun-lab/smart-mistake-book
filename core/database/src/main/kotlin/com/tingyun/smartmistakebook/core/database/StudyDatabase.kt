@@ -289,10 +289,16 @@ internal abstract class StudyDatabase : RoomDatabase() {
 object StudyDatabaseFactory {
     const val DEFAULT_DATABASE_NAME = "smart-mistake-book.db"
 
-    /** Persistent production builder. The framework driver keeps data in app-private storage. */
+    /**
+     * Persistent production builder. The framework driver keeps data in app-private storage.
+     *
+     * [denseRerank] = 可选稠密腿（Stage-3）。默认 `null` ⇒ 纯词面（与 Stage-1/2 逐字相同）；
+     * 生产装配点见 `SmartMistakeBookApplication`（`DenseRecallAssembly.reranker`）。
+     */
     fun open(
         context: Context,
         databaseName: String = DEFAULT_DATABASE_NAME,
+        denseRerank: DenseRecallReranker? = null,
     ): StudyDatabasePort {
         val database = Room.databaseBuilder(
             context.applicationContext,
@@ -352,10 +358,13 @@ object StudyDatabaseFactory {
         )
             .setDriver(AndroidSQLiteDriver())
             .build()
-        return RoomStudyDatabase(database)
+        return RoomStudyDatabase(database, denseRerank)
     }
 
-    internal fun openInMemory(context: Context): RoomStudyDatabase {
+    internal fun openInMemory(
+        context: Context,
+        denseRerank: DenseRecallReranker? = null,
+    ): RoomStudyDatabase {
         val database = Room.inMemoryDatabaseBuilder(
             context.applicationContext,
             StudyDatabase::class.java,
@@ -364,6 +373,6 @@ object StudyDatabaseFactory {
                 SPLIT_IMPORT_MIGRATION_34_35,
             )
             .build()
-        return RoomStudyDatabase(database)
+        return RoomStudyDatabase(database, denseRerank)
     }
 }

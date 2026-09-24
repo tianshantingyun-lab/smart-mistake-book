@@ -29,10 +29,18 @@ interface KnowledgeReadPort {
         limit: Int,
     ): List<KnowledgeNodeSeedRecord>
 
+    /**
+     * 召回候选：`matched` 优先、父 topic 随后。
+     *
+     * [queryText] = 原始查询文本，仅供可选稠密腿（Stage-3）使用；`null` = 该调用方不要稠密腿
+     * （纯词面 = Stage-1/2 行为）。传了文本也不保证被用到：稠密腿未装配/不可用时静默退回
+     * 词面次序；**返回集合的成员与长度语义不变**（契约见 `DenseRecallReranker`）。
+     */
     suspend fun readSubjectKnowledgeRecallCandidates(
         subject: String,
         searchFeatures: Set<String>,
         limit: Int,
+        queryText: String? = null,
     ): List<KnowledgeNodeSeedRecord>
 
     suspend fun readKnowledgeNodesByIds(ids: Set<String>): List<KnowledgeNodeSeedRecord>

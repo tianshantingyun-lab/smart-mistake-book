@@ -1,0 +1,132 @@
+{
+  "cosineAgainstStage2OfflineArm": {
+    "bge-docs.npy": 0.9990096092224121,
+    "bge-queries.npy": 0.9991949796676636
+  },
+  "cosineAgainstTorchFp32": {
+    "fp32Docs": 0.9999998807907104,
+    "fp32Queries": 0.9999999403953552,
+    "int8Docs": 0.9990096092224121,
+    "int8DocsMean": 0.9993868470191956,
+    "int8Queries": 0.9991949796676636
+  },
+  "dim": 512,
+  "docPrefix": null,
+  "dynamicAxes": [
+    "batch",
+    "seq"
+  ],
+  "gate": {
+    "checks": {
+      "fp32_docs": true,
+      "fp32_queries": true,
+      "int8_docs": true,
+      "int8_queries": true
+    },
+    "note": "产物（权重-only int8）过门；路线 A（激活动态量化）的实测值在同级 comparison 里，未采用",
+    "passed": true,
+    "threshold": 0.999
+  },
+  "generatedBy": "python tools/dense_build/export_bge_int8.py",
+  "inputs": [
+    "input_ids",
+    "attention_mask",
+    "token_type_ids"
+  ],
+  "license": "mit（基座许可证，spec §2.1；可再分发）",
+  "maxLen": 512,
+  "modelId": "bge-small-zh-v1.5-int8-onnx",
+  "normalize": "l2",
+  "onnx": {
+    "fp32Bytes": 94858640,
+    "fp32Path": "build/dense-model/bge-small-zh-v1.5-fp32.onnx",
+    "fp32Sha256": "519a2f4601d842126ce5064132fafd887d351d20907f2795864987a19422f6e9",
+    "int8Bytes": 23952639,
+    "int8Path": "build/dense-model/bge-small-zh-v1.5-int8.onnx",
+    "int8Sha256": "4d3b31355a3df4ff923db83bc76181f8581592de10f67502be825f519d2fa213",
+    "route": "onnx-weight-only-int8-per-channel（自转：int8 权重含嵌入表 + fp32 激活/计算）",
+    "sizeRatioVsFp32": 0.2525,
+    "weightsOnly": {
+      "convertedEmbeddingTables": 3,
+      "convertedMatMuls": 27,
+      "embeddingSkipped": [],
+      "leftFloatMatMuls": 8,
+      "leftFloatReasons": [
+        "/backbone_module/encoder/layer.0/attention/self/MatMul: B 不是常量初始化器（激活×激活）",
+        "/backbone_module/encoder/layer.0/attention/self/MatMul_1: B 不是常量初始化器（激活×激活）",
+        "/backbone_module/encoder/layer.1/attention/self/MatMul: B 不是常量初始化器（激活×激活）",
+        "/backbone_module/encoder/layer.1/attention/self/MatMul_1: B 不是常量初始化器（激活×激活）",
+        "/backbone_module/encoder/layer.2/attention/self/MatMul: B 不是常量初始化器（激活×激活）",
+        "/backbone_module/encoder/layer.2/attention/self/MatMul_1: B 不是常量初始化器（激活×激活）",
+        "/backbone_module/encoder/layer.3/attention/self/MatMul: B 不是常量初始化器（激活×激活）",
+        "/backbone_module/encoder/layer.3/attention/self/MatMul_1: B 不是常量初始化器（激活×激活）"
+      ]
+    }
+  },
+  "onnxruntime": "1.28.0",
+  "opset": 17,
+  "output": "sentence_embedding",
+  "pooling": "cls",
+  "quantizationRouteComparison": {
+    "dynamic-perChannel": {
+      "bytes": 24031552,
+      "docsCosineMean": 0.9938284754753113,
+      "docsCosineMin": 0.9872037172317505,
+      "passedGate": false,
+      "path": "build/tmp-dense-quant/routeA-perChannel.onnx",
+      "perChannel": true,
+      "queriesCosineMin": 0.9893909692764282
+    },
+    "dynamic-perTensor": {
+      "bytes": 23939272,
+      "docsCosineMean": 0.9670930504798889,
+      "docsCosineMin": 0.9499456286430359,
+      "passedGate": false,
+      "path": "build/tmp-dense-quant/routeA-perTensor.onnx",
+      "perChannel": false,
+      "queriesCosineMin": 0.9415236711502075
+    },
+    "weightOnlyInt8PerChannel": {
+      "bytes": 23952639,
+      "convertedMatMuls": 27,
+      "docsCosineMean": 0.9993868470191956,
+      "docsCosineMin": 0.9990096092224121,
+      "leftFloatMatMuls": 8,
+      "leftFloatReasons": [
+        "/backbone_module/encoder/layer.0/attention/self/MatMul: B 不是常量初始化器（激活×激活）",
+        "/backbone_module/encoder/layer.0/attention/self/MatMul_1: B 不是常量初始化器（激活×激活）",
+        "/backbone_module/encoder/layer.1/attention/self/MatMul: B 不是常量初始化器（激活×激活）",
+        "/backbone_module/encoder/layer.1/attention/self/MatMul_1: B 不是常量初始化器（激活×激活）",
+        "/backbone_module/encoder/layer.2/attention/self/MatMul: B 不是常量初始化器（激活×激活）",
+        "/backbone_module/encoder/layer.2/attention/self/MatMul_1: B 不是常量初始化器（激活×激活）",
+        "/backbone_module/encoder/layer.3/attention/self/MatMul: B 不是常量初始化器（激活×激活）",
+        "/backbone_module/encoder/layer.3/attention/self/MatMul_1: B 不是常量初始化器（激活×激活）"
+      ],
+      "passedGate": true,
+      "path": "build/dense-model/bge-small-zh-v1.5-int8.onnx",
+      "queriesCosineMin": 0.9991949796676636
+    }
+  },
+  "queryPrefix": "为这个句子生成表示以用于检索相关文章：",
+  "repo": "BAAI/bge-small-zh-v1.5",
+  "revision": "7999e1d3359715c523056ef9478215996d62a620",
+  "tokenizer": {
+    "className": "BertTokenizer",
+    "kwargs": {
+      "do_lower_case": true,
+      "strip_accents": false
+    },
+    "tokenizerJsonSha256": "48cea5d44424912a6fd1ea647bf4fe50b55ab8b1e5879c3275f80e339e8fae26",
+    "vocabSha256": "45bbac6b341c319adc98a532532882e91a9cefc0329aa57bac9ae761c27b291c"
+  },
+  "toolchainProbe": {
+    "ai_edge_torch": false,
+    "onnx": true,
+    "onnxruntime": true,
+    "tensorflow": false,
+    "tflite": false,
+    "torch": true,
+    "transformers": true
+  },
+  "torch": "2.13.0+cpu"
+}

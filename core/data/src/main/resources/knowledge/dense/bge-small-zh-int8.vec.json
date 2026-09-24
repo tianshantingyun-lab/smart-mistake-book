@@ -1,0 +1,77 @@
+{
+  "bytes": 17169237,
+  "corpus": {
+    "aliasVectors": 25360,
+    "atomicNodes": 3572,
+    "canonicalVectors": 3572,
+    "includeTopics": false,
+    "layoutSource": "spec §2.2；与离线臂 stage2_common.build_vector_layout 同序",
+    "nodeScore": "max over the node's vectors (canonicalName + aliases) cosine",
+    "vectorCount": 28932
+  },
+  "format": {
+    "count": 28932,
+    "dim": 512,
+    "dtype": "int8-per-vector-f32-scale",
+    "dtypeCode": 1,
+    "idsAreKnowledgeNodeIds": true,
+    "layout": "header(24B) | ids block (u32 len + utf8 per row) | int8 matrix (row-major) | f32 scales",
+    "magic": "SMBV",
+    "scaleRule": "scale[r] = max(abs(v_r))/127 ; value = int8 * scale[r]",
+    "version": 1
+  },
+  "generatedBy": "python tools/dense_build/pack_dense_asset.py",
+  "model": {
+    "dim": 512,
+    "docPrefix": null,
+    "inputs": [
+      "input_ids",
+      "attention_mask",
+      "token_type_ids"
+    ],
+    "license": "mit（基座许可证，spec §2.1；可再分发）",
+    "maxLen": 512,
+    "modelId": "bge-small-zh-v1.5-int8-onnx",
+    "modelManifest": "tools/dense_build/model-manifest.json",
+    "normalize": "l2",
+    "onnxFp32Path": "build/dense-model/bge-small-zh-v1.5-fp32.onnx",
+    "onnxFp32Sha256": "519a2f4601d842126ce5064132fafd887d351d20907f2795864987a19422f6e9",
+    "onnxInt8Bytes": 23952639,
+    "onnxInt8Path": "build/dense-model/bge-small-zh-v1.5-int8.onnx",
+    "onnxInt8Sha256": "4d3b31355a3df4ff923db83bc76181f8581592de10f67502be825f519d2fa213",
+    "onnxRoute": "onnx-weight-only-int8-per-channel（自转：int8 权重含嵌入表 + fp32 激活/计算）",
+    "output": "sentence_embedding",
+    "pooling": "cls",
+    "queryPrefix": "为这个句子生成表示以用于检索相关文章：",
+    "repo": "BAAI/bge-small-zh-v1.5",
+    "revision": "7999e1d3359715c523056ef9478215996d62a620"
+  },
+  "packId": "moe-2025-four-subjects-v1",
+  "packPath": "core/data/src/main/resources/knowledge/moe-2025-four-subjects-v1.json",
+  "packSha256": "2973662a1b0df66780d5f6d75f458034b749ff7ebbc605cab1dcecb30994339e",
+  "productionLexicalLeg": {
+    "note": "生产 v1 词面腿（COUNT(DISTINCT feature)，行序 = 生产排序）",
+    "path": "build/production-lexical-leg.tsv",
+    "rows": 32769,
+    "sha256": "53d193308bb9ce98ff2285ef641f35b87efe8709a90bd679675ee2dbf72e919a"
+  },
+  "quantization": {
+    "endToEndCosineMedianVsFp32Reference": 0.9992815852165222,
+    "endToEndCosineMinVsFp32Reference": 0.9988898634910583,
+    "gate": 0.999,
+    "kind": "int8-per-vector-symmetric",
+    "roundtripCosineMedianVsInt8Model": 0.9998913407325745,
+    "roundtripCosineMinVsInt8Model": 0.9997469782829285,
+    "scaleRule": "scale[r] = max(abs(v_r))/127 ; value = int8 * scale[r]",
+    "scalesBytes": 115728,
+    "vsFp32ReferencePath": "build/stage2-dense-work/vectors/bge-docs.npy"
+  },
+  "regeneratedFrom": "python tools/dense_build/export_bge_int8.py",
+  "sha256": "7666ab2cc8ffe3d9e72d3dc1979b793dbcc7ea342afe57f0979ed13f63277225",
+  "vocab": {
+    "path": "tools/dense_build/vocab/bge-small-zh-v1.5-vocab.txt",
+    "sha256": "45bbac6b341c319adc98a532532882e91a9cefc0329aa57bac9ae761c27b291c",
+    "tokenizerJsonPath": "tools/dense_build/vocab/bge-small-zh-v1.5-tokenizer.json",
+    "tokenizerJsonSha256": "48cea5d44424912a6fd1ea647bf4fe50b55ab8b1e5879c3275f80e339e8fae26"
+  }
+}

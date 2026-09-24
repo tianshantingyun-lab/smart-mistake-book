@@ -34,6 +34,7 @@ import com.tingyun.smartmistakebook.core.data.settings.DataStoreReviewReminderRe
 import com.tingyun.smartmistakebook.core.data.settings.DataStoreSleepJournalStore
 import com.tingyun.smartmistakebook.core.data.settings.DataStoreSchedulingSettingsStore
 import com.tingyun.smartmistakebook.core.database.StudyDatabaseFactory
+import com.tingyun.smartmistakebook.core.data.knowledge.dense.DenseRecallAssembly
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.domain.CaptureWorkflowRepository
 import com.tingyun.smartmistakebook.core.domain.BatchImportRepository
@@ -171,7 +172,9 @@ class SmartMistakeBookApplication : Application() {
             // book is not what the student left, and staying silent about that
             // is indistinguishable from lying about their data.
             val restoreRecovery = BackupRestoreStartupRecovery.recoverOnStartup(this)
-            database = StudyDatabaseFactory.open(this)
+            // Stage-3 稠密腿（可选）：装配失败/未启用即返回 null，检索退回纯词面。
+            // 总开关在 core:data 的 DenseRecallAssembly.ENABLED（一行回退）。
+            database = StudyDatabaseFactory.open(this, denseRerank = DenseRecallAssembly.reranker(this))
             schedulingSettingsStore = DataStoreSchedulingSettingsStore(this, applicationScope)
             // Settings are read synchronously to mirror the synchronous database
             // open above; a scheduling-flag flip applies on the next launch so a

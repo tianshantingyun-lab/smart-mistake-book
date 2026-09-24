@@ -4,6 +4,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.os.SystemClock
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.tingyun.smartmistakebook.core.data.knowledge.dense.DenseRecallAssembly
 import com.tingyun.smartmistakebook.core.database.KnowledgeNodeRelationContract
 import com.tingyun.smartmistakebook.core.database.KnowledgeNodeRelationRecord
 import com.tingyun.smartmistakebook.core.database.KnowledgeNodeSeedRecord
@@ -26,6 +27,7 @@ import com.tingyun.smartmistakebook.core.model.MasteryStatus
 import com.tingyun.smartmistakebook.core.model.ProjectionCheckpoint
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -36,7 +38,13 @@ class KnowledgeContextRetrievalInstrumentedTest {
     fun bundledSubjectsRecallExpectedKnowledgeWithoutCrossSubjectCandidates() = runBlocking {
         val context = ApplicationProvider.getApplicationContext<android.content.Context>()
         val databaseName = "knowledge-recall-quality-${System.nanoTime()}.db"
-        val store = StudyDatabaseFactory.open(context, databaseName)
+        // 生产装配（`SmartMistakeBookApplication`）把稠密腿接到 store 上；本测试量的是
+        // **新路由**（编码 + 扫描 + 融合重排），所以必须同样装配——不装配会安静地量到
+        // 纯词面回退（2026-09-24 实测：19/19 也过，但那是另一条路由）。
+        val denseRerank = requireNotNull(DenseRecallAssembly.reranker(context)) {
+            "稠密腿装配返回 null（ENABLED=false 或装配失败）——本测试测的是新路由，不能静默降级"
+        }
+        val store = StudyDatabaseFactory.open(context, databaseName, denseRerank = denseRerank)
         try {
             BundledKnowledgeBaseInstaller.install(store)
             val cases = listOf(
@@ -70,6 +78,8 @@ class KnowledgeContextRetrievalInstrumentedTest {
                     subject = case.subject,
                     searchFeatures = KnowledgeSearchFeatureExtractor.fromQuestion(case.question),
                     limit = 64,
+                    // 生产调用点传 queryText（稠密腿的输入）；不传就是词面次序，不是新路由。
+                    queryText = case.question,
                 )
                 val selected = KnowledgeContextRetriever.select(
                     candidates = candidates,
@@ -112,7 +122,10 @@ class KnowledgeContextRetrievalInstrumentedTest {
     fun largeSubjectRecallRemainsBoundedOnRoom() = runBlocking {
         val context = ApplicationProvider.getApplicationContext<android.content.Context>()
         val databaseName = "knowledge-retrieval-performance-${System.nanoTime()}.db"
-        val store = StudyDatabaseFactory.open(context, databaseName)
+        val denseRerank = requireNotNull(DenseRecallAssembly.reranker(context)) {
+            "稠密腿装配返回 null（ENABLED=false 或装配失败）——本测试测的是新路由，不能静默降级"
+        }
+        val store = StudyDatabaseFactory.open(context, databaseName, denseRerank = denseRerank)
         try {
             val topic = topic()
             val points = (1..KNOWLEDGE_POINT_COUNT).map(::point)

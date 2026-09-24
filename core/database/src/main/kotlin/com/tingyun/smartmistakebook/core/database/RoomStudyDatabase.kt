@@ -25,6 +25,8 @@ import com.tingyun.smartmistakebook.core.model.TeachingAdvisoryRecord
 
 internal class RoomStudyDatabase(
     internal val database: StudyDatabase,
+    /** 可选稠密腿（Stage-3）；`null` = 纯词面，见 `DenseRecallReranker`。 */
+    denseRerank: DenseRecallReranker? = null,
 ) : StudyDatabasePort {
     private val knowledgeResearchReviewStore = RoomKnowledgeResearchReviewStore(database)
 
@@ -33,7 +35,7 @@ internal class RoomStudyDatabase(
     private val splitImports = RoomSplitImportStore(database)
     private val masteryOverview = RoomMasteryOverviewStore(database)
     private val librarySearch = RoomLibrarySearchStore(database)
-    private val knowledgeBase = RoomKnowledgeBaseStore(database, knowledgeResearchReviewStore)
+    private val knowledgeBase = RoomKnowledgeBaseStore(database, knowledgeResearchReviewStore, denseRerank)
 
     /** 内容调和是独立关注点，与读取/导入分开（见 `RoomKnowledgeContentReconciler` 的 KDoc）。 */
     private val contentReconciler = RoomKnowledgeContentReconciler(database)
@@ -440,10 +442,12 @@ internal class RoomStudyDatabase(
         subject: String,
         searchFeatures: Set<String>,
         limit: Int,
+        queryText: String?,
     ): List<KnowledgeNodeSeedRecord> = knowledgeBase.readSubjectKnowledgeRecallCandidates(
         subject = subject,
         searchFeatures = searchFeatures,
         limit = limit,
+        queryText = queryText,
     )
 
     override suspend fun readKnowledgeNodesByIds(ids: Set<String>): List<KnowledgeNodeSeedRecord> =

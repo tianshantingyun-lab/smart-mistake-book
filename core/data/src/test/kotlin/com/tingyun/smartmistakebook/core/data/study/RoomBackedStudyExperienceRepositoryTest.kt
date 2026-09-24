@@ -2043,6 +2043,7 @@ internal class FakeStudyDatabasePort : StudyDatabasePort {
         subject: String,
         searchFeatures: Set<String>,
         limit: Int,
+        queryText: String?,
     ): List<KnowledgeNodeSeedRecord> =
         // Filtered by subject and truncated, but deliberately not matched against
         // searchFeatures: resolution quality belongs to the real index and is

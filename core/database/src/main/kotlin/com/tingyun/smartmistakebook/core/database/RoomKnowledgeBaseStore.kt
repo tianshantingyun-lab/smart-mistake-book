@@ -1,7 +1,9 @@
 package com.tingyun.smartmistakebook.core.database
 
 import androidx.room3.withWriteTransaction
+import android.util.Log
 import com.tingyun.smartmistakebook.core.database.dao.KnowledgeGroundingSummaryRow
+import com.tingyun.smartmistakebook.core.database.dao.KnowledgeRecallCandidateRow
 import com.tingyun.smartmistakebook.core.database.dao.ReviewedKnowledgeCoverageRow
 import com.tingyun.smartmistakebook.core.database.entity.ContentInstallStateEntity
 import com.tingyun.smartmistakebook.core.database.entity.KnowledgeGroundingRequestEntity
@@ -18,6 +20,7 @@ import com.tingyun.smartmistakebook.core.database.entity.PracticeUnitKnowledgeBi
 import com.tingyun.smartmistakebook.core.database.port.KnowledgeReadPort
 import com.tingyun.smartmistakebook.core.database.port.PracticeUnitKnowledgeBindingRecord
 import com.tingyun.smartmistakebook.core.model.KnowledgeNodeVerificationStatus
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -29,6 +32,9 @@ internal const val PSEUDO_TAXONOMY_VERSION = "pseudo-node-v1"
 
 private const val KNOWLEDGE_NODE_QUERY_CHUNK_SIZE = 400
 
+/** 稠密腿（可选）的日志标签。 */
+private const val TAG = "KnowledgeRecall"
+
 /**
  * Knowledge-base import/validation, grounding requests, and the pseudo-KC
  * fallback binding (spec §3.4).
@@ -36,6 +42,11 @@ private const val KNOWLEDGE_NODE_QUERY_CHUNK_SIZE = 400
 internal class RoomKnowledgeBaseStore(
     private val database: StudyDatabase,
     private val reviewStore: RoomKnowledgeResearchReviewStore,
+    /**
+     * 稠密腿（Stage-3）：`null` = 未装配 ⇒ 与纯词面形态（Stage-1/2）完全一致。
+     * 装配点在 `StudyDatabaseFactory.open`；总开关在 `DenseRecallAssembly.ENABLED`（core:data）。
+     */
+    private val denseRerank: DenseRecallReranker? = null,
 ) {
     suspend fun ensurePseudoKnowledgeBinding(
         practiceUnitId: String,
@@ -105,11 +116,26 @@ internal class RoomKnowledgeBaseStore(
         }
     }
 
-    /** matched 优先、父 topic 随后（供上层解释）；D1 落地依据见 docs/kb-stage2-report-2026-09-23.md */
+    /**
+     * matched 优先、父 topic 随后（供上层解释）；D1 落地依据见 docs/kb-stage2-report-2026-09-23.md
+     *
+     * **Stage-3 稠密腿只改 matched 的次序**（spec §2.4 的 α=0.5 归一化分数融合）：
+     * - 候选域 = 词面召回集本身（`subject` 作用域、可信过滤、`limit` 上限都不动）；
+     * - 稠密腿不可用（未装配 / 无查询文本 / 加载或推理失败）⇒ 原样返回词面次序，**不抛错**；
+     * - 返回集合的长度语义不变：仍是"≤ limit 个 matched + 其父节点"。
+     *
+     * 与离线参考数的**已知差异**（如实记录，不藏）：离线判分器的排序域是该科全部节点
+     * （含词面腿无分的原子节点），端侧按任务书只重排词面召回集 —— 实测差异
+     * = 90 条里 1 条的 top-5 成员、命中数 0 条（见 `tools/dense_build/stage3_device_sim.py`）。
+     *
+     * @param queryText 原始查询文本（稠密腿的输入）。`null` = 该调用方不要稠密腿
+     *   （例：`MASTERY_FOCUS_RESOLUTION_LIMIT` 的裸 B 路，D7 冻结了它的形态）。
+     */
     suspend fun readSubjectKnowledgeRecallCandidates(
         subject: String,
         searchFeatures: Set<String>,
         limit: Int,
+        queryText: String? = null,
     ): List<KnowledgeNodeSeedRecord> {
         require(subject.isNotBlank()) { "subject must not be blank" }
         require(limit in 1..MAX_KNOWLEDGE_RECALL_CANDIDATES) {
@@ -123,7 +149,8 @@ internal class RoomKnowledgeBaseStore(
         }
         ensureKnowledgeSearchIndex(subject)
         val dao = database.problemOrganizationDao()
-        val matched = dao.searchSubjectKnowledgeRecallCandidates(subject, searchFeatures, limit)
+        val rows = dao.searchSubjectKnowledgeRecallCandidates(subject, searchFeatures, limit)
+        val matched = rerankMatchOrder(subject, queryText, rows)
         val matchedIds = matched.mapTo(hashSetOf(), KnowledgeNodeEntity::knowledgeNodeId)
         val parents = dao.readKnowledgeNodesByIds(
             matched.mapNotNullTo(hashSetOf(), KnowledgeNodeEntity::parentKnowledgeNodeId) - matchedIds,
@@ -131,6 +158,36 @@ internal class RoomKnowledgeBaseStore(
         return (matched + parents)
             .distinctBy(KnowledgeNodeEntity::knowledgeNodeId)
             .map(KnowledgeNodeEntity::toSeedRecord)
+    }
+
+    /**
+     * 稠密腿重排（仅次序）。任何一步不成立都退回词面次序——这条路径上"少一条可选的腿"
+     * 永远优于"主检索失败"。次序守卫（排列校验）在 [DenseRecallOrdering] 里，JVM 可测。
+     */
+    private suspend fun rerankMatchOrder(
+        subject: String,
+        queryText: String?,
+        rows: List<KnowledgeRecallCandidateRow>,
+    ): List<KnowledgeNodeEntity> {
+        val lexicalOrder = rows.map(KnowledgeRecallCandidateRow::node)
+        val reranker = denseRerank
+        // 单条候选的重排是恒等变换：不为了"跑一遍"去加载模型与 17MB 资产。
+        if (reranker == null || queryText.isNullOrBlank() || rows.size < 2) return lexicalOrder
+        val reranked = try {
+            reranker.order(
+                subject = subject,
+                queryText = queryText,
+                candidates = rows.map { DenseRecallCandidate(it.node.knowledgeNodeId, it.matchCount) },
+            )
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (failure: Throwable) {
+            // 接口契约说"失败回 null"，但实现是另一个模块（core:data）给的；
+            // 这里再兜一层，使"绝不崩、绝不返回空"不依赖对方守约。
+            Log.w(TAG, "dense rerank threw for subject=$subject: $failure")
+            null
+        }
+        return DenseRecallOrdering.orderOrLexical(lexicalOrder, reranked)
     }
 
     /**

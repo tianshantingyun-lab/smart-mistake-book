@@ -23,6 +23,7 @@ REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / "tools"))
 
 from kb_build import check_pack_contract, gate, pack_io, roundtrip, update_manifest  # noqa: E402
+from dense_build import check_asset  # noqa: E402
 
 
 def pick_default_root() -> Path:
@@ -74,6 +75,17 @@ def run(root: Path) -> dict:
                 problems.append(str(exc))
         sections["manifest"] = {"ok": not problems, "problems": problems}
 
+        # dense 向量资产门（Stage-3）：`core/data/src/main/resources/knowledge/dense/` 下的
+        # `.vec` 是**随包分发的资产**，它的向量是按某一版包与词表生成的。包或词表内容变了而
+        # 向量没跟着重生成，端侧就会拿"旧内容的向量"比"新词条的文本"——而现有 22 门只查包
+        # 自身的契约，看不到这个文件。这一节把三者钉在一起（旁车哈希 == 当前包/词表/.vec）。
+        dense_result = check_asset.evaluate(REPO)
+        sections["dense"] = {
+            "ok": dense_result["ok"],
+            "checks": len(dense_result["checks"]),
+            "failed": [{"name": c["name"], "detail": c["detail"]} for c in dense_result["failed"]],
+        }
+
         sections["ok"] = all(s["ok"] for s in sections.values() if isinstance(s, dict))
         return sections
     finally:
@@ -94,7 +106,7 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(result, ensure_ascii=False, indent=1))
     else:
         print(f"kb checks（{root}）：")
-        for name in ("gates", "consistency", "roundtrip", "manifest"):
+        for name in ("gates", "consistency", "roundtrip", "manifest", "dense"):
             section = result[name]
             mark = "OK  " if section["ok"] else "FAIL"
             extra = ""
@@ -106,6 +118,8 @@ def main(argv: list[str] | None = None) -> int:
                 extra = f"：{section['failed']} 个文件不一致"
             if name == "manifest" and section["problems"]:
                 extra = "：" + "; ".join(section["problems"][:3])
+            if name == "dense" and section["failed"]:
+                extra = "：" + "; ".join(f"{f['name']}（{f['detail']}）" for f in section["failed"])
             print(f"  {mark} {name}{extra}")
         if not result["ok"]:
             for item in result["gates"]["failed"][:10]:

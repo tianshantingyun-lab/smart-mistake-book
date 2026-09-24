@@ -3,6 +3,8 @@ package com.tingyun.smartmistakebook.core.data.knowledge
 import android.os.SystemClock
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.tingyun.smartmistakebook.core.data.knowledge.dense.DenseRecallAssembly
+import com.tingyun.smartmistakebook.core.database.DenseRecallCandidate
 import com.tingyun.smartmistakebook.core.database.KnowledgeSearchFeatureExtractor
 import com.tingyun.smartmistakebook.core.database.StudyDatabaseFactory
 import kotlinx.coroutines.runBlocking
@@ -13,6 +15,7 @@ import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -73,13 +76,38 @@ class GoldenRetrievalInstrumentedTest {
         val context = ApplicationProvider.getApplicationContext<android.content.Context>()
         val databaseName = "golden-retrieval-${System.nanoTime()}.db"
         context.deleteDatabase(databaseName)
-        val store = StudyDatabaseFactory.open(context, databaseName)
+        // **融合路由必须真的生效**：生产在 `SmartMistakeBookApplication` 里这样装配
+        // （`StudyDatabaseFactory.open(this, denseRerank = DenseRecallAssembly.reranker(this))`）。
+        // 不装配时 store 走纯词面回退，本测试会安静地量到旧基线（2026-09-24 实测：主集
+        // 0.6444 / p95 18ms）——那就是"测了另一个路由"。装配 + 下面那条"腿是活的"断言，
+        // 一起把这种静默回退堵掉。
+        val denseRerank = DenseRecallAssembly.reranker(context)
+        val activeReranker = requireNotNull(denseRerank) {
+            "稠密腿装配返回 null（ENABLED=false 或装配失败）——本测试测的是融合路由，不能静默降级"
+        }
+        val store = StudyDatabaseFactory.open(context, databaseName, denseRerank = activeReranker)
         try {
             BundledKnowledgeBaseInstaller.install(store)
 
             val cases = loadGoldenFromAssets(context)
             assertTrue("金标集条数低于 D12 下限 80：${cases.size}", cases.size >= 80)
             assertTrue("金标集条数超过 D12 上限 100：${cases.size}", cases.size <= 100)
+
+            // 稠密腿"是活的"探测：拿第一条题的真候选跑一次重排，返回 null 说明编码/资产/模型
+            // 有一步在设备上失败了（那是设计内的静默回退，但本测试要测的是**融合**路由，
+            // 静默回退必须当场红，不能把旧基线的数当成新路由的数）。
+            val probe = cases.first()
+            val probeCandidates = store.readSubjectKnowledgeRecallCandidates(
+                subject = probe.subject,
+                searchFeatures = KnowledgeSearchFeatureExtractor.fromQuestion(probe.query),
+                limit = SCORED_TOP_K,
+            ).map { DenseRecallCandidate(it.knowledgeNodeId, 1) }
+            assertTrue("探测用候选为空，无法判断稠密腿是否可用", probeCandidates.isNotEmpty())
+            assertNotNull(
+                "稠密腿在设备上不可用（编码/资产/模型任一步失败都会静默回退到纯词面）——" +
+                    "本测试测的是融合路由，回退时必须红",
+                activeReranker.order(probe.subject, probe.query, probeCandidates),
+            )
 
             // 预热：每科一次生产路由（首次触发该科的整科索引构建——一次性成本，不入 p95 统计）。
             cases.map { it.subject }.distinct().forEach { subject ->
@@ -88,6 +116,9 @@ class GoldenRetrievalInstrumentedTest {
                     subject = subject,
                     searchFeatures = warmupFeatures,
                     limit = SCORED_TOP_K,
+                    // 带 queryText：让稠密腿的**一次性**加载（模型 62MB + 资产 17MB）落在预热轮里，
+                    // 而不是混进 p95 的样本（预热轮不参与判分）。
+                    queryText = cases.first { it.subject == subject }.query,
                 )
             }
 
@@ -103,7 +134,15 @@ class GoldenRetrievalInstrumentedTest {
                     val recall = store.readSubjectKnowledgeRecallCandidates(
                         subject = case.subject,
                         searchFeatures = KnowledgeSearchFeatureExtractor.fromQuestion(case.query),
-                        limit = SCORED_TOP_K,
+                        // 候选深度 = 512（生产 `MAX_KNOWLEDGE_RECALL_CANDIDATES`，也是
+                        // `build/stage3-device-expectation.json` 的参考口径）：稠密腿只能**重排**
+                        // 候选域里的成员，域只有 5 条时融合再准也拉不进新节点（实测：limit=5
+                        // 时主集恒为 0.6444、只有 MRR 动；512 宽召回 + 融合才是 +8.9pp 的那条路）。
+                        limit = RECALL_DEPTH,
+                        // 生产三个调用点都传 queryText（RoomTutorKnowledgeContextLoader /
+                        // RoomMistakeOrganizationRepository / RoomTutorToolRunner）；不传 ⇒
+                        // store 按契约走词面次序，本测试就不是"融合路由"了。
+                        queryText = case.query,
                     )
                     elapsedMillis += (SystemClock.elapsedRealtimeNanos() - started) / 1_000_000
                     assertTrue(
@@ -148,7 +187,8 @@ class GoldenRetrievalInstrumentedTest {
                 val probe = store.readSubjectKnowledgeRecallCandidates(
                     subject = s.subject,
                     searchFeatures = KnowledgeSearchFeatureExtractor.fromQuestion(s.query),
-                    limit = MISS_PROBE_LIMIT,
+                    limit = RECALL_DEPTH,
+                    queryText = s.query,
                 )
                 // `take` 不能省：store 返回"matched 优先 + 父节点随后"，序列可长过深度，
                 // 不截断就会报出超过声明深度的名次（2026-09-23 实测过一次 rank=284>256）。
@@ -304,6 +344,13 @@ class GoldenRetrievalInstrumentedTest {
         const val ASSET_JSON = "golden/golden_queries_v1.json"
         const val ASSET_SHA256 = "golden/golden_queries_v1.json.sha256"
         const val SCORED_TOP_K = 5
+
+        /**
+         * 候选深度 = 生产 `MAX_KNOWLEDGE_RECALL_CANDIDATES`（512）。判分窗口仍是 D1 形态的
+         * 前 [SCORED_TOP_K] 名；深度决定的是**稠密腿能重排多大的域**——参考数
+         * （`build/stage3-device-expectation.json`，主集 0.7333）就是在 512 宽召回上算的。
+         */
+        const val RECALL_DEPTH = 512
         const val SAMPLES_PER_QUERY = 5
         const val ATOMIC_SUFFIX = ":atomic:"
 

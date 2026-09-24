@@ -143,6 +143,7 @@ class RoomTutorKnowledgeContextLoaderTest {
             subject: String,
             searchFeatures: Set<String>,
             limit: Int,
+            queryText: String?,
         ): List<KnowledgeNodeSeedRecord> = throw IllegalStateException("boom")
     }
 }

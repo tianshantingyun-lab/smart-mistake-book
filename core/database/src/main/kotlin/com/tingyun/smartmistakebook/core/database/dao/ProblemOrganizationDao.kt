@@ -1,6 +1,7 @@
 package com.tingyun.smartmistakebook.core.database.dao
 
 import androidx.room3.Dao
+import androidx.room3.Embedded
 import androidx.room3.Insert
 import androidx.room3.OnConflictStrategy
 import androidx.room3.Query
@@ -22,6 +23,12 @@ internal data class ReviewedKnowledgeCoverageRow(
     val atomicKnowledgeCount: Int,
     val reviewedSourceCount: Int,
     val latestReviewedAtEpochMillis: Long,
+)
+
+/** 召回候选行：节点 + 词面分（`COUNT(DISTINCT feature.search_feature)`）。 */
+internal data class KnowledgeRecallCandidateRow(
+    @Embedded val node: KnowledgeNodeEntity,
+    val matchCount: Int,
 )
 
 @Dao
@@ -148,9 +155,17 @@ internal interface ProblemOrganizationDao {
         limit: Int,
     ): List<KnowledgeNodeEntity>
 
+    /**
+     * 召回候选 + **该节点的词面分**（`COUNT(DISTINCT feature.search_feature)`）。
+     *
+     * 词面分随行返回而不是另开一条查询：Stage-3 的融合口径要求"词面腿在本查询候选域内
+     * 做 min-max"（spec §2.4），分数与排序出自**同一个** `GROUP BY`/`ORDER BY`；另写一条
+     * 同 WHERE 的查询就会成为第二个漂移源（见 `countReviewedKnowledgeNodesBySubject` 的同类注释）。
+     * 排序键与旧签名逐条相同（`COUNT(DESC) → ATOMIC 优先 → canonical_name → node_id`）。
+     */
     @Query(
         """
-        SELECT node.*
+        SELECT node.*, COUNT(DISTINCT feature.search_feature) AS matchCount
         FROM knowledge_search_feature AS feature
         INNER JOIN knowledge_node AS node
           ON node.knowledge_node_id = feature.knowledge_node_id
@@ -171,7 +186,7 @@ internal interface ProblemOrganizationDao {
         subject: String,
         searchFeatures: Set<String>,
         limit: Int,
-    ): List<KnowledgeNodeEntity>
+    ): List<KnowledgeRecallCandidateRow>
 
     /**
      * 检索索引自愈的分母。过滤条件**必须与召回查询逐条一致**（同样的
