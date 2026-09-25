@@ -334,6 +334,39 @@ class ModelTaskFingerprintStabilityTest {
     }
 
     @Test
+    fun aSchemaOneRespondRowStillValidatesAfterEveryLaterCarrierWasAdded() {
+        // 第三条指纹链（schemaVersion == MIN_SUPPORTED 的 legacy 分支）只按"当年有哪些键"重算。
+        // v1 时代的 Respond 输入没有这些键（baseline b5fe5ddb 的字段表为准）：本条消息附图、
+        // 工具环载体、早期对话摘要、候选菜单、已知锚、代号通道、显式附加题——少抹平一个，
+        // 读回这条 v1 行就会算出与存库不同的哈希，toSnapshot 直接抛完整性异常。
+        val legacyJson = ModelTaskCodec.encodeRequest(
+            ModelTaskRequest(
+                schemaVersion = ModelTaskRequest.MIN_SUPPORTED_SCHEMA_VERSION,
+                requestId = "respond:legacy-v1",
+                input = respondInput(),
+                occurredAtEpochMillis = 1_000,
+            ),
+        )
+            // 请求级：v1 的负载是四字段包装（schemaVersion/requestId/input/occurredAtEpochMillis），
+            // 后加的披露清单与同意位都不在里面。
+            .replace(",\"egressManifest\":null", "")
+            .replace(",\"agentConsentGranted\":false", "")
+            // 输入级：baseline 的 Respond 字段表里没有这些键。
+            .replace(",\"studentImageAssetRefs\":[]", "")
+            .replace(",\"toolDeclarations\":[]", "")
+            .replace(",\"toolRoundResults\":[]", "")
+            .replace(",\"priorDigest\":null", "")
+            .replace(",\"boundQuestionCandidates\":[]", "")
+            .replace(",\"knownRoundQuestion\":null", "")
+            .replace(",\"knowledgeCodes\":[]", "")
+            .replace(",\"attachedQuestion\":null", "")
+        val decoded = ModelTaskCodec.decodeRequest(legacyJson)
+
+        assertEquals(ModelTaskRequest.MIN_SUPPORTED_SCHEMA_VERSION, decoded.schemaVersion)
+        assertEquals(sha256Hex(legacyJson), ModelTaskFingerprint.of(decoded))
+    }
+
+    @Test
     fun knownRoundQuestionCarrierKeepsTheOperationFingerprintStableAcrossSchemaVersions() {
         // 请求侧已知题锚（schema 12）在空值下不得改变逻辑指纹：v11 行当年是按"没有这个键"算的。
         val v11 = ModelTaskRequest(

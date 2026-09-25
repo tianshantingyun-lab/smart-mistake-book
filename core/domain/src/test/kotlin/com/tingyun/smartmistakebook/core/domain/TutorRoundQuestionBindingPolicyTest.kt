@@ -1,6 +1,7 @@
 package com.tingyun.smartmistakebook.core.domain
 
 import com.tingyun.smartmistakebook.core.model.ModelFailureCode
+import com.tingyun.smartmistakebook.core.model.AttachedRoundQuestion
 import com.tingyun.smartmistakebook.core.model.ModelTaskFailure
 import com.tingyun.smartmistakebook.core.model.ModelTaskFingerprint
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
@@ -356,6 +357,89 @@ class TutorRoundQuestionBindingPolicyTest {
                 studentMessage = "光的折射实验这道题再讲一遍",
                 knownRoundQuestion = candidate("p-1", "r-1", "光的折射实验"),
             ),
+        )
+    }
+
+    @Test
+    fun `an explicitly attached question carries over even when the model did not restate it`() {
+        // 学生显式附加的题就是本轮的题锚：请求契约保证 knownRoundQuestion 与它同题、且它
+        // 在本轮候选菜单内。它不依赖模型复述——模型没复述（原生 tool_calls 路由的常见形态）
+        // 时，附加题此前会从下一轮的菜单里静默消失，只剩一条日志。
+        val attached = candidate("p-attached", "r-attached", "自由落体位移")
+        val task = attachedRespondTask(
+            createdAtEpochMillis = 3,
+            attached = attached,
+            boundQuestion = null,
+        )
+
+        assertEquals(attached, previousBoundRoundQuestion(listOf(task)))
+
+        // 反方向不变：模型复述了另一道题时，延续的仍是**已校验的绑定**，不是附加题。
+        val declaredTask = attachedRespondTask(
+            createdAtEpochMillis = 4,
+            attached = attached,
+            boundQuestion = declaration("p-other", "r-other", "另一道题"),
+            candidate = candidate("p-other", "r-other", "另一道题"),
+        )
+
+        assertEquals("p-other", previousBoundRoundQuestion(listOf(declaredTask))?.problemId)
+    }
+
+    /** 学生显式附加了一道题的一轮（`buildTutorRespondRequest` 的生产口径：known == attached）。 */
+    private fun attachedRespondTask(
+        createdAtEpochMillis: Long,
+        attached: RelatedProblemCandidate,
+        boundQuestion: TutorRoundQuestionDeclaration?,
+        candidate: RelatedProblemCandidate = attached,
+        status: ModelTaskStatus = ModelTaskStatus.SUCCEEDED,
+    ): ModelTaskSnapshot {
+        val attachedRoundQuestion = AttachedRoundQuestion(
+            problemId = attached.problemId,
+            problemRevisionId = attached.problemRevisionId,
+            revisionNumber = 2,
+            subject = SubjectKind.PHYSICS,
+            title = attached.title,
+            questionDocument = attached.questionDocument,
+        )
+        val input = TutorRespondInput(
+            sessionId = "session-1",
+            draftRevisionNumber = 1,
+            subject = SubjectKind.PHYSICS.name,
+            questionDocument = QuestionDocument(
+                id = "question-current",
+                blocks = listOf(ContentBlock.Paragraph("stem", "题干")),
+            ),
+            relevantLearningEvidence = emptyList(),
+            projectionIsCurrent = true,
+            responseOrdinal = createdAtEpochMillis.toInt(),
+            studentMessage = "讲讲这道题",
+            // 组合与生产口径一致：附加题是本轮已知锚（必须在菜单内），模型若要声明别的题，
+            // 那道题也必须在菜单内。
+            boundQuestionCandidates = listOf(attachedRoundQuestion.toCandidate(), candidate)
+                .distinctBy { it.problemId to it.problemRevisionId },
+            knownRoundQuestion = attachedRoundQuestion.toCandidate(),
+            attachedQuestion = attachedRoundQuestion,
+        )
+        val request = ModelTaskRequest(
+            requestId = "request-attached-$createdAtEpochMillis",
+            input = input,
+            occurredAtEpochMillis = createdAtEpochMillis,
+        )
+        return ModelTaskSnapshot(
+            taskId = "task-attached-$createdAtEpochMillis",
+            request = request,
+            requestFingerprint = ModelTaskFingerprint.of(request),
+            status = status,
+            stateVersion = 1,
+            stage = ModelTaskStage.COMPLETE,
+            userMessage = "完成",
+            attemptCount = 1,
+            output = respondOutput(
+                boundQuestion = boundQuestion,
+                responseOrdinal = input.responseOrdinal,
+            ),
+            createdAtEpochMillis = createdAtEpochMillis,
+            updatedAtEpochMillis = createdAtEpochMillis,
         )
     }
 

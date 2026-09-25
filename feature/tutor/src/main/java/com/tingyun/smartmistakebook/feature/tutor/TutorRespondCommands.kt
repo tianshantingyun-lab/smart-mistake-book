@@ -215,6 +215,13 @@ internal class TutorRespondCommands(
         }
     }
 
+    /**
+     * 派发一轮学生消息。返回 **true 表示这一轮真的派出去了**（请求已交给 [collect]）。
+     *
+     * 前置不满足、或构造期校验不过时返回 false，同时如实报错（[TutorRespondSink.setChatStartError]）。
+     * 调用方据此决定"随消息带出的附件"要不要清空：被拒的一轮没带走任何东西，清了就是把学生
+     * 刚附加的题静默丢掉（见 `CapturedTutorSessionInstrumentedTest#aRejectedSendKeepsTheAttachedQuestion…`）。
+     */
     fun execute(
         message: String,
         requestedMove: TutorMoveType? = null,
@@ -229,7 +236,7 @@ internal class TutorRespondCommands(
         knownRoundQuestion: RelatedProblemCandidate? = null,
         /** 学生本轮显式添加的题（加号里的"从错题库选择"）；本轮按它讲。 */
         attachedQuestion: AttachedRoundQuestion? = null,
-    ) {
+    ): Boolean {
         // 纯图消息给一句可读的兜底文本：消息体不能为空，且落库、指纹与派发必须用同一份文本，
         // 否则"学生看到的"和"模型读到的"会不是同一条消息。
         val effectiveMessage = message.ifBlank { TUTOR_RESPOND_IMAGE_ONLY_MESSAGE }
@@ -241,10 +248,10 @@ internal class TutorRespondCommands(
                 chatSending = sink.chatSending(),
             )
         ) {
-            return
+            return false
         }
-        val visiblePlan = sink.currentPlanOutput() ?: return
-        val provider = sink.currentProvider() ?: return
+        val visiblePlan = sink.currentPlanOutput() ?: return false
+        val provider = sink.currentProvider() ?: return false
         val question = sink.question()
         val respondTasks = sink.tutorRespondTasks()
         val sessionRespondTasks = sink.sessionRespondTasks()
@@ -313,12 +320,13 @@ internal class TutorRespondCommands(
             )
         } catch (_: IllegalArgumentException) {
             sink.setChatStartError(tutorRespondValidationError())
-            return
+            return false
         }
         collect(
             request = request,
             clearDraftOnPersist = clearDraftOnPersist,
         )
+        return true
     }
 
     /**

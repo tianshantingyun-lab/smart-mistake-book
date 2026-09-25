@@ -487,8 +487,10 @@ internal fun buildTutorRespondRequest(
         boundQuestionCandidates = boundQuestionCandidates,
         knownRoundQuestion = knownRoundQuestion,
         // 单一代号通道（D5）：与会话内历次派发同源的预披露条目（未赋码）。
-        // 代号对应的是会话题已披露的知识点：讲附加题时这套代号与它无关，且 MASTERY_UPDATE
-        // 的代号白名单按它走——清空即"附加题轮次结构上不可写掌握证据"（fail-closed）。
+        // 代号对应的是会话题已披露的知识点：讲附加题时这套代号与它无关，所以这里清空——
+        // 但**清空只是请求形状**（提示词里不再出现代号表）。真正让附加题轮次"结构上不可写
+        // 掌握证据"的是工具环的白名单判定 `masteryUpdateCodeWhitelist`（core:domain）：它取自
+        // 会话注册表，清空这个字段挡不住——此前这里把两件事当成同一件，r4 复核已指出。
         knowledgeCodes = if (hasAttachment) emptyList() else question.knowledgeCodes,
         attachedQuestion = attachedQuestion,
     )

@@ -1,5 +1,6 @@
 package com.tingyun.smartmistakebook.core.domain
 
+import com.tingyun.smartmistakebook.core.model.ModelTaskInput
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
 import com.tingyun.smartmistakebook.core.model.QuestionDocumentMarkdownProjection
@@ -134,13 +135,42 @@ object TutorRoundQuestionBindingPolicy {
 }
 
 /**
- * 上一轮绑定的题——候选菜单的第二条来源（`docs/tutor-surface-unification.md` §5.4：可跨轮）。
+ * 本轮 MASTERY_UPDATE 允许使用的知识点代号白名单（工具环的逐次结构性拒之一）。
  *
- * 取**最近一条已成功回复、且本轮声明确实通过了本地校验**的 RESPOND 任务，再从它自己那一轮的
- * 菜单里把候选捞出来（候选里带着题面，所以不必再读一次库）。
+ * 正常轮次 = **本会话已披露代号集**（D5：代号会话内稳定、只增不减），由调用方从会话级注册表
+ * 取——不是本轮输入的 `knowledgeCodes` 字段：那只是"派发形状"，工具环中途通过 KNOWLEDGE_READ
+ * 追加披露的节点也在白名单里。
+ *
+ * **学生显式附加了另一道题的轮次例外**：代号表属于会话题的节点空间，这一轮讲的是学生从错题库
+ * 挑来的那道题，提示词里连代号表都没有。模型若凭上一轮的记忆给出会话题的代号，落库就是把掌握
+ * 证据记在会话题头上（`com.tingyun.smartmistakebook.core.domain.MasteryWriteGate` 的 NEGATIVE
+ * 方向不要求题锚，拦不住这种错记）。这种轮次返回空集：任何代号结构性拒（fail-closed）。
+ *
+ * 消灭的失败：`TutorModelTaskPolicy` 附加分支里"清空 knowledgeCodes ⇒ 附加题轮次结构上不可写
+ * 掌握证据"这条恰好不成立的信念——清空的是输入字段，而白名单取自注册表，清空挡不住它。
+ */
+fun masteryUpdateCodeWhitelist(
+    input: ModelTaskInput,
+    sessionDisclosedCodes: Set<String>,
+): Set<String> = if ((input as? TutorRespondInput)?.attachedQuestion != null) {
+    emptySet()
+} else {
+    sessionDisclosedCodes
+}
+
+/**
+ * 上一轮讲的是哪一道题——候选菜单的第二条来源（`docs/tutor-surface-unification.md` §5.4：可跨轮）。
+ *
+ * 取**最近一条已成功回复**的 RESPOND 任务，按可靠性回读这一轮的题：
+ * 1. 模型声明且**通过了本地校验**的绑定（`output.boundQuestion`，解析层是唯一写入口）——
+ *    再从它自己那一轮的菜单里把候选捞出来（候选里带着题面，所以不必再读一次库）；
+ * 2. 模型没有复述题锚时，回读**学生本轮显式附加的题**（`input.attachedQuestion`）：请求契约
+ *    保证它就是本轮的已知锚（known == attached）且在本轮菜单内，所以"这一轮讲哪道"本地已经
+ *    知道，不需要模型的语义复述。少了这一条，附加题会从下一轮的菜单与已知锚里静默消失。
  *
  * 为什么必须回读"已校验的绑定"而不是回读模型声明：声明不是裁决。上一轮如果声明越界、锚词不
- * 对，那一轮就是无题轮——把它的声明当成"上一轮绑定的题"会把这个错误顺延到下一轮。
+ * 对，那一轮就是无题轮——把它的声明当成"上一轮绑定的题"会把这个错误顺延到下一轮。同理，
+ * 附加题的回退只认**请求侧**那份契约担保的身份，不认模型的任何自述。
  *
  * 没有已绑定轮次时返回 null（首轮就是无题轮）。
  */
@@ -148,14 +178,17 @@ fun previousBoundRoundQuestion(tasks: List<ModelTaskSnapshot>): RelatedProblemCa
     tasks.asSequence()
         .mapNotNull { task ->
             val input = task.request.input as? TutorRespondInput ?: return@mapNotNull null
-            val output = task.output as? TutorRespondOutput ?: return@mapNotNull null
             if (task.status != ModelTaskStatus.SUCCEEDED) return@mapNotNull null
             // output.boundQuestion 已经是**校验过**的绑定（解析层是唯一写入口）。
-            val binding = output.boundQuestion ?: return@mapNotNull null
-            val candidate = input.boundQuestionCandidates.singleOrNull { candidate ->
-                candidate.problemId == binding.problemId &&
-                    candidate.problemRevisionId == binding.problemRevisionId
-            } ?: return@mapNotNull null
+            val binding = (task.output as? TutorRespondOutput)?.boundQuestion
+            val candidate = if (binding != null) {
+                input.boundQuestionCandidates.singleOrNull { candidate ->
+                    candidate.problemId == binding.problemId &&
+                        candidate.problemRevisionId == binding.problemRevisionId
+                } ?: return@mapNotNull null
+            } else {
+                input.attachedQuestion?.toCandidate() ?: return@mapNotNull null
+            }
             task.createdAtEpochMillis to candidate
         }
         .maxByOrNull { (createdAtEpochMillis, _) -> createdAtEpochMillis }

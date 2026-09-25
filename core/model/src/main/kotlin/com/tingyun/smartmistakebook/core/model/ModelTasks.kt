@@ -780,10 +780,18 @@ private fun ModelTaskRequest.fingerprintPayload(): String =
             .withoutLegacyTutorStudentContext(input)
             .withoutEmptyPageComparison(input)
             .withoutEmptyToolCarrier(input)
+            // v1 之后引入的**每一个**输入级键都要在这里抹平：当年的编码器是 baseline 的字段表，
+            // 后来加的键它都不认识。少一条，那条最老的 v1 行读回就会算出与存库不同的哈希。
+            .withoutEmptyLobbyImageRefs(input)
+            .withoutEmptyRespondImageRefs(input)
+            .withoutEmptyLobbyContext(input)
+            .withoutEmptyBoundQuestionCandidates(input)
+            .withoutEmptyKnownRoundQuestion(input)
             // v1 编码器不认识 schema 13 引入的键（代号通道 / Plan 工具环载体）——
             // 与上面几条同一条纪律：旧行读回必须按"当年没有这些键"重算指纹。
             .withoutEmptyKnowledgeCodes(input)
             .withoutEmptyPlanToolCarrier(input)
+            .withoutEmptyAttachedQuestion(input)
     } else {
         ModelTaskCodec.encodeRequest(this).let { encoded ->
             encoded
@@ -918,6 +926,23 @@ private fun String.withoutAgentConsent(): String =
 private fun String.withoutEmptyLobbyImageRefs(input: ModelTaskInput): String =
     if (input is TutorLobbyInput) {
         replace(",\"sourceImageAssetRefs\":[]", "")
+    } else {
+        this
+    }
+
+/**
+ * 去掉 Respond 的"本条消息附图"空载体键（`studentImageAssetRefs`，schema 5 期起才在 Respond
+ * 形状里）。
+ *
+ * 与 [withoutEmptyLobbyImageRefs] 分开是因为键名不同（`studentImageAssetRefs` vs
+ * `sourceImageAssetRefs`），而 legacy（v1）分支必须抹平它：v4 期 baseline 的 Respond 输入没有
+ * 这个字段，不抹平那条最老的 Respond 行读回即抛完整性异常（实测：本文件对应的用例先红后绿）。
+ * 只在 schemaVersion == 1 的路径调用——那里"当年没有该键"是可以证明的（v1 ⊆ baseline 字段表），
+ * 所以 strip 不会削弱任何现有行的读回一致性。
+ */
+private fun String.withoutEmptyRespondImageRefs(input: ModelTaskInput): String =
+    if (input is TutorRespondInput) {
+        replace(",\"studentImageAssetRefs\":[]", "")
     } else {
         this
     }

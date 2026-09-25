@@ -1194,6 +1194,59 @@ class CapturedTutorSessionInstrumentedTest : CapturedTutorSessionTestBase() {
         retrievability = null,
     )
 
+    /**
+     * 派发被拒时，学生刚附加的题必须留着。
+     *
+     * 构造期校验失败（消息含本地不允许的控制字符）会 `return`，而面板此前无论结果都清空
+     * 附加题：学生一边看到"消息格式需要调整"，一边发现自己刚从错题库挑的那道题没了，
+     * 只能重新去挑一遍。
+     */
+    @Test
+    fun aRejectedSendKeepsTheAttachedQuestionSoTheStudentDoesNotLoseIt() {
+        val session = session()
+        val entry = catalogEntry()
+        val attached = attachedQuestion(entry)
+        val modelTasks = ChatModelTaskRepository(session)
+
+        composeRule.setContent {
+            MaterialTheme {
+                ReadyCapturedSession(
+                    session = session,
+                    clock = { 10_000L },
+                    saveInProgress = false,
+                    saveError = null,
+                    onSave = {},
+                    modelTasks = modelTasks,
+                    interactions = RecordingTutorInteractions(),
+                    conversations = emptyConversations(),
+                    profile = StudyProfileOverview(),
+                    catalogEntries = listOf(entry),
+                    attachedQuestionReader = FakeAttachedQuestionReader { read ->
+                        attached.takeIf { read.problemId == entry.problemId }
+                    },
+                    onOpenModelSettings = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag("tutor_chat_attach").performClick()
+        composeRule.onNodeWithTag("session_attach_library").performClick()
+        composeRule.onNodeWithTag("session_picker_item_${entry.problemId}").performClick()
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithTag("session_attached_question")
+                .fetchSemanticsNodes()
+                .size == 1
+        }
+
+        // 含 ISO 控制字符：本地校验拒发（模型收不到这一轮），界面必须如实报错并保留附件。
+        composeRule.onNodeWithTag("tutor_chat_composer").performTextInput("这道题\u0001怎么入手？")
+        composeRule.onNodeWithTag("tutor_chat_send").performClick()
+
+        composeRule.onNodeWithTag("tutor_chat_start_error").assertExists()
+        composeRule.runOnIdle { assertTrue(modelTasks.respondRequests.isEmpty()) }
+        composeRule.onNodeWithTag("session_attached_question").assertExists()
+    }
+
     private fun attachedQuestion(entry: StudyCatalogEntry) = AttachedRoundQuestion(
         problemId = entry.problemId,
         problemRevisionId = entry.problemRevisionId,

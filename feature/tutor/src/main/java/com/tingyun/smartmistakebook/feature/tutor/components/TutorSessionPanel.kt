@@ -682,7 +682,7 @@ internal fun TutorModelPanel(
     ) {
         // 显式添加的题在派发那一刻带出（之后清空，与图片同一生命周期）。
         val attached = pendingAttachedQuestion
-        respondCommands.execute(
+        val dispatched = respondCommands.execute(
             message = message,
             requestedMove = requestedMove,
             clearDraftOnPersist = clearDraftOnPersist,
@@ -694,9 +694,12 @@ internal fun TutorModelPanel(
             knownRoundQuestion = attached?.toCandidate() ?: previousBoundQuestion,
             attachedQuestion = attached,
         )
-        // 附加题随本次派发带出后清空（与图片同一生命周期）。
-        pendingAttachedQuestion = null
-        attachReadFailed = null
+        // 附加题随本次派发带出后清空（与图片同一生命周期）——**只有真的派出去了才清**：
+        // 被拒的一轮没带走任何东西，清了就是把学生刚挑的题静默丢掉（他只能重新去挑一遍）。
+        if (dispatched) {
+            pendingAttachedQuestion = null
+            attachReadFailed = null
+        }
     }
 
     /**

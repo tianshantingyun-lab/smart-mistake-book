@@ -10,6 +10,7 @@ import com.tingyun.smartmistakebook.core.data.study.TutorKnowledgeCodeRegistry
 import com.tingyun.smartmistakebook.core.database.StudyDatabasePort
 import com.tingyun.smartmistakebook.core.database.TransitionModelTaskCommand
 import com.tingyun.smartmistakebook.core.domain.ModelGateway
+import com.tingyun.smartmistakebook.core.domain.masteryUpdateCodeWhitelist
 import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
 import com.tingyun.smartmistakebook.core.model.TutorConversationIds
 import com.tingyun.smartmistakebook.core.model.CaptureAssessmentDecision
@@ -350,9 +351,14 @@ class RoomModelTaskRepository internal constructor(
                 // 单一代号通道（D5）：MASTERY_UPDATE 的 enum 白名单 = 本会话已披露代号集。
                 // Route A 的 schema 约束解码是前哨，这里是 Route B（json_object 信封）与
                 // 越界复述的背底：非法/编造/未披露代号结构性拒，不进执行器、不进门。
-                val disclosedKnowledgeCodes = sessionKnowledgeCodeRegistry(roundRequest.input)
-                    ?.disclosedCodes()
-                    .orEmpty()
+                // 白名单**取自注册表**（不是本轮输入的 knowledgeCodes 字段），附加题轮次由
+                // [masteryUpdateCodeWhitelist] 判成空集：那一轮讲的是另一道题，代号表不属于它。
+                val disclosedKnowledgeCodes = masteryUpdateCodeWhitelist(
+                    input = roundRequest.input,
+                    sessionDisclosedCodes = sessionKnowledgeCodeRegistry(roundRequest.input)
+                        ?.disclosedCodes()
+                        .orEmpty(),
+                )
                 val outcomes = tutorToolRoundOutcomes(
                     calls = requests.calls,
                     authorizedTools = authorization.allowedTools,
