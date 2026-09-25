@@ -38,6 +38,7 @@ import com.tingyun.smartmistakebook.core.domain.RecordTutorChoiceCommand
 import com.tingyun.smartmistakebook.core.domain.RecordTutorMoveCommand
 import com.tingyun.smartmistakebook.core.domain.SaveTutorSessionRequest
 import com.tingyun.smartmistakebook.core.domain.TutorRoundQuestionBindingPolicy
+import com.tingyun.smartmistakebook.core.domain.TutorAttachedQuestionReader
 import com.tingyun.smartmistakebook.core.domain.TutorRoundQuestionRetriever
 import com.tingyun.smartmistakebook.core.domain.previousBoundRoundQuestion
 import com.tingyun.smartmistakebook.core.model.RelatedProblemCandidate
@@ -80,6 +81,10 @@ import com.tingyun.smartmistakebook.core.model.TutorVisualDocumentScene
 import com.tingyun.smartmistakebook.core.model.TutorVisualGenerateInput
 import com.tingyun.smartmistakebook.core.model.TutorVisualReviewInput
 import com.tingyun.smartmistakebook.core.model.TutorVisualTurnAnchor
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import com.tingyun.smartmistakebook.core.model.AttachedRoundQuestion
 import com.tingyun.smartmistakebook.core.model.TutorVisualTurnSurface
 import com.tingyun.smartmistakebook.core.model.requiresModelSettings
 import com.tingyun.smartmistakebook.core.ui.BoundedLocalImage
@@ -104,6 +109,7 @@ import androidx.core.content.FileProvider
 import com.tingyun.smartmistakebook.core.domain.LobbyMessageImageIntake
 import com.tingyun.smartmistakebook.core.domain.MAX_TUTOR_MESSAGE_IMAGES
 import com.tingyun.smartmistakebook.feature.tutor.MessageAttachmentDialog
+import com.tingyun.smartmistakebook.feature.tutor.TutorMistakePickerDialog
 import com.tingyun.smartmistakebook.feature.tutor.PendingMessageImage
 import com.tingyun.smartmistakebook.feature.tutor.PendingMessageImagesRow
 import com.tingyun.smartmistakebook.feature.tutor.tutorRespondImageIntakeError
@@ -140,6 +146,8 @@ internal fun TutorModelPanel(
      * 没有检索就等于菜单里只有身份确定的题，本轮多半判成无题轮，不会误绑。
      */
     roundQuestionRetriever: TutorRoundQuestionRetriever? = null,
+    /** 加号菜单"从错题库选择"选中后的题面读取器；null 时该菜单项不出现。 */
+    attachedQuestionReader: TutorAttachedQuestionReader? = null,
     onLongTermWritesBlocked: () -> Unit = {},
     onRequestSave: () -> Unit = {},
     onRequestEnd: () -> Unit = {},
@@ -233,6 +241,13 @@ internal fun TutorModelPanel(
         mutableStateOf<AppFailure?>(null)
     }
     // 待发送的附图：与大厅同一套（选择 → 预览 → 发送时登记成规范资产）。
+    // 学生本轮显式添加的题（加号里的"从错题库选择"）：成为本轮题锚，发送后清空
+    //（与图片同一生命周期）。读盘失败如实提示，不把一条没有题面的"添加"带进请求。
+    var pendingAttachedQuestion by remember(question.sessionId) {
+        mutableStateOf<AttachedRoundQuestion?>(null)
+    }
+    var mistakePickerOpen by remember { mutableStateOf(false) }
+    var attachReadFailed by remember { mutableStateOf<String?>(null) }
     var pendingImages by remember(question.sessionId) {
         mutableStateOf<List<PendingMessageImage>>(emptyList())
     }
@@ -573,13 +588,9 @@ internal fun TutorModelPanel(
     }
 
     /**
-     * 本轮候选菜单（派发前组好）：上一轮绑定的题 + 本地文本检索前 N 条。
+     * 本轮候选菜单（派发前组好）：学生本轮显式添加的题 + 上一轮绑定的题 + 本地文本检索前 N 条。
      *
-     * 第三条来源"本轮学生显式添加的题"在会话页暂时恒为空：P1-b 之后会话页的加号里仍然只有
-     * 拍照/相册，换题（"从错题库选择"选中的题落在**当前会话**而不是新开一个会话）属于 P3；
-     * 在这之前"显式添加"在这条路径上不存在，不能凭空造一条。菜单的组装 API 已经带上了这个
-     * 位置（`assembleCandidates(explicitlyAdded = …)`），P3 接上即可。
-     *
+     * 前两条是身份（学生的动作 / 已校验的绑定），第三条是检索（只进菜单、不构成绑定）。
      * 检索是 suspend 的，所以在草稿变化时预先算好放进状态：`execute` 是点击即发的非 suspend
      * 路径，按下时现算会引入一次可见等待——或者更糟，按钮先亮后发。
      */
@@ -605,14 +616,14 @@ internal fun TutorModelPanel(
             retriever.retrieve(
                 catalog = catalogEntries,
                 studentMessage = chatDraft,
-                excluded = listOfNotNull(previousBoundQuestion),
+                excluded = listOfNotNull(previousBoundQuestion, pendingAttachedQuestion?.toCandidate()),
                 limit = TutorRoundQuestionBindingPolicy.MAX_CANDIDATES,
             )
         }.getOrDefault(emptyList())
     }
-    val boundQuestionCandidates = remember(previousBoundQuestion, retrievedCandidates) {
+    val boundQuestionCandidates = remember(previousBoundQuestion, retrievedCandidates, pendingAttachedQuestion) {
         TutorRoundQuestionBindingPolicy.assembleCandidates(
-            explicitlyAdded = emptyList(),
+            explicitlyAdded = listOfNotNull(pendingAttachedQuestion?.toCandidate()),
             previouslyBound = listOfNotNull(previousBoundQuestion),
             retrieved = retrievedCandidates,
         )
@@ -669,18 +680,23 @@ internal fun TutorModelPanel(
         clearDraftOnPersist: Boolean = false,
         studentImageAssetIds: List<String> = emptyList(),
     ) {
+        // 显式添加的题在派发那一刻带出（之后清空，与图片同一生命周期）。
+        val attached = pendingAttachedQuestion
         respondCommands.execute(
             message = message,
             requestedMove = requestedMove,
             clearDraftOnPersist = clearDraftOnPersist,
             studentImageAssetIds = studentImageAssetIds,
             boundQuestionCandidates = boundQuestionCandidates,
-            // 本轮请求侧已知的题锚。今天只有"上一轮绑定延续"这一条来源——"本轮学生显式添加的题"
-            // 与 boundQuestionCandidates 的 explicitlyAdded 位置同一个缺口（P3 接上）。
-            // 写工具门控在模型没有复述题锚时回退到它：原生 tool_calls 路由的整轮信封无处放声明，
-            // 复述只能落在每次调用的 arguments 里，而复述不是必然的。
-            knownRoundQuestion = previousBoundQuestion,
+            // 本轮请求侧已知的题锚：显式添加优先，其次上一轮绑定延续。写工具门控在模型没有
+            // 复述题锚时回退到它：原生 tool_calls 路由的整轮信封无处放声明，复述只能落在
+            // 每次调用的 arguments 里，而复述不是必然的。
+            knownRoundQuestion = attached?.toCandidate() ?: previousBoundQuestion,
+            attachedQuestion = attached,
         )
+        // 附加题随本次派发带出后清空（与图片同一生命周期）。
+        pendingAttachedQuestion = null
+        attachReadFailed = null
     }
 
     /**
@@ -899,20 +915,61 @@ internal fun TutorModelPanel(
                     chatStartError = null
                 },
                 onSend = { submitTutorResponse(chatDraft) },
-                onOpenAttachMenu = if (sessionImageEnabled) {
+                onOpenAttachMenu = if (sessionImageEnabled || attachedQuestionReader != null) {
                     { attachMenuOpen = true }
                 } else {
                     null
                 },
-                attachmentPreview = if (pendingImages.isNotEmpty()) {
+                attachmentPreview = if (pendingImages.isNotEmpty() || pendingAttachedQuestion != null) {
                     {
-                        PendingMessageImagesRow(
-                            images = pendingImages,
-                            onRemove = { index ->
-                                pendingImages = pendingImages.filterIndexed { i, _ -> i != index }
-                            },
-                            testTagPrefix = "session",
-                        )
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(6.dp),
+                        ) {
+                            pendingAttachedQuestion?.let { attached ->
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Text(
+                                        text = "本题：${attached.title}",
+                                        maxLines = 1,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = Ink,
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .testTag("session_attached_question"),
+                                    )
+                                    Text(
+                                        text = "移除",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = InkSecondary,
+                                        modifier = Modifier
+                                            .clickable { pendingAttachedQuestion = null }
+                                            .padding(horizontal = 6.dp)
+                                            .testTag("session_attached_question_remove"),
+                                    )
+                                }
+                            }
+                            attachReadFailed?.let { failure ->
+                                Text(
+                                    text = failure,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = ErrorWarm,
+                                    modifier = Modifier.testTag("session_attach_failed"),
+                                )
+                            }
+                            if (pendingImages.isNotEmpty()) {
+                                PendingMessageImagesRow(
+                                    images = pendingImages,
+                                    onRemove = { index ->
+                                        pendingImages = pendingImages.filterIndexed { i, _ -> i != index }
+                                    },
+                                    testTagPrefix = "session",
+                                )
+                            }
+                        }
                     }
                 } else {
                     null
@@ -944,6 +1001,34 @@ internal fun TutorModelPanel(
                             ),
                         )
                     },
+                    testTagPrefix = "session",
+                    onPickFromLibrary = if (attachedQuestionReader != null) {
+                        {
+                            attachMenuOpen = false
+                            mistakePickerOpen = true
+                        }
+                    } else {
+                        null
+                    },
+                )
+            }
+            if (mistakePickerOpen) {
+                TutorMistakePickerDialog(
+                    entries = catalogEntries,
+                    onPick = { entry ->
+                        mistakePickerOpen = false
+                        attachReadFailed = null
+                        val reader = attachedQuestionReader ?: return@TutorMistakePickerDialog
+                        scope.launch {
+                            val read = runCatching { reader.read(entry) }.getOrNull()
+                            if (read == null) {
+                                attachReadFailed = "这道题的题面现在读不出来，换一道试试。"
+                            } else {
+                                pendingAttachedQuestion = read
+                            }
+                        }
+                    },
+                    onDismiss = { mistakePickerOpen = false },
                     testTagPrefix = "session",
                 )
             }

@@ -369,6 +369,7 @@ class ModelTaskFingerprintStabilityTest {
             ),
         ).replace(",\"knownRoundQuestion\":null", "")
             .replace(",\"knowledgeCodes\":[]", "")
+            .replace(",\"attachedQuestion\":null", "")
         val decoded = ModelTaskCodec.decodeRequest(legacyJson)
 
         assertEquals(ModelTaskRequest.TUTOR_ROUND_BINDING_SCHEMA_VERSION, decoded.schemaVersion)
@@ -540,6 +541,7 @@ class ModelTaskFingerprintStabilityTest {
                 occurredAtEpochMillis = 1_000,
             ),
         ).replace(",\"knowledgeCodes\":[]", "")
+            .replace(",\"attachedQuestion\":null", "")
         val decoded = ModelTaskCodec.decodeRequest(legacyJson)
 
         assertEquals(ModelTaskRequest.TUTOR_KNOWN_ROUND_QUESTION_SCHEMA_VERSION, decoded.schemaVersion)
@@ -676,6 +678,7 @@ class ModelTaskFingerprintStabilityTest {
         .replace(",\"priorDigest\":null", "")
         .replace(",\"boundQuestionCandidates\":[]", "")
         .replace(",\"knowledgeCodes\":[]", "")
+        .replace(",\"attachedQuestion\":null", "")
 
     private val legacyFingerprintJson = kotlinx.serialization.json.Json {
         classDiscriminator = "type"
@@ -694,6 +697,107 @@ class ModelTaskFingerprintStabilityTest {
         .replace(",\"toolDeclarations\":[]", "")
         .replace(",\"toolRoundResults\":[]", "")
         .replace(",\"teachingReferencesLoadFailed\":false", "")
+
+    // ---- schema 14：学生显式添加的题（本轮题锚的显式来源）----
+
+    private fun attachedQuestion() = AttachedRoundQuestion(
+        problemId = "problem-other",
+        problemRevisionId = "revision-other",
+        revisionNumber = 2,
+        subject = SubjectKind.MATH,
+        title = "另一道题",
+        questionDocument = relatedCandidate().questionDocument,
+    )
+
+    private fun respondInputWithAttached() = respondInput().copy(
+        boundQuestionCandidates = listOf(relatedCandidate()),
+        knownRoundQuestion = relatedCandidate(),
+        attachedQuestion = attachedQuestion(),
+    )
+
+    @Test
+    fun attachedQuestionCarrierKeepsTheOperationFingerprintStableAcrossSchemaVersions() {
+        // v13 行当年是按"没有 attachedQuestion 键"算的：空值下逻辑指纹必须跨版本不变。
+        val v13 = ModelTaskRequest(
+            schemaVersion = ModelTaskRequest.TUTOR_KNOWLEDGE_CODE_CHANNEL_SCHEMA_VERSION,
+            requestId = "respond:v13-attached",
+            input = respondInput(),
+            occurredAtEpochMillis = 1_000,
+        )
+        val v14 = ModelTaskRequest(
+            schemaVersion = ModelTaskRequest.CURRENT_SCHEMA_VERSION,
+            requestId = "respond:v14-attached",
+            input = respondInput(),
+            occurredAtEpochMillis = 1_000,
+        )
+
+        assertEquals(
+            ModelTaskLogicalOperationFingerprint.of(v13.input),
+            ModelTaskLogicalOperationFingerprint.of(v14.input),
+        )
+    }
+
+    @Test
+    fun aRespondRowWrittenBeforeTheAttachedQuestionCarrierStillValidatesAfterUpgrade() {
+        // bf8be888 的教训（第四次同一条）：旧 v13 行的编码里没有 attachedQuestion 键，
+        // 升级后读回该行重算指纹必须与存库值一致，否则 toSnapshot 直接抛完整性异常。
+        val legacyJson = ModelTaskCodec.encodeRequest(
+            ModelTaskRequest(
+                schemaVersion = ModelTaskRequest.TUTOR_KNOWLEDGE_CODE_CHANNEL_SCHEMA_VERSION,
+                requestId = "respond:legacy-attached-row",
+                input = respondInput(),
+                occurredAtEpochMillis = 1_000,
+            ),
+        ).replace(",\"attachedQuestion\":null", "")
+        val decoded = ModelTaskCodec.decodeRequest(legacyJson)
+
+        assertEquals(ModelTaskRequest.TUTOR_KNOWLEDGE_CODE_CHANNEL_SCHEMA_VERSION, decoded.schemaVersion)
+        assertEquals(sha256Hex(legacyJson), ModelTaskFingerprint.of(decoded))
+        assertEquals(
+            sha256Hex("${decoded.input.kind.name}\n${legacyInputJson(decoded.input)}"),
+            ModelTaskLogicalOperationFingerprint.of(decoded.input),
+        )
+    }
+
+    @Test
+    fun aRealAttachedQuestionStillChangesTheOperationFingerprint() {
+        // 反向要求：strip 只抹平空载体。真带了显式添加的题就是另一次输入——
+        // 否则"换了一道题重发"会重放命中旧请求。
+        assertNotEquals(
+            ModelTaskLogicalOperationFingerprint.of(respondInput()),
+            ModelTaskLogicalOperationFingerprint.of(respondInputWithAttached()),
+        )
+    }
+
+    @Test
+    fun aLegacySchemaRequestCannotCarryAnAttachedQuestion() {
+        val rejected = runCatching {
+            ModelTaskRequest(
+                schemaVersion = ModelTaskRequest.TUTOR_KNOWLEDGE_CODE_CHANNEL_SCHEMA_VERSION,
+                requestId = "respond:legacy-with-attached",
+                input = respondInputWithAttached(),
+                occurredAtEpochMillis = 1_000,
+            )
+        }
+
+        assertTrue(rejected.isFailure)
+    }
+
+    @Test
+    fun anAttachedQuestionDisagreeingWithTheKnownAnchorIsRejectedAtConstruction() {
+        val rejected = runCatching {
+            respondInput().copy(
+                boundQuestionCandidates = listOf(relatedCandidate()),
+                knownRoundQuestion = relatedCandidate(),
+                attachedQuestion = attachedQuestion().copy(
+                    problemId = "problem-somewhere-else",
+                    problemRevisionId = "revision-somewhere-else",
+                ),
+            )
+        }
+
+        assertTrue(rejected.isFailure)
+    }
 
     private fun relatedCandidate() = RelatedProblemCandidate(
         problemId = "problem-other",

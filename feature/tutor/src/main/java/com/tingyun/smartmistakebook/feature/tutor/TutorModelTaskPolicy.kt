@@ -7,6 +7,7 @@ import com.tingyun.smartmistakebook.core.domain.TutorVisualSourceAssetScope
 import com.tingyun.smartmistakebook.core.domain.TutorAnswerExposureKey
 import com.tingyun.smartmistakebook.core.domain.TutorAnswerExposureSurfaceKind
 import com.tingyun.smartmistakebook.core.domain.TutorTurnResponse
+import com.tingyun.smartmistakebook.core.model.AttachedRoundQuestion
 import com.tingyun.smartmistakebook.core.model.TutorChatHistoryEntry
 import com.tingyun.smartmistakebook.core.model.MasteryStatus
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
@@ -366,6 +367,7 @@ internal fun tutorRespondRequestId(
     priorDigest: String? = null,
     requestedMove: TutorMoveType? = null,
     studentImageAssetIds: List<String> = emptyList(),
+    attachedQuestion: AttachedRoundQuestion? = null,
     attempt: Int,
 ): String {
     require(responseOrdinal > 0)
@@ -394,6 +396,11 @@ internal fun tutorRespondRequestId(
             // 摘要是会话被压缩后的"实际上下文"的一部分：它变了（挤出更多轮次）就意味着
             // 模型看到的东西变了，因此也必须参与请求标识。
             appendLengthPrefixed(priorDigest)
+            // 显式添加的题同理：同一句话讲不同的题是两次不同的请求，不能命中旧标识。
+            attachedQuestion?.let { attached ->
+                appendLengthPrefixed(attached.problemRevisionId)
+                appendLengthPrefixed(attached.questionDocument.id)
+            }
             question.reviewedTeachingReferences.forEach { reference ->
                 appendLengthPrefixed(reference.materialId)
             }
@@ -432,25 +439,40 @@ internal fun buildTutorRespondRequest(
      * [boundQuestionCandidates] 的一员；两者都没有就是真的无题轮。
      */
     knownRoundQuestion: RelatedProblemCandidate? = null,
+    /**
+     * 学生**本轮显式添加**的题（加号里的"从错题库选择"）：它成为本轮要讲的题——
+     * 提示词题面/科目跟随它，而会话题的学习证据/审校资料/代号表/可见上下文清空
+     * （拿会话题的证据去讲另一道题是错配，审校资料契约还要求科目一致）。
+     * 会话身份（sessionId/draftRevisionNumber/questionDocument）保持不变：
+     * 时间线过滤、唯一槽位与答案暴露守卫按它匹配。
+     */
+    attachedQuestion: AttachedRoundQuestion? = null,
 ): ModelTaskRequest {
+    val hasAttachment = attachedQuestion != null
+    val effectiveSubject = if (hasAttachment) attachedQuestion.subject.name else question.subject
     val input = TutorRespondInput(
         sessionId = question.sessionId,
         draftRevisionNumber = question.revisionNumber,
-        subject = question.subject,
+        subject = effectiveSubject,
         questionDocument = question.questionDocument.document,
-        relevantLearningEvidence = profile.toTutorKnowledgeEvidence(
-            relatedKnowledgeNodeIds = question.relatedKnowledgeNodeIds,
-            subject = question.subject,
-            atEpochMillis = occurredAtEpochMillis,
-        ),
+        relevantLearningEvidence = if (hasAttachment) {
+            emptyList()
+        } else {
+            profile.toTutorKnowledgeEvidence(
+                relatedKnowledgeNodeIds = question.relatedKnowledgeNodeIds,
+                subject = question.subject,
+                atEpochMillis = occurredAtEpochMillis,
+            )
+        },
         projectionIsCurrent = profile.projectionIsCurrent,
-        reviewedTeachingReferences = question.reviewedTeachingReferences,
-        questionLearningEvidence = question.learningMemory?.toTutorEvidence(occurredAtEpochMillis),
+        reviewedTeachingReferences = if (hasAttachment) emptyList() else question.reviewedTeachingReferences,
+        questionLearningEvidence = if (hasAttachment) null else question.learningMemory?.toTutorEvidence(occurredAtEpochMillis),
         responseOrdinal = responseOrdinal,
         cycleOrdinal = cycleOrdinal,
         turnOrdinal = turnOrdinal,
         studentMessage = studentMessage,
-        visibleTutorContextMarkdown = visibleTutorContextMarkdown,
+        // 可见上下文是"会话题"的计划/选择上下文，对另一道题是过期信息：附加题轮次清空。
+        visibleTutorContextMarkdown = if (hasAttachment) null else visibleTutorContextMarkdown,
         priorMessages = priorMessages,
         priorDigest = priorDigest,
         requestedMove = requestedMove,
@@ -465,7 +487,10 @@ internal fun buildTutorRespondRequest(
         boundQuestionCandidates = boundQuestionCandidates,
         knownRoundQuestion = knownRoundQuestion,
         // 单一代号通道（D5）：与会话内历次派发同源的预披露条目（未赋码）。
-        knowledgeCodes = question.knowledgeCodes,
+        // 代号对应的是会话题已披露的知识点：讲附加题时这套代号与它无关，且 MASTERY_UPDATE
+        // 的代号白名单按它走——清空即"附加题轮次结构上不可写掌握证据"（fail-closed）。
+        knowledgeCodes = if (hasAttachment) emptyList() else question.knowledgeCodes,
+        attachedQuestion = attachedQuestion,
     )
     // 配置模型 = 全局同意：外部 agent-eligible 类型不再携带逐次披露清单。
     return ModelTaskRequest(

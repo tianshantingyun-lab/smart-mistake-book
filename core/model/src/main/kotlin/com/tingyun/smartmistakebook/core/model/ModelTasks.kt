@@ -424,6 +424,10 @@ data class ModelTaskRequest(
                         !planInput.teachingReferencesLoadFailed)) &&
                 (respondInput == null || respondInput.knowledgeCodes.isEmpty()),
         ) { "Legacy tutor requests cannot carry the knowledge-code channel or plan tool rounds" }
+        require(
+            schemaVersion >= TUTOR_ATTACHED_QUESTION_SCHEMA_VERSION ||
+                respondInput?.attachedQuestion == null,
+        ) { "Legacy tutor requests cannot carry an explicitly attached question" }
         require(requestId.isNotBlank()) { "Model task request id must not be blank" }
         require(requestId.length <= MAX_ID_CHARS) { "Model task request id exceeds budget" }
         require(input.subjectId.isNotBlank()) { "Model task subject id must not be blank" }
@@ -460,7 +464,14 @@ data class ModelTaskRequest(
          * `TutorTeachingReference.code` (EncodeDefault NEVER — an absent key, not a carrier).
          */
         const val TUTOR_KNOWLEDGE_CODE_CHANNEL_SCHEMA_VERSION = 13
-        const val CURRENT_SCHEMA_VERSION = TUTOR_KNOWLEDGE_CODE_CHANNEL_SCHEMA_VERSION
+        /**
+         * Schema at which a Respond round may carry a question the student
+         * **explicitly attached to this round** (`attachedQuestion`); that question then
+         * becomes the round's confirmed question (prompt, evidence, code table and answer
+         * exposure all attribute to it).
+         */
+        const val TUTOR_ATTACHED_QUESTION_SCHEMA_VERSION = 14
+        const val CURRENT_SCHEMA_VERSION = TUTOR_ATTACHED_QUESTION_SCHEMA_VERSION
         const val MAX_ID_CHARS = 256
     }
 }
@@ -732,7 +743,8 @@ object ModelTaskLogicalOperationFingerprint {
                     .withoutEmptyBoundQuestionCandidates(input)
                     .withoutEmptyKnownRoundQuestion(input)
                     .withoutEmptyKnowledgeCodes(input)
-                    .withoutEmptyPlanToolCarrier(input),
+                    .withoutEmptyPlanToolCarrier(input)
+                    .withoutEmptyAttachedQuestion(input),
             )
         }
 }
@@ -845,6 +857,13 @@ private fun ModelTaskRequest.fingerprintPayload(): String =
                         it
                     }
                 }
+                .let {
+                    if (schemaVersion < ModelTaskRequest.TUTOR_ATTACHED_QUESTION_SCHEMA_VERSION) {
+                        it.withoutEmptyAttachedQuestion(input)
+                    } else {
+                        it
+                    }
+                }
         }
     }
 
@@ -947,6 +966,22 @@ private fun String.withoutEmptyBoundQuestionCandidates(input: ModelTaskInput): S
 private fun String.withoutEmptyKnownRoundQuestion(input: ModelTaskInput): String =
     if (input is TutorRespondInput) {
         replace(",\"knownRoundQuestion\":null", "")
+    } else {
+        this
+    }
+
+/**
+ * 去掉 Respond 的"本轮学生显式添加的题"空载体键（schema 14 引入）。
+ *
+ * 与 [withoutEmptyKnownRoundQuestion] 同一条教训（提交 bf8be888）：两个指纹路径都以
+ * `encodeDefaults = true` 编码当前输入，旧 v13 行存的是不含该键的编码——不抹平空载体，
+ * 升级后读回任意一条旧 Respond 行都会算出与存库不同的哈希，`toSnapshot` 直接抛
+ * `LearningLedgerIntegrityException`。非空附加题只可能出现在 v14 行（构造契约里有
+ * `require`），所以 strip 不会削弱新行的指纹区分度。
+ */
+private fun String.withoutEmptyAttachedQuestion(input: ModelTaskInput): String =
+    if (input is TutorRespondInput) {
+        replace(",\"attachedQuestion\":null", "")
     } else {
         this
     }

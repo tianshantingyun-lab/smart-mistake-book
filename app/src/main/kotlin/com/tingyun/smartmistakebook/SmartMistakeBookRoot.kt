@@ -756,6 +756,9 @@ internal fun SmartMistakeBookRoot(reviewOpenRequests: StateFlow<Long>) {
                     },
                     // 会话里也能像大厅一样给学生消息附图（例如自己的手写过程）。
                     imageIntake = application.lobbyMessageImageIntake,
+                    // 加号菜单「从错题库选择」：与错题讲题页同一条读取口，选中后成为
+                    // 这一轮要讲的那道题（显式附加）。
+                    attachedQuestionReader = application.tutorAttachedQuestionReader,
                     onOpenProfile = {
                         navController.navigate(Routes.Profile) { launchSingleTop = true }
                     },

@@ -16,7 +16,9 @@ import com.tingyun.smartmistakebook.core.data.knowledge.BundledKnowledgeBaseInst
 import com.tingyun.smartmistakebook.core.data.knowledge.TutorKnowledgeContextLoaderFactory
 import com.tingyun.smartmistakebook.core.data.knowledge.TutorTeachingReferenceRepositoryFactory
 import com.tingyun.smartmistakebook.core.data.library.LibraryCatalogRepositoryFactory
+import com.tingyun.smartmistakebook.core.data.tutor.TutorAttachedQuestionReaderFactory
 import com.tingyun.smartmistakebook.core.data.tutor.TutorRoundQuestionRetrieverFactory
+import com.tingyun.smartmistakebook.core.domain.TutorAttachedQuestionReader
 import com.tingyun.smartmistakebook.core.domain.TutorRoundQuestionRetriever
 import com.tingyun.smartmistakebook.core.data.mistake.MistakeDetailRepositoryFactory
 import com.tingyun.smartmistakebook.core.data.mistake.MistakeOrganizationRepositoryFactory
@@ -114,6 +116,13 @@ class SmartMistakeBookApplication : Application() {
     lateinit var tutorRoundQuestionRetriever: TutorRoundQuestionRetriever
         private set
 
+    /**
+     * 加号菜单「从错题库选择」的题面读取器：与候选检索同一个错题详情读口，无状态。
+     * 讲题会话（错题讲题页 / 拍照会话）拿到它才显示这一项。
+     */
+    lateinit var tutorAttachedQuestionReader: TutorAttachedQuestionReader
+        private set
+
     lateinit var mistakeOrganizationRepository: MistakeOrganizationRepository
         private set
 
@@ -190,6 +199,9 @@ class SmartMistakeBookApplication : Application() {
             )
             mistakeDetailRepository = MistakeDetailRepositoryFactory.create(this, database)
             tutorRoundQuestionRetriever = TutorRoundQuestionRetrieverFactory.create(
+                mistakeDetailRepository,
+            )
+            tutorAttachedQuestionReader = TutorAttachedQuestionReaderFactory.create(
                 mistakeDetailRepository,
             )
             mistakeOrganizationRepository = MistakeOrganizationRepositoryFactory.create(database)

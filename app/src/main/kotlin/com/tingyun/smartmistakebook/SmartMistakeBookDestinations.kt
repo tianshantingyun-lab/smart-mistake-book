@@ -354,6 +354,8 @@ internal fun SavedMistakeTutorDestination(
             // 按轮次绑定的候选菜单：本地检索这一半在生产里接上（机制见 core:domain 的
             // TutorRoundQuestionBindingPolicy）。
             roundQuestionRetriever = application.tutorRoundQuestionRetriever,
+            // 加号菜单「从错题库选择」：选中后成为这一轮要讲的那道题（显式附加）。
+            attachedQuestionReader = application.tutorAttachedQuestionReader,
             // 代号通道预披露：已确认绑定 + 前置（D5）。
             knowledgeContextLoader = application.tutorKnowledgeContextLoader,
             // 会话里也能像大厅一样给学生消息附图（例如自己的手写过程）。

@@ -2,6 +2,7 @@ package com.tingyun.smartmistakebook.feature.tutor
 
 import com.tingyun.smartmistakebook.core.domain.TutorRoundQuestionBindingPolicy
 import com.tingyun.smartmistakebook.core.domain.BindStudentMessageQuestionCommand
+import com.tingyun.smartmistakebook.core.model.AttachedRoundQuestion
 import com.tingyun.smartmistakebook.core.model.RelatedProblemCandidate
 import com.tingyun.smartmistakebook.core.domain.AppendTutorStudentMessageCommand
 import com.tingyun.smartmistakebook.core.domain.CreateTutorConversationCommand
@@ -226,6 +227,8 @@ internal class TutorRespondCommands(
          * "模型没有复述题锚"时回退到它；为空即真的无题轮，写工具照旧被拒。
          */
         knownRoundQuestion: RelatedProblemCandidate? = null,
+        /** 学生本轮显式添加的题（加号里的"从错题库选择"）；本轮按它讲。 */
+        attachedQuestion: AttachedRoundQuestion? = null,
     ) {
         // 纯图消息给一句可读的兜底文本：消息体不能为空，且落库、指纹与派发必须用同一份文本，
         // 否则"学生看到的"和"模型读到的"会不是同一条消息。
@@ -281,6 +284,7 @@ internal class TutorRespondCommands(
             priorDigest = context.digest,
             requestedMove = requestedMove,
             studentImageAssetIds = studentImageAssetIds,
+            attachedQuestion = attachedQuestion,
             attempt = attempt,
         )
         val occurredAt = maxOf(
@@ -305,6 +309,7 @@ internal class TutorRespondCommands(
                 studentImageAssetIds = studentImageAssetIds,
                 boundQuestionCandidates = boundQuestionCandidates,
                 knownRoundQuestion = knownRoundQuestion,
+                attachedQuestion = attachedQuestion,
             )
         } catch (_: IllegalArgumentException) {
             sink.setChatStartError(tutorRespondValidationError())

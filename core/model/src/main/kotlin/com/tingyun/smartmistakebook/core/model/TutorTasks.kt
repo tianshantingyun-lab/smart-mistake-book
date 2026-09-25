@@ -443,6 +443,16 @@ data class TutorRespondInput(
      */
     val knownRoundQuestion: RelatedProblemCandidate? = null,
     /**
+     * 学生**本轮显式添加**的题（加号里的"从错题库选择"）：它成为本轮要讲的题——提示词的
+     * confirmedQuestion/科目跟随它，学习证据/审校资料/代号表按"不属于这轮"清空（拿会话题的
+     * 证据去讲另一道题是错配），答案暴露与写工具的门控仍按本轮题锚走。
+     *
+     * 与 [knownRoundQuestion] 的分工：后者是"请求侧已知题锚"（显式添加或上一轮延续，绑定基底），
+     * 本字段只标记"学生这一轮的动作就是讲这道题"——上一轮延续不产生它（那属于模型的语义
+     * 延续，提示词重对齐留到后续批次）。空表示本轮没有显式添加（会话题照常）。
+     */
+    val attachedQuestion: AttachedRoundQuestion? = null,
+    /**
      * 本会话已披露的知识点代号条目（单一代号通道，D5）；与 [TutorPlanInput.knowledgeCodes]
      * 同一口径——派发时未赋码（code = null），core:data 会话注册表派生前赋码回写。
      */
@@ -545,6 +555,11 @@ data class TutorRespondInput(
                         candidate.problemRevisionId == knownRoundQuestion.problemRevisionId
                 },
         ) { "A known round question must be one of this round's candidates" }
+        require(
+            attachedQuestion == null ||
+                (knownRoundQuestion?.problemId == attachedQuestion.problemId &&
+                    knownRoundQuestion?.problemRevisionId == attachedQuestion.problemRevisionId),
+        ) { "An explicitly attached question must be this round's known anchor" }
     }
 
     companion object {
@@ -562,6 +577,43 @@ data class TutorRespondInput(
          */
         const val MAX_PRIOR_DIGEST_CHARS = 2_000
     }
+}
+
+/**
+ * 学生**显式**把一道错题加进当前轮次的完整身份：题面 + 修订号 + 科目。
+ *
+ * 它是"本轮要讲的题"的请求侧来源（[TutorRespondInput.attachedQuestion]），与候选菜单里的
+ * [RelatedProblemCandidate] 同源（同一道题的同一修订），但多带候选菜单不需要的
+ * `revisionNumber`（答案暴露与题面身份要用）。[toCandidate] 是两者之间的唯一换算。
+ */
+@Serializable
+data class AttachedRoundQuestion(
+    val problemId: String,
+    val problemRevisionId: String,
+    val revisionNumber: Int,
+    val subject: SubjectKind,
+    val title: String,
+    val questionDocument: QuestionDocument,
+) {
+    init {
+        problemId.requireSafeModelText("Attached question id", ModelTaskRequest.MAX_ID_CHARS, false)
+        problemRevisionId.requireSafeModelText(
+            "Attached question revision id",
+            ModelTaskRequest.MAX_ID_CHARS,
+            false,
+        )
+        require(revisionNumber > 0) { "Attached question revision number must be positive" }
+        title.requireSafeModelText("Attached question title", RelatedProblemCandidate.MAX_TITLE_CHARS, false)
+        require(questionDocument.blocks.isNotEmpty()) { "An attached question needs question content" }
+    }
+
+    fun toCandidate(): RelatedProblemCandidate = RelatedProblemCandidate(
+        problemId = problemId,
+        problemRevisionId = problemRevisionId,
+        subject = subject,
+        title = title,
+        questionDocument = questionDocument,
+    )
 }
 
 /**

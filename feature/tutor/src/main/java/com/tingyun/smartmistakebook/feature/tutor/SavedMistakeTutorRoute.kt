@@ -34,6 +34,7 @@ import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
 import com.tingyun.smartmistakebook.core.domain.StudyCatalogEntry
 import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
 import com.tingyun.smartmistakebook.core.domain.StudyQuestionMemory
+import com.tingyun.smartmistakebook.core.domain.TutorAttachedQuestionReader
 import com.tingyun.smartmistakebook.core.domain.TutorConversationRepository
 import com.tingyun.smartmistakebook.core.domain.TutorInteractionRepository
 import com.tingyun.smartmistakebook.core.domain.TutorKnowledgeContextLoader
@@ -78,6 +79,8 @@ fun SavedMistakeTutorRoute(
      * null 时菜单只剩"上一轮绑定的题"，本轮多半是无题轮。
      */
     roundQuestionRetriever: TutorRoundQuestionRetriever? = null,
+    /** 加号菜单「从错题库选择」选中后的题面读取器；null 时该菜单项不出现。 */
+    attachedQuestionReader: TutorAttachedQuestionReader? = null,
     /**
      * 知识点代号通道的预披露取数（D5）：已确认绑定节点 + 前置 → 未赋码条目；
      * null 时维持旧行为（无代号披露）。
@@ -197,6 +200,7 @@ fun SavedMistakeTutorRoute(
                 conversations = conversations,
                 catalogEntries = catalogEntries,
                 roundQuestionRetriever = roundQuestionRetriever,
+                attachedQuestionReader = attachedQuestionReader,
                 profile = profile,
                 learningMemory = learningMemory,
                 imageIntake = imageIntake,
@@ -267,6 +271,11 @@ internal fun SavedMistakeTutorContent(
      * 本轮候选菜单的本地检索源；null 时菜单只剩"上一轮绑定的题"（见 [SavedMistakeTutorRoute]）。
      */
     roundQuestionRetriever: TutorRoundQuestionRetriever? = null,
+    /**
+     * 加号菜单「从错题库选择」选中后的题面读取器；null 时该菜单项不出现
+     * （见 [SavedMistakeTutorRoute]）。
+     */
+    attachedQuestionReader: TutorAttachedQuestionReader? = null,
     profile: StudyProfileOverview,
     learningMemory: StudyQuestionMemory?,
     imageIntake: LobbyMessageImageIntake? = null,
@@ -400,6 +409,7 @@ internal fun SavedMistakeTutorContent(
         conversations = conversations,
         catalogEntries = catalogEntries,
         roundQuestionRetriever = roundQuestionRetriever,
+        attachedQuestionReader = attachedQuestionReader,
         imageIntake = imageIntake,
         onOpenMistakeNotebook = onOpenMistakeNotebook,
         onOpenProfile = onOpenProfile,

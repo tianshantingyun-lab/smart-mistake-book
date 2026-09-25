@@ -61,6 +61,7 @@ import com.tingyun.smartmistakebook.core.domain.RecordTutorMoveCommand
 import com.tingyun.smartmistakebook.core.domain.SaveTutorSessionRequest
 import com.tingyun.smartmistakebook.core.domain.StudyCatalogEntry
 import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
+import com.tingyun.smartmistakebook.core.domain.TutorAttachedQuestionReader
 import com.tingyun.smartmistakebook.core.domain.TutorConversationAnchorKind
 import com.tingyun.smartmistakebook.core.domain.TutorConversationRepository
 import com.tingyun.smartmistakebook.core.domain.TutorInteractionRepository
@@ -136,6 +137,8 @@ fun CapturedTutorSessionRoute(
     attachedImageResolver: (suspend (AttachedImage) -> String?)? = null,
     /** 学生消息附图的资产读取器；null 时会话页不提供附图入口。 */
     imageIntake: LobbyMessageImageIntake? = null,
+    /** 加号菜单「从错题库选择」选中后的题面读取器；null 时该菜单项不出现。 */
+    attachedQuestionReader: TutorAttachedQuestionReader? = null,
     onOpenModelSettings: () -> Unit,
     /** 讲题历史入口；与大厅、错题讲题共用同一个页面标题栏，所以三个入口都有它。 */
     onOpenHistory: (() -> Unit)? = null,
@@ -190,6 +193,7 @@ fun CapturedTutorSessionRoute(
         longTermWritesBlocked = longTermWritesBlocked,
         attachedImageResolver = attachedImageResolver,
         imageIntake = imageIntake,
+        attachedQuestionReader = attachedQuestionReader,
         onLongTermWritesBlocked = viewModel::markLongTermWritesBlocked,
         onOpenModelSettings = onOpenModelSettings,
         onOpenHistory = onOpenHistory,
@@ -254,6 +258,8 @@ private fun CapturedTutorSessionContent(
     longTermWritesBlocked: Boolean,
     attachedImageResolver: (suspend (AttachedImage) -> String?)? = null,
     imageIntake: LobbyMessageImageIntake? = null,
+    /** 加号菜单「从错题库选择」选中后的题面读取器；null 时该菜单项不出现。 */
+    attachedQuestionReader: TutorAttachedQuestionReader? = null,
     onLongTermWritesBlocked: () -> Unit,
     onOpenModelSettings: () -> Unit,
     onOpenHistory: (() -> Unit)? = null,
@@ -278,6 +284,7 @@ private fun CapturedTutorSessionContent(
                 },
                 attachedImageResolver = attachedImageResolver,
                 imageIntake = imageIntake,
+                attachedQuestionReader = attachedQuestionReader,
                 modelTasks = modelTasks,
                 interactions = interactions,
                 conversations = conversations,
@@ -359,6 +366,8 @@ internal fun ReadyCapturedSession(
     },
     attachedImageResolver: (suspend (AttachedImage) -> String?)? = null,
     imageIntake: LobbyMessageImageIntake? = null,
+    /** 加号菜单「从错题库选择」选中后的题面读取器；null 时该菜单项不出现。 */
+    attachedQuestionReader: TutorAttachedQuestionReader? = null,
     modelTasks: ModelTaskRepository,
     interactions: TutorInteractionRepository,
     /** 学生文字落库用；缺省 null 时该界面不落库（门控按空语料 fail-closed）。 */
@@ -456,6 +465,7 @@ internal fun ReadyCapturedSession(
         visualSourceAssetsReader = visualSourceAssetsReader,
         attachedImageResolver = attachedImageResolver,
         imageIntake = imageIntake,
+        attachedQuestionReader = attachedQuestionReader,
         interactions = interactions,
         conversations = conversations,
         catalogEntries = catalogEntries,

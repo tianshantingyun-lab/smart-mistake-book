@@ -176,8 +176,11 @@ internal fun MessageAttachmentDialog(
                         testTag = "${testTagPrefix}_attach_library",
                     )
                 }
+                // 两个入口都会用这个菜单，但选中后的落地不同：大厅是打开那道题的讲题页，
+                // 讲题会话里是把它接在发送的下一轮上。所以这里只说两处都成立的那件事
+                // ——选中之后，要讲的就是这道题——不写"作为这一轮"这种只对其中一个成立的表述。
                 Text(
-                    text = "图片最多 ${MAX_TUTOR_MESSAGE_IMAGES} 张；从错题库选中的题会作为这一轮要讲的那道题。",
+                    text = "图片最多 ${MAX_TUTOR_MESSAGE_IMAGES} 张；从错题库选中的题会成为接下来要讲的那道题。",
                     style = MaterialTheme.typography.bodySmall,
                     color = InkSecondary,
                     modifier = Modifier.padding(top = 4.dp),
