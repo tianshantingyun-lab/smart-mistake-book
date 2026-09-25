@@ -19,6 +19,7 @@ import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.tingyun.smartmistakebook.core.domain.ConfirmedTutorSession
 import com.tingyun.smartmistakebook.core.domain.AppendTutorStudentMessageCommand
 import com.tingyun.smartmistakebook.core.domain.LobbyMessageImage
 import com.tingyun.smartmistakebook.core.domain.LobbyMessageImageIntake
@@ -32,10 +33,12 @@ import com.tingyun.smartmistakebook.core.domain.TutorTurnResponse
 import com.tingyun.smartmistakebook.core.model.AttachedRoundQuestion
 import com.tingyun.smartmistakebook.core.model.ContentBlock
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
+import com.tingyun.smartmistakebook.core.model.ModelTaskFingerprint
 import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.TutorConversationIds
 import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
+import com.tingyun.smartmistakebook.core.model.ModelTaskStage
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
 import com.tingyun.smartmistakebook.core.model.QuestionDocument
@@ -49,6 +52,7 @@ import com.tingyun.smartmistakebook.core.model.TutorMoveType
 import com.tingyun.smartmistakebook.core.model.TutorProcessStage
 import com.tingyun.smartmistakebook.core.model.TutorProcessTimelineScene
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
+import com.tingyun.smartmistakebook.core.model.TutorRoundQuestionDeclaration
 import com.tingyun.smartmistakebook.core.model.TutorRespondOutput
 import com.tingyun.smartmistakebook.core.model.TutorSceneEmphasis
 import com.tingyun.smartmistakebook.core.model.TutorSceneStep
@@ -1005,6 +1009,173 @@ class CapturedTutorSessionInstrumentedTest : CapturedTutorSessionTestBase() {
 
         composeRule.onNodeWithTag("session_attach_failed").assertExists()
         composeRule.onNodeWithTag("session_attached_question").assertDoesNotExist()
+    }
+
+    /**
+     * 时间线 badge：一条回复要能看出"这轮讲的是哪一道"。
+     *
+     * 多题会话里两轮回复的文字风格一样，光看正文分不出"这轮讲的是会话题，还是我附加的那道"。
+     */
+    @Test
+    fun aReplyAboutAnExplicitlyAttachedQuestionShowsThatQuestionAboveTheBubble() {
+        val session = session()
+        val attached = attachedQuestion(catalogEntry())
+
+        composeRule.setContent {
+            MaterialTheme {
+                ReadyCapturedSession(
+                    session = session,
+                    clock = { 10_000L },
+                    saveInProgress = false,
+                    saveError = null,
+                    onSave = {},
+                    modelTasks = AttachedQuestionReplyModelTasks(session, attached),
+                    interactions = RecordingTutorInteractions(),
+                    conversations = emptyConversations(),
+                    profile = StudyProfileOverview(),
+                    onOpenModelSettings = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag("tutor_reply_question_badge").assertExists()
+        composeRule.onNodeWithText("本题：${attached.title}").assertExists()
+    }
+
+    /**
+     * 对照：模型声明了题锚、但这一轮的菜单里没有它（本地核不过就是无题轮）——
+     * 宁可不显示 badge，也不显示一个本地核不出来的标题。
+     */
+    @Test
+    fun aDeclarationThatIsNotInTheRoundMenuShowsNoBadge() {
+        val session = session()
+
+        composeRule.setContent {
+            MaterialTheme {
+                ReadyCapturedSession(
+                    session = session,
+                    clock = { 10_000L },
+                    saveInProgress = false,
+                    saveError = null,
+                    onSave = {},
+                    modelTasks = ChatModelTaskRepository(
+                        session,
+                        restoredSucceededMessage = "先看导数在临界点两侧的符号。",
+                    ),
+                    interactions = RecordingTutorInteractions(),
+                    conversations = emptyConversations(),
+                    profile = StudyProfileOverview(),
+                    onOpenModelSettings = {},
+                )
+            }
+        }
+
+        // 回复本身在（这是"有回复"的前提），只是不该有 badge。
+        composeRule.onNodeWithTag("tutor_chat_assistant_1").assertExists()
+        composeRule.onNodeWithTag("tutor_reply_question_badge").assertDoesNotExist()
+    }
+
+    /**
+     * 一条「学生附加了另一道题」的成功回复：只用来渲染，不派发新轮次。
+     * 请求/输出按生产口径组（`buildTutorRespondRequest(attachedQuestion = …)`）。
+     */
+    private inner class AttachedQuestionReplyModelTasks(
+        session: ConfirmedTutorSession,
+        attached: AttachedRoundQuestion,
+    ) : ModelTaskRepository {
+        private val provider = ProviderCapabilitySnapshot(
+            providerId = "configured-provider",
+            providerDisplayName = "已配置模型",
+            modelId = "tutor-model-v1",
+            supportedTasks = setOf(ModelTaskKind.TUTOR_PLAN, ModelTaskKind.TUTOR_RESPOND),
+            supportsImageInput = false,
+            supportsStructuredOutput = true,
+            supportsStreaming = true,
+            executionLocation = ModelExecutionLocation.LOCAL_NO_EGRESS,
+        )
+        private val planRequest = buildTutorPlanRequest(
+            session = session,
+            profile = StudyProfileOverview(),
+            provider = provider,
+            requestId = "badge-plan",
+            occurredAtEpochMillis = 100,
+        )
+        private val planTask = ModelTaskSnapshot(
+            taskId = "task-badge-plan",
+            request = planRequest,
+            requestFingerprint = ModelTaskFingerprint.of(planRequest),
+            status = ModelTaskStatus.SUCCEEDED,
+            stateVersion = 1,
+            stage = ModelTaskStage.COMPLETE,
+            userMessage = "讲解已准备好",
+            attemptCount = 1,
+            provider = provider,
+            output = tutorOutput(),
+            createdAtEpochMillis = 100,
+            updatedAtEpochMillis = 200,
+        )
+        private val respondRequest = buildTutorRespondRequest(
+            question = session.toTutorQuestionContext(),
+            profile = StudyProfileOverview(),
+            provider = provider,
+            requestId = "badge-respond",
+            occurredAtEpochMillis = 200,
+            responseOrdinal = 1,
+            cycleOrdinal = 1,
+            turnOrdinal = 1,
+            studentMessage = "讲讲这道题",
+            visibleTutorContextMarkdown = null,
+            priorMessages = emptyList(),
+            boundQuestionCandidates = listOf(attached.toCandidate()),
+            knownRoundQuestion = attached.toCandidate(),
+            attachedQuestion = attached,
+        )
+        private val replyTask = ModelTaskSnapshot(
+            taskId = "task-badge-respond",
+            request = respondRequest,
+            requestFingerprint = ModelTaskFingerprint.of(respondRequest),
+            status = ModelTaskStatus.SUCCEEDED,
+            stateVersion = 2,
+            stage = ModelTaskStage.COMPLETE,
+            userMessage = "回复已准备好",
+            attemptCount = 1,
+            provider = provider,
+            output = TutorRespondOutput(
+                sessionId = session.sessionId,
+                draftRevisionNumber = session.draftRevisionNumber,
+                questionDocumentId = session.questionDocument.document.id,
+                responseOrdinal = 1,
+                cycleOrdinal = 1,
+                turnOrdinal = 1,
+                messageMarkdown = "先看这道题的第一步。",
+                boundQuestion = TutorRoundQuestionDeclaration(
+                    problemId = attached.problemId,
+                    problemRevisionId = attached.problemRevisionId,
+                    anchorTerms = listOf("讲讲"),
+                ),
+                modelVersion = "model-v1",
+            ),
+            createdAtEpochMillis = 200,
+            updatedAtEpochMillis = 300,
+        )
+
+        override suspend fun capabilities(): ProviderCapabilitySnapshot = provider
+
+        override fun observe(requestId: String): Flow<ModelTaskSnapshot?> = flowOf(
+            listOf(planTask, replyTask).firstOrNull { it.request.requestId == requestId },
+        )
+
+        override fun observeBySubject(
+            subjectId: String,
+            kind: ModelTaskKind,
+        ): Flow<List<ModelTaskSnapshot>> = when (kind) {
+            ModelTaskKind.TUTOR_PLAN -> flowOf(listOf(planTask))
+            ModelTaskKind.TUTOR_RESPOND -> flowOf(listOf(replyTask))
+            else -> flowOf(emptyList())
+        }
+
+        override fun execute(request: ModelTaskRequest): Flow<ModelTaskSnapshot> =
+            error("这条测试只渲染已有轮次，不该派发新的一轮")
     }
 
     private fun catalogEntry() = StudyCatalogEntry(

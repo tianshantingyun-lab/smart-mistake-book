@@ -4,6 +4,7 @@ import com.tingyun.smartmistakebook.core.domain.ConfirmedTutorSession
 import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
 import com.tingyun.smartmistakebook.core.domain.TutorAnswerExposureSurfaceKind
 import com.tingyun.smartmistakebook.core.domain.TutorTurnResponse
+import com.tingyun.smartmistakebook.core.model.AttachedRoundQuestion
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocument
 import com.tingyun.smartmistakebook.core.model.ContentBlock
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
@@ -412,6 +413,163 @@ class TutorConversationTimelineTest {
         assertTrue(failure.message.orEmpty().contains("TUTOR_INTENT_BOUNDARY_VIOLATION"))
     }
 
+    // ---- 时间线 badge：这一轮讲的是哪一道（多题会话里必备）----
+
+    @Test
+    fun aModelBoundRoundCarriesTheBoundCandidatesTitle() {
+        val bound = respondTask("respond-bound", 200, boundQuestion = true)
+
+        val replies = buildTutorConversationTimeline(
+            question,
+            emptyList(),
+            listOf(bound),
+            emptyList(),
+        ).filterIsInstance<TutorConversationTimelineItem.Reply>()
+
+        // 模型声明经本地校验后落进 output.boundQuestion，标题从**那一轮的菜单**里取：
+        // 菜单是模型能指的选项集，声明的 id+revision 必须能在里面找到同一条。
+        assertEquals("错题本里的一道题", replies.single().questionTitle)
+    }
+
+    @Test
+    fun anExplicitlyAttachedQuestionRoundCarriesItsOwnTitleNotTheBoundCandidates() {
+        val attached = attachedRespondTask("respond-attached", 200, attachedTitle = "附加题：自由落体位移")
+
+        val replies = buildTutorConversationTimeline(
+            question,
+            emptyList(),
+            listOf(attached),
+            emptyList(),
+        ).filterIsInstance<TutorConversationTimelineItem.Reply>()
+
+        // 学生自己的动作优先于模型的声明：这一轮的菜单里还有另一道候选、模型的声明也指向了
+        // 那一道，badge 仍必须是附加题——否则学生会看到"我这轮明明选了 B，界面却写着 A"。
+        assertEquals("附加题：自由落体位移", replies.single().questionTitle)
+    }
+
+    @Test
+    fun aRoundWithAMenuButNoDeclarationCarriesNoTitle() {
+        // 会话题自己那一轮：菜单里有本地检索到的候选，但模型没有声明哪一道 → 不挂 badge。
+        // 光看回复正文看不出"这轮是不是在讲会话题"，多挂一行"本题：…"只是噪声。
+        val undecided = respondTask("respond-plain", 200, boundQuestion = false, unboundMenu = true)
+
+        val replies = buildTutorConversationTimeline(
+            question,
+            emptyList(),
+            listOf(undecided),
+            emptyList(),
+        ).filterIsInstance<TutorConversationTimelineItem.Reply>()
+
+        assertNull(replies.single().questionTitle)
+    }
+
+    @Test
+    fun aRoundThatSwitchedToAnotherQuestionStaysVisibleInTheTimeline() {
+        val plain = respondTask("respond-plain", 200)
+        val attached = attachedRespondTask("respond-attached", 300, attachedTitle = "附加题：自由落体位移")
+
+        val replies = buildTutorConversationTimeline(
+            question,
+            emptyList(),
+            listOf(plain, attached),
+            emptyList(),
+        ).filterIsInstance<TutorConversationTimelineItem.Reply>()
+
+        // 附加题轮次不能因为"题面/科目跟随了附加题"就被会话身份过滤藏掉：
+        // matches(question) 只看 sessionId + draftRevisionNumber + questionDocument.id，
+        // 这三项在附加题轮次里保持不变（生产口径见 buildTutorRespondRequest）。
+        assertEquals(
+            listOf("respond-plain", "respond-attached"),
+            replies.map { it.task.request.requestId },
+        )
+        assertEquals(
+            listOf("错题本里的一道题", "附加题：自由落体位移"),
+            replies.map { it.questionTitle },
+        )
+    }
+
+    /** 学生本轮显式附加了别的一道题的一轮回复（会话身份不变，题面/科目跟随附加题）。 */
+    private fun attachedRespondTask(
+        requestId: String,
+        occurredAtEpochMillis: Long,
+        target: TutorQuestionContext = question,
+        attachedTitle: String = "附加题：自由落体位移",
+        attachedProblemId: String = ATTACHED_PROBLEM_ID,
+    ): ModelTaskSnapshot {
+        val attached = AttachedRoundQuestion(
+            problemId = attachedProblemId,
+            problemRevisionId = "$attachedProblemId-revision-1",
+            revisionNumber = 2,
+            subject = SubjectKind.PHYSICS,
+            title = attachedTitle,
+            questionDocument = QuestionDocument(
+                id = "question-$attachedProblemId",
+                blocks = listOf(ContentBlock.Paragraph("attached-stem", "附加题干：求位移。")),
+            ),
+        )
+        val request = buildTutorRespondRequest(
+            question = target,
+            profile = StudyProfileOverview(),
+            provider = provider(),
+            requestId = requestId,
+            occurredAtEpochMillis = occurredAtEpochMillis,
+            responseOrdinal = 2,
+            cycleOrdinal = 1,
+            turnOrdinal = 2,
+            studentMessage = "讲讲这道题",
+            visibleTutorContextMarkdown = null,
+            priorMessages = emptyList(),
+            // 菜单里除了附加题还有另一道候选，且模型的声明指向**那一道**——用来区分
+            // "badge 取学生附加的题"与"badge 取模型声明的题"两条来源。
+            boundQuestionCandidates = listOf(
+                attached.toCandidate(),
+                otherMenuCandidate(),
+            ),
+            knownRoundQuestion = attached.toCandidate(),
+            attachedQuestion = attached,
+        )
+        val input = request.input as TutorRespondInput
+        return ModelTaskSnapshot(
+            taskId = "task-$requestId",
+            request = request,
+            requestFingerprint = ModelTaskFingerprint.of(request),
+            status = ModelTaskStatus.SUCCEEDED,
+            stateVersion = 1,
+            stage = ModelTaskStage.COMPLETE,
+            userMessage = "回复已准备",
+            attemptCount = 1,
+            provider = provider(),
+            output = TutorRespondOutput(
+                sessionId = input.sessionId,
+                draftRevisionNumber = input.draftRevisionNumber,
+                questionDocumentId = input.questionDocument.id,
+                responseOrdinal = input.responseOrdinal,
+                cycleOrdinal = input.cycleOrdinal,
+                turnOrdinal = input.turnOrdinal,
+                messageMarkdown = "先看这道题的第一步。",
+                boundQuestion = TutorRoundQuestionDeclaration(
+                    problemId = OTHER_PROBLEM_ID,
+                    problemRevisionId = "$OTHER_PROBLEM_ID-revision-1",
+                    anchorTerms = listOf("讲讲"),
+                ),
+                modelVersion = "model-v1",
+            ),
+            createdAtEpochMillis = occurredAtEpochMillis,
+            updatedAtEpochMillis = occurredAtEpochMillis,
+        )
+    }
+
+    private fun otherMenuCandidate() = RelatedProblemCandidate(
+        problemId = OTHER_PROBLEM_ID,
+        problemRevisionId = "$OTHER_PROBLEM_ID-revision-1",
+        subject = SubjectKind.MATH,
+        title = "菜单里的另一道题",
+        questionDocument = QuestionDocument(
+            id = "question-$OTHER_PROBLEM_ID",
+            blocks = listOf(ContentBlock.Paragraph("other-stem", "另一道题干。")),
+        ),
+    )
+
     private fun planTask(
         requestId: String,
         occurredAtEpochMillis: Long,
@@ -475,6 +633,11 @@ class TutorConversationTimelineTest {
         intentDecision: TutorIntentDecision = TutorIntentDecision.currentQuestionDefault(),
         /** 本轮有没有绑定题：无题轮没有候选菜单，输出也没有题锚声明（新语义下不得产生暴露）。 */
         boundQuestion: Boolean = true,
+        /**
+         * 菜单里有本地检索到的候选、但模型没有声明哪一道（会话题的常见形态）：
+         * 有菜单不等于有绑定，badge 必须仍然为空。
+         */
+        unboundMenu: Boolean = false,
     ): ModelTaskSnapshot {
         val request = buildTutorRespondRequest(
             question = target,
@@ -488,7 +651,7 @@ class TutorConversationTimelineTest {
             studentMessage = studentMessage,
             visibleTutorContextMarkdown = null,
             priorMessages = emptyList(),
-            boundQuestionCandidates = if (boundQuestion) {
+            boundQuestionCandidates = if (boundQuestion || unboundMenu) {
                 listOf(boundCandidateFor(studentMessage))
             } else {
                 emptyList()
@@ -679,6 +842,8 @@ class TutorConversationTimelineTest {
     private companion object {
         const val BOUND_PROBLEM_ID = "bound-problem-1"
         const val BOUND_REVISION_ID = "bound-revision-1"
+        const val ATTACHED_PROBLEM_ID = "attached-problem-1"
+        const val OTHER_PROBLEM_ID = "other-problem-1"
 
         /** 字母/数字/汉字连续 2 字以上（Java 正则的 \p{L} 覆盖 CJK）。 */
         val ALNUM_RUN = Regex("[\\p{L}\\p{N}]{2,}")

@@ -1195,6 +1195,17 @@ internal fun TutorModelPanel(
                         )
                     }
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    // 这一轮讲的是哪一道（多题会话里必备）：只在本地确实知道这一轮的题时出现
+                    // （附加题 / 模型声明核过的绑定），会话题自己的轮次不挂，避免噪声。
+                    timelineItem.questionTitle?.let { roundQuestionTitle ->
+                        Text(
+                            text = "本题：$roundQuestionTitle",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = InkSecondary,
+                            maxLines = 1,
+                            modifier = Modifier.testTag("tutor_reply_question_badge"),
+                        )
+                    }
                     TutorChatExchange(
                         task = timelineItem.task,
                         resolvedVisualScene = replyVisualAnchor?.let(resolvedVisualScenes::get),
