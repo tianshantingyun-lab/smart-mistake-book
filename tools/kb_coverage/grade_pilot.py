@@ -78,13 +78,24 @@ def grade_dir(root: Path, only: tuple[str, int] | None = None) -> dict:
             continue
         text, records = load_page(jsonl)
         counts_file = jsonl.with_suffix(".counts.json")
-        counts = json.loads(counts_file.read_text(encoding="utf-8")) if counts_file.exists() else {}
+        counts: dict = {}
+        counts_err = ""
+        if counts_file.exists():
+            try:
+                counts = json.loads(counts_file.read_text(encoding="utf-8"))
+            except (json.JSONDecodeError, UnicodeDecodeError) as e:
+                # 坏产物不许把门崩掉：如实记成这一页的问题（清点数读不到 → 按缺清点数判 fail，
+                # 交给定点修重写）。实测 2026-09-25：一个批代理在 notes 里写了未转义换行，
+                # 4 页 counts 全坏，门在 json.loads 上直接抛错、整轮判不了。
+                counts_err = f"counts 文件解析失败：{str(e)[:80]}"
         sig = tl.signals(text)
         row = {"status": "done", "verdict": "", "truncated": "",
                "chars": len(text), "numbered": sig["numbered"],
                "items_min": str(counts.get("items_min", ""))}
         defects = gate.field_text_defects(text)
         problems = []
+        if counts_err:
+            problems.append(counts_err)
         if not row["items_min"]:
             problems.append("缺清点数 items_min（清点先行，未清点即不算过闸）")
         elif tl.compute_gate(row, text) != "pass":

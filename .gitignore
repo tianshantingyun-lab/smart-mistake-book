@@ -56,3 +56,6 @@ knowledge-production/2027-53-transcripts-staged/
 knowledge-production/2027-53-pilot/**/*.jsonl
 knowledge-production/2027-53-pilot/**/*.counts.json
 knowledge-production/2027-53-pilot/**/*.reconcile.json
+
+# 53 扫描件补齐的中间产物（转写原文 + 代理自己裁的图，都不入版本控制）
+knowledge-production/2027-53-fill/

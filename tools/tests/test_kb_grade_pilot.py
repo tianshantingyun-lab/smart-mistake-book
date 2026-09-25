@@ -74,6 +74,22 @@ class GradeTest(unittest.TestCase):
         self.assertEqual(2, out["pages"][0]["records"], out)
         self.assertEqual("pass", out["pages"][0]["gate"], out)
 
+    def test_malformed_counts_is_reported_not_crashed(self):
+        # 实测 2026-09-25：一个批代理在 counts 的 notes 里写了未转义换行，4 页 counts 全坏，
+        # 门在 json.loads 上直接抛错、整轮判不了。坏产物必须被记成"这一页的问题"。
+        d = self.tmp / "CHEMISTRY"
+        d.mkdir(parents=True, exist_ok=True)
+        (d / "p0127.jsonl").write_text(json.dumps(
+            {"page": 127, "heading": "h", "text": "底图说明与转写正文，长度足够通过字数下限。"},
+            ensure_ascii=False), encoding="utf-8")
+        (d / "p0127.counts.json").write_text(
+            '{"subject":"CHEMISTRY","page":127,"items_min":47,"notes":"第一行\n未转义换行"}',
+            encoding="utf-8")
+        out = gp.grade_dir(self.tmp)
+        self.assertEqual(1, out["failed"], out)
+        self.assertTrue(any("counts 文件解析失败" in p for p in out["pages"][0]["problems"]),
+                        out["pages"][0]["problems"])
+
     def test_empty_dir_is_not_a_pass(self):
         out = gp.grade_dir(self.tmp)
         self.assertEqual(0, out["passed"])
