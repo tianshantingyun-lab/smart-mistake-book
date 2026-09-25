@@ -53,22 +53,153 @@ HEADER_BYTES = 24
 PACK_RELATIVE = "core/data/src/main/resources/knowledge/moe-2025-four-subjects-v1.json"
 PACK_ID = "moe-2025-four-subjects-v1"
 DENSE_DIR_RELATIVE = "core/data/src/main/resources/knowledge/dense"
+# **路径名不随档位变**：`.vec` / `.tflite` / 词表 / 模型目录的文件名都是消费侧常量
+# （`DenseRecallAssembly.MODEL_ASSET_PATH` 等）与 assets 里的名字。换件只换内容不改名，
+# 改名的代价是动端侧装配与随包 assets——这条是"路径名保持不变"的落点。
 VECTOR_FILE_NAME = "bge-small-zh-int8.vec"
 VOCAB_RELATIVE = "tools/dense_build/vocab/bge-small-zh-v1.5-vocab.txt"
 TOKENIZER_RELATIVE = "tools/dense_build/vocab/bge-small-zh-v1.5-tokenizer.json"
-MODEL_RELATIVE = "build/dense-model/bge-small-zh-v1.5-int8.onnx"
-MODEL_FP32_RELATIVE = "build/dense-model/bge-small-zh-v1.5-fp32.onnx"
 MODEL_MANIFEST_RELATIVE = "tools/dense_build/model-manifest.json"
 LEXICAL_LEG_RELATIVE = "build/production-lexical-leg.tsv"
 GOLDEN_RELATIVE = "tools/kb_coverage/tables/golden_queries_v1.json"
 GOLDEN_SHA256 = "7c004b763bdd49556e11ff1c9500c9461b09a7383b77f230fa8fd35754e6ae39"
 
-BGE_REPO = "BAAI/bge-small-zh-v1.5"
-BGE_REVISION = "7999e1d3359715c523056ef9478215996d62a620"
-BGE_LICENSE = "mit"
-BGE_QUERY_PREFIX = "为这个句子生成表示以用于检索相关文章："
-BGE_MAX_LEN = 512
-BGE_DIM = 512
+# ---- 模型档位（Stage-5 参数化：换件只换"哪一档"与档位坐标，路径名一律不动） ----
+#
+# 为什么要有这张表：Stage-3 的导出链把 repo/revision/dim 写死在模块级常量里，换一支模型
+# 就得改多处代码（导出、打包、参考数、两份 fixture 生成器），任何一处漏改都表现为
+# "另一支模型在跑"而**没有门会红**。表把"档位"收成一个坐标集合，脚本用 `--model` 选档，
+# 默认档 = 仓库当前随包的那一档。
+#
+# 两档的公共部分（模型族同族：BertModel + WordPiece + CLS 池化 + L2 归一 + 三输入签名）。
+MODEL_SHARED = dict(
+    license="mit（基座许可证；可再分发）",
+    pooling="cls", normalize="l2", docPrefix=None,
+    maxLen=512,
+    queryPrefix="为这个句子生成表示以用于检索相关文章：",
+    inputs=["input_ids", "attention_mask", "token_type_ids"],
+    output="sentence_embedding",
+    # 端侧模型件（assets 内）**两档同一个文件名**：消费侧 `DenseRecallAssembly.MODEL_ASSET_PATH`
+    # 是常量，换件只换内容。`--install` 就是往这里拷。
+    tfliteAsset="core/data/src/main/assets/dense/bge-small-zh-v1.5-int8.tflite",
+)
+
+MODEL_PROFILES = {
+    # 回退档（Stage-3 现役小档）：2026-09-24 真机闭环跑通的那一支。
+    # 换件失败/要退回时的**可回退值**：`--model bge-small-zh-v1.5` 即可整条链切回。
+    "bge-small-zh-v1.5": dict(
+        key="bge-small-zh-v1.5",
+        repo="BAAI/bge-small-zh-v1.5",
+        revision="7999e1d3359715c523056ef9478215996d62a620",
+        dim=512,
+        modelStem="bge-small-zh-v1.5",
+        note="Stage-3 小档（24M/512 维）；Stage-5 换件的回退档",
+        # 同档的离线臂（`build/stage2-dense-work/stage2_encode.py --model bge` 的产物）：
+        # 交叉对拍用——证明"行序/文本构造与独立产出的臂逐条同一"，不是自己跟自己比。
+        stage2Arm=dict(docs="bge-docs.npy", queries="bge-queries.npy"),
+        # 量化口径 = Stage-3 的 per-output-channel 对称 int8（`scale = max/127`）。
+        # 小档 4 层 × 512 维上实测过对拍门（0.999010，贴着线过）；**它是本档的历史口径，
+        # 不随换件改**（改了口径 = 随包件与旧记录不可比）。
+        quantCaliber=dict(kind="perChannelMax", rescaleAlpha=0.0,
+                          note="每输出通道 max/127 对称 int8 + fp32 激活（Stage-3 原口径）"),
+        # 词表/分词器冻结副本：两档的 vocab.txt **逐字节相同**（sha256 45bbac6b…，实测），
+        # 所以冻结副本仍是这一档的词表；tokenizer.json 两档不同（仅 normalizer.lowercase
+        # 一处：base=true / small=false），导出侧显式传 do_lower_case=true 覆盖了它 ⇒ 逐条
+        # token id 相同（见 README §8）。回退档沿用冻结副本，不额外冻结。
+        snapshotFiles=("vocab.txt", "tokenizer.json"),
+    ),
+    # 目标档（Stage-5 换件）：102.3M/768 维，同族同接口（C-MTEB Retrieval 69.49 同表口径）。
+    "bge-base-zh-v1.5": dict(
+        key="bge-base-zh-v1.5",
+        repo="BAAI/bge-base-zh-v1.5",
+        revision="f03589ceff5aac7111bd60cfc7d497ca17ecac65",
+        dim=768,
+        modelStem="bge-base-zh-v1.5",
+        note="Stage-5 换件目标档（102.3M/768 维）；与 bge-small 同族（BertModel+WordPiece+CLS）",
+        # 同档的离线臂：`build/stage2-dense-work/stage2_encode.py --model bgebase` 的产物
+        # （Stage-5 WP1 已生成，revision 与本档一致）——交叉对拍用它，同档同维才成立。
+        stage2Arm=dict(docs="bgebase-docs.npy", queries="bgebase-queries.npy"),
+        # 量化口径（Stage-5 WP2 改进，实测：`build/dense_build` 的 README §8.6）：
+        # 纯 per-output-channel（小档口径）在 12 层 × 768 维上过不了 ≥0.999（实测 0.9478），
+        # 根因是权重里少数"离群列"把整行的量化步长撑粗；沿**输入通道**做一次对角重标定
+        # `A·W = (A·D⁻¹)·(D·W)`（D 取该输入通道 max|W| 的 -0.5 次幂、按几何均值归一，纯权重
+        # 统计、不需要标定集）后，per-output-channel int8 的保真度回到 0.9991（docs 逐行最小）。
+        # **关键是这条口径在 TFLite 里可承载**：存储仍是"每输出通道一个 scale 的 int8 权重"，
+        # 激活侧多一个逐通道 fp32 `Mul`（转换链见 convert_onnx_to_tflite.py 的 tf_converter_drqt 路线）。
+        quantCaliber=dict(kind="perChannelMax+inputChannelRescale", rescaleAlpha=0.5,
+                          columnStatistic="max|W| over output channels（纯权重统计，无标定集）",
+                          normalization="geometric mean（尺度整体保持在 1 附近）",
+                          note="per-output-channel int8 × 输入通道重标定（α=0.5）+ fp32 激活"),
+        # 该档的 `.tflite` 路线：**flatbuffer_direct 会把 int8 权重展开成 fp32 常量**
+        # （实测 341.6 MiB），所以 base 档走 TF 转换器的 dynamic-range 量化（权重仍存 int8、
+        # 激活 fp32、无 Flex 算子）——见 convert_onnx_to_tflite.py 的 `--route`。
+        tfliteRoute="tf_converter_drqt",
+        # vocab.txt 与小档逐字节相同 ⇒ 冻结副本（含端侧 `knowledge/dense/` 里的那份）不动；
+        # tokenizer.json 若覆盖成 base 的，会让 `gen_tokenizer_fixture.py` 的 pinned sha 与
+        # 端侧既有 fixture 一起失效——而它的差异只在 normalizer.lowercase，被导出侧显式
+        # kwargs 覆盖 ⇒ 冻结副本保持（不改内容、不改路径）。
+        snapshotFiles=("vocab.txt",),
+    ),
+}
+
+# 仓库当前随包的那一档（`--model` 不带时的默认值）。
+#
+# **Stage-5 换件未落地，所以默认仍是 bge-small-zh-v1.5**：换件目标档 bge-base-zh-v1.5 的
+# 坐标/工具链都已就绪（`--model bge-base-zh-v1.5` 可整条链复算），但它过不了既有对拍门
+# ≥0.999——本档口径（per-output-channel int8 + 输入通道重标定 α=0.5）实测 docs 逐行 cosine
+# 最小 **0.998638**（差 0.00136）/ queries **0.999173**。缺口在**嵌入表**：docs 的最小值由
+# 2–4 个字的短文本行决定（没有"多 token 平均"，嵌入表的 int8 误差直接落到 CLS 上），
+# 同批行上"ONNX 图 vs 嵌入表未量化的同口径 torch 模拟"min 0.999292 ⇒ 权重侧已够好。
+# 注意第一轮的 0.9478/0.9676 是**另一个口径**（纯 per-output-channel、无重标定）的数；
+# 当时那条归因"MatMul 权重量化在 12 层 × 768 维上累积"已被第二轮推翻（同口径的小档
+# 4 层 × 512 维是 0.999010，只贴着门线过；两档**逐权重**相对误差几乎相同：matmul 中位
+# 0.00794 vs 0.00828 ⇒ 差不在实现）。
+# 随包资产（`.vec` / `.tflite` / `DenseRecallAssembly.VECTOR_ASSET_SHA256`）
+# 因此**一律未动**，默认档必须与随包那一档一致，否则"默认跑一遍"会拿 base 的查询向量去对
+# small 的资产（当场形状不符）。换件结论、判据与全阶段证据见 `docs/kb-stage5-report-2026-09-25.md`。
+DEFAULT_MODEL_KEY = "bge-small-zh-v1.5"
+
+
+def model_profile(key=None) -> dict:
+    """取档位坐标（公共字段 + 该档字段）。`key=None` 取默认档。"""
+    resolved = key or DEFAULT_MODEL_KEY
+    if resolved not in MODEL_PROFILES:
+        raise SystemExit("未知模型档位 %r；可选：%s" % (resolved, sorted(MODEL_PROFILES)))
+    return dict(MODEL_SHARED, **MODEL_PROFILES[resolved])
+
+
+def model_paths(profile) -> dict:
+    """该档的中间物路径（`build/`，可由导出链重生成）。
+
+    ONNX 按档分名（`<stem>-{fp32,int8}.onnx`）：文件名自带档位，不会出现"叫 bge-small
+    的文件里装着 base"这种不可辨认的状态；`.npy` 输出用通用名（一次导出只有一个有效档），
+    它的身份由 `model-manifest.json` 里的 sha256/维度/行数钉住，打包侧逐个复核。
+    """
+    stem = profile["modelStem"]
+    return dict(
+        fp32="build/dense-model/%s-fp32.onnx" % stem,
+        int8="build/dense-model/%s-int8.onnx" % stem,
+        int8Docs="build/dense-model/int8-docs.npy",
+        int8Queries="build/dense-model/int8-queries.npy",
+        fp32Docs="build/dense-model/fp32-docs.npy",
+        fp32Queries="build/dense-model/fp32-queries.npy",
+    )
+
+
+_ACTIVE = model_profile()
+
+# 派生常量（保持既有名字：文档、旁车与外部脚本引用它们）。默认档 = 仓库当前随包那一档；
+# 回退档 bge-small-zh-v1.5 的对应值：repo="BAAI/bge-small-zh-v1.5"、
+# revision="7999e1d3359715c523056ef9478215996d62a620"、dim=512。
+# **脚本内部一律用 `model_profile()` 的返回值**，不要直接读这些常量——它们只反映默认档。
+BGE_REPO = _ACTIVE["repo"]
+BGE_REVISION = _ACTIVE["revision"]
+BGE_LICENSE = _ACTIVE["license"]
+BGE_QUERY_PREFIX = _ACTIVE["queryPrefix"]
+BGE_MAX_LEN = _ACTIVE["maxLen"]
+BGE_DIM = _ACTIVE["dim"]
+MODEL_RELATIVE = model_paths(_ACTIVE)["int8"]
+MODEL_FP32_RELATIVE = model_paths(_ACTIVE)["fp32"]
 
 
 def repo_root(explicit=None) -> Path:

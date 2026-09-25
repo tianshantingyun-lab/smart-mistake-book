@@ -7,6 +7,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import org.junit.Assert.assertEquals
@@ -42,6 +43,9 @@ class DenseEncoderParityInstrumentedTest {
         val cases = loadCases(context)
         val references = loadReferences(context)
         val vectorsSeal = loadVectorSeal(context)
+        // 参考向量的维度**取自 fixture**（`encoder-parity.json` 的 `dim`）：换件后 fixture 与
+        // 端侧模型必须同维，写死 512/768 会在下一次换件时静默比错对象。
+        val dim = loadFixtureDim(context)
 
         println("=== dense-encoder-parity (真机硬门) ===")
         println(
@@ -107,7 +111,7 @@ class DenseEncoderParityInstrumentedTest {
             val started = SystemClock.elapsedRealtimeNanos()
             val produced = encoder.encode(case.text)
             elapsedMicros += (SystemClock.elapsedRealtimeNanos() - started) / 1_000
-            assertEquals("编码维度不符", DENSE_DIM, produced.size)
+            assertEquals("编码维度不符", dim, produced.size)
             val cosine = cosine(produced, references[index])
             allCosine += cosine
             byKind.getOrPut(case.kind) { mutableListOf() } += cosine
@@ -176,13 +180,19 @@ class DenseEncoderParityInstrumentedTest {
                 loadVectorSeal(context),
                 sha256Hex(bytes),
             )
+            val dim = loadFixtureDim(context)
             val buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN)
-            val rowBytes = DENSE_DIM * Float.SIZE_BYTES
-            assertEquals("向量文件不是 " + DENSE_DIM + " 维整数行", 0, bytes.size % rowBytes)
+            val rowBytes = dim * Float.SIZE_BYTES
+            assertEquals("向量文件不是 " + dim + " 维整数行", 0, bytes.size % rowBytes)
             List(bytes.size / rowBytes) {
-                FloatArray(DENSE_DIM) { buffer.getFloat() }
+                FloatArray(dim) { buffer.getFloat() }
             }
         }
+
+    private fun loadFixtureDim(context: Context): Int {
+        val json = context.assets.open(ASSET_META).use { it.bufferedReader().readText() }
+        return Json.parseToJsonElement(json).jsonObject["dim"]!!.jsonPrimitive.int
+    }
 
     private fun loadVectorSeal(context: Context): String {
         val json = context.assets.open(ASSET_META).use { it.bufferedReader().readText() }
@@ -246,7 +256,6 @@ class DenseEncoderParityInstrumentedTest {
         const val ASSET_CASES = "dense/encoder-parity-cases.tsv"
         const val ASSET_VECTORS = "dense/encoder-parity-vectors.f32"
         const val ASSET_META = "dense/encoder-parity.json"
-        const val DENSE_DIM = 512
         const val DIAGNOSTIC_CASES = 5
         /** 任务书写死的硬门：逐条 cosine ≥ 0.999（不因本机实测好看而下调）。 */
         const val MIN_COSINE = 0.999

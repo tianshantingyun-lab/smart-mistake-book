@@ -50,6 +50,14 @@ python tools/dense_build/gen_tokenizer_fixture.py          # 写 fixture + 打�
 - 90 条查询**按 export_bge_int8.py 的批式口径**（`padding=True, truncation=True,
   max_length=512` 一次 64 条）编码后剥掉尾部 PAD，逐条等于本 fixture 的单条形式
   —— 证明 fixture 记的不是"另一套调用"。
+
+## 换件后要不要重生成（Stage-5，2026-09-25 实测）
+
+**不用。** 换到 bge-base-zh-v1.5 后本 fixture 一字不改仍成立，两条实测依据：
+1. 两档 vocab.txt **逐字节相同**（sha256 `45bbac6b…`）⇒ WordPiece 词表同一份；
+2. 用 bge-base 的 tokenizer（`do_lower_case=true` = 包内 `sentence_bert_config.json`）
+   重编码本 fixture 的**全部 333 条**（query 90 / surface 200 / edge 18 / stage 25），
+   与冻结 ids **逐条相同**（`export_bge_int8.py` 在换档导出时当场断言，不一致即停）。
 """
 from __future__ import annotations
 
@@ -65,7 +73,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import dense_asset as D  # noqa: E402
 
 SNAPSHOT_RELATIVE = (
-    "models--BAAI--bge-small-zh-v1.5/snapshots/" + D.BGE_REVISION
+    # 词表来源**写死为 bge-small-zh-v1.5 的 snapshot**（不是"当前档"）：两档的 vocab.txt 逐字节
+    # 相同（实测 sha256 45bbac6b…，见 tools/dense_build/README.md §8），冻结副本是**共享词表**；
+    # 而 bge-base 的 tokenizer.json 与冻结副本不同（仅 normalizer.lowercase 一处），拿它当来源
+    # 会让下面的 pinned sha 断言当场红。所以这里按"词表那一档"取，不跟 D.BGE_REVISION 走
+    # ——那是个会随换件漂移的常量，而这份 fixture 的输入其实不随换件变。
+    "models--BAAI--bge-small-zh-v1.5/snapshots/7999e1d3359715c523056ef9478215996d62a620"
 )
 CASES_RELATIVE = "core/data/src/test/resources/dense/tokenizer-parity-cases.txt"
 STAGES_RELATIVE = "core/data/src/test/resources/dense/tokenizer-parity-stages.txt"

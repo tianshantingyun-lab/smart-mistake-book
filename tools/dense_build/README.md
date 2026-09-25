@@ -1,7 +1,12 @@
-# `tools/dense_build/` —— Stage-3 小档（bge-small-zh-v1.5 int8）资产与参考数的生成链
+# `tools/dense_build/` —— 稠密腿的**档位参数化**生成链（当前随包档 = bge-small-zh-v1.5 int8）
 
 本目录是**可复算的生成链**：模型怎么转、向量怎么打包、参考数怎么算，全在这里；产物分两类，
 一类**入库跟踪**（随包分发的资产），一类落 `build/`（可重建的中间物与出数）。
+
+档位（模型）由 `dense_asset.MODEL_PROFILES` 收成坐标集合、脚本用 `--model <键>` 选，
+**默认档 = 仓库当前随包那一档**（`DEFAULT_MODEL_KEY`）；路径名**不随档变**。§8 是各档的实测与取舍，
+§8.6 是写死的落地判据与当前状态。**Stage-5（换 `bge-base-zh-v1.5`）的全阶段证据、换件清单、
+延迟硬线状态、回退复核与 UNVERIFIED 在 `docs/kb-stage5-report-2026-09-25.md`。**
 
 ## 1. 流水线（按顺序跑，全部在仓库根下）
 
@@ -22,6 +27,10 @@ python tools/dense_build/stage3_expectation.py
 python tools/ci/run_kb_checks.py            # 新含 dense 一节
 python -m unittest discover -s tools/tests -t tools -p "test_dense_asset_gate.py"
 ```
+
+②③④⑤ 的每一步都接受 `--model <档位键>`（`bge-small-zh-v1.5` / `bge-base-zh-v1.5`），
+**不带 = 仓库当前随包那一档**（`dense_asset.DEFAULT_MODEL_KEY`）⇒ 上面这套命令就是"复算随包件"的命令，
+换档时才需要显式给 `--model`（§8.1）。
 
 | 文件 | 角色 | 是否入库 |
 |---|---|---|
@@ -158,9 +167,15 @@ int8 ONNX（路线 B）转出，**随包分发**（不入库就没有稠密腿�
 python -m venv build/tflite-venv
 build/tflite-venv/Scripts/python.exe -m pip install "onnx2tf[tensorflow]"   # tensorflow-cpu 2.21.0
 build/tflite-venv/Scripts/python.exe tools/dense_build/freeze_onnx_static.py \
-    build/dense-model/bge-small-zh-v1.5-int8.onnx build/tflite-work/static/bge-int8-512.onnx 512
-# 之后：进程内 onnxsim → onnx2tf -tb flatbuffer_direct -nuo（driver 见 build/tflite-work/run_convert.py）
+    build/dense-model/bge-small-zh-v1.5-int8.onnx build/tflite-work/static/bge-int8-512.onnx 512 --out-dim 512
+# 之后：进程内 onnxsim → onnx2tf -tb flatbuffer_direct -nuo（driver = tools/dense_build/convert_onnx_to_tflite.py）
 ```
+
+> **`--out-dim` 是必需的**（2026-09-25 实测）：`freeze_onnx_static.py` 不再拿 512 当兜底——
+> 这份 int8 ONNX 的 `sentence_embedding` 最后一维**不是静态可推断**的，省略 `--out-dim` 会直接
+> 非零退出（`图输出的最后一维不是静态、也没给 --out-dim —— 拒绝用 512 兜底`，实测 exit=1）。
+> 谁忘了带这个参数，都会当场停下而不是悄悄把 768 维的图冻成 512 维。
+> `convert_onnx_to_tflite.py` 内部按档传 `profile["dim"]`，走脚本不会被这条绊到。
 
 三条取舍（实测，不是推断）：
 
@@ -190,3 +205,213 @@ build/tflite-venv/Scripts/python.exe tools/dense_build/freeze_onnx_static.py \
 （权重 int8 + fp32 激活，TFLite converter `Optimize.DEFAULT`），但它引入**第二次**量化误差，
 必须重跑 7.1 的 ≥0.999 门再决定（本轮未做，见报告"换大档/缩小档判据"）。
 
+
+## 8. Stage-5 换件（2026-09-25）：档位参数化 + bge-base 的实测结论
+
+### 8.1 怎么换：一条 `--model`，路径名一律不动
+
+`dense_asset.MODEL_PROFILES` 把"档位"收成一个坐标集合，脚本一律用 `--model <键>` 选档；
+**默认档 = 仓库当前随包那一档**（`DEFAULT_MODEL_KEY`）：
+
+| 档位 | repo / revision（钉死） | dim | 状态 |
+|---|---|---|---|
+| `bge-small-zh-v1.5`（默认，随包） | `BAAI/bge-small-zh-v1.5` @ `7999e1d3359715c523056ef9478215996d62a620` | 512 | Stage-3 小档，真机闭环已过 |
+| `bge-base-zh-v1.5` | `BAAI/bge-base-zh-v1.5` @ `f03589ceff5aac7111bd60cfc7d497ca17ecac65` | 768 | Stage-5 目标档（**本轮未落地**，见 8.3） |
+
+- **路径名不随档变**：`.vec` / `.tflite` / 词表 / 消费侧常量引用的名字都不动，换件只换内容。
+  只有 `build/dense-model/<档>-{fp32,int8}.onnx` 按档分名（文件名自带档位，避免"叫 small
+  的文件里装着 base"）；`.npy` 输出用通用名，身份由 `model-manifest.json` 里的
+  sha256/维度/行数钉住，`pack_dense_asset.py` 逐个复核后才允许打包。
+- 接受 `--model` 的脚本：`export_bge_int8.py`、`pack_dense_asset.py`、`stage3_expectation.py`、
+  `stage3_device_sim.py`、`gen_dense_device_fixture.py`、`gen_device_parity_fixture.py`。
+  CI（`run_kb_checks.py`）与 `check_asset.py` **不认档位**：它们只比"旁车 ↔ 当前文件"，
+  所以换件后旁车与哈希必须一起更新（打包含这一步）。
+- 新增两个**入库**工具（此前的转换驱动只存在于 `build/tflite-work/`，而 `build/` 是
+  gitignore、历史上被清过场 ⇒ 转换链无法从仓库复现）：
+  - `convert_onnx_to_tflite.py`：冻静态 → onnxsim → onnx2tf；README §7 的三条取舍写成断言，
+    含"源件哈希未变"（第 3 条事故的防线）；
+  - `check_tflite_parity.py`：宿主对拍 tflite vs int8 ONNX（290 条文本，门 ≥0.999），
+    含 id/行对齐自证。
+- 清单结构：顶层仍是"当前随包那一档"的扁平镜像（`check_asset` / 打包侧读它），
+  所有档位的条目留在 `modelEntries[<档>]`；**没过门的档位只进 `modelEntries`**
+  （`gate.passed=false`），顶层镜像不动 —— 换件失败不会污染随包侧的读数。
+
+### 8.2 词表：两档共享，换件不用动
+
+bge-base-zh-v1.5 与 bge-small-zh-v1.5 的 `vocab.txt` **逐字节相同**
+（sha256 `45bbac6b341c319adc98a532532882e91a9cefc0329aa57bac9ae761c27b291c`，2026-09-25 实测）
+⇒ 端侧词表资产 `knowledge/dense/bge-small-zh-v1.5-vocab.txt` 与 `tools/dense_build/vocab/`
+的冻结副本**两档通用**，不换文件、不重生成 tokenizer fixture。
+`tokenizer.json` 两档不同，但差异只在 `normalizer.lowercase`（base=true / small=false），
+而导出侧显式传 `do_lower_case=True` 把它覆盖掉：**333 条冻结 fixture（query 90 / surface 200 /
+edge 18 / stage 25）逐条 token id 相同** —— `export_bge_int8.py` 在换档导出时当场断言，
+不一致即停（spec §3.2）。`gen_tokenizer_fixture.py` 的词表来源因此写死为**词表那一档**的
+snapshot，不再跟 `D.BGE_REVISION` 漂移。
+
+### 8.3 bge-base 的量化保真度：第一轮归因 + 第二轮的根因、口径横扫与改进（全部实测）
+
+> **落不落地由 Stage-5 的写死判据决定**（编码器对拍 ≥0.999 **且** 量化模型金标融合主集
+> ≥0.7444），不由本文件决定。本节只记坐标、口径与实测数；判定见 §8.6。
+
+第一轮（per-output-channel `max/127`，即小档口径）过不了对拍门：
+
+| 对拍（门 ≥0.999） | bge-small（现役） | bge-base |
+|---|---|---|
+| fp32 ONNX vs torch 参考（docs） | 0.999999881 | **0.999999821** |
+| fp32 ONNX vs torch 参考（queries） | 0.999999940 | **0.999999881** |
+| int8 ONNX vs torch 参考（docs） | 0.999009609 | **0.947813928 ✗** |
+| int8 ONNX vs torch 参考（queries） | 0.999194980 | **0.967578547 ✗** |
+| 与同档离线臂（`bgebase-*.npy`）交叉对拍 | —（该档无臂） | 0.947813928（两处独立测量同值） |
+
+根因（实测消融，90 条查询）：**错在 MatMul 权重量化**——只量化 3 张嵌入表时
+min=0.999990；只量化 72 个 MatMul 权重时 min=0.967966、mean=0.981278。而两档的
+**逐权重**相对误差几乎相同（matmul 中位 0.00794 vs 0.00828、最大 0.01803 vs 0.02738；
+嵌入 0.00654 vs 0.00632；int8/fp32 体积比 0.253 vs 0.252）⇒ 差别在 **12 层 × 768 维的
+误差累积**，不在实现：小档当年是**贴着门线过**（0.999010，余量 1e-5），这套量化路线不推广。
+
+同一轮的其他实测（都不是推断）：
+
+- **tflite 转换链跑通，但体积 358,236,080 B（341.6 MiB）**、sha256 `d290652d…` ——
+  onnx2tf 把路线 B 的 int8 权重展开成 fp32（小档 62.4 MB 的 5.7×）；
+  "体积约 100MB 级"在这条路线上不成立。宿主 tflite 对拍见 §8.4。
+- **质量（离线融合，生产词面腿 + 该档向量，`stage3_expectation` 口径）**：
+  bge-base **fp32** 主集 **0.7889（71/90）**、逐章最小 0.4444、MRR 0.6343；
+  把向量换成**按 int8 模型输出量化的资产**（假设照发）：主集同为 0.7889（71/90）、
+  MRR 0.6219 ⇒ 量化偏差没有改变主集命中，但 MRR 掉 0.012。
+- **打包（为验证新代码路径跑了一遍，随后按原字节还原）**：该档 `.vec` 会是
+  28,931 × 768 int8、**24,574,209 B**、sha256 `d50bca8323193bf4…`；
+  还原精度（资产 vs 该档 int8 模型输出）逐行 cosine min **0.999474** / 中位 0.999779（门 0.999 ✓）；
+  端到端（资产 vs 同档 torch fp32 参考）min **0.947695** / 中位 0.987518 —— 与模型自身的
+  int8 偏差同量级（0.9478）⇒ "两层 int8"里**模型那一层**是主导。跑完即把随包 `.vec` / 旁车
+  按备份原字节还原（sha 复核 `cdf93650…` / `01e631c0…`，`git status` 亦无改动）。
+- **随包侧一律未动**（截至本轮结束）：`.vec` / `.tflite` / `DenseRecallAssembly.VECTOR_ASSET_SHA256` /
+  默认档都保持 Stage-3 小档；bge-base 的坐标与工具链留在 `MODEL_PROFILES` 里，
+  随时可复算（`python tools/dense_build/export_bge_int8.py --model bge-base-zh-v1.5`）。
+  **落不落地按 §8.6 的写死判据判**（本文件不判）。
+
+### 8.3.1 第二轮的根因收敛（实测，不是推断）
+
+`build/wp2_diag_quant.py`（scratch）在 **torch 侧**复现了路线 B 的语义（`Dequantize(W)→MatMul`
+= 把权重换成 `dequant(quant(W))` 的 fp32 矩阵乘），于是可以便宜地扫口径、做消融：
+
+1. **逐矩阵敏感度**（只量化一个矩阵、其余 fp32，90 查询）：每个矩阵单独致偏都极小
+   （逐行 cosine min ≥ 0.99998，相对偏差 ≤ 0.037 在 `layer5.output.dense`）⇒ 误差**不是**某个
+   敏感矩阵，而是 72 个矩阵各自的量化噪声沿 12 层累积 + 残余再放大。
+2. **逐权重误差**：相对 Frobenius 误差中位 ≈ 0.008（与小档 0.0083 同量级）⇒ 不是"实现错了"，
+   是**逐输出通道一个 scale 这个口径**在 12 层深度上不够。
+3. **口径横扫**（同一 90 条查询，torch 模拟，括号内为逐行 cosine 最小值）：
+
+| 口径 | 逐行 cosine 最小 | 端侧可承载？ |
+|---|---|---|
+| per-tensor（整矩阵一个 scale） | 0.359536 | 可，但不合格 |
+| per-output-channel `max/127`（小档口径） | 0.968615 | 可 |
+| per-output-channel + 分位数裁剪（0.9999 / 0.999 / 0.99） | 0.969111 / 0.828609 / 0.236366 | 可，无增益或更差 |
+| per-output-channel + 逐行 MSE 最优裁剪（11 个候选点） | 0.968983 | 可，无增益 |
+| **per-block（沿输入轴 128 / 64 一块一 scale）** | **0.999616 / 0.999727** | **不可**：TFLite 的 `DEQUANTIZE` 只支持 per-axis，块内 scale 存不下 |
+| **输入通道重标定 α=0.25 / 0.5 / 0.75 / 1.0（本档采用 α=0.5）** | 0.994461 / **0.999443** / 0.998559 / 0.997093 | **可**：`A·W=(A·D⁻¹)·(D·W)`，存储仍是 per-output-channel int8，只多一条逐通道 fp32 `Mul` |
+
+⇒ 选"输入通道重标定"：`d_k = (max_n |B[k,n]|)^(-0.5)`（按几何均值归一；**纯权重统计、不用标定集**），
+把离群列先压平再量化，激活侧补一条 `Mul(A, 1/d)` —— 数学恒等、**不花体积**（实测 .onnx 102,989,680 B
+与改口径前同量级）。机制的直接证据：72 个矩阵的"列峰展布 max/median"最大者 **146.2 → 12.1**。
+
+### 8.3.2 本档口径的全量对拍与残留缺口（实测）
+
+`python tools/dense_build/export_bge_int8.py --model bge-base-zh-v1.5`（ORT int8 图 vs torch fp32）：
+
+| 对拍（门 ≥0.999） | 第一轮（per-channel） | 本轮（重标定 α=0.5） |
+|---|---|---|
+| docs（28,931 行） | 0.947814 ✗ | **0.998638 ✗（差 0.00136）** |
+| docs 均值 | 0.987600 | **0.999411** |
+| queries（90 条） | 0.967579 ✗ | **0.999173 ✓** |
+| 与同档离线臂交叉对拍 | 0.9478 / 0.9676 | 0.998638 / 0.999173 |
+
+**残留缺口的来源（实测归因）**：docs 的最小值由 **2–4 个字的短文本行**决定
+（`单质` / `酰胺` / `电离` / `超重的判断` / `波的多解成因`）。短文本没有"多 token 平均"，
+**嵌入表的 int8 误差**直接落到 CLS 上：同一批行上"ONNX 图 vs 同口径 torch 模拟（模拟里嵌入表未量化）"
+逐行 cosine min **0.999292** ⇒ 权重侧已经够好，缺口在嵌入表。已试的嵌入表口径都无增益：
+每 token 一个 scale（per-row）0.998906（更差）、per-column MSE 裁剪 0.999430（≈同分）。
+
+**未走的两条最短补齐路径**（下一轮若要把 docs 也抬过 0.999）：
+① 嵌入表（21,128×768）留 fp32：+48.7 MB ⇒ 件 ~151 MB；② 嵌入表用"int8 + int8 残差"两级码
+（`Gather(q1)·s1 + Gather(q2)·s2`，ONNX 与 TFLite 都只有 GATHER/MUL/ADD 内置算子）：+16.2 MB ⇒ 件 ~119 MB。
+
+### 8.4 两条 `.tflite` 路线：体积/算子/端侧可跑性（实测）
+
+`convert_onnx_to_tflite.py --route` 有两条路，差别**只在体积**（数值口径同一条）：
+
+| 路线 | 命令要点 | 小档实测 | base 档实测 |
+|---|---|---|---|
+| `flatbuffer_direct`（Stage-3 出货路线） | `-tb flatbuffer_direct -nuo` | 62.4 MB（随包那件，真机闭环过） | **341.6 MiB**：flatbuffer_direct 把 int8 权重**展开成 fp32 常量**（只有嵌入表留 int8） |
+| `tf_converter_drqt`（本轮新增） | `-tb tf_converter -odrqt -rtpo erf -nuo` | **23.7 MiB**（`*_dynamic_range_quant.tflite`，权重 int8 存储、无 Flex/CUSTOM 算子，算子自检写进脚本） | **本轮转换被阻塞**：onnx2tf 的 tf_converter 路把 3-D 中间张量按 NCHW 误判后转置，`wa/backbone_module/embeddings/Add_1` 报 `Dimensions must be equal, but are 512 and 768`（`-kat input_ids attention_mask token_type_ids` 无效；原始错误在 `build/odrqt-test/*.log`）。按 int8 ONNX 的权重 payload 估算，该路线落地件应 ≈ **103 MB**（**估算，非实测**） |
+
+⇒ "tflite 回到 int8 量级"在**小档上已实测成立**（23.7 MiB vs 展开后的 62.4 MB），
+base 档还差一次转换链适配（不改口径、不改数值）。
+
+**同机同形态的宿主耗时**（同一批 6 条查询文本、逐条 + PAD 512 + 掩码，Python LiteRT）：
+
+| 小档 `.tflite` | 体积 | 宿主 p50 |
+|---|---|---|
+| `flatbuffer_direct`（随包那件，权重已展开成 fp32） | 62.4 MB | 2,570 ms |
+| `tf_converter_drqt`（权重 int8 存储） | 23.7 MiB | **856 ms（3.0× 快）** |
+
+第一轮那份 base 档 tflite（341.6 MiB，`flatbuffer_direct`）的**全量 290 条宿主对拍没跑完**：
+初版探针每行都 `resize + allocate`，对 341 MiB 的件就是每行重建张量区（>40 分钟，被 timeout 杀掉、
+判定数为空；`check_tflite_parity.py` 的注释里记着这次事故），而端侧根本不是那么跑的（定长件只 allocate 一次）。
+`build/tflite-parity-bgebase.log` 是那条链上唯一落盘的日志，它只打到 tflite 输出行就以 `EXIT=1` 结束。
+
+因此本轮给的是**子集探针**（同一份工具函数、n=24/290：query 12 + surface 12）：
+
+| 探针 | 结果 |
+|---|---|
+| tflite vs int8 ONNX（逐条、同执行形态） | **min 0.999710 / 中位 0.999761**（门 0.999 ✓） |
+| id/行对齐自证（批式 ONNX vs 冻结 `int8-queries.npy`） | min 0.999833832（下限 0.999 ✓） |
+| 输入/输出张量 | `[1,512] int64` ×3 → `sentence_embedding [1,768] float32` |
+
+> **出处注（2026-09-25 收尾补，记录本身保留）**：这两行 n=24 的对拍数与对齐自证数，
+> 在 `build/` 下**找不到对应的落盘日志**（那份日志可能只到了控制台）。可核对的是**对齐自证**那一行：
+> `build/tflite-parity-bgebase.log` 里 `逐行 cosine min=0.999833832` 与之逐位相同，但它引用的
+> int8 ONNX 是第一轮口径的旧件（sha `f4f39eb39baa9ca8`，现档为 `8baeae174677e5b1`）且该次运行 `EXIT=1`。
+> 这条只影响"一个未随包的档的宿主对拍"，不影响任何判决（判决看 §8.6）。
+
+结论：**转换链是保真的**（tflite 与 int8 ONNX 同结果），bge-base 的 0.9478 偏差来自
+**量化**（§8.3 的消融已归因到 MatMul 权重），不是转换工具链。
+
+> 待办（换件真要落地时）：把 `check_tflite_parity.py` 的全量 290 条跑完（给足 ~2 小时），
+> 或把宿主逐条推理换成批量/降线程以缩短；端侧 `DenseEncoderParityInstrumentedTest` 仍是
+> 唯一权威门（它的数据源 `encoder-parity.json` 也要用 `gen_device_parity_fixture.py` 重生成）。
+
+### 8.5 顺带的耗时旁证（宿主代理，**不是真机数**）
+
+同一台机器、同一套 LiteRT Python 运行时、同样"逐条 + PAD 512 + 掩码"的形态各测 12 条
+（`build/latency_probe.py`，两档同一时刻同一负载下量）：
+
+| 模型件 | 宿主 p50 |
+|---|---|
+| bge-small tflite（现役，62.4 MB） | 2,533 ms |
+| bge-base tflite（341.6 MiB） | 19,389 ms |
+
+比值 **7.65×**（与该档 / 小档的 FLOPs 比 ~6.75× 同量级）⇒ 若真机也按这个比例走，现役
+真机 71ms 会变成 **≈350–550ms**，与判据 ②（≤213ms，现役 3 倍）差得很远。**这只是旁证**：
+真机数必须在真机上量，本轮没有真机。
+
+### 8.6 落地判据与当前状态（判据写死，本文件只记录）
+
+Stage-5 换件的写死判据 = **① 编码器对拍 ≥0.999** 且 **② 量化模型的金标融合主集 ≥0.7444**
+（同一冻结金标 `7c004b76…`、D1 形态、生产词面腿、α=0.5）。两条都过才允许覆盖
+模型件 / 向量资产 / 装配常量。**本轮实测（量化模型 = 本档 int8 ONNX，口径 = §8.3.1 的重标定 α=0.5）**：
+
+| 判据 | 实测 | 结论 |
+|---|---|---|
+| ① 编码器对拍（docs 28,931 / queries 90，门 ≥0.999） | docs **0.998638** / queries **0.999173** | **不过**（docs 差 0.00136；缺口来源见 §8.3.2） |
+| ② 金标融合主集（`build/wp2_golden_candidate.py`，判分器 import 自 `stage3_expectation.py`） | 主集 **0.7889（71/90）** / 逐章最小 0.4444 / MRR **0.6343**（fp32 臂同为 0.7889/0.4444/0.6343 ⇒ 这一档量化**不损失**金标或 MRR） | 过 |
+
+⇒ 判据 ① 不过 ⇒ **随包侧不动**（模型件 / `.vec` / 旁车 / `VECTOR_ASSET_SHA256` 都保持小档原样），
+按 Stage-5 的记账口径记"**未落地**"。这不是本文件的结论，是判据的结论。
+
+**收尾状态（2026-09-25，Stage-5 WP5b 复核）**：随包侧逐字节仍是 Stage-3 小档——
+`bge-small-zh-v1.5-int8.tflite` 62,396,488 B / `015b2315…`、`bge-small-zh-int8.vec` 17,167,873 B / `cdf93650…`
+（== `DenseRecallAssembly.kt:90`）、旁车 `01e631c0…`，`git diff --stat HEAD` 在这三个路径上 0 行 ⇒ **回退清单 = 0 个文件**
+（从未覆盖过，故无 `git checkout` 可执行）。判据 ③（门重定标只在 ①② 都过后做）因此**未触发**，
+既有墙钟门（融合 150/250ms）与旧门（纯词面 p95 <150ms，**不撤**）**一字未改**。
+延迟硬线（≤213ms）对 base 档**未测**（件未落地），§8.5 的 7.65× **只是宿主旁证**。
+全阶段证据、换件清单（字节 + sha）、回退逐项复核与 UNVERIFIED 见 `docs/kb-stage5-report-2026-09-25.md`。

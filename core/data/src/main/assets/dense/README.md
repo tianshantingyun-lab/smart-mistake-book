@@ -17,7 +17,7 @@ LiteRT（`org.tensorflow.lite.Interpreter`）**只吃 `.tflite`**，不吃 ONNX�
 |---|---|---|
 | 输入名 | `input_ids` / `attention_mask` / `token_type_ids`（int64） | `export_bge_int8.py` 的导出签名 |
 | 输入长度 | 定长 ≥ 512，或动态 `[1, seq]` | 定长 < 512 会被 `LiteRtDenseQueryEncoder.open` **拒绝**（长输入静默截短 = 与离线口径不一致） |
-| 输出 | 单个 float32 输出，`numElements = 512`（图内已含 CLS 池化 + L2 归一） | 实测 ONNX 计算图：`Gather(0) → ReduceL2 → Clip → Expand → Div` |
+| 输出 | 单个 float32 输出，`numElements = 512`（**随包那一档的维度**；换档时按档取：base 档 = 768。图内已含 CLS 池化 + L2 归一） | 实测 ONNX 计算图：`Gather(0) → ReduceL2 → Clip → Expand → Div`；端侧测试的维度取自 `encoder-parity.json` 的 `dim`，不写死 |
 | 数值 | 真机逐条对拍冻结参考向量（`DenseEncoderParityInstrumentedTest`，n=290）**min cosine ≥ 0.999** | 实测 min **0.99963** / median 0.99978 / p95 0.99984（全过） |
 
 **换件纪律**：任何一次换模型件都必须**重跑** `DenseEncoderParityInstrumentedTest`（真机硬门
@@ -28,3 +28,24 @@ LiteRT（`org.tensorflow.lite.Interpreter`）**只吃 `.tflite`**，不吃 ONNX�
 
 Stage-3 的全部真机数、参考数、回退路径与"换大档判据"见 `docs/kb-stage3-report-2026-09-24.md`；
 质量参考数（离线）在 `build/stage3-device-expectation.json`（`build/` 不入库）。
+
+换件的可执行链条（档位参数化、词表为什么不用换、转换与宿主对拍两个工具）见
+`tools/dense_build/README.md` §8；**换件怎么换、怎么复算**：
+
+```bash
+# 换档（--install 才落到本目录；不跑 --install 只出中间物）
+build/tflite-venv/Scripts/python.exe tools/dense_build/convert_onnx_to_tflite.py --model <档> --install
+# 落件后必须重跑的两层对拍（宿主 ≥0.999 → 真机 ≥0.999）
+build/tflite-venv/Scripts/python.exe tools/dense_build/check_tflite_parity.py --model <档>
+./gradlew.bat :core:data:connectedDebugAndroidTest --tests "*DenseEncoderParityInstrumentedTest*"
+```
+
+**2026-09-25 Stage-5 换件（bge-base-zh-v1.5，768 维）按写死判据
+（编码器对拍 ≥0.999 且 量化模型金标融合主集 ≥0.7444）判定**：对拍 docs **0.998638** /
+queries **0.999173**（口径已从第一轮的 0.9478 抬到 0.9986，仍差 0.00136，缺口来源见
+`tools/dense_build/README.md` §8.3.2）、金标主集 **0.7889（71/90）** ⇒ 判据①不过 ⇒
+本目录**保持 Stage-3 小档原样**（§8.3–§8.6 有全部实测数与缺口归因）。
+**全阶段证据、换件清单（含字节与 sha）、延迟硬线状态（未测）、回退复核（0 个文件）与
+UNVERIFIED 见 `docs/kb-stage5-report-2026-09-25.md`**。
+端侧对拍 fixture 的维度**取自 `encoder-parity.json` 的 `dim`**（不写死 512/768）——
+换件后重生成 fixture 即可（`python tools/dense_build/gen_device_parity_fixture.py --model <档>`）。

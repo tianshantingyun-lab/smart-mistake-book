@@ -1,9 +1,15 @@
 # -*- coding: utf-8 -*-
-"""Stage-3 小档 · 语料向量资产打包（`.vec` + 旁车 `.json`，**入库跟踪**）。
+"""dense 档位 · 语料向量资产打包（`.vec` + 旁车 `.json`，**入库跟踪**）。
+
+档位由 `--model` 选（`dense_asset.MODEL_PROFILES`；默认 = 仓库当前随包那一档）：
+`.vec` 的内容随档变（小档 512 维 / base 档 768 维），**路径名不变**
+（`core/data/src/main/resources/knowledge/dense/bge-small-zh-int8.vec`）——消费侧常量与
+assets 名不动。
 
 输入（`export_bge_int8.py` 的中间产物，均在 `build/dense-model/`）：
-- `int8-docs.npy`：28,931×512 fp32（= int8 ONNX 对 28,931 条 surface 的输出，CLS + L2 已归一化）
-- `int8-queries.npy`：90×512 fp32（同模型对 90 条带前缀查询的输出；参考数计算用）
+- `int8-docs.npy`：28,931×dim fp32（= int8 ONNX 对 28,931 条 surface 的输出，CLS + L2 已归一化）
+- `int8-queries.npy`：90×dim fp32（同模型对 90 条带前缀查询的输出；参考数计算用）
+- `fp32-docs.npy` / `fp32-queries.npy`：同档 torch fp32 参考（算端到端误差用）
 
 输出（入库）：
 - `core/data/src/main/resources/knowledge/dense/bge-small-zh-int8.vec`
@@ -12,19 +18,23 @@
 ## 量化口径
 
 **每向量对称 int8**（`dense_asset.quantize_int8`）：`scale = max|v| / 127`，还原 = `int8 × scale`。
-向量已 L2 归一化，所以每向量 scale 只需要 4 字节/条（共 115,728 B），换来的是各向量自身的
+向量已 L2 归一化，所以每向量 scale 只需要 4 字节/条（共 115,724 B），换来的是各向量自身的
 量化步长——全局 scale 会让幅度小的向量整体塌成 0。**还原精度由本脚本断言**（逐行 cosine
 ≥ 0.9999 vs 量化前的 int8 模型输出），不是"应该没问题"。
 
 ## 对拍门（本脚本断言，不过就退出非零）
 
-1. 向量集 = 28,931 行、512 维、全部有限、每行 L2 范数 ≈ 1；
+1. 向量集 = 28,931 行、dim 按档（512/768）、全部有限、每行 L2 范数 ≈ 1；
 2. 落盘 → 回读 → 逐行 cosine(还原值, 量化前) 最小值 ≥ 0.9999；
-3. `header.count == 28931`、ids 与布局逐条一致（`dense_asset.atomic_layout` 的同一份）。
+3. `header.count == 28931`、ids 与布局逐条一致（`dense_asset.atomic_layout` 的同一份）；
+4. 输入的 `.npy` 必须与 `model-manifest.json` 里该档条目的 sha256/维度/行数**逐个相等**
+   —— 换档之后 `build/dense-model/` 里同时存在两档的 ONNX，`.npy` 却是通用名：
+   没有这条，"拿另一档的向量按本档打包"没有任何门会红。
 
 用法（仓库根下，先跑 export）：
 ```
-python tools/dense_build/pack_dense_asset.py
+python tools/dense_build/pack_dense_asset.py                 # 默认档
+python tools/dense_build/pack_dense_asset.py --model bge-small-zh-v1.5
 ```
 """
 from __future__ import annotations
@@ -45,8 +55,13 @@ ROUNDTRIP_COSINE_MIN = 0.999
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", default=None)
+    parser.add_argument("--model", default=None,
+                        help="档位键（默认 %s；回退档 bge-small-zh-v1.5）" % D.DEFAULT_MODEL_KEY)
     args = parser.parse_args()
     root = D.repo_root(args.repo_root)
+    profile = D.model_profile(args.model)
+    dim = profile["dim"]
+    print("档位=%s（dim=%d repo=%s）" % (profile["key"], dim, profile["repo"]))
 
     rows, nodes, groups = D.atomic_layout(root)
     # ids 块是**逐向量**的（28,931 条）：每条向量记它属于哪个节点。同一节点的向量在矩阵里
@@ -64,18 +79,44 @@ def main():
     if sum(end - start for _, start, end in groups) != len(ids):
         raise SystemExit("向量段总长与 ids 数不符")
 
-    model_dir = root / "build" / "dense-model"
-    docs_path = model_dir / "int8-docs.npy"
-    queries_path = model_dir / "int8-queries.npy"
+    paths = D.model_paths(profile)
+    docs_path = root.joinpath(*paths["int8Docs"].split("/"))
+    queries_path = root.joinpath(*paths["int8Queries"].split("/"))
     if not docs_path.is_file() or not queries_path.is_file():
-        raise SystemExit("缺 int8 模型输出：%s / %s（先跑 export_bge_int8.py）" % (docs_path, queries_path))
+        raise SystemExit("缺 int8 模型输出：%s / %s（先跑 export_bge_int8.py --model %s）"
+                         % (docs_path, queries_path, profile["key"]))
+
+    # ---- 输入身份：`.npy` 必须就是清单里记的那一次导出 ----
+    manifest_path = root.joinpath(*D.MODEL_MANIFEST_RELATIVE.split("/"))
+    if not manifest_path.is_file():
+        raise SystemExit("缺模型清单 %s（先跑 export_bge_int8.py --model %s）"
+                         % (D.MODEL_MANIFEST_RELATIVE, profile["key"]))
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    entry = (manifest.get("modelEntries") or {}).get(profile["key"], manifest)
+    if entry.get("modelKey") != profile["key"]:
+        raise SystemExit("清单里没有档位 %r 的条目（现役条目 = %r）——先跑 export_bge_int8.py --model %s"
+                         % (profile["key"], entry.get("modelKey"), profile["key"]))
+    recorded_outputs = entry.get("outputs") or {}
+    for key, path in (("int8Docs", docs_path), ("int8Queries", queries_path)):
+        recorded = recorded_outputs.get(key) or {}
+        if not recorded:
+            raise SystemExit("清单缺 outputs.%s（旧版清单？）——先重跑 export_bge_int8.py --model %s"
+                             % (key, profile["key"]))
+        actual = dict(sha256=D.sha256_file(path), bytes=path.stat().st_size)
+        if actual["sha256"] != recorded.get("sha256"):
+            raise SystemExit("输入 %s 与清单记录不符：%s vs %s（拿到的不是这一次导出的输出）"
+                             % (path.name, actual["sha256"][:16], str(recorded.get("sha256"))[:16]))
+        if int(recorded.get("dim", -1)) != dim:
+            raise SystemExit("清单里 %s 的维度 %s 与档位 %d 不符" % (key, recorded.get("dim"), dim))
+        print("输入身份：%s sha256=%s（清单记录一致，dim=%s rows=%s）"
+              % (path.name, actual["sha256"][:16], recorded.get("dim"), recorded.get("rows")))
 
     docs = np.load(docs_path)
     queries = np.load(queries_path)
-    if docs.shape != (28931, D.BGE_DIM):
-        raise SystemExit("文档向量形状应为 (28931, 512)，实测 %s" % (docs.shape,))
-    if queries.shape != (90, D.BGE_DIM):
-        raise SystemExit("查询向量形状应为 (90, 512)，实测 %s" % (queries.shape,))
+    if docs.shape != (28931, dim):
+        raise SystemExit("文档向量形状应为 (28931, %d)，实测 %s" % (dim, docs.shape))
+    if queries.shape != (90, dim):
+        raise SystemExit("查询向量形状应为 (90, %d)，实测 %s" % (dim, queries.shape))
     if not (np.isfinite(docs).all() and np.isfinite(queries).all()):
         raise SystemExit("向量里出现非有限值")
     norms = np.linalg.norm(docs, axis=1)
@@ -86,11 +127,11 @@ def main():
     vector_path = root.joinpath(*D.DENSE_DIR_RELATIVE.split("/")) / D.VECTOR_FILE_NAME
     vector_sha = D.write_vector_file(vector_path, ids, quantized, scales)
     print("落盘：%s（%d 行 × %d 维 int8，%.1f MB，sha256=%s）"
-          % (vector_path, len(ids), D.BGE_DIM, vector_path.stat().st_size / 1e6, vector_sha))
+          % (vector_path, len(ids), dim, vector_path.stat().st_size / 1e6, vector_sha))
 
     # ---- 对拍 1：文件结构 ----
     header, restored = D.load_vector_file(vector_path)
-    if header["count"] != len(ids) or header["dim"] != D.BGE_DIM:
+    if header["count"] != len(ids) or header["dim"] != dim:
         raise SystemExit("回读头不符：%r" % header)
     if header["ids"] != ids:
         mismatch = [i for i, (a, b) in enumerate(zip(header["ids"], ids)) if a != b][:3]
@@ -108,7 +149,14 @@ def main():
     dot = (restored * docs).sum(axis=1)
     denom = np.linalg.norm(restored, axis=1) * np.linalg.norm(docs, axis=1)
     cosine = dot / np.maximum(denom, 1e-12)
-    reference_path = root / "build" / "stage2-dense-work" / "vectors" / "bge-docs.npy"
+    # 端到端参考 = **同档** torch fp32 参考（`build/dense-model/fp32-docs.npy`，export 落的）。
+    # 换档后 Stage-2 的 512 维离线臂与本档不同维，拿它当参考只会得到"未运行"——而这个数
+    # 正是端侧要看的"资产 vs Python 参考实现"的累积误差，不该因为换档就消失。
+    reference_path = root.joinpath(*paths["fp32Docs"].split("/"))
+    reference_source = paths["fp32Docs"]
+    if not reference_path.is_file():
+        fallback = root / "build" / "stage2-dense-work" / "vectors" / "bge-docs.npy"
+        reference_path, reference_source = fallback, str(fallback.relative_to(root)).replace("\\", "/")
     composite = None
     if reference_path.is_file():
         reference = np.load(reference_path)
@@ -116,12 +164,15 @@ def main():
             dot2 = (restored * reference).sum(axis=1)
             denom2 = np.linalg.norm(restored, axis=1) * np.linalg.norm(reference, axis=1)
             composite = dot2 / np.maximum(denom2, 1e-12)
-            print("端到端对拍（资产 vs fp32 参考实现）：逐行 cosine 最小=%.9f 中位=%.9f"
-                  % (composite.min(), float(np.median(composite))))
+            print("端到端对拍（资产 vs fp32 参考实现 %s）：逐行 cosine 最小=%.9f 中位=%.9f"
+                  % (reference_source, composite.min(), float(np.median(composite))))
         else:
-            print("fp32 参考形状不符（%s）——端到端对拍**未运行**" % (reference.shape,))
+            print("fp32 参考形状不符（%s，本档 %s）——端到端对拍**未运行**"
+                  % (reference.shape, (28931, dim)))
+            reference_source = None
     else:
         print("fp32 参考不在位（%s）——端到端对拍**未运行**（不当作已通过）" % reference_path)
+        reference_source = None
     if cosine.min() < ROUNDTRIP_COSINE_MIN:
         raise SystemExit("量化还原精度不过：逐行 cosine 最小 %r < %r（按纪律不推）"
                          % (cosine.min(), ROUNDTRIP_COSINE_MIN))
@@ -143,17 +194,16 @@ def main():
     # ---- 旁车：溯源信息（不含任何时间戳，保证可复算字节一致） ----
     vocab_path = root.joinpath(*D.VOCAB_RELATIVE.split("/"))
     tokenizer_path = root.joinpath(*D.TOKENIZER_RELATIVE.split("/"))
-    manifest_path = root.joinpath(*D.MODEL_MANIFEST_RELATIVE.split("/"))
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8")) if manifest_path.is_file() else {}
     lexical_path = root.joinpath(*D.LEXICAL_LEG_RELATIVE.split("/"))
     if not lexical_path.is_file():
         raise SystemExit("缺生产词面腿 %s（先跑 ProductionLexicalLegExportTest）" % lexical_path)
     lexical_rows = sum(1 for line in lexical_path.read_text(encoding="utf-8").splitlines()
                        if line and not line.startswith("#"))
+    entry_onnx = entry.get("onnx") or {}
 
     sidecar = dict(
         format=dict(magic="SMBV", version=D.VERSION, dtype="int8-per-vector-f32-scale",
-                    dtypeCode=D.DTYPE_INT8_PER_VECTOR_SCALE, dim=int(D.BGE_DIM), count=len(ids),
+                    dtypeCode=D.DTYPE_INT8_PER_VECTOR_SCALE, dim=int(dim), count=len(ids),
                     layout="header(24B) | ids block (u32 len + utf8 per row) | int8 matrix (row-major) | f32 scales",
                     idsAreKnowledgeNodeIds=True,
                     scaleRule="scale[r] = max(abs(v_r))/127 ; value = int8 * scale[r]"),
@@ -166,23 +216,29 @@ def main():
                     nodeScore="max over the node's vectors (canonicalName + aliases) cosine",
                     layoutSource="spec §2.2；与离线臂 stage2_common.build_vector_layout 同序"),
         model=dict(
-            modelId=manifest.get("modelId", "bge-small-zh-v1.5-int8-onnx"),
-            repo=D.BGE_REPO, revision=D.BGE_REVISION, license=manifest.get("license", "mit"),
-            dim=int(D.BGE_DIM), maxLen=D.BGE_MAX_LEN, pooling="cls", normalize="l2",
-            queryPrefix=D.BGE_QUERY_PREFIX, docPrefix=None,
-            onnxRoute=manifest.get("onnx", {}).get("route"),
-            onnxInt8Path=manifest.get("onnx", {}).get("int8Path"),
-            onnxInt8Sha256=manifest.get("onnx", {}).get("int8Sha256"),
-            onnxInt8Bytes=manifest.get("onnx", {}).get("int8Bytes"),
-            onnxFp32Path=manifest.get("onnx", {}).get("fp32Path"),
-            onnxFp32Sha256=manifest.get("onnx", {}).get("fp32Sha256"),
+            modelId=entry.get("modelId", "%s-int8-onnx" % profile["modelStem"]),
+            modelKey=profile["key"],
+            repo=entry.get("repo", profile["repo"]), revision=entry.get("revision", profile["revision"]),
+            license=entry.get("license", profile["license"]),
+            dim=int(dim), maxLen=profile["maxLen"], pooling=profile["pooling"],
+            normalize=profile["normalize"],
+            queryPrefix=profile["queryPrefix"], docPrefix=profile["docPrefix"],
+            onnxRoute=entry_onnx.get("route"),
+            onnxInt8Path=entry_onnx.get("int8Path"),
+            onnxInt8Sha256=entry_onnx.get("int8Sha256"),
+            onnxInt8Bytes=entry_onnx.get("int8Bytes"),
+            onnxFp32Path=entry_onnx.get("fp32Path"),
+            onnxFp32Sha256=entry_onnx.get("fp32Sha256"),
             modelManifest=D.MODEL_MANIFEST_RELATIVE,
-            inputs=["input_ids", "attention_mask", "token_type_ids"],
-            output="sentence_embedding",
+            inputs=profile["inputs"],
+            output=profile["output"],
         ),
         vocab=dict(path=D.VOCAB_RELATIVE, sha256=D.sha256_file(vocab_path) if vocab_path.is_file() else None,
                    tokenizerJsonPath=D.TOKENIZER_RELATIVE,
-                   tokenizerJsonSha256=D.sha256_file(tokenizer_path) if tokenizer_path.is_file() else None),
+                   tokenizerJsonSha256=D.sha256_file(tokenizer_path) if tokenizer_path.is_file() else None,
+                   note="词表冻结副本两档共享：bge-base-zh-v1.5 与 bge-small-zh-v1.5 的 vocab.txt "
+                        "逐字节相同（sha256 45bbac6b…，实测 2026-09-25），逐条 token id 亦相同"
+                        "（export 侧对 333 条冻结 fixture 当场对拍）"),
         quantization=dict(kind="int8-per-vector-symmetric",
                           scaleRule="scale[r] = max(abs(v_r))/127 ; value = int8 * scale[r]",
                           roundtripCosineMinVsInt8Model=float(cosine.min()),
@@ -190,24 +246,26 @@ def main():
                           endToEndCosineMinVsFp32Reference=(None if composite is None else float(composite.min())),
                           endToEndCosineMedianVsFp32Reference=(None if composite is None else float(np.median(composite))),
                           gate=ROUNDTRIP_COSINE_MIN,
-                          vsFp32ReferencePath=("build/stage2-dense-work/vectors/bge-docs.npy"
-                                               if composite is not None else None),
+                          vsFp32ReferencePath=(reference_source if composite is not None else None),
                           scalesBytes=int(len(ids) * 4)),
         productionLexicalLeg=dict(path=D.LEXICAL_LEG_RELATIVE, sha256=D.sha256_file(lexical_path),
                                   rows=lexical_rows,
                                   note="生产 v1 词面腿（COUNT(DISTINCT feature)，行序 = 生产排序）"),
         sha256=vector_sha,
         bytes=vector_path.stat().st_size,
-        generatedBy="python tools/dense_build/pack_dense_asset.py",
-        regeneratedFrom="python tools/dense_build/export_bge_int8.py",
+        generatedBy="python tools/dense_build/pack_dense_asset.py --model %s" % profile["key"],
+        regeneratedFrom="python tools/dense_build/export_bge_int8.py --model %s" % profile["key"],
     )
     sidecar_path = vector_path.with_name(vector_path.name + ".json")
     # 固定键序 + indent，保证同一份输入产出字节一致的旁车（可复算、可 diff）
     sidecar_path.write_text(json.dumps(sidecar, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
                             encoding="utf-8")
     print("旁车落盘：%s" % sidecar_path.relative_to(root).as_posix())
-    print(json.dumps(dict(vectorCount=len(ids), atomicNodes=len(node_ids), dim=D.BGE_DIM, sha256=vector_sha,
-                          roundtripCosineMin=float(cosine.min())), ensure_ascii=False))
+    print(json.dumps(dict(modelKey=profile["key"], vectorCount=len(ids), atomicNodes=len(node_ids), dim=dim,
+                          sha256=vector_sha, bytes=vector_path.stat().st_size,
+                          roundtripCosineMin=float(cosine.min()),
+                          endToEndCosineMin=(None if composite is None else float(composite.min()))),
+                     ensure_ascii=False))
 
 
 if __name__ == "__main__":

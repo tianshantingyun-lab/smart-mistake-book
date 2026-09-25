@@ -54,7 +54,7 @@ class DenseRecallRerankerTest {
         val assetFailure = OnDeviceDenseRecallReranker(
             tokenizer = { error("unused") },
             asset = { throw IllegalStateException("asset sha mismatch") },
-            encoder = { object : DenseQueryEncoder { override fun encode(text: String) = FloatArray(512) } },
+            encoder = { object : DenseQueryEncoder { override fun encode(text: String) = zeroQuery() } },
         )
         assertNull(assetFailure.order("PHYSICS", "合力范围", candidates))
     }
@@ -67,19 +67,26 @@ class DenseRecallRerankerTest {
             asset = { error("unused") },
             encoder = {
                 encoderTouched = true
-                object : DenseQueryEncoder { override fun encode(text: String) = FloatArray(512) }
+                object : DenseQueryEncoder { override fun encode(text: String) = zeroQuery() }
             },
         )
         assertNull(reranker.order("PHYSICS", "合力范围", emptyList()))
         assertTrue("空候选集不该触发模型加载", !encoderTouched)
     }
 
+    /**
+     * 假编码器产出的查询向量：**维度必须与真实资产一致**（换件后资产 768 维，写死 512 会让
+     * `DenseVectorAsset.cosine` 的 `require(query.size == dim)` 抛错 ⇒ 稠密腿被判不可用，
+     * 测试断言的是"回退"而不是它想测的那件事）。所以维度从资产自身取。
+     */
+    private fun zeroQuery(): FloatArray = FloatArray(asset.dim)
+
     @Test
     fun `a wrong subject never produces scores for another subject`() = runBlocking {
         val reranker = OnDeviceDenseRecallReranker(
             tokenizer = { error("unused") },
             asset = { asset },
-            encoder = { object : DenseQueryEncoder { override fun encode(text: String) = FloatArray(512) } },
+            encoder = { object : DenseQueryEncoder { override fun encode(text: String) = zeroQuery() } },
         )
         // 全零查询向量：余弦全 0 ⇒ 稠密腿 min-max 退化为全 0（hi<=lo）⇒ 次序 = 词面次序。
         val ordered = reranker.order("PHYSICS", "任何查询", candidates)

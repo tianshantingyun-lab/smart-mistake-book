@@ -200,8 +200,13 @@ def shape_rankings(ranking, parent_by_id, pack_order_index, subject_domain):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", default=None)
+    parser.add_argument("--model", default=None,
+                        help="档位键（默认 %s；回退档 bge-small-zh-v1.5）——查询向量与资产按档校验"
+                             % D.DEFAULT_MODEL_KEY)
     args = parser.parse_args()
     root = D.repo_root(args.repo_root)
+    profile = D.model_profile(args.model)
+    print("档位=%s（dim=%d）" % (profile["key"], profile["dim"]))
 
     rows, nodes, groups = D.atomic_layout(root)
     cases = D.goldens(root)
@@ -238,8 +243,8 @@ def main():
         raise SystemExit("生产词面腿应覆盖 90 题且每题有命中，实测 %d 题" % len(leg))
 
     query_int8 = np.load(root / "build" / "dense-model" / "int8-queries.npy")
-    if query_int8.shape != (90, D.BGE_DIM):
-        raise SystemExit("查询向量形状应为 (90, 512)，实测 %s" % (query_int8.shape,))
+    if query_int8.shape != (90, profile["dim"]):
+        raise SystemExit("查询向量形状应为 (90, %d)，实测 %s" % (profile["dim"], query_int8.shape))
     query_norm = query_int8 / np.maximum(np.linalg.norm(query_int8, axis=1, keepdims=True), 1e-12)
 
     # ---- 两条腿的逐题分数 ----
@@ -352,9 +357,11 @@ def main():
     dense_j = dense_only["judgement"]["D1"]
     fused_j = fused["judgement"]["D1"]
     expectation = dict(
-        stage="stage3-dense-small-tier-device-expectation",
+        stage="dense-device-expectation（档位 %s）" % profile["key"],
+        model=dict(key=profile["key"], repo=profile["repo"], revision=profile["revision"],
+                   dim=profile["dim"]),
         arm=dict(
-            denseOnly="D-only-int8（bge-small-zh-v1.5 int8 ONNX，节点分 = 向量 cosine 的 max）",
+            denseOnly="D-only-int8（%s int8 ONNX，节点分 = 向量 cosine 的 max）" % profile["repo"],
             fused="D-fuse-a0.5-int8（生产 v1 词面腿 + int8 稠密腿，min-max 域内归一、α=0.5、缺分给 0）",
             returnShape="D1（matched 前置、父节点随后；生产 2026-09-24 起为 matched 优先）",
         ),
@@ -373,7 +380,7 @@ def main():
                         sha256=D.sha256_file(vector_path), count=header["count"], dim=header["dim"],
                         dtype="int8 + per-vector f32 scale（还原后再算余弦）"),
         queryVectors="build/dense-model/int8-queries.npy（同一 int8 ONNX 对 90 条带前缀查询的输出）",
-        queryPrefix=D.BGE_QUERY_PREFIX,
+        queryPrefix=profile["queryPrefix"],
         nodeScore="max over the node's vectors (canonicalName + aliases) cosine",
         perCase=dict(
             note="rank = 预期节点在 top-5 内的名次（0 = 未命中）；probe = 放宽到前 256 名的名次（0 = absent）",

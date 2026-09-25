@@ -170,8 +170,13 @@ def fusion_case_rows():
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", default=None)
+    parser.add_argument("--model", default=None,
+                        help="档位键（默认 %s；回退档 bge-small-zh-v1.5）——资产维度按档校验"
+                             % D.DEFAULT_MODEL_KEY)
     args = parser.parse_args()
     root = D.repo_root(args.repo_root)
+    profile = D.model_profile(args.model)
+    print("档位=%s（dim=%d）" % (profile["key"], profile["dim"]))
 
     vector_path = root.joinpath(*VECTOR_FILE.parts)
     asset_sha = D.sha256_file(vector_path)
@@ -183,8 +188,9 @@ def main():
         raise SystemExit("旁车 sha 与实测不符：%s != %s" % (sidecar_sha, asset_sha))
 
     asset_header, scans = scan_cases(root)
-    if asset_header["count"] != 28931 or asset_header["dim"] != D.BGE_DIM:
-        raise SystemExit("资产形状不符：%d/%d" % (asset_header["count"], asset_header["dim"]))
+    if asset_header["count"] != 28931 or asset_header["dim"] != profile["dim"]:
+        raise SystemExit("资产形状不符（档位 %s 应 28931×%d，实测 %d×%d）"
+                         % (profile["key"], profile["dim"], asset_header["count"], asset_header["dim"]))
     expected_bytes = (24 + asset_header["idsBytesLength"] + asset_header["count"] * asset_header["dim"]
                       + asset_header["count"] * 4)
     actual_bytes = vector_path.stat().st_size

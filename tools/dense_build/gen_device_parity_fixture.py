@@ -10,7 +10,7 @@
 | 产物 | 内容 |
 |---|---|
 | `core/data/src/androidTest/assets/dense/encoder-parity-cases.tsv` | 逐行 `id \t kind \t text(转义) \t referenceRow` |
-| `core/data/src/androidTest/assets/dense/encoder-parity-vectors.f32` | 小端 float32，N×512，行序 = 上面 TSV 的行序 |
+| `core/data/src/androidTest/assets/dense/encoder-parity-vectors.f32` | 小端 float32，N×dim（dim 按档：512/768），行序 = 上面 TSV 的行序 |
 | `core/data/src/androidTest/assets/dense/encoder-parity.json` | 溯源（两侧哈希）、逐行对齐自检数、判据（≥0.999） |
 
 ## 三方来源（都是冻结件，不新造数）
@@ -24,13 +24,19 @@
 3. **对齐自检** = 用 fixture 的 ids 现场重跑同一份 int8 ONNX，与上面那份 npy 逐行比
    cosine，确认"行对齐"这件事不是假设（对齐失败直接退出，不产出 fixture）。
 
+**换件纪律**：档位由 `--model` 选（默认 = 仓库当前随包那一档）。换件（模型/资产/词表任一
+变更）后必须重跑本脚本，否则设备侧对拍的是**上一支模型**的参考向量——`DenseEncoderParityInstrumentedTest`
+会红，或者更糟：如果有人把阈值解释成"设备自我一致"，就没人看得出它比错了对象。
+
 用法（仓库根下）：
 ```
-python tools/dense_build/gen_device_parity_fixture.py
+python tools/dense_build/gen_device_parity_fixture.py                     # 默认档
+python tools/dense_build/gen_device_parity_fixture.py --model bge-small-zh-v1.5
 ```
 """
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 import re
@@ -40,6 +46,9 @@ from pathlib import Path
 
 import numpy as np
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import dense_asset as D  # noqa: E402
+
 TOKENIZER_FIXTURE = Path("core/data/src/test/resources/dense/tokenizer-parity-cases.txt")
 OUT_DIR = Path("core/data/src/androidTest/assets/dense")
 OUT_CASES = OUT_DIR / "encoder-parity-cases.tsv"
@@ -47,10 +56,13 @@ OUT_VECTORS = OUT_DIR / "encoder-parity-vectors.f32"
 OUT_META = OUT_DIR / "encoder-parity.json"
 QUERY_REF = Path("build/dense-model/int8-queries.npy")
 DOC_REF = Path("build/dense-model/int8-docs.npy")
-ONNX_MODEL = Path("build/dense-model/bge-small-zh-v1.5-int8.onnx")
 GOLDEN = Path("tools/kb_coverage/tables/golden_queries_v1.json")
 
-DIM = 512
+# 档位坐标（`--model` 选；默认 = 仓库当前随包那一档）。`DIM`/`ONNX_MODEL`/`MAX_LEN` 都是
+# 运行时从档位解析出来的——换件只换这一处来源，fixture 的形状（N×dim）随档走。
+DIM = 0
+MAX_LEN = 512
+ONNX_MODEL = Path("build/dense-model/bge-small-zh-v1.5-int8.onnx")
 THRESHOLD = 0.999
 ALIGNMENT_FLOOR = 0.9999  # 行对齐自检的下限（低于它说明 npy 与模型/文本脱节）
 
@@ -122,6 +134,19 @@ def load_tokenizer_fixture():
 
 
 def main() -> int:
+    global DIM, MAX_LEN, ONNX_MODEL
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--repo-root", default=None)
+    parser.add_argument("--model", default=None,
+                        help="档位键（默认 %s；回退档 bge-small-zh-v1.5）" % D.DEFAULT_MODEL_KEY)
+    args = parser.parse_args()
+    root = D.repo_root(args.repo_root)
+    profile = D.model_profile(args.model)
+    DIM = profile["dim"]
+    MAX_LEN = profile["maxLen"]
+    ONNX_MODEL = Path(D.model_paths(profile)["int8"])
+    print("档位=%s（dim=%d）" % (profile["key"], DIM))
+
     rows = load_tokenizer_fixture()
     queries = [r for r in rows if r["kind"] == "query"]
     surfaces = [r for r in rows if r["kind"] == "surface"]
@@ -143,7 +168,9 @@ def main() -> int:
     print("ORT %s，模型 %s" % (ort.__version__, ONNX_MODEL))
 
     def encode(ids):
-        array = np.array(ids[:DIM], dtype=np.int64).reshape(1, -1)
+        # 截断到模型的 maxLen（不是 dim！dim 是输出维度，与输入长度无关）——端侧按
+        # `encodePadded(text, 512)` 右 PAD，这里按同一长度上限截断，两者逐值等价。
+        array = np.array(ids[:MAX_LEN], dtype=np.int64).reshape(1, -1)
         outputs = session.run(None, {
             "input_ids": array,
             "attention_mask": np.ones_like(array),

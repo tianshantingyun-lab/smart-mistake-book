@@ -96,8 +96,13 @@ def device_order(domain, dense_scores, lexical_scores):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", default=None)
+    parser.add_argument("--model", default=None,
+                        help="档位键（默认 %s；回退档 bge-small-zh-v1.5）——只是打印，资产形状自证"
+                             % D.DEFAULT_MODEL_KEY)
     args = parser.parse_args()
     root = D.repo_root(args.repo_root)
+    profile = D.model_profile(args.model)
+    print("档位=%s（dim=%d）" % (profile["key"], profile["dim"]))
 
     rows, nodes, groups = D.atomic_layout(root)
     cases = D.goldens(root)
@@ -201,7 +206,7 @@ def main():
         "# 用途：Kotlin 端到端测试（假编码器喂这里的 query 向量 + 这里的候选集 ⇒ 真实资产/融合/排序）",
         "# 候选集 = 生产词面腿前 512 行（id:count，行序 = SQL 排序）；稠密腿 = 该科全部原子节点",
         "# 期望次序 = DenseFusion.order 等价实现（stage3_expectation.minmax/best_first + α=0.5）",
-        "# 形状：[case] index \t subject \t query(空格分隔 512 维) → 若干 [candidate] id \t count → [expected] 次序(,)",
+        "# 形状：[case] index \t subject \t query(空格分隔 dim 维，按档 512/768) → 若干 [candidate] id \t count → [expected] 次序(,)",
     ]
     for index, subject, domain, candidates in candidate_rows:
         if index not in picked:
