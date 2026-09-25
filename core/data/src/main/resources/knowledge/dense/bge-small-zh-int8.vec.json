@@ -1,16 +1,16 @@
 {
-  "bytes": 17169237,
+  "bytes": 17167873,
   "corpus": {
-    "aliasVectors": 25360,
+    "aliasVectors": 25359,
     "atomicNodes": 3572,
     "canonicalVectors": 3572,
     "includeTopics": false,
     "layoutSource": "spec §2.2；与离线臂 stage2_common.build_vector_layout 同序",
     "nodeScore": "max over the node's vectors (canonicalName + aliases) cosine",
-    "vectorCount": 28932
+    "vectorCount": 28931
   },
   "format": {
-    "count": 28932,
+    "count": 28931,
     "dim": 512,
     "dtype": "int8-per-vector-f32-scale",
     "dtypeCode": 1,
@@ -48,12 +48,12 @@
   },
   "packId": "moe-2025-four-subjects-v1",
   "packPath": "core/data/src/main/resources/knowledge/moe-2025-four-subjects-v1.json",
-  "packSha256": "2973662a1b0df66780d5f6d75f458034b749ff7ebbc605cab1dcecb30994339e",
+  "packSha256": "533eab121d77e3daa9fd41bbc807004ff821faf7513f1d049d8a576046f99b38",
   "productionLexicalLeg": {
     "note": "生产 v1 词面腿（COUNT(DISTINCT feature)，行序 = 生产排序）",
     "path": "build/production-lexical-leg.tsv",
-    "rows": 32769,
-    "sha256": "53d193308bb9ce98ff2285ef641f35b87efe8709a90bd679675ee2dbf72e919a"
+    "rows": 32804,
+    "sha256": "08cc1f70379022f0a3056c101dd8f178a8cc75b0fb9ed61a30f6e8060dc67613"
   },
   "quantization": {
     "endToEndCosineMedianVsFp32Reference": 0.9992815852165222,
@@ -63,11 +63,11 @@
     "roundtripCosineMedianVsInt8Model": 0.9998913407325745,
     "roundtripCosineMinVsInt8Model": 0.9997469782829285,
     "scaleRule": "scale[r] = max(abs(v_r))/127 ; value = int8 * scale[r]",
-    "scalesBytes": 115728,
+    "scalesBytes": 115724,
     "vsFp32ReferencePath": "build/stage2-dense-work/vectors/bge-docs.npy"
   },
   "regeneratedFrom": "python tools/dense_build/export_bge_int8.py",
-  "sha256": "7666ab2cc8ffe3d9e72d3dc1979b793dbcc7ea342afe57f0979ed13f63277225",
+  "sha256": "cdf93650b948a09179c893a8de285b0248917da420770570afb47d453f80cb5a",
   "vocab": {
     "path": "tools/dense_build/vocab/bge-small-zh-v1.5-vocab.txt",
     "sha256": "45bbac6b341c319adc98a532532882e91a9cefc0329aa57bac9ae761c27b291c",

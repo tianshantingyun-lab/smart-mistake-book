@@ -34,7 +34,7 @@ lowercase=True)` → `pre_tokenizers.BertPreTokenizer()` → `models.WordPiece` 
 
 case 组成（写死，改这里等于改 fixture）：
 1. `query` × 90：金标 90 条**加查询前缀**后的整串（端侧查询侧的输入就是这个串）；
-2. `surface` × 200：按种子 `20260924` 从 28,932 条向量集里抽的节点文本（canonicalName + alias），
+2. `surface` × 200：按种子 `20260924` 从 28,931 条向量集里抽的节点文本（canonicalName + alias），
    排序后固定；
 3. `edge` × N：边界探针（空串、纯空白、超长截断 509/510/511/512/513、超 100 字单词、
    ASCII/全角/希腊/组合音标/控制字符/零宽字符/中日韩标点等），覆盖 §"最高风险件"的类判定。
@@ -300,8 +300,8 @@ def main():
             vocabPath=D.VOCAB_RELATIVE, vocabSha256=vocab_sha,
             tokenizerJsonPath=D.TOKENIZER_RELATIVE, tokenizerJsonSha256=tokenizer_json_sha,
             goldenPath=D.GOLDEN_RELATIVE, goldenSha256=D.GOLDEN_SHA256,
-            surfaceSample=dict(count=SURFACE_SAMPLE, seed=SURFACE_SEED, universe=28932,
-                               note="从向量集 28,932 条文本（canonicalName + alias）按种子抽取、排序"),
+            surfaceSample=dict(count=SURFACE_SAMPLE, seed=SURFACE_SEED, universe=28931,
+                               note="从向量集 28,931 条文本（canonicalName + alias）按种子抽取、排序"),
         ),
         counts=dict(total=len(cases), byKind=kinds, stageRows=len(stage_cases)),
         selfCheck=dict(
@@ -313,7 +313,7 @@ def main():
                        "fixture 不含空串；端侧对空/纯空白输入只承诺**不崩**（由 Kotlin 自己的单测钉住）。"
                        "实测 raisesTypeError=%s" % empty_input_raises,
             scope="fixture 覆盖 90 条金标查询（带前缀）+ 200 条节点文本抽样（种子 %d）+ 边界探针；"
-                  "spec §3.2 的 28,932 条全量对拍**不在本 fixture**（样本量按本轮任务书写死）"
+                  "spec §3.2 的 28,931 条全量对拍**不在本 fixture**（样本量按本轮任务书写死）"
                   % SURFACE_SEED,
         ),
         files=dict(

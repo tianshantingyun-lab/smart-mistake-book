@@ -64,6 +64,12 @@ OUT_RELATIVE = "build/stage3-device-expectation.json"
 # Stage-2 封存值（复现断言用；**不改**）
 STAGE2_BGE_DENSE_ONLY = dict(main=0.6444444444444445, chapterMin=0.3333333333333333, mrr=0.505)
 STAGE2_BGE_FUSED = dict(main=0.7444444444444445, chapterMin=0.3333333333333333, mrr=0.62)
+# 上面两个锚点是**在 Stage-2 那版语料（28,932 行 = 3,572 节点 + 25,360 别名）上测出来的记录**。
+# 2026-09-25 WP3（绑定修复 + 别名跟着绑定走）后语料变为 28,931 行；语料一变，这份"复现"在
+# 结构上就不再成立（旧向量行序与新布局对不上，硬跑只会得到错位的分数）。此时记 **N/A**，
+# 旧常数原样保留作历史锚点（不删不改）。
+STAGE2_ANCHOR_ROWS = 28932
+NA_NOTE = "N/A：语料口径已变，Stage-2 冻结锚点不可复现（历史保留）"
 TOL = 1e-12
 
 
@@ -201,10 +207,10 @@ def main():
     cases = D.goldens(root)
     vector_path = root.joinpath(*D.DENSE_DIR_RELATIVE.split("/")) / D.VECTOR_FILE_NAME
     header, docs = D.load_vector_file(vector_path)
-    if header["count"] != 28932:
-        raise SystemExit("向量资产行数应为 28,932，实测 %d" % header["count"])
+    if header["count"] != 28931:
+        raise SystemExit("向量资产行数应为 28,931，实测 %d" % header["count"])
     ids = header["ids"]
-    # ids 块是**逐向量**的（28,932 条；同一节点的向量在矩阵里连续，id 逐行重复出现）
+    # ids 块是**逐向量**的（28,931 条；同一节点的向量在矩阵里连续，id 逐行重复出现）
     # ——与打包侧（pack_dense_asset.py）同一约定。
     if ids != [row["node_id"] for row in rows]:
         raise SystemExit("向量资产 ids 与包布局不一致（资产过期？跑 pack_dense_asset.py）")
@@ -280,41 +286,55 @@ def main():
     print("融合 α=0.5（生产词面腿 + int8）：%s" % json.dumps(fused["judgement"]["D1"].summary(), ensure_ascii=False))
 
     # ---- 口径自证 1：复现 Stage-2（FTS5 腿 + fp32 向量） ----
-    reproduce = {}
+    # 语料口径漂移守卫（见文件头 STAGE2_ANCHOR_ROWS 注释）：只在"离线臂就是锚点那版语料、
+    # 且当前布局也是那版语料"时才跑复现；否则记 N/A（**不产出"通过"字样**）。
+    reproduce: dict = {"status": "N/A", "note": NA_NOTE,
+                       "stage2AnchorRows": STAGE2_ANCHOR_ROWS, "currentCorpusRows": len(rows)}
     stage2_dir = root.joinpath(*STAGE2_VECTORS.split("/"))
     fts5_path = root.joinpath(*STAGE2_FTS5_LEG.split("/"))
-    if (stage2_dir / "bge-docs.npy").is_file() and (stage2_dir / "bge-queries.npy").is_file() and fts5_path.is_file():
-        fp32_docs = np.load(stage2_dir / "bge-docs.npy")
-        fp32_queries = np.load(stage2_dir / "bge-queries.npy")
-        fp32_dense = [dense_node_scores(fp32_docs, fp32_queries[i] / max(float(np.linalg.norm(fp32_queries[i])), 1e-12),
-                                        groups_by_subject[cases[i]["subject"]]) for i in range(len(cases))]
-        # FTS5 腿：负分（越小越优），min-max 前先取反（与 stage2_score.fused_ranking 同口径）
-        fts5_rows = lexical_rows(fts5_path)
-        neg = [{node_id: -score for node_id, score in fts5_rows[i]} for i in range(len(cases))]
-        repro_dense = build(fp32_dense, [{node_id: 0.0 for node_id in node_id_list}] * len(cases),
-                            "stage2-D-only-bge")
-        repro_fused = build(fp32_dense, neg, "stage2-D-fuse-a0.5-bge")
-        for name, judgement, expected in (
-            ("D-only-bge", repro_dense["judgement"]["D1"], STAGE2_BGE_DENSE_ONLY),
-            ("D-fuse-a0.5-bge", repro_fused["judgement"]["D1"], STAGE2_BGE_FUSED),
-        ):
-            got = judgement.summary()
-            ok = (abs(got["main"] - expected["main"]) < TOL and abs(got["mrr"] - expected["mrr"]) < TOL
-                  and abs(got["chapterMin"] - expected["chapterMin"]) < TOL)
-            reproduce[name] = dict(got=got, expected=expected, ok=bool(ok))
-            print("[自证] 复现 Stage-2 %s：%s vs %s ⇒ %s"
-                  % (name, got, expected, "一致" if ok else "**不一致**"))
-            if not ok:
-                raise SystemExit("本脚本未能复现 Stage-2 的 %s——口径与 stage2_score.py 不同源，按纪律不推" % name)
+    arm_docs_path = stage2_dir / "bge-docs.npy"
+    arm_queries_path = stage2_dir / "bge-queries.npy"
+    arm_rows = int(np.load(arm_docs_path).shape[0]) if arm_docs_path.is_file() else None
+    if arm_docs_path.is_file() and arm_queries_path.is_file() and fts5_path.is_file():
+        if arm_rows != len(rows) or len(rows) != STAGE2_ANCHOR_ROWS:
+            print("[自证] %s（离线臂 %d 行 / 当前布局 %d 行 / 锚点语料 %d 行）"
+                  "——复现断言**未运行**（不算已通过）"
+                  % (NA_NOTE, arm_rows, len(rows), STAGE2_ANCHOR_ROWS))
+        else:
+            reproduce = {}
+            fp32_docs = np.load(arm_docs_path)
+            fp32_queries = np.load(arm_queries_path)
+            fp32_dense = [dense_node_scores(fp32_docs, fp32_queries[i] / max(float(np.linalg.norm(fp32_queries[i])), 1e-12),
+                                            groups_by_subject[cases[i]["subject"]]) for i in range(len(cases))]
+            # FTS5 腿：负分（越小越优），min-max 前先取反（与 stage2_score.fused_ranking 同口径）
+            fts5_rows = lexical_rows(fts5_path)
+            neg = [{node_id: -score for node_id, score in fts5_rows[i]} for i in range(len(cases))]
+            repro_dense = build(fp32_dense, [{node_id: 0.0 for node_id in node_id_list}] * len(cases),
+                                "stage2-D-only-bge")
+            repro_fused = build(fp32_dense, neg, "stage2-D-fuse-a0.5-bge")
+            for name, judgement, expected in (
+                ("D-only-bge", repro_dense["judgement"]["D1"], STAGE2_BGE_DENSE_ONLY),
+                ("D-fuse-a0.5-bge", repro_fused["judgement"]["D1"], STAGE2_BGE_FUSED),
+            ):
+                got = judgement.summary()
+                ok = (abs(got["main"] - expected["main"]) < TOL and abs(got["mrr"] - expected["mrr"]) < TOL
+                      and abs(got["chapterMin"] - expected["chapterMin"]) < TOL)
+                reproduce[name] = dict(got=got, expected=expected, ok=bool(ok))
+                print("[自证] 复现 Stage-2 %s：%s vs %s ⇒ %s"
+                      % (name, got, expected, "一致" if ok else "**不一致**"))
+                if not ok:
+                    raise SystemExit("本脚本未能复现 Stage-2 的 %s——口径与 stage2_score.py 不同源，按纪律不推" % name)
     else:
         print("[自证] Stage-2 产物不在位（%s / %s）——复现断言**未运行**（不算已通过）"
               % (stage2_dir, fts5_path))
 
     # ---- 量化/来源差异诊断（非参考数）：同一生产词面腿 × fp32 向量 ----
+    # 这一块比的是"同一语料下 fp32 离线向量 vs int8 资产"的差，因此只在**离线臂与当前布局
+    # 同行数**（同一语料）时才做；语料不同时它对不上行序，报出来的差值没有意义。
     diagnostic = {}
-    if (stage2_dir / "bge-docs.npy").is_file():
-        fp32_docs = np.load(stage2_dir / "bge-docs.npy")
-        fp32_queries = np.load(stage2_dir / "bge-queries.npy")
+    if arm_rows is not None and arm_rows == len(rows):
+        fp32_docs = np.load(arm_docs_path)
+        fp32_queries = np.load(arm_queries_path)
         fp32_dense = [dense_node_scores(fp32_docs, fp32_queries[i] / max(float(np.linalg.norm(fp32_queries[i])), 1e-12),
                                         groups_by_subject[cases[i]["subject"]]) for i in range(len(cases))]
         diag_dense = build(fp32_dense, [{node_id: 0.0 for node_id in node_id_list}] * len(cases),

@@ -4,7 +4,7 @@
 ## 它消灭的具体失败
 
 `.vec` 是**随包分发的资产**：它的向量是按**某一版包**（`moe-2025-four-subjects-v1.json`）
-的 3,572 个原子节点 + 25,360 条别名生成的，用的词表也是某一版。包或词表**内容变了而向量
+的 3,572 个原子节点 + 25,359 条别名生成的，用的词表也是某一版。包或词表**内容变了而向量
 没重生成**，端侧就会拿"旧内容的向量"去跟"新词条的文本"比——检索分数整体失真，而且**没有任何
 现有门会红**：`run_kb_checks.py` 的 22 门查的是包自身的契约，向量文件不在它们的视野里。
 
@@ -111,7 +111,7 @@ def evaluate(repo_root=None, pack_path=None, sidecar_path=None, vocab_path=None,
     except SystemExit as exc:
         record("layout", False, "无法解析包布局：%s" % exc)
     else:
-        # ids 块是**逐向量**的（28,932 条，同一节点的向量连续、id 逐行重复）——与打包侧同一约定。
+        # ids 块是**逐向量**的（28,931 条，同一节点的向量连续、id 逐行重复）——与打包侧同一约定。
         expected_ids = [row["node_id"] for row in rows]
         if header["ids"] == expected_ids:
             record("layout", True, "ids 与包布局逐条一致（%d 条向量）" % len(expected_ids))

@@ -195,7 +195,8 @@ class Stage1LexicalLabTest {
             }
             // (b) v1 生产形（**D1 落地后 = matched 优先**：`matched+parents`）= 本会话基线测量
             //     （同一镜像、两条独立计算路径）；同一张表里**旧生产形（parents 前置）按历史记账保留**，
-            //     其值必须仍复现预注册基线（主集 0.5444 = 49/90、MRR 0.1511；容差 1e-4）。
+            //     其值必须仍复现预注册基线（主集 0.5444 = 49/90、MRR 0.1511；容差 1e-4）；
+            //     其中 MRR 的**镜像**值随语料变动，2026-09-25 按当前语料重记（见下方断言注释）。
             assertEquals("§10 的 v1 生产形态行主集应等于基线测量（同一镜像）", baseline.main, v1Prod.main, 0.0)
             assertEquals("§10 的 v1 生产形态行 MRR 应等于基线测量", baseline.mrr, v1Prod.mrr, 0.0)
             assertEquals("§10 的 v1 生产形态行命中数应等于基线测量", baseline.hits, v1Prod.hits)
@@ -211,10 +212,25 @@ class Stage1LexicalLabTest {
                 49, v1LegacyProd.hits,
             )
             assertEquals(
-                // 0.1517 = 本镜像（JVM 侧）历史 MRR 0.1516666…；真 SQL 的预注册 MRR 0.1511 由仪表化
-                // 金标测试（GoldenRetrievalInstrumentedTest）锚定，两侧 MRR 的历史小差是镜像保真度事实。
-                "v1 旧生产形（parents 前置）MRR 应复现镜像历史值 0.1517（历史记账，D1 前形状）",
-                0.1517, v1LegacyProd.mrr, 1e-4,
+                // 0.15074074074074076 = 本镜像（JVM 侧）在**当前语料**上的实测值（2026-09-25 重记）。
+                // 旧值 → 新值 → Δ：0.1516666…（记作 0.1517）→ 0.15074074074074076，
+                // Δ = −0.00093（−0.6%，精确 = −(1/12)/90 = −0.00092593）——重锚的是**钉子的值**，
+                // 不是判据的松紧：**容差 1e-4 未动**。
+                // 原因：**别名随绑定重算**（索引正文 = `KnowledgeSearchFeatureExtractor.fromNode`
+                // 的"节点名 + 别名"，别名一变、同分名次的次序就变）：本轮别名向量 25,360→25,359
+                // （旁车 `core/data/src/main/resources/knowledge/dense/bge-small-zh-int8.vec.json` 的
+                // `corpus.aliasVectors`；`vectorCount` 28,932→28,931 同源），涉及 50 个节点的
+                // 别名行重算（`tools/kb_build/tables/alias_map.csv` 本轮 diff 里 50 个不同 slug）
+                // ⇒ 旧生产形下 top-5 内的名次挪动，Σ(1/rank) 差 1/12（= 90×ΔMRR）。
+                // 隔离实验确认同一改动下**命中数 49/90、主集 0.5444 与生产形两格（0.6444/0.5637、
+                // 0.6556/0.5569）逐位未动**——即这一格对"别名→名次"的排序敏感，不是检索退化。
+                // 隔离实验（同一次构建、同一套题面）：把 HEAD 版包放回资源位跑本测试 ⇒ 0.1516666…、
+                // 全测试绿；换回当前包 ⇒ 0.15074074074074076。真 SQL 的预注册 MRR 0.1511（D1 前旧生产形）
+                // 由仪表化金标测试（GoldenRetrievalInstrumentedTest）锚定，两侧 MRR 的历史小差是镜像
+                // 保真度事实；本断言钉的是"同一语料下这个形状的 MRR 不再漂移"。
+                "v1 旧生产形（parents 前置）MRR 应等于当前语料实测值 0.1507" +
+                    "（历史记账，D1 前形状；2026-09-25 语料变更后重记，旧值 0.1517，Δ −0.00093 / −0.6%）",
+                0.15074074074074076, v1LegacyProd.mrr, 1e-4,
             )
             // (c) 臂 A 两套数一致：matched-only 口径 = 臂 A 的判分数；旧生产形 = scan-A-parentprefix。
             assertEquals("§10 的 A matched-only 行应等于臂 A 的判分数（同一口径）", a.main, aMatchedOnly.main, 0.0)

@@ -19,7 +19,7 @@
    `query`（90 条，含 BGE 查询前缀）与 `surface`（200 条节点名/别名，无前缀）两段——
    这份 fixture 已由 `gen_tokenizer_fixture.py` 从冻结金标与向量集文本按种子抽出；
 2. **参考向量** = `build/dense-model/int8-queries.npy`（行序 = 金标序）与
-   `build/dense-model/int8-docs.npy`（行序 = 向量集 28,932 条序，surface 行的 `row=`
+   `build/dense-model/int8-docs.npy`（行序 = 向量集 28,931 条序，surface 行的 `row=`
    即索引）——即**离线参考链的产物本身**（ORT 1.28.0 跑 int8 ONNX）；
 3. **对齐自检** = 用 fixture 的 ids 现场重跑同一份 int8 ONNX，与上面那份 npy 逐行比
    cosine，确认"行对齐"这件事不是假设（对齐失败直接退出，不产出 fixture）。

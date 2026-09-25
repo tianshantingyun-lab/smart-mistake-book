@@ -12,7 +12,7 @@
 # ② 模型：bge-small-zh-v1.5 → ONNX fp32 → int8（自转），并做对拍
 python tools/dense_build/export_bge_int8.py
 
-# ③ 向量资产：28,932 条句向量 → int8 每向量 scale → .vec + 旁车
+# ③ 向量资产：28,931 条句向量 → int8 每向量 scale → .vec + 旁车
 python tools/dense_build/pack_dense_asset.py
 
 # ④ 参考数：生产词面腿 + int8 稠密腿 → D1 形态的设备期望值
@@ -32,7 +32,7 @@ python -m unittest discover -s tools/tests -t tools -p "test_dense_asset_gate.py
 | `check_asset.py` | **陈旧性门**（旁车哈希 == 当前包 + 词表 + `.vec`；ids == 当前包布局） | ✅ |
 | `model-manifest.json` | 模型的坐标/哈希/两条路线的实测 cosine/对拍门结论 | ✅ |
 | `vocab/bge-small-zh-v1.5-{vocab.txt,tokenizer.json}` | 词表冻结副本（端侧 tokenizer 必须与它逐条同结果） | ✅ |
-| `core/data/src/main/resources/knowledge/dense/bge-small-zh-int8.vec` | 随包分发的向量资产（28,932×512 int8） | ✅ |
+| `core/data/src/main/resources/knowledge/dense/bge-small-zh-int8.vec` | 随包分发的向量资产（28,931×512 int8） | ✅ |
 | `core/data/src/main/resources/knowledge/dense/bge-small-zh-int8.vec.json` | 旁车（溯源 + 哈希 + 量化实测） | ✅ |
 | `build/dense-model/*.onnx` | fp32 / int8 模型件（可由 ② 从钉住的 revision 重生成） | ❌ `build/` |
 | `build/production-lexical-leg.tsv` | 生产词面腿（含 sha 记进旁车） | ❌ `build/` |
@@ -55,7 +55,7 @@ python -m unittest discover -s tools/tests -t tools -p "test_dense_asset_gate.py
 ## 3. int8 的两条路线（都实测，只把过门的那条当产物）
 
 门是任务书写死的：**与 Python 参考实现（torch fp32）的对拍 cosine ≥ 0.999**。
-实测（全量 28,932 文档 + 90 查询，逐行 cosine 取最小；数字来自 `model-manifest.json`）：
+实测（全量 28,931 文档 + 90 查询，逐行 cosine 取最小；数字来自 `model-manifest.json`）：
 
 | 路线 | 权重 | 激活 | 句向量逐行 cosine 最小 | 过门 | 件大小 |
 |---|---|---|---|---|---|
@@ -94,7 +94,7 @@ python -m unittest discover -s tools/tests -t tools -p "test_dense_asset_gate.py
 0      4                 magic = b"SMBV"
 4      4                 uint32 version        = 1
 8      4                 uint32 dim            = 512
-12     4                 uint32 count          = 28932
+12     4                 uint32 count          = 28931
 16     4                 uint32 dtype          = 1（INT8_PER_VECTOR_F32_SCALE）
 20     4                 uint32 idsBytesLength
 24     idsBytesLength    ids 块：count × (uint32 utf8Len + utf8 bytes)，逐向量

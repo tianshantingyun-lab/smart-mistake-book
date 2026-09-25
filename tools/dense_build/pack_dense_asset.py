@@ -2,7 +2,7 @@
 """Stage-3 小档 · 语料向量资产打包（`.vec` + 旁车 `.json`，**入库跟踪**）。
 
 输入（`export_bge_int8.py` 的中间产物，均在 `build/dense-model/`）：
-- `int8-docs.npy`：28,932×512 fp32（= int8 ONNX 对 28,932 条 surface 的输出，CLS + L2 已归一化）
+- `int8-docs.npy`：28,931×512 fp32（= int8 ONNX 对 28,931 条 surface 的输出，CLS + L2 已归一化）
 - `int8-queries.npy`：90×512 fp32（同模型对 90 条带前缀查询的输出；参考数计算用）
 
 输出（入库）：
@@ -18,9 +18,9 @@
 
 ## 对拍门（本脚本断言，不过就退出非零）
 
-1. 向量集 = 28,932 行、512 维、全部有限、每行 L2 范数 ≈ 1；
+1. 向量集 = 28,931 行、512 维、全部有限、每行 L2 范数 ≈ 1；
 2. 落盘 → 回读 → 逐行 cosine(还原值, 量化前) 最小值 ≥ 0.9999；
-3. `header.count == 28932`、ids 与布局逐条一致（`dense_asset.atomic_layout` 的同一份）。
+3. `header.count == 28931`、ids 与布局逐条一致（`dense_asset.atomic_layout` 的同一份）。
 
 用法（仓库根下，先跑 export）：
 ```
@@ -49,15 +49,15 @@ def main():
     root = D.repo_root(args.repo_root)
 
     rows, nodes, groups = D.atomic_layout(root)
-    # ids 块是**逐向量**的（28,932 条）：每条向量记它属于哪个节点。同一节点的向量在矩阵里
+    # ids 块是**逐向量**的（28,931 条）：每条向量记它属于哪个节点。同一节点的向量在矩阵里
     # **连续**（布局就是"节点顺序出 canonicalName，紧跟其全部 alias"），端侧扫描连续段即可
     # 做"节点分 = 段内 cosine 的 max"。3,572 个节点 id 在这里按向量数重复出现——重复是
     # 有意为之：读者不需要第二张表就能把任意一行还原到节点。
     ids = [row["node_id"] for row in rows]
     node_ids = [node["node_id"] for node in nodes]
     surfaces = [row["surface"] for row in rows]
-    if len(node_ids) != 3572 or len(surfaces) != 28932:
-        raise SystemExit("向量集口径应为 3572 节点 / 28932 向量，实测 %d / %d" % (len(node_ids), len(surfaces)))
+    if len(node_ids) != 3572 or len(surfaces) != 28931:
+        raise SystemExit("向量集口径应为 3572 节点 / 28931 向量，实测 %d / %d" % (len(node_ids), len(surfaces)))
     for node_id, start, end in groups:
         if set(ids[start:end]) != {node_id}:
             raise SystemExit("向量段与节点不一致：%s 的 [%d, %d) 段里混进了别的节点" % (node_id, start, end))
@@ -72,8 +72,8 @@ def main():
 
     docs = np.load(docs_path)
     queries = np.load(queries_path)
-    if docs.shape != (28932, D.BGE_DIM):
-        raise SystemExit("文档向量形状应为 (28932, 512)，实测 %s" % (docs.shape,))
+    if docs.shape != (28931, D.BGE_DIM):
+        raise SystemExit("文档向量形状应为 (28931, 512)，实测 %s" % (docs.shape,))
     if queries.shape != (90, D.BGE_DIM):
         raise SystemExit("查询向量形状应为 (90, 512)，实测 %s" % (queries.shape,))
     if not (np.isfinite(docs).all() and np.isfinite(queries).all()):

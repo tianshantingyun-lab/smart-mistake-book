@@ -95,10 +95,14 @@ class GateTest(unittest.TestCase):
     def test_gate_reports_real_defects_not_zero(self):
         """修复前门禁必须失败——否则它不是在测真东西。"""
         metrics = {m.key: m for m in gate.evaluate()}
+        # 键集 = 门**当前实际输出**的完整快照：新增判据时必须同步出现在这里（少一个也红）。
+        # 2026-09-25 新增 `boundary_text_defect`（boundary 的文本残迹判据，登记册 §W-02），
+        # 判据与材料侧同源；下方哨兵断言它归零。
         self.assertEqual(
             {"bad_names", "starred_names", "duplicate_names", "unbound_points",
              "unbound_materials", "ghost_aliases", "alias_collision", "undeclared_prereq",
-             "boundary_excerpt", "locator_boundary", "latex_damage", "control_chars",
+             "boundary_excerpt", "locator_boundary", "boundary_text_defect",
+             "latex_damage", "control_chars",
              "invalid_escape", "shell_expansion", "dollar_unbalanced",
              "chapter_uncovered_units", "chapter_locator_mismatch", "chapter_no_book",
              "chapter_split_missing_override", "topic_name_carries_path",
@@ -155,6 +159,10 @@ class GateTest(unittest.TestCase):
         self.assertEqual(0, metrics["invalid_escape"].value)
         self.assertEqual(0, metrics["shell_expansion"].value)
         self.assertEqual(0, metrics["dollar_unbalanced"].value)
+        # 2026-09-25：`field_text_defects` 此前只扫**材料**字段，boundary 没有判据——实测 20 条
+        # boundary 断在公式中途（`…（椭圆是 $b^2\tan\frac{\`）仍能在"22/22 全绿"下随包分发。
+        # 新增 boundary_text_defect 并修完 20 条后归零（KD-26 / 登记册 §W-02）。哨兵。
+        self.assertEqual(0, metrics["boundary_text_defect"].value)
         # 2026-09-19 内容裁定轮（R 节）：boundary_excerpt 675→0（675 条含第三方原文摘录的边界
         # 全部按合规要求重写为自己的归纳，不再保存原文段落）、locator_boundary 579→0
         # （579 条只有定位串/占位的边界全部补写了真边界正文）。两项从此充当防回归哨兵。

@@ -92,10 +92,13 @@ class DenseRecallRerankerTest {
         assertEquals("期望次序 fixture 的查询数变了（每科 1 条）", 4, cases.size)
         assertEquals(
             "候选集条数变了（fixture 重新生成过？逐条核实后再改这里）",
-            mapOf(0 to 85, 9 to 455, 36 to 209, 63 to 248),
+            // 2026-09-25 WP3：56 条材料改绑 + 别名跟着绑定走（25,360→25,359）后词面腿的每查询
+            // 命中集变了 ⇒ case#36 209→212、case#63 248→249（已逐条核对：这四个数与
+            // build/production-lexical-leg.tsv 同一查询的行数逐位相等）。
+            mapOf(0 to 85, 9 to 455, 36 to 212, 63 to 249),
             cases.associate { it.index to it.candidates.size },
         )
-        assertEquals("候选总数变了", 997, cases.sumOf { it.candidates.size })
+        assertEquals("候选总数变了", 1001, cases.sumOf { it.candidates.size })
         for (case in cases) {
             // 假编码器：模型件不在仓库里（见 assets/dense/README.md），喂 Python 侧记录的查询向量。
             val encoder = object : DenseQueryEncoder {

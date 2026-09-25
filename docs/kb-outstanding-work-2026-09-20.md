@@ -20,9 +20,14 @@
 
 ## 2. 未竟工作（按优先级）
 
-### W-1 错绑嫌疑池 ≈204 条（进行中）
-- 账：`tools/kb_build/tables/binding_suspects.csv` 共 **237** 行（PHYSICS 108 / CHEMISTRY 75 /
-  MATH 33 / BIOLOGY 21）；MATH 33 条已按"标题同名节点"改绑（`c11f7875`），余 **≈204**。
+### W-1 错绑嫌疑池——**已清零（2026-09-25 复核）**
+- 账（2026-09-25 复核）：`tools/kb_build/tables/binding_suspects.csv` **0 行嫌疑**（只剩表头）；
+  原 237 行（PHYSICS 108 / CHEMISTRY 75 / MATH 33 / BIOLOGY 21）里的 204 条未决**已逐条裁定**——
+  `tools/kb_build/tables/binding_suspects_reviewed.csv` 共 204 行 = **KEEP 21 / REBIND 183**
+  （执行链 `apply_rebind_verdicts.py` → `material_rebind.py` → `rebind_materials.py`）；
+  MATH 33 条更早按"标题同名节点"改绑（`c11f7875`）。
+- 复算：`PYTHONPATH=tools python -m kb_build.audit_bindings_by_alias` ⇒ 现输出
+  `错绑嫌疑 0 条（已裁定豁免 21 条）`（豁免读 `binding_suspects_reviewed.csv`）。
 - 规则：材料标题恰等于同学科另一节点主名且当前绑定不是它 → 嫌疑；**只出表不自动改**，
   逐条人判（上位概念收下位材料是合法的，别一刀切）。
 - 验收：`binding_suspects.csv` 清零或每行有裁定记录；改绑走 `material_rebind.csv` +

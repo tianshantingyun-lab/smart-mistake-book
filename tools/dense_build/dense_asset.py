@@ -14,7 +14,7 @@ CI 头哈希门（`tools/ci/run_kb_checks.py` 的 dense 节）。三处各写一
 0      4                 magic = b"SMBV"（Smart Mistake Book Vector）
 4      4                 uint32 version        = 1
 8      4                 uint32 dim            = 512
-12     4                 uint32 count          = 28932
+12     4                 uint32 count          = 28931
 16     4                 uint32 dtype          = 1（INT8_PER_VECTOR_F32_SCALE）
 20     4                 uint32 idsBytesLength
 24     idsBytesLength    ids 块：count × (uint32 utf8Len + utf8 bytes)，**按向量行序**
@@ -27,12 +27,12 @@ CI 头哈希门（`tools/ci/run_kb_checks.py` 的 dense 节）。三处各写一
 
 **为什么是"每向量一个 scale"而不是全局一个**：向量已 L2 归一化，全局 scale 会让
 短尾向量的分量化步长过粗；每向量 scale 把误差压在各向量自身的幅度上，代价只是
-count×4 字节（28,932×4 = 115,728 B）。还原后仍是 float32 点积（暴力余弦），
+count×4 字节（28,931×4 = 115,724 B）。还原后仍是 float32 点积（暴力余弦），
 不引入 int8 累加器溢出问题。
 
 ## 与离线臂（Stage-2）的关系
 
-向量集 = spec §2.2 的 **3,572 条 ATOMIC canonicalName + 25,360 条 alias = 28,932**，
+向量集 = spec §2.2 的 **3,572 条 ATOMIC canonicalName + 25,359 条 alias = 28,931**，
 **不含 TOPIC**（与离线臂一致；`include_topics` 只用在诊断臂）。节点分 = 该节点全部
 向量 cosine 的 **max**。行序与 `build/stage2-dense-work/stage2_common.py` 的
 `build_vector_layout` 逐条相同（打包脚本会用离线臂的 `bge-docs.npy` 逐行对拍来证明）。
@@ -90,7 +90,7 @@ def sha256_file(path) -> str:
 def atomic_layout(root, pack_path=None):
     """向量集布局：**节点顺序出 canonicalName，紧跟该节点的全部 alias**（只取 ATOMIC）。
 
-    与 spec §2.2 的 28,932 口径、与离线臂 `stage2_common.build_vector_layout` 同源。
+    与 spec §2.2 的 28,931 口径（数随包变：2026-09-25 由 25,360 别名降到 25,359）、与离线臂 `stage2_common.build_vector_layout` 同源。
     `pack_path` 只为**测试**留（把布局指向一份被改过的包副本，验证门能抓住布局漂移）；
     生产调用一律只传 `root`。
 

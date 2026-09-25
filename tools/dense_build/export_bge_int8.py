@@ -24,7 +24,7 @@
 
 ## 断言（对拍门：cosine ≥ 0.999）
 
-1. **fp32 ONNX vs Python 参考（torch fp32）**：全量 28,932 文档 + 90 查询，逐行 cosine 最小
+1. **fp32 ONNX vs Python 参考（torch fp32）**：全量 28,931 文档 + 90 查询，逐行 cosine 最小
    值必须 ≥ 0.999999（导出保真，不是量化质量）；
 2. **int8 ONNX vs 同一份参考**：逐行 cosine 最小值必须 ≥ 0.999（**本阶段的对拍门**）；
 3. 若离线臂的 `bge-docs.npy` / `bge-queries.npy` 在位，再对一次（证明向量集口径与行序
@@ -241,8 +241,8 @@ def main():
     print("向量集：%d 条（canonical %d + alias %d），查询 %d 条"
           % (len(surfaces), sum(1 for r in rows if r["kind"] == "canonical"),
              sum(1 for r in rows if r["kind"] == "alias"), len(cases)))
-    if len(surfaces) != 28932:
-        raise SystemExit("向量集应为 28,932（spec §2.2），实测 %d" % len(surfaces))
+    if len(surfaces) != 28931:
+        raise SystemExit("向量集应为 28,931（3,572 节点 + 25,359 别名，2026-09-25 WP3 后），实测 %d" % len(surfaces))
 
     # ---- 模型与 tokenizer（本地快照优先；缺了才去取） ----
     from huggingface_hub import snapshot_download

@@ -133,6 +133,7 @@
 - **证据**：`[技术文档]` `docs/kb-content-conformance-spec.md` §4.2 自述"现行抽样只有 42% 完全一致，必须做实"。
 - **外部对照**：`[外部研究]` cn-k12-math 的做法是每条边带 stable ID + trace ID + source type + release hash〔一手项目文档〕。**本项目缺"可审计绑定"**。
 - **备注**：这是全册里唯一直接影响**学习正确性**的内容问题，严重度不低于 A-01。
+- 2026-09-25 首份抽样出数（口径与结果见 docs/kb-stage4-report-2026-09-25.md）
 
 ### A-19 · 五三管线已产出的材料尚未并入成品包 【P2 · 正常在途】
 - **症状**：`knowledge-production/wusan/materials.jsonl` 134 条（化学 128 / 物理 6），类型 `CONCEPT_EXPLANATION 103 / METHOD_MODEL 15 / MISCONCEPTION_GUIDE 16`。**这些不在任何成品包里**，运行时不可见。
@@ -1701,7 +1702,7 @@ tools 套件 289 passed / 30,835 subtests。`:core:data` 本轮**未能重跑**�
 两侧都钉了正反用例（`test_kb_build.py` 的 must_flag / must_pass）。
 教训与第 12.1 条同源：**判据也要闭影响面**——它错一格，就是成批的假工件。
 
-### W-02 · boundary 被生成侧截断，而门的 4 个文本判据只扫材料（待修）
+### W-02 · boundary 被生成侧截断，而门的 4 个文本判据只扫材料（已修 2026-09-25）
 
 **发现**：`moe-2025-four-subjects-v1.json` 有 **20 条 `boundary` 带机械可判缺陷**——
 20 处 `$` 不成对、4 处行尾悬空反斜杠（4 条同时两类），长度 124–156 字符，**全部断在公式中途**
@@ -1714,8 +1715,13 @@ tools 套件 289 passed / 30,835 subtests。`:core:data` 本轮**未能重跑**�
 **门为什么看不见**：`field_text_defects` 只被用在**材料**字段上（`材料含非法转义` 等 4 项 = 0 是真的，
 但 boundary / name 没有判据）。4 处悬空反斜杠因此能在"22/22 全绿"下随包分发。
 
-**待办**：① 按该节点**已绑定材料**补全被切断的公式（只补尾、不得改写前文，逐字可溯源）；
-② 给门加 boundary 判据（与材料同源函数），两件事**同一提交**落地——先加判据会让门红着进 CI。
+**落地（2026-09-25）**：① 按该节点**已绑定材料**逐条补全被切断的公式（只补尾、不得改写前文，逐字可溯源）——
+工单 `make_boundary_fix_slices.py`、20 份证据 `tables/boundary_fix_evidence/`、权威表
+`tables/boundary_map.csv`（20 行），执行器 `apply_boundary_fixes.py` 校验后写 staging（写前复算
+`boundary_text_defect` 归零、点数不变，任一不过整批不写）；
+② 门新增 `boundary_text_defect`（`gate.field_text_defects`，与材料同源函数）。两件事同一提交落地。
+**复算（2026-09-25）**：staging 与成品两份包该判据均 = 0、全 23 项指标全 0；`boundary_map.csv`
+20 行与 staging / 成品逐字一致；`python tools/ci/run_kb_checks.py` 五节全 OK。
 
 ### W-03 · 历史数字订正：`ec5656d6` 的"A 类 2,283 处"应为 1,854 处
 

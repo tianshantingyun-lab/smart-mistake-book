@@ -1019,7 +1019,7 @@ run3 Room recall p95 was 1267ms;  samples=[1267, 54, 45, 46, 50, 52, 47, 53, 39,
 (ii) 若把墙钟门移入 macrobenchmark 模块，查询计划断言必须留在原地（KD-2 同款口径）；
 (iii) `ciSlowRunner` 系数被改动而未经 runner 实测支撑。
 
-## KD-26 (open 2026-09-24) · 20 条 `boundary` 断在公式中途，而门的 4 个文本判据只扫材料字段
+## KD-26 (fixed 2026-09-25) · 20 条 `boundary` 断在公式中途，而门的 4 个文本判据只扫材料字段
 
 **Symptom.** `core/data/src/main/resources/knowledge/moe-2025-four-subjects-v1.json` 里 20 个知识点的
 `boundary` 带机械可判缺陷：20 处 `$` 不成对、4 处行尾悬空反斜杠（4 条同时两类）。长度 124–156 字符
@@ -1037,9 +1037,14 @@ git 里没有全文可恢复。门的 `field_text_defects` 只被用在**材料*
 
 **Impact.** 断掉的公式让学生看到半截 LaTeX；不成对的 `$` 会让自研渲染器把后续正文当数学显示。
 
-**Fix (open).** ① 按该节点**已绑定材料**补全被切断的公式（只补尾、不改写前文，逐字可溯源，
-与 `ec5656d6` 的文本修复同款三层复核）；② 给门加 boundary 判据（与材料同源函数，
-`find_invalid_escapes` / `field_text_defects` 复用）。两件事**同一提交**落地（先加判据会让门红着进 CI）。
+**Fix (2026-09-25).** ① 按该节点**已绑定材料**逐条补全被切断的公式（只补尾、不改写前文，逐字可溯源）：
+工单 `tools/kb_build/make_boundary_fix_slices.py` → 20 份证据 `tools/kb_build/tables/boundary_fix_evidence/`，
+裁定写入权威表 `tools/kb_build/tables/boundary_map.csv`（20 行），执行器 `tools/kb_build/apply_boundary_fixes.py`
+逐条校验后写 staging（写盘前复算 `boundary_text_defect` 应为 0、点数不变，任一不过整批不写）；
+② 给门加 boundary 判据 `boundary_text_defect`（`gate.field_text_defects`，与材料侧同源函数）。
+两件事同一提交落地。
+**落地复算（2026-09-25，本代理实测）**：staging 与成品两份包 `boundary_text_defect` 均 = 0（全 23 项指标全 0）；
+`boundary_map.csv` 20 行与 staging / 成品**逐字一致**（0 处不符）；`python tools/ci/run_kb_checks.py` 五节全 OK。
 **登记**：`docs/kb-problem-register-2026-09-15.md` §W-02。
 
 **Reopen condition.** 该判据加入门后若再次出现非 0 的 boundary 缺陷——说明补全只治了存量、

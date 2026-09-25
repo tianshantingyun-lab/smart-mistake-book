@@ -70,8 +70,8 @@
   "quantizationRouteComparison": {
     "dynamic-perChannel": {
       "bytes": 24031552,
-      "docsCosineMean": 0.9938284754753113,
-      "docsCosineMin": 0.9872037172317505,
+      "docsCosineMean": 0.9938281178474426,
+      "docsCosineMin": 0.9884153008460999,
       "passedGate": false,
       "path": "build/tmp-dense-quant/routeA-perChannel.onnx",
       "perChannel": true,
@@ -79,8 +79,8 @@
     },
     "dynamic-perTensor": {
       "bytes": 23939272,
-      "docsCosineMean": 0.9670930504798889,
-      "docsCosineMin": 0.9499456286430359,
+      "docsCosineMean": 0.9670901894569397,
+      "docsCosineMin": 0.9484840631484985,
       "passedGate": false,
       "path": "build/tmp-dense-quant/routeA-perTensor.onnx",
       "perChannel": false,

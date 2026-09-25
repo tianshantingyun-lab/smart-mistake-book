@@ -183,7 +183,7 @@ def main():
         raise SystemExit("旁车 sha 与实测不符：%s != %s" % (sidecar_sha, asset_sha))
 
     asset_header, scans = scan_cases(root)
-    if asset_header["count"] != 28932 or asset_header["dim"] != D.BGE_DIM:
+    if asset_header["count"] != 28931 or asset_header["dim"] != D.BGE_DIM:
         raise SystemExit("资产形状不符：%d/%d" % (asset_header["count"], asset_header["dim"]))
     expected_bytes = (24 + asset_header["idsBytesLength"] + asset_header["count"] * asset_header["dim"]
                       + asset_header["count"] * 4)

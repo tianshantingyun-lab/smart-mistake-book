@@ -31375,7 +31375,7 @@
    "reviewedAtEpochMillis": 1789846597495,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:利用奇偶性求值-将待求函数值或不等式利用奇偶性转化为已知区间上的函数值求解",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:利用奇偶性求解析式",
      "role": "PRIMARY"
     }
    ]

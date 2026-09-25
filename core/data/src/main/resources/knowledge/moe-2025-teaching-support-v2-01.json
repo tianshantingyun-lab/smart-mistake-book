@@ -679,7 +679,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:利用奇偶性求值-将待求函数值或不等式利用奇偶性转化为已知区间上的函数值求解",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:利用奇偶性与单调性解不等式",
      "role": "PRIMARY"
     }
    ]
@@ -1619,7 +1619,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:利用奇偶性求值-将待求函数值或不等式利用奇偶性转化为已知区间上的函数值求解",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:利用导数研究函数的最值",
      "role": "PRIMARY"
     }
    ]
@@ -3879,7 +3879,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:利用奇偶性求值-将待求函数值或不等式利用奇偶性转化为已知区间上的函数值求解",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:三角函数中ω的取值范围问题",
      "role": "PRIMARY"
     }
    ]
@@ -14259,7 +14259,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:利用奇偶性求值-将待求函数值或不等式利用奇偶性转化为已知区间上的函数值求解",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:分式不等式的解法",
      "role": "PRIMARY"
     }
    ]
@@ -19419,7 +19419,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:利用奇偶性求值-将待求函数值或不等式利用奇偶性转化为已知区间上的函数值求解",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:分式不等式的解法",
      "role": "PRIMARY"
     }
    ]
@@ -20059,7 +20059,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:利用奇偶性求值-将待求函数值或不等式利用奇偶性转化为已知区间上的函数值求解",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:函数的周期性",
      "role": "PRIMARY"
     }
    ]
@@ -24139,7 +24139,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:数列的单调性与最值问题",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:圆锥曲线中的最值或范围问题",
      "role": "PRIMARY"
     }
    ]
@@ -24959,7 +24959,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:指数不等式",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:柯西不等式与权方和不等式",
      "role": "PRIMARY"
     }
    ]
@@ -26259,7 +26259,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:数列的单调性与最值问题",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:给值求值问题",
      "role": "PRIMARY"
     }
    ]
@@ -26919,7 +26919,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:数列的单调性与最值问题",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:等差数列前n项和最值问题",
      "role": "PRIMARY"
     }
    ]
@@ -27299,7 +27299,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:利用奇偶性求值-将待求函数值或不等式利用奇偶性转化为已知区间上的函数值求解",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:平面向量基本定理",
      "role": "PRIMARY"
     }
    ]
@@ -29179,7 +29179,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:数列的单调性与最值问题",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:函数的单调性",
      "role": "PRIMARY"
     }
    ]
@@ -29299,7 +29299,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:利用奇偶性求值-将待求函数值或不等式利用奇偶性转化为已知区间上的函数值求解",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:利用奇偶性求解析式",
      "role": "PRIMARY"
     }
    ]
@@ -29679,7 +29679,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:数列的单调性与最值问题",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:数列的插项与去项问题",
      "role": "PRIMARY"
     }
    ]
@@ -31539,7 +31539,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:利用奇偶性求值-将待求函数值或不等式利用奇偶性转化为已知区间上的函数值求解",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:三角恒等变换",
      "role": "PRIMARY"
     }
    ]
@@ -32379,7 +32379,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:方程组法-主要解决已知与-的方程-求解析式",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:求函数解析式的常用方法",
      "role": "PRIMARY"
     }
    ]
@@ -32579,7 +32579,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:利用奇偶性求值-将待求函数值或不等式利用奇偶性转化为已知区间上的函数值求解",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:利用奇偶性与单调性解不等式",
      "role": "PRIMARY"
     }
    ]
@@ -34359,7 +34359,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:等差数列的常用性质",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:斐波那契数列",
      "role": "PRIMARY"
     }
    ]
@@ -34399,7 +34399,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:数列的单调性与最值问题",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:数列的公共项问题",
      "role": "PRIMARY"
     }
    ]
@@ -35199,7 +35199,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:不等式的基本性质",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:交集与并集",
      "role": "PRIMARY"
     }
    ]
@@ -35639,7 +35639,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:数列的单调性与最值问题",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:多变量最值问题的解题方法",
      "role": "PRIMARY"
     }
    ]
@@ -36399,7 +36399,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:利用奇偶性求值-将待求函数值或不等式利用奇偶性转化为已知区间上的函数值求解",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:math:atomic:给值求值问题",
      "role": "PRIMARY"
     }
    ]
@@ -39659,7 +39659,7 @@
    "reviewedAtEpochMillis": 1784908800000,
    "bindings": [
     {
-     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:力的分解",
+     "knowledgeNodeId": "kb:moe-2025-four-subjects-v1:physics:atomic:正交分解法",
      "role": "PRIMARY"
     }
    ]
