@@ -10,6 +10,7 @@ import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
 import com.tingyun.smartmistakebook.core.domain.StudyQuestionMemory
 import com.tingyun.smartmistakebook.core.domain.TutorConversationReference
 import com.tingyun.smartmistakebook.core.domain.TutorTurnResponse
+import com.tingyun.smartmistakebook.core.model.AttachedRoundQuestion
 import com.tingyun.smartmistakebook.core.model.CapturedQuestionDocument
 import com.tingyun.smartmistakebook.core.model.ContentBlock
 import com.tingyun.smartmistakebook.core.model.MasteryStatus
@@ -887,6 +888,154 @@ class TutorModelTaskPolicyTest {
         // 任何代号结构性拒，模型被提示词教会先确认科目）。
         assertEquals(5, input.toolDeclarations.size)
     }
+
+    // ---- 学生显式添加的题（加号「从错题库选择」）成为本轮题锚 ----
+
+    /**
+     * 附加题轮次的请求对齐：**讲的题**跟随附加题，**会话身份**不动。
+     *
+     * 两半都必须钉住：科目/题面不跟随，模型会照着会话题讲另一道题；会话身份跟着换，
+     * 时间线过滤、唯一槽位（`(subject_id, task_kind, ordinal)`）与答案暴露守卫就会
+     * 找不到这一轮。清空的那几项同理——拿会话题的学习证据去讲另一道题是错配。
+     */
+    @Test
+    fun anExplicitlyAttachedQuestionCarriesTheRoundWhileTheConversationIdentityStays() {
+        val attached = attachedQuestion(subject = SubjectKind.PHYSICS)
+        val question = attachedRoundContext()
+        val profile = StudyProfileOverview(
+            hasLearningEvidence = true,
+            weaknesses = listOf(
+                StudyKnowledgeSummary("node-1", "导数符号", MasteryStatus.CONFLICTED, 0.18),
+            ),
+        )
+
+        // 对照轮：没有附加题时这些字段本来是满的——否则下面那串空断言可能只是因为
+        // 这份 profile/context 本来就产不出东西。
+        val plain = buildTutorRespondRequest(
+            question = question,
+            profile = profile,
+            provider = provider(),
+            requestId = "respond-plain",
+            occurredAtEpochMillis = 100,
+            responseOrdinal = 1,
+            cycleOrdinal = 1,
+            turnOrdinal = 1,
+            studentMessage = "这一步怎么来的？",
+            visibleTutorContextMarkdown = "先判断导数的正负变化。",
+            priorMessages = emptyList(),
+        ).input as TutorRespondInput
+        assertEquals(question.subject, plain.subject)
+        assertTrue(plain.relevantLearningEvidence.isNotEmpty())
+        assertTrue(plain.reviewedTeachingReferences.isNotEmpty())
+        assertTrue(plain.questionLearningEvidence != null)
+        assertTrue(plain.knowledgeCodes.isNotEmpty())
+        assertEquals("先判断导数的正负变化。", plain.visibleTutorContextMarkdown)
+
+        val attachedRound = buildTutorRespondRequest(
+            question = question,
+            profile = profile,
+            provider = provider(),
+            requestId = "respond-attached",
+            occurredAtEpochMillis = 100,
+            responseOrdinal = 1,
+            cycleOrdinal = 1,
+            turnOrdinal = 1,
+            studentMessage = "这一步怎么来的？",
+            visibleTutorContextMarkdown = "先判断导数的正负变化。",
+            priorMessages = emptyList(),
+            boundQuestionCandidates = listOf(attached.toCandidate()),
+            knownRoundQuestion = attached.toCandidate(),
+            attachedQuestion = attached,
+        ).input as TutorRespondInput
+
+        // 这一轮讲的是附加的那道题：科目与题锚都跟随它。
+        assertEquals(attached.subject.name, attachedRound.subject)
+        assertEquals(attached, attachedRound.attachedQuestion)
+        assertEquals(attached.toCandidate(), attachedRound.knownRoundQuestion)
+        // 会话身份（哪个会话、哪一修订、会话自己的题面）一个都没动。
+        assertEquals(question.sessionId, attachedRound.sessionId)
+        assertEquals(question.revisionNumber, attachedRound.draftRevisionNumber)
+        assertEquals(question.questionDocument.document, attachedRound.questionDocument)
+        // 会话题的证据/资料/学习记忆/代号/可见上下文对附加题是错配：全部清空。
+        assertTrue(attachedRound.relevantLearningEvidence.isEmpty())
+        assertTrue(attachedRound.reviewedTeachingReferences.isEmpty())
+        assertTrue(attachedRound.questionLearningEvidence == null)
+        assertTrue(attachedRound.knowledgeCodes.isEmpty())
+        assertTrue(attachedRound.visibleTutorContextMarkdown == null)
+    }
+
+    /**
+     * 请求标识：同一句话换一道附加题 = 两次不同的请求。
+     *
+     * 标识复用会把"换题重发"落到上一次的回复上；反过来，同一句话同一道题必须稳定，
+     * 否则重试与恢复重放永远命不中自己那一次。
+     */
+    @Test
+    fun theSameStudentMessageAboutAnotherQuestionIsADifferentRespondRequest() {
+        val question = session().toTutorQuestionContext()
+        val physics = attachedQuestion(subject = SubjectKind.PHYSICS, problemId = "problem-physics")
+        val chemistry = attachedQuestion(
+            subject = SubjectKind.CHEMISTRY,
+            problemId = "problem-chemistry",
+        )
+        fun requestId(attached: AttachedRoundQuestion?) = tutorRespondRequestId(
+            question = question,
+            provider = provider(),
+            responseOrdinal = 1,
+            cycleOrdinal = 1,
+            turnOrdinal = 1,
+            studentMessage = "这一步怎么来的？",
+            visibleTutorContextMarkdown = null,
+            priorMessages = emptyList(),
+            attachedQuestion = attached,
+            attempt = 0,
+        )
+
+        val none = requestId(null)
+        val firstQuestion = requestId(physics)
+
+        assertNotEquals(none, firstQuestion)
+        assertNotEquals(firstQuestion, requestId(chemistry))
+        assertEquals(firstQuestion, requestId(physics))
+    }
+
+    private fun attachedQuestion(
+        subject: SubjectKind,
+        problemId: String = "problem-attached",
+    ) = AttachedRoundQuestion(
+        problemId = problemId,
+        problemRevisionId = "$problemId-revision-1",
+        revisionNumber = 2,
+        subject = subject,
+        title = "附加题 $problemId",
+        questionDocument = QuestionDocument(
+            id = "question-$problemId",
+            blocks = listOf(ContentBlock.Paragraph("stem", "附加题面 $problemId")),
+        ),
+    )
+
+    /** 会话题上下文：证据/审校资料/学习记忆/代号都在，用来验证附加题轮次把它们清空。 */
+    private fun attachedRoundContext() = session().toTutorQuestionContext().copy(
+        learningMemory = StudyQuestionMemory(
+            independentRecallCount = 1,
+            assistedRecallCount = 0,
+            retrievalFailureCount = 0,
+            answerRevealCount = 0,
+            lastReviewedAtEpochMillis = 0,
+            nextReviewAtEpochMillis = 10_000,
+            retrievabilityAtSnapshot = 0.5,
+            projectionIsCurrent = true,
+        ),
+        relatedKnowledgeNodeIds = setOf("node-1"),
+        reviewedTeachingReferences = listOf(teachingReference("node-1")),
+        knowledgeCodes = listOf(
+            TutorKnowledgeCode(
+                knowledgeNodeId = "node-1",
+                displayName = "导数符号",
+                role = TutorKnowledgeCodeRole.CONFIRMED_BINDING,
+            ),
+        ),
+    )
 
     private fun turn(stem: String, choice: String) = TutorTurnHistoryEntry(
         turnOrdinal = 1,

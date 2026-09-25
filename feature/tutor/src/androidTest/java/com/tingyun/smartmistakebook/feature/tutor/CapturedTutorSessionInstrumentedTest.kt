@@ -9,6 +9,7 @@ import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.doubleClick
 import androidx.compose.ui.test.junit4.StateRestorationTester
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -23,9 +24,13 @@ import com.tingyun.smartmistakebook.core.domain.LobbyMessageImage
 import com.tingyun.smartmistakebook.core.domain.LobbyMessageImageIntake
 import com.tingyun.smartmistakebook.core.domain.ModelTaskRepository
 import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
+import com.tingyun.smartmistakebook.core.domain.StudyCatalogEntry
 import com.tingyun.smartmistakebook.core.domain.StudyQuestionMemory
+import com.tingyun.smartmistakebook.core.domain.TutorAttachedQuestionReader
 import com.tingyun.smartmistakebook.core.domain.TutorAnswerExposureSurfaceKind
 import com.tingyun.smartmistakebook.core.domain.TutorTurnResponse
+import com.tingyun.smartmistakebook.core.model.AttachedRoundQuestion
+import com.tingyun.smartmistakebook.core.model.ContentBlock
 import com.tingyun.smartmistakebook.core.model.ModelExecutionLocation
 import com.tingyun.smartmistakebook.core.model.ModelTaskKind
 import com.tingyun.smartmistakebook.core.model.TutorConversationIds
@@ -33,6 +38,8 @@ import com.tingyun.smartmistakebook.core.model.ModelTaskRequest
 import com.tingyun.smartmistakebook.core.model.ModelTaskSnapshot
 import com.tingyun.smartmistakebook.core.model.ModelTaskStatus
 import com.tingyun.smartmistakebook.core.model.ProviderCapabilitySnapshot
+import com.tingyun.smartmistakebook.core.model.QuestionDocument
+import com.tingyun.smartmistakebook.core.model.SubjectKind
 import com.tingyun.smartmistakebook.core.model.TutorConceptMapScene
 import com.tingyun.smartmistakebook.core.model.TutorConceptRelation
 import com.tingyun.smartmistakebook.core.model.TutorFormulaDerivationScene
@@ -855,6 +862,188 @@ class CapturedTutorSessionInstrumentedTest : CapturedTutorSessionTestBase() {
         composeRule.runOnIdle { intakeState.value = RecordingImageIntake() }
 
         composeRule.onNodeWithTag("tutor_chat_attach").assertExists()
+    }
+
+    /**
+     * 加号菜单里的「从错题库选择」只在题面读取器接线时出现。
+     *
+     * 同 [theSessionOffersTheImageEntryOnlyWhenAnIntakeIsWired] 一条纪律：接线（app → 路由
+     * → 面板）漏掉任何一层，入口都会静默消失，学生看到的是"功能不见了"而不是报错。
+     * 这里让附图入口保持可用，好让"加号在不在"不干扰对**菜单项**的断言。
+     */
+    @Test
+    fun theLibraryPickerEntryAppearsOnlyWhenAReaderIsWired() {
+        val session = session()
+        val readerState = mutableStateOf<TutorAttachedQuestionReader?>(null)
+
+        composeRule.setContent {
+            MaterialTheme {
+                ReadyCapturedSession(
+                    session = session,
+                    clock = { 10_000L },
+                    saveInProgress = false,
+                    saveError = null,
+                    onSave = {},
+                    modelTasks = ChatModelTaskRepository(session),
+                    interactions = RecordingTutorInteractions(),
+                    conversations = emptyConversations(),
+                    profile = StudyProfileOverview(),
+                    imageIntake = RecordingImageIntake(),
+                    catalogEntries = listOf(catalogEntry()),
+                    attachedQuestionReader = readerState.value,
+                    onOpenModelSettings = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag("tutor_chat_attach").performClick()
+        // 没有读取器就没有这一项：一个点了不响应的入口比没有入口更糟。
+        composeRule.onNodeWithTag("session_attach_library").assertDoesNotExist()
+        composeRule.onNodeWithTag("session_attach_camera").assertExists()
+        composeRule.onNodeWithTag("session_attach_cancel").performClick()
+
+        composeRule.runOnIdle { readerState.value = FakeAttachedQuestionReader { null } }
+
+        composeRule.onNodeWithTag("tutor_chat_attach").performClick()
+        composeRule.onNodeWithTag("session_attach_library").assertExists()
+        composeRule.onNodeWithText("从错题库选择").assertExists()
+    }
+
+    /**
+     * 选中一道错题 → 它成为这一轮的题锚 → 随消息带出 → 带出后清空。
+     *
+     * 这里断言的是**派发出去的请求**，不是界面文字：界面上出现「本题：…」只说明状态变了，
+     * 真正要保证的是模型收到的就是这道题（`attachedQuestion`），且本地写门控在模型没有
+     * 复述题锚时有回退来源（`knownRoundQuestion` 是本轮菜单里的那一条）。
+     */
+    @Test
+    fun aPickedLibraryQuestionBecomesTheRoundsAnchorAndClearsAfterSending() {
+        val session = session()
+        val modelTasks = ChatModelTaskRepository(session)
+        val entry = catalogEntry()
+        val attached = attachedQuestion(entry)
+
+        composeRule.setContent {
+            MaterialTheme {
+                ReadyCapturedSession(
+                    session = session,
+                    clock = { 10_000L },
+                    saveInProgress = false,
+                    saveError = null,
+                    onSave = {},
+                    modelTasks = modelTasks,
+                    interactions = RecordingTutorInteractions(),
+                    conversations = emptyConversations(),
+                    profile = StudyProfileOverview(),
+                    catalogEntries = listOf(entry),
+                    attachedQuestionReader = FakeAttachedQuestionReader { read ->
+                        attached.takeIf { read.problemId == entry.problemId }
+                    },
+                    onOpenModelSettings = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag("tutor_chat_attach").performClick()
+        composeRule.onNodeWithTag("session_attach_library").performClick()
+        composeRule.onNodeWithTag("session_picker_item_${entry.problemId}").performClick()
+
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithTag("session_attached_question")
+                .fetchSemanticsNodes()
+                .size == 1
+        }
+        composeRule.onNodeWithText("本题：${attached.title}").assertExists()
+
+        composeRule.onNodeWithTag("tutor_chat_composer").performTextInput("这道题怎么入手？")
+        composeRule.onNodeWithTag("tutor_chat_send").assertIsEnabled().performClick()
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            modelTasks.respondTasks.value.singleOrNull()?.status == ModelTaskStatus.SUCCEEDED
+        }
+
+        composeRule.runOnIdle {
+            val input = modelTasks.respondRequests.single().input as TutorRespondInput
+            assertEquals(attached, input.attachedQuestion)
+            // 附加题同时是本轮的候选与已知锚：模型不必复述题锚，写门控也认得出这一轮讲哪道。
+            assertEquals(attached.toCandidate(), input.knownRoundQuestion)
+            assertTrue(input.boundQuestionCandidates.contains(attached.toCandidate()))
+        }
+        // 随这次派发带出后清空：下一轮不能悄悄还带着上一轮附加的题。
+        composeRule.onNodeWithTag("session_attached_question").assertDoesNotExist()
+    }
+
+    /**
+     * 题面读不出来时如实说，不把一条没有题面的「添加」带进请求。
+     */
+    @Test
+    fun aFailedLibraryReadTellsTheStudentInsteadOfAttachingNothing() {
+        val session = session()
+        val entry = catalogEntry()
+
+        composeRule.setContent {
+            MaterialTheme {
+                ReadyCapturedSession(
+                    session = session,
+                    clock = { 10_000L },
+                    saveInProgress = false,
+                    saveError = null,
+                    onSave = {},
+                    modelTasks = ChatModelTaskRepository(session),
+                    interactions = RecordingTutorInteractions(),
+                    conversations = emptyConversations(),
+                    profile = StudyProfileOverview(),
+                    catalogEntries = listOf(entry),
+                    attachedQuestionReader = FakeAttachedQuestionReader { null },
+                    onOpenModelSettings = {},
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag("tutor_chat_attach").performClick()
+        composeRule.onNodeWithTag("session_attach_library").performClick()
+        composeRule.onNodeWithTag("session_picker_item_${entry.problemId}").performClick()
+
+        composeRule.onNodeWithTag("session_attach_failed").assertExists()
+        composeRule.onNodeWithTag("session_attached_question").assertDoesNotExist()
+    }
+
+    private fun catalogEntry() = StudyCatalogEntry(
+        entryId = "entry-1",
+        problemId = "problem-1",
+        problemRevisionId = "revision-1",
+        practiceUnitId = "practice-1",
+        subject = "MATH",
+        title = "导数与单调性",
+        problemMarkdown = "题面",
+        sourceKey = null,
+        isCuratedExample = false,
+        chapterLabels = listOf("函数"),
+        knowledgeLabels = listOf("导数"),
+        nextReviewAtEpochMillis = null,
+        retrievability = null,
+    )
+
+    private fun attachedQuestion(entry: StudyCatalogEntry) = AttachedRoundQuestion(
+        problemId = entry.problemId,
+        problemRevisionId = entry.problemRevisionId,
+        revisionNumber = 2,
+        subject = SubjectKind.MATH,
+        title = "附加：${entry.title}",
+        questionDocument = QuestionDocument(
+            id = "question-attached",
+            blocks = listOf(ContentBlock.Paragraph("stem-attached", "附加题面：求单调区间")),
+        ),
+    )
+
+    /**
+     * 替身：`TutorAttachedQuestionReader` 是 suspend 的 fun interface，直接写字面量也行，
+     * 但用具名参数避免与覆写方法同名（同名时 `read(entry)` 解析到覆写方法自身，
+     * 会变成无限递归——这条踩过）。
+     */
+    private class FakeAttachedQuestionReader(
+        private val delegate: suspend (StudyCatalogEntry) -> AttachedRoundQuestion?,
+    ) : TutorAttachedQuestionReader {
+        override suspend fun read(entry: StudyCatalogEntry): AttachedRoundQuestion? = delegate(entry)
     }
 
     /**

@@ -968,6 +968,37 @@ class TutorTasksTest {
         )
     }
 
+    @Test
+    fun anAttachedQuestionWithoutAnyKnownAnchorIsRejectedAtConstruction() {
+        // 显式添加的题**就是**本轮的题锚：只给 attachedQuestion 而不给 knownRoundQuestion，
+        // 提示词会按所附之题讲，写门控与答案暴露却按"无题轮"走——同一轮出现两个事实。
+        val rejected = runCatching {
+            respondInput().copy(
+                attachedQuestion = attachedQuestion("problem-attached", "revision-attached"),
+            )
+        }
+
+        assertTrue(rejected.isFailure)
+    }
+
+    @Test
+    fun anAttachedQuestionMissingFromTheRoundMenuIsRejectedByTheKnownAnchorGuard() {
+        // 附加题与已知锚一致，但菜单里没有它：菜单是"模型能指哪几道"的选项集，锚不在菜单内
+        // 意味着模型无论怎么声明都核不过（写门控只能回退到锚）。这条必须**构造期**就拦，
+        // 否则派发出去的是一条本地无法核认的请求。
+        val rejected = runCatching {
+            respondInput().copy(
+                boundQuestionCandidates = listOf(
+                    relatedCandidate("problem-other", "revision-other"),
+                ),
+                knownRoundQuestion = relatedCandidate("problem-attached", "revision-attached"),
+                attachedQuestion = attachedQuestion("problem-attached", "revision-attached"),
+            )
+        }
+
+        assertTrue(rejected.isFailure)
+    }
+
     private fun request(): ModelTaskRequest {
         val provider = provider()
         return ModelTaskRequest(
@@ -1048,6 +1079,35 @@ class TutorTasksTest {
             ),
         ),
         requestedMove = TutorMoveType.DEEPEN_REASONING,
+    )
+
+    private fun relatedCandidate(
+        problemId: String,
+        problemRevisionId: String,
+    ) = RelatedProblemCandidate(
+        problemId = problemId,
+        problemRevisionId = problemRevisionId,
+        subject = SubjectKind.MATH,
+        title = "候选题 $problemId",
+        questionDocument = QuestionDocument(
+            id = "question-$problemId",
+            blocks = listOf(ContentBlock.Paragraph("stem", "求 $problemId 的单调区间")),
+        ),
+    )
+
+    private fun attachedQuestion(
+        problemId: String,
+        problemRevisionId: String,
+    ) = AttachedRoundQuestion(
+        problemId = problemId,
+        problemRevisionId = problemRevisionId,
+        revisionNumber = 2,
+        subject = SubjectKind.MATH,
+        title = "附加题 $problemId",
+        questionDocument = QuestionDocument(
+            id = "question-$problemId",
+            blocks = listOf(ContentBlock.Paragraph("stem", "求 $problemId 的单调区间")),
+        ),
     )
 
     private fun respondOutput() = TutorRespondOutput(

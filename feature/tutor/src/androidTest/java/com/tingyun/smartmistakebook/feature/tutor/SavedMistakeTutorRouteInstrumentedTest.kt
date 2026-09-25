@@ -1,5 +1,6 @@
 package com.tingyun.smartmistakebook.feature.tutor
 
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.onNodeWithTag
@@ -26,6 +27,7 @@ import com.tingyun.smartmistakebook.core.domain.RecordTutorMoveCommand
 import com.tingyun.smartmistakebook.core.domain.RecordTutorSolutionExposureCommand
 import com.tingyun.smartmistakebook.core.domain.RevealTutorSolutionCommand
 import com.tingyun.smartmistakebook.core.domain.StudyProfileOverview
+import com.tingyun.smartmistakebook.core.domain.TutorAttachedQuestionReader
 import com.tingyun.smartmistakebook.core.domain.TutorConversationReference
 import com.tingyun.smartmistakebook.core.domain.TutorInteractionRepository
 import com.tingyun.smartmistakebook.core.domain.TutorTeachingReferenceRepository
@@ -149,9 +151,50 @@ class SavedMistakeTutorRouteInstrumentedTest {
         composeRule.runOnIdle { assertEquals(1, endRequests) }
     }
 
+    /**
+     * 加号菜单里的「从错题库选择」必须穿过路由的两层 composable 到会话面板。
+     *
+     * 同 D1/D2 一条纪律：路由拿得到读取器、却没往下传，入口就静默消失——真机上表现为
+     * "学生说好的选题功能在错题讲题页不见了"。所以这里渲染**路由自己**，并且让附图入口
+     * 保持关闭（本页不传 `imageIntake`），于是加号按钮的存在只可能来自读取器这一条原因。
+     */
+    @Test
+    fun theLibraryPickerEntryReachesTheSessionPanelOnTheSavedMistakePage() {
+        val readerState = mutableStateOf<TutorAttachedQuestionReader?>(null)
+        composeRule.setContent {
+            SmartMistakeBookTheme {
+                SavedMistakeTutorRoute(
+                    key = KEY,
+                    repository = savedMistakeRepository(),
+                    organizationRepository = confirmedOrganizationRepository(),
+                    teachingReferenceRepository = TutorTeachingReferenceRepository { _, _ ->
+                        emptyList()
+                    },
+                    modelTasks = SavedMistakeModelTasks(SavedMistakeReplyFixture()),
+                    interactions = inertInteractions(),
+                    profile = StudyProfileOverview(),
+                    // 读取器在组合里读状态，下面的 runOnIdle 才能把它接上（接线缺失的
+                    // 表现正是"入口从来不存在"，所以第一条断言就是 assertDoesNotExist）。
+                    attachedQuestionReader = readerState.value,
+                    onOpenModelSettings = {},
+                    onBack = {},
+                )
+            }
+        }
+        composeRule.onNodeWithTag("tutor_chat_attach").assertDoesNotExist()
+
+        composeRule.runOnIdle {
+            readerState.value = TutorAttachedQuestionReader { null }
+        }
+        composeRule.onNodeWithTag("tutor_chat_attach").assertExists()
+        composeRule.onNodeWithTag("tutor_chat_attach").performClick()
+        composeRule.onNodeWithTag("session_attach_library").assertExists()
+    }
+
     private fun setSavedMistakeScreen(
         modelTasks: ModelTaskRepository,
         attachedImageResolver: (suspend (AttachedImage) -> String?)? = null,
+        attachedQuestionReader: TutorAttachedQuestionReader? = null,
         onRequestSave: () -> Unit = {},
         onRequestEnd: () -> Unit = {},
     ) {
@@ -168,6 +211,7 @@ class SavedMistakeTutorRouteInstrumentedTest {
                     interactions = inertInteractions(),
                     profile = StudyProfileOverview(),
                     attachedImageResolver = attachedImageResolver,
+                    attachedQuestionReader = attachedQuestionReader,
                     onRequestSave = onRequestSave,
                     onRequestEnd = onRequestEnd,
                     onOpenModelSettings = {},

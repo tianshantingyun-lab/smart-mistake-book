@@ -920,7 +920,15 @@ internal fun TutorModelPanel(
                 } else {
                     null
                 },
-                attachmentPreview = if (pendingImages.isNotEmpty() || pendingAttachedQuestion != null) {
+                // attachReadFailed 也要留在这个槽里：读失败时既没有图也没有附加题，
+                // 只按前两者开门会让"读不到这道题的题面"这句话永远渲染不出来——学生点了
+                // 「从错题库选择」，界面上什么也没发生（本条件由
+                // CapturedTutorSessionInstrumentedTest#aFailedLibraryReadTellsTheStudentInsteadOfAttachingNothing 钉住）。
+                attachmentPreview = if (
+                    pendingImages.isNotEmpty() ||
+                    pendingAttachedQuestion != null ||
+                    attachReadFailed != null
+                ) {
                     {
                         Column(
                             modifier = Modifier.fillMaxWidth(),
