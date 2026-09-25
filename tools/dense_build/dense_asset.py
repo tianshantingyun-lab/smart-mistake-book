@@ -126,14 +126,40 @@ MODEL_PROFILES = {
         # 统计、不需要标定集）后，per-output-channel int8 的保真度回到 0.9991（docs 逐行最小）。
         # **关键是这条口径在 TFLite 里可承载**：存储仍是"每输出通道一个 scale 的 int8 权重"，
         # 激活侧多一个逐通道 fp32 `Mul`（转换链见 convert_onnx_to_tflite.py 的 tf_converter_drqt 路线）。
-        quantCaliber=dict(kind="perChannelMax+inputChannelRescale", rescaleAlpha=0.5,
+        # 量化口径（Stage-5 WP2 第三轮，全部实测；错误预算与消融见 README §8.3.3、§8.3.4）：
+        # ① 输入通道重标定 α=0.5（第二轮定的，不动）；
+        # ② **GPTQ 误差补偿**（`quant_error_compensation.py`）：同一张 int8 网格上换一种舍入，
+        #    G 加权权重重构误差中位降到 1/2.0 ⇒ docs 逐行 cosine 最小 0.998638 → 0.998993；
+        # ③ 12 个 `intermediate/dense`（FFN 第一层）权重加**二级同口径残差**（+28.3 MB），
+        #    实测这一份是同样体积里最划算的（同价的"全部 attention"只到 0.99919，它到 0.99941）
+        #    ⇒ docs 逐行 cosine 最小 0.999246（150 条最差行 + 90 查询的子集；全量判定见清单）。
+        # 嵌入表**不做**二级残差：实测只值 +5e-5（且与 GPTQ 叠加时在噪声内），不值那 16.6 MB。
+        quantCaliber=dict(kind="perChannelMax+inputChannelRescale+gptq+ffnResidual2",
+                          rescaleAlpha=0.5,
+                          embedLevels=1,
+                          residualMatmuls=("intermediate/dense",),
                           columnStatistic="max|W| over output channels（纯权重统计，无标定集）",
                           normalization="geometric mean（尺度整体保持在 1 附近）",
-                          note="per-output-channel int8 × 输入通道重标定（α=0.5）+ fp32 激活"),
-        # 该档的 `.tflite` 路线：**flatbuffer_direct 会把 int8 权重展开成 fp32 常量**
-        # （实测 341.6 MiB），所以 base 档走 TF 转换器的 dynamic-range 量化（权重仍存 int8、
-        # 激活 fp32、无 Flex 算子）——见 convert_onnx_to_tflite.py 的 `--route`。
-        tfliteRoute="tf_converter_drqt",
+                          errorCompensation=dict(
+                              method="gptq（逐列量化 + Hessian 误差补偿）",
+                              tool="tools/dense_build/quant_error_compensation.py",
+                              damping=0.01, calibrationRows=1024,
+                              calibrationSource="语料随机抽样的 surface（不含金标查询）",
+                              note="只改「取网格上哪个点」，网格（f、s）与编码链一字不改"),
+                          note="per-output-channel int8 × 输入通道重标定（α=0.5）+ GPTQ 误差补偿"
+                               "（同体积）+ FFN 第一层两级残差（+28.3 MB）；激活保持 fp32"),
+        # 该档的 `.tflite` 路线（见 convert_onnx_to_tflite.py 的 `--route`）：
+        # - `flatbuffer_direct`（小档的出货路线）**会把 int8 权重展开成 fp32 常量**，
+        #   base 档实测 341.6 MiB ⇒ 这条对小档成立、对大档不成立。
+        # - `tf_converter_drqt`（走 TF 转换器的 dynamic-range 量化）：小档实测 23.7 MiB、
+        #   base 档在 onnx2tf 的 `embeddings/Add_1` 上被布局启发式挡住（`Dimensions must be
+        #   equal, but are 512 and 768`）⇒ 这条对大档不成立（值保留在 `--route` 可选项里，
+        #   供小档/复现用）。
+        # - `flatbuffer_direct_keepint8`（**本档采用**）：与 flatbuffer_direct 同一条 onnx2tf
+        #   命令，只把入口换成"不折常量 DequantizeLinear"的包装 —— 权重以 int8 存储进
+        #   flatbuffer，`DEQUANTIZE` 由 op_builder 正常生成，数值与 int8 ONNX 同一条算式
+        #   （不再有第二次量化）。它消灭的失败 = 上面第一条的 341.6 MiB。
+        tfliteRoute="flatbuffer_direct_keepint8",
         # vocab.txt 与小档逐字节相同 ⇒ 冻结副本（含端侧 `knowledge/dense/` 里的那份）不动；
         # tokenizer.json 若覆盖成 base 的，会让 `gen_tokenizer_fixture.py` 的 pinned sha 与
         # 端侧既有 fixture 一起失效——而它的差异只在 normalizer.lowercase，被导出侧显式
@@ -144,19 +170,18 @@ MODEL_PROFILES = {
 
 # 仓库当前随包的那一档（`--model` 不带时的默认值）。
 #
-# **Stage-5 换件未落地，所以默认仍是 bge-small-zh-v1.5**：换件目标档 bge-base-zh-v1.5 的
-# 坐标/工具链都已就绪（`--model bge-base-zh-v1.5` 可整条链复算），但它过不了既有对拍门
-# ≥0.999——本档口径（per-output-channel int8 + 输入通道重标定 α=0.5）实测 docs 逐行 cosine
-# 最小 **0.998638**（差 0.00136）/ queries **0.999173**。缺口在**嵌入表**：docs 的最小值由
-# 2–4 个字的短文本行决定（没有"多 token 平均"，嵌入表的 int8 误差直接落到 CLS 上），
-# 同批行上"ONNX 图 vs 嵌入表未量化的同口径 torch 模拟"min 0.999292 ⇒ 权重侧已够好。
-# 注意第一轮的 0.9478/0.9676 是**另一个口径**（纯 per-output-channel、无重标定）的数；
-# 当时那条归因"MatMul 权重量化在 12 层 × 768 维上累积"已被第二轮推翻（同口径的小档
-# 4 层 × 512 维是 0.999010，只贴着门线过；两档**逐权重**相对误差几乎相同：matmul 中位
-# 0.00794 vs 0.00828 ⇒ 差不在实现）。
-# 随包资产（`.vec` / `.tflite` / `DenseRecallAssembly.VECTOR_ASSET_SHA256`）
-# 因此**一律未动**，默认档必须与随包那一档一致，否则"默认跑一遍"会拿 base 的查询向量去对
-# small 的资产（当场形状不符）。换件结论、判据与全阶段证据见 `docs/kb-stage5-report-2026-09-25.md`。
+# **默认档必须与"随包那一档"一致**：不带上 `--model` 跑任何脚本，都是在拿某一档的查询向量
+# 去对另一档的资产时才会发现的形状不符——所以默认值跟着**随包件**走，而不是跟着"最强的那档"走。
+#
+# 当前随包件（Stage-3 小档）没换过，所以默认仍是 bge-small-zh-v1.5。
+# 换件目标档 bge-base-zh-v1.5 的坐标/工具链/口径都已就绪（`--model bge-base-zh-v1.5` 可整条链复算），
+# 它的实测读数（全量 28,931 行，口径见该档 quantCaliber 与 README §8.3.4）：
+# - 编码器对拍（int8 ONNX vs torch fp32，门 ≥0.999）：docs **0.999128** / queries **0.999171** ✓
+# - 金标融合主集：**0.7889（71/90）**（写死判据 0.7444）
+# - `.tflite`：132,375,600 B / 无 Flex·CUSTOM；**宿主单条编码 p50 16,843 ms**（见 README §8.4.1）
+# **落不落地由 Stage-5 的写死判据判，不由本文件判**；本文件只保证"默认档 = 随包那一档"这个不变量。
+# 随包资产（`.vec` / 旁车 / `.tflite` / `DenseRecallAssembly` 常量）与它保持一致；
+# 清单顶层镜像同理，只由 `export_bge_int8.py --publish` 显式改写。
 DEFAULT_MODEL_KEY = "bge-small-zh-v1.5"
 
 

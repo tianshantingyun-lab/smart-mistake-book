@@ -216,7 +216,7 @@ build/tflite-venv/Scripts/python.exe tools/dense_build/freeze_onnx_static.py \
 | 档位 | repo / revision（钉死） | dim | 状态 |
 |---|---|---|---|
 | `bge-small-zh-v1.5`（默认，随包） | `BAAI/bge-small-zh-v1.5` @ `7999e1d3359715c523056ef9478215996d62a620` | 512 | Stage-3 小档，真机闭环已过 |
-| `bge-base-zh-v1.5` | `BAAI/bge-base-zh-v1.5` @ `f03589ceff5aac7111bd60cfc7d497ca17ecac65` | 768 | Stage-5 目标档（**本轮未落地**，见 8.3） |
+| `bge-base-zh-v1.5` | `BAAI/bge-base-zh-v1.5` @ `f03589ceff5aac7111bd60cfc7d497ca17ecac65` | 768 | Stage-5 目标档：整条链可复算，int8 对拍已过（§8.3.2）；**是否随包不由本文件判**（§8.6 记数，判据见阶段任务书） |
 
 - **路径名不随档变**：`.vec` / `.tflite` / 词表 / 消费侧常量引用的名字都不动，换件只换内容。
   只有 `build/dense-model/<档>-{fp32,int8}.onnx` 按档分名（文件名自带档位，避免"叫 small
@@ -284,10 +284,11 @@ min=0.999990；只量化 72 个 MatMul 权重时 min=0.967966、mean=0.981278。
   端到端（资产 vs 同档 torch fp32 参考）min **0.947695** / 中位 0.987518 —— 与模型自身的
   int8 偏差同量级（0.9478）⇒ "两层 int8"里**模型那一层**是主导。跑完即把随包 `.vec` / 旁车
   按备份原字节还原（sha 复核 `cdf93650…` / `01e631c0…`，`git status` 亦无改动）。
-- **随包侧一律未动**（截至本轮结束）：`.vec` / `.tflite` / `DenseRecallAssembly.VECTOR_ASSET_SHA256` /
-  默认档都保持 Stage-3 小档；bge-base 的坐标与工具链留在 `MODEL_PROFILES` 里，
-  随时可复算（`python tools/dense_build/export_bge_int8.py --model bge-base-zh-v1.5`）。
-  **落不落地按 §8.6 的写死判据判**（本文件不判）。
+- **随包侧一律未动**（截至第三轮结束仍如此，且第三轮的 base 档产物全部落在 `build/` scratch）：
+  `.vec` / 旁车 / `.tflite` / `DenseRecallAssembly.VECTOR_ASSET_SHA256` / 默认档都保持 Stage-3 小档；
+  bge-base 的坐标、口径与工具链留在 `MODEL_PROFILES` 里，随时可复算
+  （`export_bge_int8.py --model bge-base-zh-v1.5 --weights-ongrid <EC 产物>`）。
+  **落不落地由 Stage-5 的写死判据判**（§8.6 只记数）。
 
 ### 8.3.1 第二轮的根因收敛（实测，不是推断）
 
@@ -314,38 +315,105 @@ min=0.999990；只量化 72 个 MatMul 权重时 min=0.967966、mean=0.981278。
 把离群列先压平再量化，激活侧补一条 `Mul(A, 1/d)` —— 数学恒等、**不花体积**（实测 .onnx 102,989,680 B
 与改口径前同量级）。机制的直接证据：72 个矩阵的"列峰展布 max/median"最大者 **146.2 → 12.1**。
 
-### 8.3.2 本档口径的全量对拍与残留缺口（实测）
+### 8.3.2 本档口径的全量对拍（实测，逐轮）
 
 `python tools/dense_build/export_bge_int8.py --model bge-base-zh-v1.5`（ORT int8 图 vs torch fp32）：
 
-| 对拍（门 ≥0.999） | 第一轮（per-channel） | 本轮（重标定 α=0.5） |
+| 对拍（门 ≥0.999） | 第一轮（per-channel） | 第二轮（重标定 α=0.5） | **第三轮（+GPTQ 误差补偿 +FFN 两级残差）** |
+|---|---|---|---|
+| docs（28,931 行） | 0.947814 ✗ | 0.998638 ✗ | **0.999128 ✓** |
+| docs 均值 | 0.987600 | 0.999411 | **0.999699** |
+| queries（90 条） | 0.967579 ✗ | 0.999173 ✓ | **0.999171 ✓** |
+| 与同档离线臂交叉对拍 | 0.9478 / 0.9676 | 0.998638 / 0.999173 | **0.999128 / 0.999171** |
+
+### 8.3.3 第三轮的**错误预算**（在真 int8 ONNX 上实测，不是 torch 模拟）
+
+> 上一轮把残留缺口归因到"嵌入表"（依据是"ONNX 图 vs 嵌入表未量化的同口径 torch 模拟"的
+> 0.999292）。**这条归因被本轮实测推翻**：给嵌入表加两级残差（把它的误差几乎清零）
+> 只把 docs 最小值从 0.998638 抬到 0.998689（**+5.1e-5**）。缺口在 **MatMul 权重侧**。
+
+`build/wp2r3_ablate.py`（子集 = 上一轮最差 150 行 + 90 条查询；判定仍以全量 28,931 行为准）：
+
+| 实验 | 体积代价 | docs 逐行 cosine 最小 |
 |---|---|---|
-| docs（28,931 行） | 0.947814 ✗ | **0.998638 ✗（差 0.00136）** |
-| docs 均值 | 0.987600 | **0.999411** |
-| queries（90 条） | 0.967579 ✗ | **0.999173 ✓** |
-| 与同档离线臂交叉对拍 | 0.9478 / 0.9676 | 0.998638 / 0.999173 |
+| 重标定 α=0.5（第二轮口径） | — | 0.998638 |
+| + 嵌入表两级残差 | +16.6 MB | 0.998689（+5.1e-5） |
+| 把任意**一层**的 6 个 MatMul 留 fp32 | +21 MB/层 | 0.998567 … 0.998890（**没有单独敏感层**，且 L4 反而更差） |
+| 把**全部** MatMul 换成两级残差 | +85 MB | 0.999962（上限确实很高，但件会到 188 MB） |
+| **GPTQ 误差补偿**（`quant_error_compensation.py`，不改体积） | 0 | 0.998993 |
+| **GPTQ + 12 个 `intermediate/dense` 两级残差** | +28.3 MB | **0.999409**（全量实测 0.999128） |
 
-**残留缺口的来源（实测归因）**：docs 的最小值由 **2–4 个字的短文本行**决定
-（`单质` / `酰胺` / `电离` / `超重的判断` / `波的多解成因`）。短文本没有"多 token 平均"，
-**嵌入表的 int8 误差**直接落到 CLS 上：同一批行上"ONNX 图 vs 同口径 torch 模拟（模拟里嵌入表未量化）"
-逐行 cosine min **0.999292** ⇒ 权重侧已经够好，缺口在嵌入表。已试的嵌入表口径都无增益：
-每 token 一个 scale（per-row）0.998906（更差）、per-column MSE 裁剪 0.999430（≈同分）。
+同一批体积里，"给 FFN 第一层加残差"比"给全部 attention 加残差"划算（同价：0.999409 vs 0.999192）。
+误差是**逐层累积**的（12 层 × 6 个矩阵各自只值 ~1e-4，合起来 1.36e-3），所以"补精度"要按**层**铺开，
+而**误差补偿**（同一张 int8 网格上换一种舍入，把已舍入部分的误差反向推给还没量化的权重）是**不花体积**的那一档。
 
-**未走的两条最短补齐路径**（下一轮若要把 docs 也抬过 0.999）：
-① 嵌入表（21,128×768）留 fp32：+48.7 MB ⇒ 件 ~151 MB；② 嵌入表用"int8 + int8 残差"两级码
-（`Gather(q1)·s1 + Gather(q2)·s2`，ONNX 与 TFLite 都只有 GATHER/MUL/ADD 内置算子）：+16.2 MB ⇒ 件 ~119 MB。
+### 8.3.4 采用的口径与"中途放弃过的候选"
 
-### 8.4 两条 `.tflite` 路线：体积/算子/端侧可跑性（实测）
+采用（写进 `MODEL_PROFILES["bge-base-zh-v1.5"]["quantCaliber"]`）：
 
-`convert_onnx_to_tflite.py --route` 有两条路，差别**只在体积**（数值口径同一条）：
+1. 输入通道重标定 α=0.5（第二轮定的，**不动**）；
+2. **GPTQ 误差补偿**（`tools/dense_build/quant_error_compensation.py`）：标定集 = 语料随机抽的
+   1,024 条 surface（**不含金标查询**），`H = G' + λI`、λ = 0.01·mean(diag G')；
+   72 个矩阵的 G 加权权重重构误差 min 0.68× / **中位 1.35×** / max 20.28×
+   （GPTQ 只换"取网格上哪个点"，`f`/`s` 与编码链一字不改）；
+3. 12 个 `intermediate/dense` 权重加**二级同口径残差**（`T' = q1·s1 + q2·s2`，+28.3 MB）。
+
+放弃过的候选（都是实测，记录在此以免下一轮重复走）：
+
+| 候选 | 实测 | 为什么不用 |
+|---|---|---|
+| λ=0.002 / 0.0005 | G-MSE 中位 0.85× / 0.40×（**比不补偿更差**）、docs 0.998729 / 0.995147 | G 的近奇异方向被放大，补偿量漂到网格外 |
+| λ=0.03 | G-MSE 中位 **1.61×**（比 λ=0.01 的 1.35× 好）、但子集 docs 0.998955 | **两个指标打架**：G-MSE 偏好 0.03、真正的门（docs 逐行余弦最小）偏好 0.01（0.998993）。两者差值 ~4e-5 已在子集噪声量级，**按门指标选了 λ=0.01**（全量复算见 §8.3.2：0.999128 过门） |
+| 嵌入表两级残差 | +5.1e-5，与 GPTQ 叠加时在噪声内 | 不值 16.6 MB |
+| 全部 attention 加残差 | 0.999192（同价下不如 FFN 第一层） | 同价劣于 FFN 方案 |
+
+### 8.4 三条 `.tflite` 路线：体积/算子/端侧可跑性（实测）
+
+`convert_onnx_to_tflite.py --route` 有三条路，差别**只在"int8 权重怎么落进 flatbuffer"**（数值口径同一条）：
 
 | 路线 | 命令要点 | 小档实测 | base 档实测 |
 |---|---|---|---|
 | `flatbuffer_direct`（Stage-3 出货路线） | `-tb flatbuffer_direct -nuo` | 62.4 MB（随包那件，真机闭环过） | **341.6 MiB**：flatbuffer_direct 把 int8 权重**展开成 fp32 常量**（只有嵌入表留 int8） |
 | `tf_converter_drqt`（本轮新增） | `-tb tf_converter -odrqt -rtpo erf -nuo` | **23.7 MiB**（`*_dynamic_range_quant.tflite`，权重 int8 存储、无 Flex/CUSTOM 算子，算子自检写进脚本） | **本轮转换被阻塞**：onnx2tf 的 tf_converter 路把 3-D 中间张量按 NCHW 误判后转置，`wa/backbone_module/embeddings/Add_1` 报 `Dimensions must be equal, but are 512 and 768`（`-kat input_ids attention_mask token_type_ids` 无效；原始错误在 `build/odrqt-test/*.log`）。按 int8 ONNX 的权重 payload 估算，该路线落地件应 ≈ **103 MB**（**估算，非实测**） |
 
+### 8.4.1 第三轮新增：`flatbuffer_direct_keepint8`（base 档真正跑通的那条）
+
+第三条路 `flatbuffer_direct_keepint8`：与 `flatbuffer_direct` **同一条 onnx2tf 命令**，只把入口换成
+`onnx2tf_keep_weight_int8.py` —— 它在**进程内**把 `constant_fold_a5` 规则的 `_FOLDABLE_OPS` 摘掉
+`DequantizeLinear`（不改 site-packages、不改其余任何预处理），于是"int8 权重 + DequantizeLinear"
+不再被折成 fp32 常量，权重以 **int8 存储**进 flatbuffer，`DEQUANTIZE` 由
+`tflite_builder/op_builders/quantize_linear.py` 正常生成。
+
+**它消灭的具体失败**：`flatbuffer_direct` 出的 base 件是 **341.6 MiB**（int8 权重被展开成 fp32），
+远超"约 100 MB 级"的档位目标。极小等价图上的探针（`build/wp2r3_int8_probe.py`）：
+不带包装 13,004 B / 只有 `BATCH_MATMUL` / dtype 直方图无 int8 ⇒ 带包装 4,536 B /
+`DEQUANTIZE`+`BATCH_MATMUL` / 出现 int8 ⇒ 折叠点被准确定位并关掉。
+两级残差的图（`build/wp2r3_int8_probe2.py`）同样保住：`DEQUANTIZE`×2 + `ADD` + `BATCH_MATMUL`，
+6,144 个 int8 元素（两级各 3,072）。
+
+**base 档实测（本轮，最终口径 = §8.3.4）**：
+
+| 项 | 实测 |
+|---|---|
+| 产物 | `build/tflite-work/bge-base-zh-v1.5/out/static-512-sim_float32.tflite` |
+| 体积 | **132,375,600 B（126.2 MiB）** —— 在 ~100–130 MB 目标内 |
+| sha256 | `45fe2cb7936b1f498f391f03a767e25affc6346b208fc92c29f4539f8bc7c518` |
+| 权重存储 | 88 个大块 int8 张量 / 130,652,160 个元素（124.6 MiB）—— 脚本当场断言 ≥1e7，防折叠回归 |
+| 算子 | 871 个，**无 Flex / 无 CUSTOM**（`DEQUANTIZE` 87 / `ADD` 187 / `GELU` 12 内置） |
+| 输入 / 输出 | `[1,512] int64` ×3（ids/mask/token_type_ids）→ `sentence_embedding [1,768] float32` |
+| 源件未被就地改写 | `bge-base-zh-v1.5-int8.onnx` sha `1994768d776b8684` UNCHANGED |
+
+> **⚠ 同机同形态宿主耗时：p50 16,843 ms / p95 17,051 ms**（n=12，逐条 + PAD 512 + 掩码）。
+> 小档同形态的宿主数是 **2,545 ms**（权重展开成 fp32 的随包件）/ 856 ms（`tf_converter_drqt` 的
+> hybrid 内核件）。比值 6.7× 与该档/小档的 FLOPs 比（~6.75×）一致 ⇒ **这条路线的"int8 存储"是靠
+> `DEQUANTIZE` 算子把权重每次推理都还原成 fp32 做到的，没有 hybrid int8 内核**，所以体积回到 int8 量级、
+> 速度**没有**回到 int8 量级。按小档的宿主→真机比例（2,545 ms → 71 ms，~36×）外推，
+> base 档真机单条约 **470 ms**，高于判据 ② 的 213 ms 硬线（**外推，不是真机实测**）。
+> 也因此，判据 ② 里"宿主端单条编码 ≤1.5 s 量级"这条目标对 base 档**按算术不可能达成**：
+> 即便按小档 `tf_converter_drqt` 的 856 ms 与 6.75× FLOPs 比，下限也在 5.8 s 量级。
+
 ⇒ "tflite 回到 int8 量级"在**小档上已实测成立**（23.7 MiB vs 展开后的 62.4 MB），
-base 档还差一次转换链适配（不改口径、不改数值）。
+base 档在**体积**上本轮已成立（126.2 MiB），在**宿主耗时**上不成立（见上面的 ⚠）。
 
 **同机同形态的宿主耗时**（同一批 6 条查询文本、逐条 + PAD 512 + 掩码，Python LiteRT）：
 
@@ -394,24 +462,33 @@ base 档还差一次转换链适配（不改口径、不改数值）。
 真机 71ms 会变成 **≈350–550ms**，与判据 ②（≤213ms，现役 3 倍）差得很远。**这只是旁证**：
 真机数必须在真机上量，本轮没有真机。
 
-### 8.6 落地判据与当前状态（判据写死，本文件只记录）
+### 8.6 当前状态的**实测读数**（判据写死，本文件只记录数，不做判定）
 
-Stage-5 换件的写死判据 = **① 编码器对拍 ≥0.999** 且 **② 量化模型的金标融合主集 ≥0.7444**
-（同一冻结金标 `7c004b76…`、D1 形态、生产词面腿、α=0.5）。两条都过才允许覆盖
-模型件 / 向量资产 / 装配常量。**本轮实测（量化模型 = 本档 int8 ONNX，口径 = §8.3.1 的重标定 α=0.5）**：
+这一节只放"本档今天量到多少"。**落不落地由 Stage-5 的写死判据判，不由本文件判**；
+本文件的职责是把每次跑出来的坐标/哈希/数留在原地，让判定可复核。
 
-| 判据 | 实测 | 结论 |
-|---|---|---|
-| ① 编码器对拍（docs 28,931 / queries 90，门 ≥0.999） | docs **0.998638** / queries **0.999173** | **不过**（docs 差 0.00136；缺口来源见 §8.3.2） |
-| ② 金标融合主集（`build/wp2_golden_candidate.py`，判分器 import 自 `stage3_expectation.py`） | 主集 **0.7889（71/90）** / 逐章最小 0.4444 / MRR **0.6343**（fp32 臂同为 0.7889/0.4444/0.6343 ⇒ 这一档量化**不损失**金标或 MRR） | 过 |
+| 项 | 第三轮实测（口径 = §8.3.4，全量 28,931 行） |
+|---|---|
+| 编码器对拍（int8 ONNX vs torch fp32，门 ≥0.999） | docs **0.999127567** ✓ / queries **0.999171495** ✓ |
+| 金标融合主集（`build/wp2_golden_candidate.py`，判分器 import 自 `stage3_expectation.py`） | **0.7889（71/90）** / 逐章最小 0.4444 / MRR 0.6269 |
+| 同档离线臂交叉对拍 | `bgebase-docs.npy` 0.999128 / `bgebase-queries.npy` 0.999171 |
+| `.tflite` 体积 / 算子 | 132,375,600 B（126.2 MiB）/ 无 Flex·CUSTOM |
+| `.tflite` 宿主单条编码（PAD 512，n=12） | p50 **16,843 ms**（收尾复测 **17,437 ms**，n=12，min 17,144 / max 17,930） |
+| 转换保真（tflite vs int8 ONNX，290 条） | 见 `build/wp2r3-parity-final.log`（跑完即写；§7.1 那条门） |
+| 该档 `.vec`（scratch，**未覆盖随包件**） | 28,931 × 768 int8、**24,574,209 B**、sha256 `4484a739e351bbd5…`；资产还原 vs int8 模型输出 min 0.999404 / 中位 0.999752 |
 
-⇒ 判据 ① 不过 ⇒ **随包侧不动**（模型件 / `.vec` / 旁车 / `VECTOR_ASSET_SHA256` 都保持小档原样），
-按 Stage-5 的记账口径记"**未落地**"。这不是本文件的结论，是判据的结论。
+**随包侧（截至本轮结束）逐字节仍是 Stage-3 小档**：`bge-small-zh-v1.5-int8.tflite` 62,396,488 B /
+`015b2315…`、`bge-small-zh-int8.vec` 17,167,873 B / `cdf93650…`（== `DenseRecallAssembly.kt:90`）、
+旁车 `01e631c0…`。本轮的 base 档产物全部落在 `build/`（scratch），
+`modelEntries["bge-base-zh-v1.5"]` 记了它的坐标/哈希/口径；清单**顶层镜像**仍是随包那一档
+（`export_bge_int8.py` 的顶层镜像只在显式 `--publish` 时改写 —— 对拍过 ≠ 已随包，
+镜像必须与随包资产在同一次动作里改，否则 dense 门当场红）。
 
-**收尾状态（2026-09-25，Stage-5 WP5b 复核）**：随包侧逐字节仍是 Stage-3 小档——
-`bge-small-zh-v1.5-int8.tflite` 62,396,488 B / `015b2315…`、`bge-small-zh-int8.vec` 17,167,873 B / `cdf93650…`
-（== `DenseRecallAssembly.kt:90`）、旁车 `01e631c0…`，`git diff --stat HEAD` 在这三个路径上 0 行 ⇒ **回退清单 = 0 个文件**
-（从未覆盖过，故无 `git checkout` 可执行）。判据 ③（门重定标只在 ①② 都过后做）因此**未触发**，
-既有墙钟门（融合 150/250ms）与旧门（纯词面 p95 <150ms，**不撤**）**一字未改**。
-延迟硬线（≤213ms）对 base 档**未测**（件未落地），§8.5 的 7.65× **只是宿主旁证**。
-全阶段证据、换件清单（字节 + sha）、回退逐项复核与 UNVERIFIED 见 `docs/kb-stage5-report-2026-09-25.md`。
+全阶段证据、换件清单（字节 + sha）、未验证项见 **`docs/kb-stage5-report-2026-09-25.md`**（本文件的
+base 档 scratch 读数与它的 §3/§4 同源）。**Stage-5 结局（第三轮后定论）**：判据①编码器对拍与金标
+融合主集**都过**，判据②真机单条编码 p50 ≤213ms **不达**——宿主同形态同机复测 base 档 **p50 17,437 ms**
+vs 小档 **2,582 ms**（比值 **6.75×** = 两档 FLOPs 比），按小档"宿主 2,545 ms → 真机 71 ms（≈36×）"
+外推，base 档真机 **≈470–485 ms**（**外推，真机数不存在**）⇒ **按判据不落地**，随包侧逐字节保持小档
+（回退清单 0 个文件），判据③（门重定标）未触发、旧门一字未改。落地待共享工作树恢复：
+本轮 Kotlin 侧编译/测试被另一条会话在 `core/database` 的飞行改动阻断（KSP `MissingType`），
+"换件后必跑的真机硬门"因此无法执行（UNVERIFIED，外部阻塞）。

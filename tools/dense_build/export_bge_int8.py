@@ -177,7 +177,9 @@ class SentenceEncoder:
         return _Encoder()
 
 
-def quantize_weights_only(fp32_path, int8_path, rescale_alpha=0.0) -> dict:
+def quantize_weights_only(fp32_path, int8_path, rescale_alpha=0.0, embed_levels=1,
+                          skip_matmul_containing=(), residual_matmul_containing=(),
+                          residual_matmul_all=False) -> dict:
     """**权重-only int8（per-channel 对称）+ fp32 计算**——本阶段的产物路线。
 
     逐节点、可复核地做一件事：`MatMul(A, B)` 里 B 若是常量权重，就把 B 换成
@@ -199,6 +201,16 @@ def quantize_weights_only(fp32_path, int8_path, rescale_alpha=0.0) -> dict:
     每输出通道的最大值定，**先压掉离群列的动态范围**再量化，误差会小一个量级（实测见 README §8.6：
     bge-base 逐行 cosine 最小 0.9478 → 0.999112）。激活侧那条 `Mul` 是逐通道 fp32、常量在
     TFLite 里不被量化 ⇒ 存储仍是"每输出通道 1 字节 + 一个 scale"，**这条改进不花体积**。
+
+    `embed_levels`（Stage-5 WP2 第三轮新增）：嵌入表的**残差两级编码**，2 = 开。
+    **它消灭的具体失败**：重标定 α=0.5 之后 docs 的逐行 cosine 最小仍只有 0.998638（差 0.00136），
+    缺口全部来自嵌入表 —— docs 的最小值由 2–4 个字的短文本行决定（没有"多 token 平均"，
+    嵌入表的 int8 误差直接落到 CLS 上；同批行上"嵌入表未量化"的同口径模拟 min 0.999292）。
+    做法：一级仍是**逐列**对称 int8（口径一字不改，`s1 = max|列|/127`），残差
+    `R = T - q1·s1` 再用同一口径编码成 `s2/q2`，还原式变成
+    `T' = q1·s1 + q2·s2`（图上是 `Gather→DequantizeLinear` 两条 + 一条 `Add`，
+    全是内置算子，ONNX 与 TFLite 都承载得住）。逐列误差上界从 `s1/2` 降到 `s2/2 ≈ s1/508`。
+    代价：多一张 int8 表 —— bge-base 的嵌入表 21,128×768 实测 +16.2 MB。
     """
     import onnx
     from onnx import helper, numpy_helper
@@ -215,6 +227,19 @@ def quantize_weights_only(fp32_path, int8_path, rescale_alpha=0.0) -> dict:
     dq_after: dict = {}
     rescaled = 0
     rescale_rows = []
+    residual_matmul_names = []
+    residual_matmul_bytes = 0
+    residual_matmul_extra_nodes = 0
+    def wants_residual(name: str) -> bool:
+        """这个权重要不要做"两级残差"编码。
+
+        `residual_matmul_all` 全开；`residual_matmul_containing` 按名字片段选（用来只给
+        **经过实测确认贡献最大**的那几层加精度——见 README §8.3.3 的错误预算表）。
+        """
+        if residual_matmul_all:
+            return True
+        return any(token in name for token in residual_matmul_containing)
+
     for node in model.graph.node:
         if node.op_type != "MatMul" or len(node.input) != 2:
             continue
@@ -223,6 +248,11 @@ def quantize_weights_only(fp32_path, int8_path, rescale_alpha=0.0) -> dict:
         if weight is None:
             left_float += 1
             left_reasons.append("%s: B 不是常量初始化器（激活×激活）" % node.name)
+            continue
+        if any(token in node.name for token in skip_matmul_containing):
+            # 消融用：这一层的权重完全不量化（留 fp32）。用来量"某一层对误差的贡献"。
+            left_float += 1
+            left_reasons.append("%s: 被 skip_matmul_containing 排除（消融）" % node.name)
             continue
         array = numpy_helper.to_array(weight)
         if array.ndim != 2:
@@ -260,8 +290,28 @@ def quantize_weights_only(fp32_path, int8_path, rescale_alpha=0.0) -> dict:
         new_initializers.append(numpy_helper.from_array(quantized, q_name))
         new_initializers.append(numpy_helper.from_array(scale, s_name))
         pending = [] if mul_node is None else [mul_node]
-        pending.append(helper.make_node("DequantizeLinear", [q_name, s_name], [dq_name],
-                                        name=weight_name + "_dequant"))
+        if wants_residual(node.name):
+            # 两级残差（与嵌入表同一套办法）：一级口径一字不改，残差同口径再编码一次。
+            residual = array - quantized.astype(np.float32) * scale[None, :]
+            peak2 = np.abs(residual).max(axis=0)
+            scale2 = np.where(peak2 > 0.0, peak2 / 127.0, 1.0).astype(np.float32)
+            quantized2 = np.rint(residual / scale2[None, :]).clip(-127.0, 127.0).astype(np.int8)
+            q2_name, s2_name = weight_name + "_int8_r2", weight_name + "_scale_r2"
+            dq1_name, dq2_name = weight_name + "_deq_r1", weight_name + "_deq_r2"
+            new_initializers.append(numpy_helper.from_array(quantized2, q2_name))
+            new_initializers.append(numpy_helper.from_array(scale2, s2_name))
+            pending.append(helper.make_node("DequantizeLinear", [q_name, s_name], [dq1_name],
+                                            name=weight_name + "_dequant_r1"))
+            pending.append(helper.make_node("DequantizeLinear", [q2_name, s2_name], [dq2_name],
+                                            name=weight_name + "_dequant_r2"))
+            pending.append(helper.make_node("Add", [dq1_name, dq2_name], [dq_name],
+                                            name=weight_name + "_residual_add"))
+            residual_matmul_names.append(node.name)
+            residual_matmul_bytes += int(quantized2.nbytes + scale2.nbytes)
+            residual_matmul_extra_nodes += 2
+        else:
+            pending.append(helper.make_node("DequantizeLinear", [q_name, s_name], [dq_name],
+                                            name=weight_name + "_dequant"))
         dq_before[node.name] = pending
         node.input[1] = dq_name
         replaced_weights.add(weight_name)
@@ -275,6 +325,8 @@ def quantize_weights_only(fp32_path, int8_path, rescale_alpha=0.0) -> dict:
     # Gather(data(V,C), indices(S..), axis=0) 的输出形状是 indices.shape + (C,) ⇒ 最后一维就是 C。
     embed_converted = 0
     embed_skipped = []
+    embed_residual_tables = []
+    embed_residual_bytes = 0
     for node in model.graph.node:
         if node.op_type != "Gather" or not node.input:
             continue
@@ -302,9 +354,38 @@ def quantize_weights_only(fp32_path, int8_path, rescale_alpha=0.0) -> dict:
         node.input[0] = q_name
         node.output[0] = gathered_tmp
         # 注意方向：这条 DequantizeLinear 要排在 Gather **之后**（它吃 Gather 的输出）
-        dq_after[node.name] = helper.make_node(
+        dequant_nodes = [helper.make_node(
             "DequantizeLinear", [gathered_tmp, s_name], [original_output],
-            name=table_name + "_dequant", axis=-1)
+            name=table_name + "_dequant", axis=-1)]
+        if embed_levels >= 2:
+            # 二级残差（见 docstring）：一级的还原值先在 numpy 侧算出来，残差同口径再编码一次。
+            # 一级口径**一字不改**（仍是 per-column max/127），所以开与不开只差"多出来的一级"，
+            # 不是换了一套口径。
+            residual = array - quantized.astype(np.float32) * scale[None, :]
+            peak2 = np.abs(residual).max(axis=0)
+            scale2 = np.where(peak2 > 0.0, peak2 / 127.0, 1.0).astype(np.float32)
+            quantized2 = np.rint(residual / scale2[None, :]).clip(-127.0, 127.0).astype(np.int8)
+            q2_name, s2_name = table_name + "_int8_r2", table_name + "_scale_r2"
+            gathered2 = node.output[0] + "_int8out_r2"
+            deq1 = node.output[0] + "_deq_r1"
+            deq2 = node.output[0] + "_deq_r2"
+            new_initializers.append(numpy_helper.from_array(quantized2, q2_name))
+            new_initializers.append(numpy_helper.from_array(scale2, s2_name))
+            # 一级的 DequantizeLinear 改成写到 deq1（原来的输出名留给最后的 Add）
+            dequant_nodes = [
+                helper.make_node("DequantizeLinear", [gathered_tmp, s_name], [deq1],
+                                 name=table_name + "_dequant_r1", axis=-1),
+                helper.make_node("Gather", [q2_name, node.input[1]], [gathered2],
+                                 name=table_name + "_gather_r2", axis=0),
+                helper.make_node("DequantizeLinear", [gathered2, s2_name], [deq2],
+                                 name=table_name + "_dequant_r2", axis=-1),
+                helper.make_node("Add", [deq1, deq2], [original_output],
+                                 name=table_name + "_residual_add"),
+            ]
+            embed_residual_tables.append(table_name)
+            embed_residual_bytes += int(quantized2.nbytes + scale2.nbytes)
+        # Gather 之后要按序插的节点（一级时 1 条，两级时 4 条）——顺序必须是拓扑序。
+        dq_after[node.name] = dequant_nodes
         replaced_weights.add(table_name)
         embed_converted += 1
     converted += embed_converted
@@ -316,10 +397,13 @@ def quantize_weights_only(fp32_path, int8_path, rescale_alpha=0.0) -> dict:
         for pending in dq_before.get(node.name, ()):
             ordered.append(pending)
         ordered.append(node)
-        after = dq_after.get(node.name)
-        if after is not None:
+        for after in dq_after.get(node.name, ()):
             ordered.append(after)
-    expected_nodes = len(model.graph.node) + converted + rescaled
+    # 计数断言要覆盖两级残差多出来的节点：每张开残差的嵌入表多 2 个 Gather/DequantizeLinear
+    # + 1 个 Add（`converted` 里只算了它 1 个，剩下的在这里补）；每个开残差的 MatMul 多
+    # 1 个 DequantizeLinear + 1 个 Add（+2，见 residual_matmul_extra_nodes）。
+    residual_extra = 3 * len(embed_residual_tables) + residual_matmul_extra_nodes
+    expected_nodes = len(model.graph.node) + converted + rescaled + residual_extra
     if len(ordered) != expected_nodes:
         raise SystemExit("DequantizeLinear/Mul 插入数不符：期望 %d，实际 %d" % (expected_nodes, len(ordered)))
     del model.graph.node[:]
@@ -333,6 +417,12 @@ def quantize_weights_only(fp32_path, int8_path, rescale_alpha=0.0) -> dict:
     return dict(converted=converted, leftFloat=left_float, leftFloatReasons=left_reasons[:8],
                 insertedDequant=sum(len(v) for v in dq_before.values()) + len(dq_after),
                 convertedEmbeddings=embed_converted, embeddingSkipped=embed_skipped[:8],
+                embedLevels=embed_levels, embedResidualTables=embed_residual_tables,
+                embedResidualExtraBytes=embed_residual_bytes,
+                residualMatMulCount=len(residual_matmul_names),
+                residualMatMulExtraBytes=residual_matmul_bytes,
+                residualMatMulNames=residual_matmul_names[:8],
+                skippedMatMulCount=len(skip_matmul_containing),
                 rescaleAlpha=rescale_alpha, rescaledMatMuls=rescaled,
                 rescaleRule=("d_k = (max_n |B[k,n]|)^(-alpha)，按几何均值归一；"
                              "激活侧插 Mul(A, 1/d)"
@@ -352,6 +442,16 @@ def main():
                         help="档位键（默认 %s；回退档 bge-small-zh-v1.5）" % D.DEFAULT_MODEL_KEY)
     parser.add_argument("--quant-rescale-alpha", type=float, default=None,
                         help="权重 int8 前的**输入通道重标定**指数（0=关；默认取档位的 quantCaliber）")
+    parser.add_argument("--quant-embed-levels", type=int, choices=(1, 2), default=None,
+                        help="嵌入表编码级数（1=只一级 per-column int8；2=再加一级残差；"
+                             "默认取档位的 quantCaliber.embedLevels，缺省 1）")
+    parser.add_argument("--weights-ongrid", default=None,
+                        help="int8 量化的**权重来源**改用这份 fp32 ONNX（= 误差补偿产出的 "
+                             "on-grid 件，见 quant_error_compensation.py）；不给则用本脚本刚导出的 "
+                             "fp32。torch fp32 参考与 fp32 变体的对拍口径都不变")
+    parser.add_argument("--publish", action="store_true",
+                        help="过门后**把清单顶层镜像指向本档**。默认不写：顶层镜像 = 仓库当前随包"
+                             "那一档的声明，只有换件动作（覆盖 .vec/旁车/.tflite/装配常量）才该动它")
     parser.add_argument("--skip-export", action="store_true", help="只做对拍（复用已有 ONNX）")
     args = parser.parse_args()
     root = D.repo_root(args.repo_root)
@@ -360,9 +460,13 @@ def main():
     caliber = profile.get("quantCaliber") or dict(kind="perChannelMax", rescaleAlpha=0.0)
     rescale_alpha = (caliber.get("rescaleAlpha", 0.0) if args.quant_rescale_alpha is None
                      else args.quant_rescale_alpha)
-    print("档位=%s（repo=%s revision=%s dim=%d；量化口径=%s α=%s）"
+    embed_levels = (int(caliber.get("embedLevels", 1)) if args.quant_embed_levels is None
+                    else args.quant_embed_levels)
+    residual_matmuls = tuple(caliber.get("residualMatmuls", ()))
+    print("档位=%s（repo=%s revision=%s dim=%d；量化口径=%s α=%s；嵌入表级数=%d；"
+          "两级残差的 MatMul %r）"
           % (profile["key"], profile["repo"], profile["revision"], profile["dim"],
-             caliber.get("kind"), rescale_alpha))
+             caliber.get("kind"), rescale_alpha, embed_levels, residual_matmuls))
 
     probes = probe_toolchain()
     print("工具链探针：%s" % json.dumps(probes, ensure_ascii=False))
@@ -534,7 +638,23 @@ def main():
                                      bytes=path.stat().st_size, perChannel=per_channel)
             print("[路线 A · %s] 落盘 %s（%.1f MB）" % (label, path.name, path.stat().st_size / 1e6))
 
-        stats = quantize_weights_only(fp32_path, int8_path, rescale_alpha=rescale_alpha)
+        # 量化**权重来源**：默认是本脚本刚导出的 fp32；给了 `--weights-ongrid` 就用那份
+        # （= `quant_error_compensation.py` 产出的"落在 int8 网格上的 fp32"）。
+        # 参考（torch fp32）、`fp32` 变体的对拍、以及清单里 fp32 件的身份**都不变** ——
+        # 换的只是"int8 从哪个权重矩阵量化出来"。
+        weights_source = fp32_path
+        if args.weights_ongrid:
+            candidate = Path(args.weights_ongrid)
+            if not candidate.is_absolute():
+                candidate = root / candidate
+            if not candidate.is_file():
+                raise SystemExit("--weights-ongrid 指向的文件不存在：%s（先跑 "
+                                 "quant_error_compensation.py）" % candidate)
+            weights_source = candidate
+            print("权重来源 = %s（%.1f MB）" % (weights_source, weights_source.stat().st_size / 1e6))
+        stats = quantize_weights_only(weights_source, int8_path, rescale_alpha=rescale_alpha,
+                                      embed_levels=embed_levels,
+                                      residual_matmul_containing=residual_matmuls)
         comparison["weightOnlyInt8PerChannel"] = dict(
             path=paths["int8"], bytes=int8_path.stat().st_size,
             convertedMatMuls=stats["converted"], leftFloatMatMuls=stats["leftFloat"],
@@ -548,13 +668,31 @@ def main():
             columnPeakSpreadBeforeMax=stats["rescaleColumnPeakSpreadBeforeMax"],
             columnPeakSpreadAfterMax=stats["rescaleColumnPeakSpreadAfterMax"],
             rescaleRows=stats["rescaleRows"],
+            embedLevels=stats["embedLevels"], embedResidualTables=stats["embedResidualTables"],
+            embedResidualExtraBytes=stats["embedResidualExtraBytes"],
+            residualMatMulCount=stats["residualMatMulCount"],
+            residualMatMulExtraBytes=stats["residualMatMulExtraBytes"],
+            residualMatMulNames=stats["residualMatMulNames"],
+            residualMatMulRule=("选中的 MatMul 权重加一级**同口径残差**（T' = q1·s1 + q2·s2，"
+                                "图上多 1 条 DequantizeLinear + 1 条 Add，仍是内置算子）"
+                                if stats["residualMatMulCount"] else "关闭（单级）"),
+            weightsSource=dict(path=(str(weights_source.resolve().relative_to(root)).replace("\\", "/")
+                                     if str(weights_source.resolve()).startswith(str(root))
+                                     else str(weights_source.resolve())),
+                               sha256=D.sha256_file(weights_source),
+                               note="int8 从这份 fp32 权重量化出来；= 原导出件时说明没做误差补偿，"
+                                    "= <stem>-fp32-ongrid.onnx 时说明过了 quant_error_compensation.py"),
+            embedRule=("一级 per-column 对称 int8 + 二级同口径残差（T' = q1·s1 + q2·s2，"
+                       "Gather/DequantizeLinear/Mul/Add 全是内置算子）"
+                       if stats["embedLevels"] >= 2 else "只一级 per-column 对称 int8（Stage-3 原口径）"),
             note="存储仍是 int8 权重（每输出通道一 scale）+ fp32 激活；重标定只改误差分布、不改体积",
         )
         print("int8 ONNX 落盘（路线 B，产物）：%s（%.1f MB，%.1f%% of fp32；量化了 %d 个带权 MatMul，"
-              "剩下 %d 个是激活×激活，保持 fp32）" % (
+              "剩下 %d 个是激活×激活，保持 fp32；嵌入表 %d 张、级数 %d、残差 +%d B）" % (
                   int8_path, int8_path.stat().st_size / 1e6,
                   100.0 * int8_path.stat().st_size / fp32_path.stat().st_size,
-                  stats["converted"], stats["leftFloat"]))
+                  stats["converted"], stats["leftFloat"], stats["convertedEmbeddings"],
+                  stats["embedLevels"], stats["embedResidualExtraBytes"]))
 
     # ---- 3) 对拍 ----
     def cosine_min(left, right):
@@ -759,14 +897,20 @@ def main():
                              and spec["revision"] == previous.get("revision")), None)
         if previous_key and previous_key != profile["key"]:
             entries.setdefault(previous_key, previous)
-        if not (passed and cross_ok):
-            # 不过门：顶层保持原样（= 随包那一档），只把本档条目记进 entries；
+        if not (passed and cross_ok) or not args.publish:
+            # 顶层镜像保持原样（= 随包那一档），只把本档条目记进 entries；
             # `activeModel` 跟顶层镜像一致（顶层描述的是哪一档就写哪一档的键）。
+            #
+            # `--publish` 是**落地动作**的显式开关（Stage-5 WP2 第三轮加）：对拍过 ≠ 已随包。
+            # 顶层镜像是"仓库当前随包那一档"的声明，改它必须与随包资产（`.vec`/旁车/`.tflite`/
+            # `DenseRecallAssembly` 常量）**同一次动作**里改；只重跑导出而不换件，会把镜像
+            # 提前指向还没进包的那一档（dense 门随即红）。所以默认不写顶层，换件时显式 `--publish`。
             published = {key: value for key, value in previous.items()
                          if key not in ("modelEntries", "activeModel")}
             published_key = previous_key or previous.get("activeModel")
-            print("不过门：清单顶层镜像保持 %s（随包那一档），本档条目只进 modelEntries"
-                  % published.get("modelId"))
+            print("清单顶层镜像保持 %s（随包那一档；本档 passed=%s crossOk=%s publish=%s），"
+                  "本档条目只进 modelEntries"
+                  % (published.get("modelId"), passed, cross_ok, bool(args.publish)))
     entries[profile["key"]] = entry
     manifest = dict(published)
     manifest["activeModel"] = published_key

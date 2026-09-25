@@ -39,16 +39,16 @@
   "modelEntries": {
     "bge-base-zh-v1.5": {
       "cosineAgainstStage2OfflineArm": {
-        "bgebase-docs.npy": 0.9986382126808167,
-        "bgebase-queries.npy": 0.999172568321228
+        "bgebase-docs.npy": 0.9991275668144226,
+        "bgebase-queries.npy": 0.9991714954376221
       },
       "cosineAgainstStage2OfflineArmNotes": [],
       "cosineAgainstTorchFp32": {
         "fp32Docs": 0.9999998211860657,
         "fp32Queries": 0.9999998807907104,
-        "int8Docs": 0.9986382126808167,
-        "int8DocsMean": 0.9994113445281982,
-        "int8Queries": 0.999172568321228
+        "int8Docs": 0.9991275668144226,
+        "int8DocsMean": 0.9996992945671082,
+        "int8Queries": 0.9991714954376221
       },
       "dim": 768,
       "docPrefix": null,
@@ -60,16 +60,16 @@
         "checks": {
           "fp32_docs": true,
           "fp32_queries": true,
-          "int8_docs": false,
+          "int8_docs": true,
           "int8_queries": true
         },
         "crossArmChecks": {
-          "bgebase-docs.npy": 0.9986382126808167,
-          "bgebase-queries.npy": 0.999172568321228
+          "bgebase-docs.npy": 0.9991275668144226,
+          "bgebase-queries.npy": 0.9991714954376221
         },
         "crossArmNotes": [],
         "note": "产物（权重-only int8）过门；路线 A（激活动态量化）的实测值在同级 comparison 里，未采用",
-        "passed": false,
+        "passed": true,
         "threshold": 0.999
       },
       "generatedBy": "python tools/dense_build/export_bge_int8.py --model bge-base-zh-v1.5",
@@ -87,11 +87,11 @@
         "fp32Bytes": 406956186,
         "fp32Path": "build/dense-model/bge-base-zh-v1.5-fp32.onnx",
         "fp32Sha256": "8bd4f755403b5b0d050ec24086439eac8dce292965684922b1b8fbc457188ae9",
-        "int8Bytes": 102989680,
+        "int8Bytes": 131452720,
         "int8Path": "build/dense-model/bge-base-zh-v1.5-int8.onnx",
-        "int8Sha256": "8baeae174677e5b1d538aa8df3c1610ffeab5e471f887166cf887c503a391ec4",
+        "int8Sha256": "1994768d776b86845a17f22540ccdce1a10b3628b9a46c5a7b8f711271b99b75",
         "route": "onnx-weight-only-int8-per-channel（自转：int8 权重含嵌入表 + fp32 激活/计算）",
-        "sizeRatioVsFp32": 0.2531,
+        "sizeRatioVsFp32": 0.323,
         "weightsOnly": {
           "convertedEmbeddingTables": 3,
           "convertedMatMuls": 75,
@@ -129,59 +129,81 @@
           "dim": 768,
           "path": "build/dense-model/int8-docs.npy",
           "rows": 28931,
-          "sha256": "fea00c743f88e807a15dca87c30982ced26d3846ade8780edba1ae146471d6d5"
+          "sha256": "e527608c444d5bf8332e9a44455163cd7775d9a47bbbd8f98ddd81d2437e878b"
         },
         "int8Queries": {
           "dim": 768,
           "path": "build/dense-model/int8-queries.npy",
           "rows": 90,
-          "sha256": "b293b4393dae673404f1f795bce730aba93464596a31395c2eaed93040683b7f"
+          "sha256": "cbbc989e61db007a9e18a3e4172d28e265b3f1d438acb8fc456e6c6eb45d7a95"
         }
       },
       "pooling": "cls",
       "quantizationRouteComparison": {
         "caliber": {
-          "columnPeakSpreadAfterMax": 12.0898,
-          "columnPeakSpreadBeforeMax": 146.1638,
-          "kind": "perChannelMax+inputChannelRescale",
+          "columnPeakSpreadAfterMax": 12.0946,
+          "columnPeakSpreadBeforeMax": 146.2798,
+          "embedLevels": 1,
+          "embedResidualExtraBytes": 0,
+          "embedResidualTables": [],
+          "embedRule": "只一级 per-column 对称 int8（Stage-3 原口径）",
+          "kind": "perChannelMax+inputChannelRescale+gptq+ffnResidual2",
           "note": "存储仍是 int8 权重（每输出通道一 scale）+ fp32 激活；重标定只改误差分布、不改体积",
           "rescaleAlpha": 0.5,
           "rescaleRows": [
             {
-              "columnPeakSpreadAfter": 1.9519,
-              "columnPeakSpreadBefore": 3.81,
-              "factorMax": 1.190817,
-              "factorMin": 0.5193,
+              "columnPeakSpreadAfter": 1.9507,
+              "columnPeakSpreadBefore": 3.8054,
+              "factorMax": 1.188886,
+              "factorMin": 0.519243,
               "in_features": 768,
               "name": "/backbone_module/encoder/layer.0/attention/self/query/MatMul"
             },
             {
-              "columnPeakSpreadAfter": 1.7274,
-              "columnPeakSpreadBefore": 2.9841,
-              "factorMax": 1.18217,
-              "factorMin": 0.590769,
+              "columnPeakSpreadAfter": 1.7266,
+              "columnPeakSpreadBefore": 2.9812,
+              "factorMax": 1.181916,
+              "factorMin": 0.590837,
               "in_features": 768,
               "name": "/backbone_module/encoder/layer.0/attention/self/key/MatMul"
             },
             {
-              "columnPeakSpreadAfter": 1.5272,
-              "columnPeakSpreadBefore": 2.3324,
-              "factorMax": 1.575907,
-              "factorMin": 0.655497,
+              "columnPeakSpreadAfter": 1.5265,
+              "columnPeakSpreadBefore": 2.3301,
+              "factorMax": 1.577971,
+              "factorMin": 0.65546,
               "in_features": 768,
               "name": "/backbone_module/encoder/layer.0/attention/self/value/MatMul"
             },
             {
-              "columnPeakSpreadAfter": 1.5898,
-              "columnPeakSpreadBefore": 2.5276,
-              "factorMax": 1.423754,
-              "factorMin": 0.631196,
+              "columnPeakSpreadAfter": 1.5895,
+              "columnPeakSpreadBefore": 2.5265,
+              "factorMax": 1.427551,
+              "factorMin": 0.631169,
               "in_features": 768,
               "name": "/backbone_module/encoder/layer.0/attention/output/dense/MatMul"
             }
           ],
           "rescaleRule": "d_k = (max_n |B[k,n]|)^(-alpha)，按几何均值归一；激活侧插 Mul(A, 1/d)",
-          "rescaledMatMuls": 72
+          "rescaledMatMuls": 72,
+          "weightErrorCompensation": {
+            "alpha": 0.5,
+            "calibrationRows": 1024,
+            "calibrationSource": "语料随机抽样的 surface（seed=20260926，不含金标查询）",
+            "damping": 0.01,
+            "matrices": 72,
+            "method": "gptq（逐列量化 + Hessian 误差补偿）",
+            "report": "build/wp2r3-quant/error-compensation.json",
+            "tool": "tools/dense_build/quant_error_compensation.py",
+            "weightedErrorRatioMax": 20.27500323182361,
+            "weightedErrorRatioMedian": 1.3511274757033154,
+            "weightedErrorRatioMin": 0.6832069054813675
+          },
+          "weightsSource": {
+            "note": "int8 从这份 fp32 权重量化出来（= graphSurgery 后的 on-grid 件）；由 quant_error_compensation.py 产出，参数见 weightErrorCompensation",
+            "path": "build/wp2r3-quant/base-ongrid.onnx",
+            "sha256": "9c7fea1f5e3cf4d4e8cc8ced3fd775e5311b2f9ab52ff19f3ab1699ce54d8ad5"
+          }
         },
         "dynamic-perChannel": {
           "bytes": 102906283,
@@ -202,10 +224,10 @@
           "queriesCosineMin": 0.30295252799987793
         },
         "weightOnlyInt8PerChannel": {
-          "bytes": 102989680,
+          "bytes": 131452720,
           "convertedMatMuls": 75,
-          "docsCosineMean": 0.9994113445281982,
-          "docsCosineMin": 0.9986382126808167,
+          "docsCosineMean": 0.9996992945671082,
+          "docsCosineMin": 0.9991275668144226,
           "leftFloatMatMuls": 24,
           "leftFloatReasons": [
             "/backbone_module/encoder/layer.0/attention/self/MatMul: B 不是常量初始化器（激活×激活）",
@@ -217,9 +239,9 @@
             "/backbone_module/encoder/layer.3/attention/self/MatMul: B 不是常量初始化器（激活×激活）",
             "/backbone_module/encoder/layer.3/attention/self/MatMul_1: B 不是常量初始化器（激活×激活）"
           ],
-          "passedGate": false,
+          "passedGate": true,
           "path": "build/dense-model/bge-base-zh-v1.5-int8.onnx",
-          "queriesCosineMin": 0.999172568321228
+          "queriesCosineMin": 0.9991714954376221
         }
       },
       "queryPrefix": "为这个句子生成表示以用于检索相关文章：",

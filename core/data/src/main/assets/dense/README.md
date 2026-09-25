@@ -40,12 +40,20 @@ build/tflite-venv/Scripts/python.exe tools/dense_build/check_tflite_parity.py --
 ./gradlew.bat :core:data:connectedDebugAndroidTest --tests "*DenseEncoderParityInstrumentedTest*"
 ```
 
-**2026-09-25 Stage-5 换件（bge-base-zh-v1.5，768 维）按写死判据
-（编码器对拍 ≥0.999 且 量化模型金标融合主集 ≥0.7444）判定**：对拍 docs **0.998638** /
-queries **0.999173**（口径已从第一轮的 0.9478 抬到 0.9986，仍差 0.00136，缺口来源见
-`tools/dense_build/README.md` §8.3.2）、金标主集 **0.7889（71/90）** ⇒ 判据①不过 ⇒
-本目录**保持 Stage-3 小档原样**（§8.3–§8.6 有全部实测数与缺口归因）。
-**全阶段证据、换件清单（含字节与 sha）、延迟硬线状态（未测）、回退复核（0 个文件）与
-UNVERIFIED 见 `docs/kb-stage5-report-2026-09-25.md`**。
+**2026-09-25 Stage-5 换件（bge-base-zh-v1.5，768 维）按写死判据判定：未落地**——
+第三轮实测 ①编码器对拍（全量 28,931 行）docs 逐行 cosine 最小 **0.999127567** /
+queries **0.999171495**（门 ≥0.999，**已过**；第一轮的 0.9478、第二轮的 0.998638 都是同一门的前序读数，
+口径为 GPTQ 误差补偿 `quant_error_compensation.py`，见 `tools/dense_build/README.md` §8.3.4），
+金标融合主集 **0.7889（71/90）**（**已过** ≥0.7444）；但 ②真机单条编码 p50 ≤213ms **不过**——
+宿主同形态（逐条 + PAD 512 + 掩码，n=12，Python LiteRT）实测 base 档 `.tflite`（126.2 MiB）
+**p50 16,843 ms**（收尾复测 17,437 ms），小档同形态同机 **2,545 / 2,582 ms（两次实测）**，
+按"宿主→真机 ≈36×"外推真机 **≈470–485 ms > 213 ms**
+（**外推；base 档真机数不存在**——`DenseFirstUseCostInstrumentedTest` 因件未落地而未跑）。
+⇒ 本目录**保持 Stage-3 小档原样**（`bge-small-zh-v1.5-int8.tflite` 62,396,488 B / `015b2315…`，
+APK 内 stored 不压缩，本报告已用 `zipfile` 复核），判据③（门重定标）未触发、旧门一字未改。
+**全阶段证据、换件清单（含字节与 sha）、延迟硬线判定（判据②不达 ⇒ 未落地）、回退复核（0 个文件）
+与 UNVERIFIED 见 `docs/kb-stage5-report-2026-09-25.md`**；base 档产物全部落在 `build/`（scratch，不入库）。
 端侧对拍 fixture 的维度**取自 `encoder-parity.json` 的 `dim`**（不写死 512/768）——
 换件后重生成 fixture 即可（`python tools/dense_build/gen_device_parity_fixture.py --model <档>`）。
+**换件未落地的第二重原因**：本轮 Kotlin 侧编译/test 任务被另一条会话在 `core/database` 的飞行改动
+阻断（KSP `MissingType`，与本目录无关），故"换件后必跑的真机硬门"本轮**无法执行**——落地待共享工作树恢复。

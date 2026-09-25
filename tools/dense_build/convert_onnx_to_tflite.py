@@ -27,9 +27,22 @@ build/tflite-venv/Scripts/python.exe tools/dense_build/convert_onnx_to_tflite.py
 端侧要的精度是 float32，且真机数是在 float32 件上测的）。`--install` 时按档位拷到
 `core/data/src/main/assets/dense/` 的**固定文件名**（消费侧常量 `MODEL_ASSET_PATH` 不动）。
 
-## 两条路线（`--route`，默认取档位的 `tfliteRoute`）
+## 三条路线（`--route`，默认取档位的 `tfliteRoute`）
 
-1. `flatbuffer_direct`（Stage-3 小档的出货路线，**默认**）：`-tb flatbuffer_direct -nuo`。
+0. `flatbuffer_direct_keepint8`（**Stage-5 大档采用**）：与第 1 条**同一条 onnx2tf 命令**，
+   只把入口换成 `onnx2tf_keep_weight_int8.py`（进程内把 `constant_fold_a5` 的
+   `_FOLDABLE_OPS` 摘掉 `DequantizeLinear`，不改 site-packages）。
+   - **它消灭的具体失败**：`flatbuffer_direct` 的常量折叠把"int8 权重 + DequantizeLinear"
+     折成 fp32 常量 ⇒ bge-base 件 341.6 MiB（实测，README §8.4），远超"约 100 MB 级"目标。
+   - 结果：int8 初始化器原样进 flatbuffer，`DEQUANTIZE` 算子由 `build_dequantize_linear_op`
+     正常生成（实测 tiny 图：13,004 B / 纯 fp32 → 4,536 B / `DEQUANTIZE`+`BATCH_MATMUL`、
+     dtype 直方图出现 int8）⇒ 体积回到 int8 量级。
+   - **数值与 int8 ONNX 同一条算式**（`dequant(int8, scale)`），不引入第二次量化 —— 对比
+     第 2 条路线（折成 fp32 后由 TF 转换器**重新量化一次**）。
+   - 本路线转换后当场断言"产物里确实有大块 int8 张量"（`inspect_weight_dtype`，
+     阈值 1e7 个元素），防止折叠又把它展开而没人发现。
+
+1. `flatbuffer_direct`（Stage-3 小档的出货路线）：`-tb flatbuffer_direct -nuo`。
    **它的代价**：flatbuffer_direct 把 int8 权重**展开成 fp32 常量**（只有 `Gather` 的嵌入表
    因为输出是动态的而留 int8）⇒ 件体积回到 fp32 量级（实测 bge-base 341.6 MiB）。
 2. `tf_converter_drqt`（Stage-5 换件路线，走 TF 转换器的 **dynamic-range 量化**）：
@@ -149,6 +162,35 @@ def assert_no_flex(path) -> dict:
                                     if "int8" in np.dtype(detail["dtype"]).name))
 
 
+def inspect_weight_dtype(path) -> dict:
+    """数一数产物里"大块 int8 张量"到底有多少元素（= 权重是不是真的以 int8 存储）。
+
+    只看张量 dtype 与元素个数，不看文件大小——`flatbuffer_direct_keepint8` 的卖点是
+    "int8 权重不再被展开成 fp32"，展开与否必须从产物本身读出来，不能从体积反推。
+    """
+    from ai_edge_litert.interpreter import Interpreter
+
+    interpreter = Interpreter(model_path=str(path))
+    interpreter.allocate_tensors()
+    int8_count = 0
+    int8_elements = 0
+    int8_tensors = []
+    for detail in interpreter.get_tensor_details():
+        if "int8" not in np.dtype(detail["dtype"]).name:
+            continue
+        shape = [int(v) for v in detail["shape"]]
+        elements = 1
+        for value in shape:
+            elements *= value
+        if elements < 4096:
+            continue
+        int8_count += 1
+        int8_elements += elements
+        int8_tensors.append([detail["name"], shape, elements])
+    return dict(int8TensorCount=int8_count, int8Elements=int8_elements,
+                int8Tensors=sorted(int8_tensors, key=lambda row: -row[2])[:8])
+
+
 def guarded(root: Path, path: Path) -> Path:
     """只允许写 `build/` 下的路径（转换链的中间物一律留在仓库的 scratch 里）。"""
     resolved = path.resolve()
@@ -164,8 +206,10 @@ def main() -> int:
                         help="档位键（默认 %s；回退档 bge-small-zh-v1.5）" % D.DEFAULT_MODEL_KEY)
     parser.add_argument("--seq-len", type=int, default=None,
                         help="冻结后的输入长度（默认取档位 maxLen=512）")
-    parser.add_argument("--route", choices=("flatbuffer_direct", "tf_converter_drqt"), default=None,
-                        help="转换路线（默认取档位的 tfliteRoute；flatbuffer_direct = Stage-3 小档路线）")
+    parser.add_argument("--route", choices=("flatbuffer_direct", "flatbuffer_direct_keepint8",
+                                            "tf_converter_drqt"), default=None,
+                        help="转换路线（默认取档位的 tfliteRoute；flatbuffer_direct = Stage-3 小档路线；"
+                             "flatbuffer_direct_keepint8 = 同一条命令但保留 int8 权重存储）")
     parser.add_argument("--install", action="store_true",
                         help="转换后拷到档位的 assets 路径（core/data/src/main/assets/dense/…）")
     args = parser.parse_args()
@@ -230,20 +274,41 @@ def main() -> int:
         onnx.save(simplified, str(sim_path))
         print("onnxsim ok=True；%s → %s（%d → %d B）"
               % (static.name, sim_path.name, static.stat().st_size, sim_path.stat().st_size))
+        # onnxsim **不折** DequantizeLinear（实测：tiny 图上 `w_int8` 仍是 int8 初始化器，
+        # DequantizeLinear 节点原样保留）⇒ 下面这条路线的 int8 权重能原样进 onnx2tf。
 
         log_path = work / "onnx2tf.log"
+        if route == "flatbuffer_direct_keepint8":
+            # 路线 3：与 flatbuffer_direct **同一条命令**，只把入口换成"不折常量 DequantizeLinear"
+            # 的包装（`onnx2tf_keep_weight_int8.py`）。**它消灭的具体失败**：flatbuffer_direct 的
+            # `constant_fold_a5` 规则把"int8 权重 + DequantizeLinear"折成 fp32 常量 ⇒ bge-base
+            # 件 341.6 MiB（实测，README §8.4），远超目标量级。
+            runner = [sys.executable,
+                      str(Path(__file__).resolve().parent / "onnx2tf_keep_weight_int8.py")]
+        else:
+            runner = [sys.executable, "-m", "onnx2tf"]
         with log_path.open("w", encoding="utf-8") as handle:
             # -b 1：batch 固定 1；-nuo：不叠 optimize（与 Stage-3 出货件同一条命令口径）
-            process = subprocess.run([sys.executable, "-m", "onnx2tf", "-i", str(sim_path),
-                                      "-o", str(out_dir), "-b", "1", "-nuo"],
+            process = subprocess.run(runner + ["-i", str(sim_path),
+                                               "-o", str(out_dir), "-b", "1", "-nuo"],
                                      stdout=handle, stderr=subprocess.STDOUT)
-        print("onnx2tf exit=%d（log %s）" % (process.returncode, log_path))
+        print("onnx2tf exit=%d（log %s，入口 %s）" % (process.returncode, log_path, runner[1:]))
         if process.returncode != 0:
             raise SystemExit("onnx2tf 失败：%s" % log_path)
         produced = sorted(out_dir.glob("*_float32.tflite"))
         if len(produced) != 1:
             raise SystemExit("应恰好产出一个 *_float32.tflite，实测 %r" % [p.name for p in produced])
         tflite = produced[0]
+        if route == "flatbuffer_direct_keepint8":
+            # 这条路线的卖点就是"权重以 int8 存储"——必须从产物本身读出大块 int8 张量，
+            # 否则说明折叠又发生了（体积会回到 fp32 量级）。当场断言，不靠肉眼。
+            int8_info = inspect_weight_dtype(tflite)
+            print("int8 存储自检：int8 张量 %d 个 / %d 个元素（%.1f MiB）"
+                  % (int8_info["int8TensorCount"], int8_info["int8Elements"],
+                     int8_info["int8Elements"] / 2**20))
+            if int8_info["int8Elements"] < 10_000_000:
+                raise SystemExit("产物里大块 int8 元素只有 %d 个（<1e7）——权重像是又被展开成 fp32，"
+                                 "按纪律不推" % int8_info["int8Elements"])
 
     after = D.sha256_file(source)
     if after != before:
