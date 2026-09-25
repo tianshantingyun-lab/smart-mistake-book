@@ -79,6 +79,23 @@ class GateTest(unittest.TestCase):
         # 清点 21 条、写出 10 个编号 → 过（编号与式数不必一一对应）
         self.assertEqual("pass", tl.compute_gate(self._row(items_min="21"), text="正常文本"))
 
+    def test_unnumbered_page_passes_with_composite_denominator(self):
+        # 实测形态（CHEMISTRY p0208）：叙述/表格页的条目本来不带印刷编号——
+        # 印刷编号 9、圈号 3、公式 19、图 1，按最小式/条口径 45 条。
+        # 旧判据（只数编号）在这里机械上不可能过；复合分母（编号+公式+图块）下应过。
+        row = self._row(items_min="45", numbered=12, formulas=19, figs=1, chars=3511)
+        self.assertEqual("pass", tl.compute_gate(row, text="正常文本"))
+
+    def test_thin_text_for_claimed_items_fails(self):
+        # 实测真坏页形态：清点 187 条 / 字数 483（2.6 字一条）→ 不过（字数下限）
+        row = self._row(items_min="187", numbered=20, formulas=0, figs=0, chars=483)
+        self.assertEqual("fail", tl.compute_gate(row, text="短"))
+
+    def test_composite_denominator_still_catches_missing_blocks(self):
+        # 反向：清点 100 条，但稿子里编号+公式+图块只有 20 → 仍判漏
+        row = self._row(items_min="100", numbered=10, formulas=8, figs=2, chars=6000)
+        self.assertEqual("fail", tl.compute_gate(row, text="正常文本"))
+
     def test_clean_page_passes(self):
         self.assertEqual("pass", tl.compute_gate(self._row(), text="$a+b=b+a$。"))
 

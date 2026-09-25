@@ -91,6 +91,7 @@ def grade_dir(root: Path, only: tuple[str, int] | None = None) -> dict:
         sig = tl.signals(text)
         row = {"status": "done", "verdict": "", "truncated": "",
                "chars": len(text), "numbered": sig["numbered"],
+               "formulas": sig["formulas"], "figs": sig["figs"],
                "items_min": str(counts.get("items_min", ""))}
         defects = gate.field_text_defects(text)
         problems = []

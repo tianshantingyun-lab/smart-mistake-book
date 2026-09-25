@@ -160,13 +160,31 @@ def compute_gate(row: dict, text: str = "") -> str:
     if text and gate.field_text_defects(text):
         return "fail"
     if row["items_min"]:
-        try:
-            if int(row["items_min"]) > max(row["numbered"], 1) * 3:
-                # 清点说该有 N 条，转写里却连 N/3 个编号都数不出来 → 疑似整块漏
+        claimed = _to_int(row["items_min"])
+        if claimed is not None:
+            # 计数闸门：清点说该有 N 条，转写里到底写出了多少"可数的东西"？
+            #
+            # 分母曾经只用「行首编号 + 圈号」——**在无编号页上结构性假阳性**：叙述/表格/例题页的
+            # 条目本来就不带印刷编号（实测 CHEMISTRY p0208：印刷编号 9 处，按最小式/条口径 45 条，
+            # 45 > 9×3 机械上不可能过，子代理如实上报而不是把清点压小）。改成**复合分母**：
+            # 编号 + `$…$` 公式数 + 【图：…】块数——三者都是"稿子里真写出来的单位"。
+            written = (row.get("numbered", 0) or 0) + (row.get("formulas", 0) or 0) \
+                + (row.get("figs", 0) or 0)
+            if claimed > max(written, 1) * 3:
                 return "fail"
-        except ValueError:
-            pass
+            # 另一条独立下限：每个条目至少得有几个字。实测真坏页长这样——清点 187 条 / 字数 483
+            # （2.6 字一条）；而正常页 ≥ 40 字/条（p0208 是 78 字/条）。这条不看编号，专治
+            # "清点数很大但正文很短"。
+            if claimed > 0 and (row.get("chars", 0) or 0) < claimed * 5:
+                return "fail"
     return "pass"
+
+
+def _to_int(value) -> int | None:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
 
 
 DENSE_KINDS = {"公式密排", "图密集", "表格式", "未定"}
