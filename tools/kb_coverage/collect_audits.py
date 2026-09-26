@@ -36,11 +36,32 @@ TARGET = REPO / "tools/kb_coverage/tables/transcript_audits.csv"
 COLUMNS = ("subject", "pages", "verdict", "items_min", "items_numbered", "evidence")
 
 
+def _norm_row(raw: dict) -> dict:
+    """把 csv 读出来的行归一：多余列并回 evidence，非字符串字段一并容忍。
+
+    实测形态（2026-09-25）：审计代理在 evidence 里写了逗号但没加引号，csv 就把后半句拆成
+    多余列塞进 `None` 键 —— 原实现对它调 `.strip()` 直接崩，整批收拢失败。多余列本来就是
+    evidence 的尾巴，**并回去而不是丢掉**（那是审计的证据，不是噪声）。
+    """
+    row = {}
+    for k, v in raw.items():
+        if k is None:
+            continue
+        if isinstance(v, list):
+            v = ",".join(str(x) for x in v)
+        row[k] = (v or "").strip() if isinstance(v, str) else str(v or "").strip()
+    extra = raw.get(None)
+    if extra:
+        tail = ",".join(str(x) for x in extra).strip()
+        row["evidence"] = (row.get("evidence", "") + ("，" if row.get("evidence") else "") + tail)
+    return row
+
+
 def read_rows(path: Path) -> list[dict]:
     if not path.exists():
         return []
     with path.open(encoding="utf-8-sig", newline="") as fh:
-        return [{k: (v or "").strip() for k, v in r.items()} for r in csv.DictReader(fh)]
+        return [_norm_row(r) for r in csv.DictReader(fh)]
 
 
 def from_slices(d: Path) -> list[dict]:
@@ -48,7 +69,7 @@ def from_slices(d: Path) -> list[dict]:
     for f in sorted(d.glob("*.csv")):
         with f.open(encoding="utf-8-sig", newline="") as fh:
             for r in csv.DictReader(fh):
-                r = {k: (v or "").strip() for k, v in r.items()}
+                r = _norm_row(r)
                 r["evidence"] = (r.get("evidence") or "") or f.name
                 rows.append({k: r.get(k, "") for k in COLUMNS})
     return rows
@@ -93,30 +114,82 @@ def main(argv: list[str] | None = None) -> int:
     old = read_rows(args.target)
     print(f"目标表现有 {len(old)} 行；本次收集 {len(new)} 行")
 
-    # 逐页查重：一行可能是区间（15-28）或列表（15,17）——按页展开比对
+    # 逐页归并（2026-09-25 补齐与审计并行后必须有的规则）：
+    #
+    # - **完全相同的行**：跳过（幂等——重启/续跑会把同一张片再收一次，那不是冲突）；
+    # - **ACCEPT 与 RETRANSCRIBE 撞同一页**：取 ACCEPT 并**打印被覆盖的行**。语义：ACCEPT 来自
+    #   "页已落盘且过机械门"（补齐/重转真的做过），RETRANSCRIBE 是旧状态下的判决（例如审计时
+    #   那页还整页缺失）——覆盖是正确方向，但绝不许静默；
+    # - 其它同页不同判决（含两个都 ACCEPT 但内容不同）：**仍然整批拒绝**（两份判决打架时停下）。
     sys.path.insert(0, str(REPO / "tools"))
     from kb_coverage import apply_transcript_audits as ata  # noqa: E402
 
-    seen: dict[tuple[str, int], str] = {}
-    for i, r in enumerate(old, 2):
-        for p in ata.expand(r.get("pages", "")):
-            seen[(r["subject"], p)] = f"旧行 L{i}"
+    merges: dict[tuple[str, int], dict] = {}
+    overrides: list[str] = []
+    skipped = 0
     problems: list[str] = []
-    for r in new:
+    for src, r in [("旧表", x) for x in old] + [("本次", x) for x in new]:
         for p in ata.expand(r.get("pages", "")):
             key = (r["subject"], p)
-            if key in seen:
-                problems.append(f"{r['subject']} p{p} 与 {seen[key]} 冲突")
-            seen[key] = "本次"
+            cur = merges.get(key)
+            if cur is None:
+                merges[key] = r
+                continue
+            if cur is r:
+                continue
+            if all(cur.get(c, "") == r.get(c, "") for c in COLUMNS):
+                skipped += 1                # 同一张片再收一次：幂等
+                continue
+            if {cur.get("verdict", ""), r.get("verdict", "")} == {"ACCEPT", "RETRANSCRIBE"}:
+                win, lose = (r, cur) if r.get("verdict") == "ACCEPT" else (cur, r)
+                merges[key] = win
+                overrides.append(f"{key[0]} p{p}：ACCEPT 覆盖 RETRANSCRIBE"
+                                 f"（被覆盖行 evidence：{(lose.get('evidence') or '')[:60]}）")
+                continue
+            if cur.get("verdict", "") == r.get("verdict", ""):
+                # 同判决、不同来源（例：补齐的清点行 vs 审计片的 ACCEPT 行）：不是打架。
+                # 取**清点数更大**的那份——对 ACCEPT 页来说那会让计数闸门更严（保守方向）。
+                def _im(x: dict) -> int:
+                    try:
+                        return int(x.get("items_min") or -1)
+                    except ValueError:
+                        return -1
+                win, lose = (r, cur) if _im(r) > _im(cur) else (cur, r)
+                merges[key] = win
+                overrides.append(f"{key[0]} p{p}：同为 {win.get('verdict')}，取清点数更大的一份"
+                                 f"（{_im(win)} vs {_im(lose)}）")
+                continue
+            problems.append(f"{key[0]} p{p} 两条判决打架：{cur.get('verdict')} vs {r.get('verdict')}")
+    if skipped:
+        print(f"完全相同的行跳过（幂等）：{skipped} 页次")
+    if overrides:
+        print(f"ACCEPT 覆盖 RETRANSCRIBE：{len(overrides)} 页（不静默，列表如下）")
+        for o in overrides[:12]:
+            print("   ↻", o)
     if problems:
         print(f"★ 冲突 {len(problems)} 条（整批拒绝，不写表）：")
         for p in problems[:12]:
             print("   !", p)
         return 1
 
-    merged = old + new
-    print(f"合并后 {len(merged)} 行（覆盖 "
-          f"{len({(r['subject'], p) for r in merged for p in ata.expand(r.get('pages', ''))})} 页）")
+    merged: list[dict] = []
+    kept: set[int] = set()
+    # 关键：一行覆盖多页、其中某几页被别的行赢走时，必须把该行的 `pages` **收窄到它真正赢下的页**——
+    # 否则同一页会同时出现在两个行里（实测：549-560 的多页行与单页 551 的行并存 → 下游校验判
+    # "同一页两条判决"、整批拒绝）。
+    won: dict[int, list[int]] = {}
+    for (subject, p), r in merges.items():
+        won.setdefault(id(r), []).append(p)
+    for r in old + new:
+        ps = sorted(won.get(id(r), []))
+        if not ps:
+            continue
+        if id(r) in kept:
+            continue
+        kept.add(id(r))
+        merged.append({**{k: r.get(k, "") for k in COLUMNS},
+                       "pages": ",".join(str(x) for x in ps)})
+    print(f"合并后 {len(merged)} 行（覆盖 {len(merges)} 页，每页恰一行）")
     if args.write:
         args.target.parent.mkdir(parents=True, exist_ok=True)
         with args.target.open("w", encoding="utf-8", newline="") as fh:

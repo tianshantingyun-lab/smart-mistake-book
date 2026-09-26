@@ -166,5 +166,30 @@ class RealArtifactTest(unittest.TestCase):
                 self.assertEqual(tl.compute_plan(r), r["plan"])
 
 
+
+    def test_multi_page_audit_row_contributes_no_per_page_count(self):
+        # 实测 2026-09-25：审计多页行填的是**合计**（`MATH 57-70` 填 317），
+        # 摊到每页会让计数闸门对整片误判（账本 fail 60 → 525）。多页行只带判决，不带页级清点数。
+        import tempfile, csv as _csv, pathlib as _pl
+        tmp = _pl.Path(tempfile.mkdtemp(prefix="audit-map-"))
+        f = tmp / "transcript_audits.csv"
+        with f.open("w", encoding="utf-8", newline="") as fh:
+            w = _csv.DictWriter(fh, fieldnames=["subject", "pages", "verdict", "items_min",
+                                                "items_numbered", "evidence"], lineterminator="\n")
+            w.writeheader()
+            w.writerow({"subject": "MATH", "pages": "57-70", "verdict": "ACCEPT",
+                        "items_min": "317", "items_numbered": "60", "evidence": "整片清点"})
+            w.writerow({"subject": "MATH", "pages": "550", "verdict": "ACCEPT",
+                        "items_min": "20", "items_numbered": "5", "evidence": "单页"})
+        old = tl.AUDITS
+        tl.AUDITS = f
+        try:
+            m = tl.audit_map()
+        finally:
+            tl.AUDITS = old
+        self.assertEqual("", m[("MATH", 60)]["items_min"], "多页行的合计不许当页级清点数")
+        self.assertEqual("20", m[("MATH", 550)]["items_min"], "单页行的清点数照用")
+        self.assertEqual("ACCEPT", m[("MATH", 60)]["verdict"])
+
 if __name__ == "__main__":
     unittest.main()

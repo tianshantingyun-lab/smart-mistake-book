@@ -113,19 +113,27 @@ def page_kind_map() -> dict[tuple[str, int], str]:
 
 
 def audit_map() -> dict[tuple[str, int], dict]:
-    """审计判决按页展开：`pages` 支持 "15" / "15-28" / "15,17" 三种写法。"""
+    """审计判决按页展开：`pages` 支持 "15" / "15-28" / "15,17" 三种写法。
+
+    **只有单页行的 `items_min` 才当页级清点数用**：多页行填的是**合计**（例：`57-70` 填 317），
+    把它摊到每一页会让计数闸门对整片误判（实测：账本 fail 60 → 525）。多页行的清点数只留在
+    原行与 evidence 里，不进页级判据。
+    """
     out: dict[tuple[str, int], dict] = {}
     for r in _read_table(AUDITS):
         subj, pages = r.get("subject", "").strip(), (r.get("pages") or "").strip()
+        nums: list[int] = []
         for part in [p for p in pages.split(",") if p.strip()]:
             part = part.strip()
-            nums = [int(part)] if part.isdigit() else (
-                list(range(int(part.split("-")[0]), int(part.split("-")[1]) + 1))
-                if re.fullmatch(r"\d+-\d+", part) else [])
-            for n in nums:
-                out[(subj, n)] = {"verdict": (r.get("verdict") or "").strip(),
-                                  "items_min": (r.get("items_min") or "").strip(),
-                                  "evidence": (r.get("evidence") or "").strip()}
+            if part.isdigit():
+                nums.append(int(part))
+            elif re.fullmatch(r"\d+-\d+", part):
+                nums.extend(range(int(part.split("-")[0]), int(part.split("-")[1]) + 1))
+        single = len(nums) == 1
+        for n in nums:
+            out[(subj, n)] = {"verdict": (r.get("verdict") or "").strip(),
+                              "items_min": (r.get("items_min") or "").strip() if single else "",
+                              "evidence": (r.get("evidence") or "").strip()}
     return out
 
 
