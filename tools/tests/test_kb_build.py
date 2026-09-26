@@ -221,6 +221,8 @@ class GateTest(unittest.TestCase):
                                                       "shell_expanded_script_name"],
             r"\n310243n = \frac{a - xb}{2}310243\n": ["pid_repeat"],
             r"必须控制在 .5\sim10.5$": ["dollar_unbalanced"],
+            # 控制字符替换了反斜杠（2026-09-25 审计在 42 页里查出 213 处：$\x07lpha$ 就是 $\alpha$）
+            "夹角为 $\x07lpha$，则 $\x07ngle APC$ 的取值": ["control_char_damage"],
         }
         for text, expected in must_flag.items():
             with self.subTest(text=text[:24]):
@@ -232,6 +234,8 @@ class GateTest(unittest.TestCase):
             r"1mL细胞个数＝100×400×10000×稀释倍数；同法再乘 10000。",  # 5 位换算系数
             r"$f'(x)>0$",                                      # 撇号不是重音命令
             r"$S_m,S_{2m}-S_m$；$a\parallel b$",               # 正常公式
+            "表格行用制表符分隔\t不该被判成损坏",              # TAB 可能是排版，不判
+            "行尾 CR 残留\r不该单独判",                        # CR 只在紧跟小写字母时判
             # 行分隔 `\\` 后跟数字/全角括号：`\\` 是一个命令，不能把它拆成"第二个反斜杠 + 残迹"。
             # 实测教训（2026-09-22）：漏这一步让 4 科扫描件里 14 页转写被误判要重转。
             r"$T_n=\begin{cases}S_n(n\leqslant k),\\2S_k-S_n(n>k)\end{cases}$",

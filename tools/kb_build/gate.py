@@ -141,6 +141,19 @@ def _is_latex_damaged(text: str) -> bool:
 _CONTROL_CHARS = "\x0c\t\r\x08\x07\x0b"
 
 # ---------------------------------------------------------------------------
+# 控制字符把反斜杠替换掉：`\alpha` → `0x07 + lpha`、`\right` → `0x0D + ight`
+#
+# 2026-09-25 由**换人审计的 Python 控制字符扫描**在 847 页扫描件语料里查出来：213 处、42 页
+# （MATH p378 37 处、PHYSICS p80 29 处、p78/p87 各 12 处…）。形态是"命令的首字符（反斜杠）
+# 被替换成一个控制字符"——和 `\1`/shell 展开同属"文本在管道里被改过"这一类，但判据互不覆盖：
+# 这条签名是**控制字符紧跟 2 个以上小写字母**。
+#
+# 为什么 BEL/BS/VT/FF 无条件算、CR 与 TAB 不同：BEL(0x07)/BS(0x08)/VT(0x0B)/FF(0x0C) 在正文与
+# 公式里没有任何合法用途（实测命中处全是损坏）；CR(0x0D) 可能是行尾残留、TAB 可能是表格分隔，
+# 单独出现不判，只在"紧跟小写字母"（即替换了反斜杠）时判。
+_COMMAND_CHAR_DAMAGE = re.compile(r"[\x07\x08\x0b\x0c]|\x0d[a-z]{2,}")
+
+# ---------------------------------------------------------------------------
 # 非法转义：反斜杠后面跟的不是合法命令名、也不是合法转义符
 #
 # `latex_damage` 只管"真命令丢了反斜杠"（\cos\alpha 被写成 \coslpha），
@@ -233,6 +246,7 @@ def field_text_defects(text: str) -> list[str]:
     - `dollar_unbalanced`：`$` 个数为奇数 → 数学分隔符被吃掉（材料文本里 `$` 必须成对）
     - `shell_expanded_script_name`：出现字面 `/usr/bin/bash` → `$0` 被 shell 展开成脚本名
     - `pid_repeat`：同一 5–7 位数重复出现 → `$$` 被 shell 展开成 PID
+    - `control_char_damage`：控制字符替换了反斜杠（`0x07+lpha` = `\\alpha`）
     """
     out = []
     if find_invalid_escapes(text):
@@ -241,6 +255,8 @@ def field_text_defects(text: str) -> list[str]:
         out.append("dollar_unbalanced")
     if _BASH_LITERAL.search(text):
         out.append("shell_expanded_script_name")
+    if _COMMAND_CHAR_DAMAGE.search(text):
+        out.append("control_char_damage")
     if _has_pid_repeat(text):
         out.append("pid_repeat")
     return out
@@ -426,6 +442,13 @@ def evaluate() -> list[Metric]:
     # 8b 2573、两项皆假 0）。现在 8b 判"定位串之外没有内容"，一条写了真边界的节点
     # 可以同时通过两项。
     m8 = Metric("locator_boundary", "boundary 只有定位串/占位，没有真边界")
+    # 8c) 边界文本自带残迹（非法转义 / `$` 不成对 / shell 展开 / PID 重复）
+    #
+    # 为什么单列一项：`field_text_defects` 此前只被用在**材料**字段上，boundary / name
+    # 没有判据——实测 20 条 boundary 断在公式中途（`…（椭圆是 $b^2\tan\frac{\`）仍能在
+    # "22/22 全绿"下随包分发，而这些字段正是讲题时模型直接读到的（KD-26 / §W-02）。
+    # 判据与材料同源，不另写一套。
+    m8c = Metric("boundary_text_defect", "boundary 含文本残迹（非法转义 / $ 不成对 / shell 展开）")
     for subject, _t, point in points:
         boundary = point.get("boundary") or ""
         if textfix.has_verbatim_excerpt(boundary):
@@ -436,8 +459,14 @@ def evaluate() -> list[Metric]:
             m8.value += 1
             if len(m8.detail) < 40:
                 m8.detail.append(f"[{subject}] {point['name'][:30]}: {boundary[:50]}")
+        defects = field_text_defects(boundary)
+        if defects:
+            m8c.value += 1
+            if len(m8c.detail) < 40:
+                m8c.detail.append(f"[{subject}] {point['name'][:30]}: {defects} …{boundary[-50:]}")
     metrics.append(m8a)
     metrics.append(m8)
+    metrics.append(m8c)
 
     # 9) 公式损坏
     m9 = Metric("latex_damage", "LaTeX 命令丢失反斜杠")
