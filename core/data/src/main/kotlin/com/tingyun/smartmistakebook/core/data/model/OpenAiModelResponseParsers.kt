@@ -460,6 +460,8 @@ internal fun JsonObject.toTutorRespond(
         candidates = input.boundQuestionCandidates,
         declaration = optionalObject("boundQuestion")?.toBoundQuestionDeclaration(),
         studentMessage = input.studentMessage,
+        // 学生显式附加了题的一轮：附加题被钉住，指向别的候选的声明在这里就被判无效。
+        pinnedQuestion = input.attachedQuestion?.toCandidate(),
     )
     return TutorRespondOutput(
         sessionId = input.sessionId,

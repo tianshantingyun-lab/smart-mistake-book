@@ -117,7 +117,12 @@ internal fun tutorChatExchanges(
         val answerWasExposed = output.canExposeSolutionFor(
             input,
             requiresRoundQuestionBinding = task.request.requiresRoundQuestionBinding,
-        ) && task.toRespondAnswerExposureKey() in answerExposureKeys
+        ) && (
+            // 附加轮的暴露**刻意不落账**（见 `TutorSolutionExposureTarget.recordsExposure`）：
+            // 这里因此不看账本，只认本地事实——学生看到的正是所附之题的答案，重载之后（账本里
+            // 没有它的记录）正文也必须原样保留，否则会话记忆会白白回退。
+            input.attachedQuestion != null || task.toRespondAnswerExposureKey() in answerExposureKeys
+            )
         TutorChatHistoryEntry(
             studentMessage = input.studentMessage,
             assistantMarkdown = if (output.solutionRevealed && !answerWasExposed) {

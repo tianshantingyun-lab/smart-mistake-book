@@ -51,7 +51,7 @@ object TutorRoundQuestionBindingPolicy {
         .take(MAX_CANDIDATES)
 
     /**
-     * 两条本地校验，缺一不可；任一条不过就是**无题轮**（返回 null），不抛异常、不放行。
+     * 三条本地校验，缺一不可；任一条不过就是**无题轮**（返回 null），不抛异常、不放行。
      *
      * 1. **候选在菜单内**：按 `problemId` + `problemRevisionId` 精确匹配。同一道题的另一个
      *    修订不算命中——题面变了就是另一道题，答案与证据都不可搬。
@@ -59,6 +59,10 @@ object TutorRoundQuestionBindingPolicy {
      *    （沿用 `TutorIntentAuthority.actionIsBoundTo`/`lookupTerms` 的逐字锚纪律），并且
      *    至少一个锚词要能在**该题自身**（标题或题面）里找到。前一条挡住"模型替学生编了
      *    一句他没说过的话"，后一条挡住"词是学生说的、但说的不是这道题"。
+     * 3. **不许从被钉住的题上切走**（[pinnedQuestion] 非空时）：学生显式附加了题的那一轮，
+     *    附加题就是本轮的题；模型指别的候选一律无效。这一轮的 confirmedQuestion 就是所附之题、
+     *    答案围着它展开，允许切走只会让"落库的绑定/证据锚"与"学生看到的那道题"分叉。后续轮次
+     *    不再有附加题，语义切换照旧合法。
      *
      * 校验通过返回原声明（内容逐字未改），由调用方作为本轮绑定落库。
      */
@@ -66,12 +70,24 @@ object TutorRoundQuestionBindingPolicy {
         candidates: List<RelatedProblemCandidate>,
         declaration: TutorRoundQuestionDeclaration?,
         studentMessage: String,
+        /** 本轮被**钉住**的题：学生显式附加的那一道。见下面的切走规则。 */
+        pinnedQuestion: RelatedProblemCandidate? = null,
     ): TutorRoundQuestionDeclaration? {
         if (declaration == null) return null
         val candidate = candidates.singleOrNull { candidate ->
             candidate.problemId == declaration.problemId &&
                 candidate.problemRevisionId == declaration.problemRevisionId
         } ?: return null
+        // 学生显式附加了题的一轮：附加题就是本轮的题，模型指**别的**候选一律无效（不许切走）。
+        // 这一轮的 confirmedQuestion 就是所附之题、答案也围着它展开；允许声明切到菜单里另一道题，
+        // 会让"落库的绑定/证据锚"与"学生看到的那道题"分叉（badge、账目、下一轮菜单各说各话）。
+        // 后续轮次不再有附加题，语义切换照旧合法。
+        if (pinnedQuestion != null &&
+            (candidate.problemId != pinnedQuestion.problemId ||
+                candidate.problemRevisionId != pinnedQuestion.problemRevisionId)
+        ) {
+            return null
+        }
         if (declaration.anchorTerms.isEmpty()) return null
         val normalizedMessage = studentMessage.lowercase(Locale.ROOT)
         val normalizedTerms = declaration.anchorTerms.map { term -> term.lowercase(Locale.ROOT) }

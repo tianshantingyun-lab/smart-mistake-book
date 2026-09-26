@@ -308,3 +308,47 @@ P2 改造（`4544310b` + `40bf72ff`）落地后，独立复核列出六条发现
 - 应用声明范围 `minSdk 23 / targetSdk 36 / compileSdk 37`，**API 34 之外的版本在本机与 CI
   均不可测**（没有对应系统镜像/AVD）。仓库脚本 `tools/android-env.ps1` 指向的
   `smart_mistake_book_api_36` AVD 在本机不存在（另一会话的工具链，本节只记录不改）。
+
+## 10. 2026-09-26 复核裁定落地（G2 暴露归属 / G6 badge 口径）
+
+两条都是 §8 那轮独立复核提出的问题，用户在两条各自的选项里选了"消灭分歧"的那一支。
+
+### 10.1 G2（裁定：附加轮**不落暴露账**，保留揭示）
+
+- 现场：暴露账本与会话锚都是"会话题"形状——键取 `input.questionDocument`（`TutorModelTaskPolicy.toRespondAnswerExposureKey`）、
+  守卫逐字校验同一身份（`TutorExposureDao.validateVisibleSurface` 的 `RESPOND_REPLY` 分支）、
+  物化落到会话锚（`TutorExposureDao.materialize`）；而附加轮的 `confirmedQuestion` 是**所附之题**。
+  记下去 = 会话题凭空多一次"答案已展示"，附加题自己一次都不记。
+- 落地：`TutorSolutionExposureTarget.recordsExposure`（附加轮 false）→ `TutorSolutionExposureTracker`
+  照做揭示、跳过 `recordSolutionExposure` 与已曝光集合写入；`TutorChatConversation.tutorChatExchanges`
+  对附加轮改认**本地事实**（`canExposeSolutionFor` 为真即保留正文），否则重载后（账本没有记录）
+  学生看过的答案会被 `[HIDDEN_TUTOR_ANSWER_CONTEXT]` 顶替、会话记忆白白回退。
+- 为什么不现在就按轮取题面身份：暴露-锚链路的守卫/物化/锚都在 `core/database`，而那批文件正被
+  另一条会话的 51→52「会话区」迁移重写。等它落地后再把归属改成"该轮真实题面"。
+
+### 10.2 G6（裁定：显式附加的那一轮**不许切走**）
+
+- 现场：badge 附加题优先（`TutorConversationTimeline.replyQuestionTitle`），但绑定策略允许模型
+  声明菜单里另一道题（`TutorRoundQuestionBindingPolicy.resolve` 两条校验）。于是一轮里出现
+  三个"题"：学生附的、提示词让模型作答的、模型声明并落库的——UI 怎么写都会跟其中一个不一致。
+- 落地：`resolve` 新增 `pinnedQuestion`（学生显式附加的那道），附加轮里指向别的候选的声明直接
+  无效；解析层（`toTutorRespond`）与落库前重核（`TutorRespondCommands.bindRoundQuestionIfNeeded`）
+  同一把闸门；提示词那句从"请声明指向它"改成"必须指向它，指向别的题一律按无效处理"。
+  后续轮次不再有附加题，语义切换照旧合法。
+- 兼容：升级前写库的行仍可能"绑定 ≠ 附加"（当年合法），所以 badge 的附加题优先**保留**为
+  这类旧行的兜底；新行两者必然一致。
+
+### 10.3 落地时的验证与未验证（不当作已通过）
+
+- 已验证：`:core:domain:test --tests "*TutorRoundQuestionBindingPolicyTest*"` 绿（含两条新用例：
+  钉住轮拒绝指向别的候选 / 钉住轮保留指向附加题的声明）。
+- 未验证（共享工作树被另一条会话的 K1c 迁移占着，`core:database` 当时编译不过）：`:core:data`
+  的 `TutorRoundQuestionWireTest` 两条新用例、`:feature:tutor` 的
+  `anAttachedRoundKeepsTheRevealButNeverRecordsAnAnswerExposure` 与
+  `anAttachedRoundsAnswerStaysInHistoryEvenThoughItsExposureIsNeverRecorded`——四条都先在
+  "签名就位、行为未接"的中间态跑出过红，行为接上后只有 core:domain 那条能在本机复跑到绿。
+- 又：`:core:model:test`（5 条）与 `:core:data` 的 `OpenAiCompatibleModelGatewayTest`（28 条）
+  当时的红**不是**本次改动引入——另一条会话在途把 `TutorPlanInput/TutorRespondInput.subjectId`
+  从 `sessionId` 改成派生值 `tutor-conv:captured:<sessionId>`，而测试夹具的 egress manifest 仍钉
+  裸 sessionId（`ModelEgressManifest.requireAuthorizes` 的第一条 require 就是 `subjectId` 相等）。
+

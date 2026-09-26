@@ -27,6 +27,12 @@ internal data class TutorSolutionExposureTarget(
     val exposureCommand: RecordTutorSolutionExposureCommand,
     val notBeforeEpochMillis: Long,
     val pendingRevealCommand: RevealTutorSolutionCommand? = null,
+    /**
+     * false = 只揭示、不落账。学生显式附加了题的那一轮用它：暴露账本与会话锚都是"会话题"形状
+     * （键取 `input.questionDocument`、物化到会话锚），而这一轮学生看到的是所附之题的答案——
+     * 记下去就是把展示算到会话题头上，附加题自己一次都不记。
+     */
+    val recordsExposure: Boolean = true,
 )
 
 private data class TutorTurnIdentity(
@@ -195,6 +201,8 @@ internal fun buildTutorSolutionExposureTargets(
                             turnOrdinal = input.turnOrdinal,
                             occurredAtEpochMillis = 0,
                         ).takeIf { response?.solutionRevealed != true },
+                        // 附加轮：揭示照做（学生该看到所附之题的答案），但**不落账**。
+                        recordsExposure = input.attachedQuestion == null,
                     )
                 } else {
                     null

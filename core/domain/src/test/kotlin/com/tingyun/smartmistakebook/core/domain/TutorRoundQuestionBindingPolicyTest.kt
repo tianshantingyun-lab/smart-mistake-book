@@ -103,6 +103,41 @@ class TutorRoundQuestionBindingPolicyTest {
         )
     }
 
+    /**
+     * 学生显式附加了题的一轮：附加题就是本轮的题，模型指**别的**候选一律无效（不许切走）。
+     *
+     * 反证：去掉 pinnedQuestion 这条闸门，下面这份声明会通过全部两条本地校验——候选在菜单内，
+     * 锚词"另一道题"既能逐字对上 studentMessage、也能在那个候选自己的标题里找到。
+     */
+    @Test
+    fun `a round that pins the attached question refuses a declaration naming another candidate`() {
+        val pinned = candidate("p-added", "r-added", "学生所附的题")
+
+        assertNull(
+            TutorRoundQuestionBindingPolicy.resolve(
+                candidates = listOf(pinned, candidate("p-other", "r-other", "另一道题")),
+                declaration = declaration("p-other", "r-other", "另一道题"),
+                studentMessage = "另一道题也讲讲",
+                pinnedQuestion = pinned,
+            ),
+        )
+    }
+
+    @Test
+    fun `a round that pins the attached question keeps the declaration naming it`() {
+        val pinned = candidate("p-added", "r-added", "学生所附的题")
+
+        assertEquals(
+            "p-added",
+            TutorRoundQuestionBindingPolicy.resolve(
+                candidates = listOf(pinned, candidate("p-other", "r-other", "另一道题")),
+                declaration = declaration("p-added", "r-added", "学生所附的题"),
+                studentMessage = "学生所附的题再讲讲",
+                pinnedQuestion = pinned,
+            )?.problemId,
+        )
+    }
+
     @Test
     fun `an anchor the student never wrote is rejected`() {
         assertNull(

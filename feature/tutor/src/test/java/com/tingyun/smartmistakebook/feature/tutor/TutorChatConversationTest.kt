@@ -25,6 +25,7 @@ import com.tingyun.smartmistakebook.core.model.TutorMemoryPreference
 import com.tingyun.smartmistakebook.core.model.TutorMessageIntent
 import com.tingyun.smartmistakebook.core.model.TutorRequestedLocalCapability
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
+import com.tingyun.smartmistakebook.core.model.AttachedRoundQuestion
 import com.tingyun.smartmistakebook.core.model.RelatedProblemCandidate
 import com.tingyun.smartmistakebook.core.model.SubjectKind
 import com.tingyun.smartmistakebook.core.model.TutorRoundQuestionDeclaration
@@ -405,6 +406,40 @@ class TutorChatConversationTest {
     }
 
     /**
+     * 附加轮的暴露**刻意不落账**（账本与会话锚都是"会话题"形状，记下去会把展示算到会话题头上）。
+     * 这里钉住它的另一半：不落账不等于在会话记忆里装作没见过——学生看到的正是所附之题的完整答案，
+     * 所以重载之后（账本里没有它的记录）正文必须原样保留。
+     *
+     * 反证：把 `tutorChatExchanges` 里附加轮那条本地规则去掉，本用例转红（正文被占位顶替）。
+     */
+    @Test
+    fun anAttachedRoundsAnswerStaysInHistoryEvenThoughItsExposureIsNeverRecorded() {
+        val attached = AttachedRoundQuestion(
+            problemId = "attached-problem",
+            problemRevisionId = "attached-problem-revision-1",
+            revisionNumber = 2,
+            subject = com.tingyun.smartmistakebook.core.model.SubjectKind.PHYSICS,
+            title = "附加题：自由落体位移",
+            questionDocument = QuestionDocument(
+                id = "question-attached",
+                blocks = listOf(ContentBlock.Paragraph("attached-stem", "附加题干：求位移。")),
+            ),
+        )
+        val task = succeededResponse(
+            responseOrdinal = 1,
+            studentMessage = "告诉我答案",
+            assistantMarkdown = "完整答案是 42",
+            solutionRevealed = true,
+            boundQuestion = false,
+            attachedQuestion = attached,
+        )
+
+        val history = tutorChatHistory(listOf(task), answerExposureKeys = emptySet())
+
+        assertEquals("完整答案是 42", history.single().assistantMarkdown)
+    }
+
+    /**
      * 把一行"老化"到轮次绑定之前（schema 10：`boundQuestionCandidates` 与 `boundQuestion` 都还
      * 不存在的那一版）。指纹参与完整性断言（`ModelTaskSnapshot.init`），所以随 schema 一并重算。
      */
@@ -515,6 +550,11 @@ class TutorChatConversationTest {
         updatedAtEpochMillis: Long = createdAtEpochMillis,
         /** 本轮是不是有题轮：这些用例讲的是"当前题"的会话，默认有题；无题轮另有专门用例。 */
         boundQuestion: Boolean = true,
+        /**
+         * 学生显式附加了题的一轮：附加题是本轮的已知锚（请求契约要求它同时进菜单），
+         * 落库的绑定也指向它——解析层在有附加题时只认指向它的声明。
+         */
+        attachedQuestion: AttachedRoundQuestion? = null,
     ): ModelTaskSnapshot {
         val question = currentQuestion().toTutorQuestionContext()
         val provider = provider()
@@ -531,7 +571,17 @@ class TutorChatConversationTest {
             studentMessage = studentMessage,
             visibleTutorContextMarkdown = null,
             priorMessages = emptyList(),
-            boundQuestionCandidates = if (boundQuestion) listOf(bindingCandidate) else emptyList(),
+            boundQuestionCandidates = when {
+                attachedQuestion != null -> if (boundQuestion) {
+                    listOf(attachedQuestion.toCandidate(), bindingCandidate)
+                } else {
+                    listOf(attachedQuestion.toCandidate())
+                }
+                boundQuestion -> listOf(bindingCandidate)
+                else -> emptyList()
+            },
+            knownRoundQuestion = attachedQuestion?.toCandidate(),
+            attachedQuestion = attachedQuestion,
         )
         return ModelTaskSnapshot(
             taskId = "task-$requestId",
@@ -550,14 +600,18 @@ class TutorChatConversationTest {
                 responseOrdinal = responseOrdinal,
                 messageMarkdown = assistantMarkdown,
                 solutionRevealed = solutionRevealed,
-                boundQuestion = if (boundQuestion) {
-                    TutorRoundQuestionDeclaration(
+                boundQuestion = when {
+                    attachedQuestion != null -> TutorRoundQuestionDeclaration(
+                        problemId = attachedQuestion.problemId,
+                        problemRevisionId = attachedQuestion.problemRevisionId,
+                        anchorTerms = listOf(anchorTermFor(studentMessage)),
+                    )
+                    boundQuestion -> TutorRoundQuestionDeclaration(
                         problemId = bindingCandidate.problemId,
                         problemRevisionId = bindingCandidate.problemRevisionId,
                         anchorTerms = listOf(anchorTermFor(studentMessage)),
                     )
-                } else {
-                    null
+                    else -> null
                 },
                 thinkingMarkdown = thinkingMarkdown,
                 intentDecision = TutorIntentDecision(

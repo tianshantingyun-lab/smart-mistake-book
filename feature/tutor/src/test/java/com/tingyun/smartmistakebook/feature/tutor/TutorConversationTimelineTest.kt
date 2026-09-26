@@ -35,6 +35,8 @@ import com.tingyun.smartmistakebook.core.model.TutorRequestedLocalCapability
 import com.tingyun.smartmistakebook.core.model.TutorTurnPlan
 import com.tingyun.smartmistakebook.core.model.WritingLayer
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertThrows
@@ -293,6 +295,50 @@ class TutorConversationTimelineTest {
     }
 
     /**
+     * 附加轮的暴露**只揭示、不落账**。
+     *
+     * 账本与会话锚都是"会话题"形状（键取 `input.questionDocument`、物化到会话锚），而这一轮学生
+     * 看到的是所附之题的答案：记下去就是把"会话题的答案展示过"记在会话题头上，附加题自己一次都
+     * 不记。所以目标仍然生成（揭示照做——学生该看到答案），但带着"不落账"的标记。
+     *
+     * 反证：把 `recordsExposure` 恒置 true（回到只按 canExposeSolutionFor 生成目标的旧形态），
+     * 附加轮那条断言转红。
+     */
+    @Test
+    fun anAttachedRoundKeepsTheRevealButNeverRecordsAnAnswerExposure() {
+        val plain = respondTask(
+            requestId = "respond-plain",
+            occurredAtEpochMillis = 100,
+            studentMessage = "请告诉我答案。",
+            solutionRevealed = true,
+        )
+        val attached = attachedRespondTask(
+            requestId = "respond-attached",
+            occurredAtEpochMillis = 200,
+            studentMessage = "讲讲这道题，告诉我答案",
+            solutionRevealed = true,
+            intentDecision = TutorIntentDecision.currentQuestionDefault(),
+        )
+        val targets = buildTutorSolutionExposureTargets(
+            timeline = listOf(
+                TutorConversationTimelineItem.Reply(plain),
+                TutorConversationTimelineItem.Reply(attached),
+            ),
+            responses = emptyList(),
+            previewKeys = emptySet(),
+            longTermWritesBlocked = false,
+        ).associateBy { target -> target.exposureCommand.modelTaskRequestId }
+
+        assertEquals(2, targets.size)
+        assertTrue("普通有题轮照常落账", targets.getValue("respond-plain").recordsExposure)
+        assertFalse("附加轮只揭示、不落账", targets.getValue("respond-attached").recordsExposure)
+        assertNotNull(
+            "揭示动作必须还在：学生该看到所附之题的答案",
+            targets.getValue("respond-attached").pendingRevealCommand,
+        )
+    }
+
+    /**
      * 无题轮永不产生暴露记录（F3 的另一半：新语义不得被放宽）。
      *
      * 同一份"学生明确索要答案 + 模型声明 solutionRevealed"的输出，只要本轮没有绑定题，就既不是
@@ -495,6 +541,10 @@ class TutorConversationTimelineTest {
         target: TutorQuestionContext = question,
         attachedTitle: String = "附加题：自由落体位移",
         attachedProblemId: String = ATTACHED_PROBLEM_ID,
+        studentMessage: String = "讲讲这道题",
+        solutionRevealed: Boolean = false,
+        /** 默认沿用输出类自己的缺省（AMBIGUOUS）；要揭示答案的用例必须显式给 CURRENT_QUESTION_HELP。 */
+        intentDecision: TutorIntentDecision? = null,
     ): ModelTaskSnapshot {
         val attached = AttachedRoundQuestion(
             problemId = attachedProblemId,
@@ -516,7 +566,7 @@ class TutorConversationTimelineTest {
             responseOrdinal = 2,
             cycleOrdinal = 1,
             turnOrdinal = 2,
-            studentMessage = "讲讲这道题",
+            studentMessage = studentMessage,
             visibleTutorContextMarkdown = null,
             priorMessages = emptyList(),
             // 菜单里除了附加题还有另一道候选，且模型的声明指向**那一道**——用来区分
@@ -547,11 +597,13 @@ class TutorConversationTimelineTest {
                 cycleOrdinal = input.cycleOrdinal,
                 turnOrdinal = input.turnOrdinal,
                 messageMarkdown = "先看这道题的第一步。",
+                solutionRevealed = solutionRevealed,
                 boundQuestion = TutorRoundQuestionDeclaration(
                     problemId = OTHER_PROBLEM_ID,
                     problemRevisionId = "$OTHER_PROBLEM_ID-revision-1",
                     anchorTerms = listOf("讲讲"),
                 ),
+                intentDecision = intentDecision ?: TutorIntentDecision.ambiguousDefault(),
                 modelVersion = "model-v1",
             ),
             createdAtEpochMillis = occurredAtEpochMillis,

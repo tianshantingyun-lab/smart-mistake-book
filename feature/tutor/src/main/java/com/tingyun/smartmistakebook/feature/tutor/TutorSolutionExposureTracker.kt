@@ -145,12 +145,16 @@ internal fun rememberTutorSolutionExposureTracker(
                                         revealCommand.copy(occurredAtEpochMillis = visibleAt),
                                     )
                                 }
-                                interactions.recordSolutionExposure(
-                                    command.copy(occurredAtEpochMillis = visibleAt),
-                                )
-                                answerExposureKeysState.value =
-                                    answerExposureKeysState.value +
-                                    command.toTutorAnswerExposureKey()
+                                // 附加轮只揭示、不落账（也不把键塞进本会话的已曝光集合）：
+                                // 账本与会话锚是"会话题"形状，记下去是给会话题凭空白记一次展示。
+                                if (target.recordsExposure) {
+                                    interactions.recordSolutionExposure(
+                                        command.copy(occurredAtEpochMillis = visibleAt),
+                                    )
+                                    answerExposureKeysState.value =
+                                        answerExposureKeysState.value +
+                                        command.toTutorAnswerExposureKey()
+                                }
                                 recorded = true
                             } catch (cancelled: CancellationException) {
                                 throw cancelled

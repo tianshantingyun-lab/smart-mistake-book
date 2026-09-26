@@ -1,6 +1,7 @@
 package com.tingyun.smartmistakebook.core.data.tutor
 
 import com.tingyun.smartmistakebook.core.domain.StudyCatalogEntry
+import com.tingyun.smartmistakebook.core.model.AttachedRoundQuestion
 import com.tingyun.smartmistakebook.core.model.ContentBlock
 import com.tingyun.smartmistakebook.core.model.QuestionDocument
 import com.tingyun.smartmistakebook.core.model.TutorRespondInput
@@ -133,6 +134,54 @@ class TutorRoundQuestionWireTest {
         assertEquals("revision-1", output.boundQuestion?.problemRevisionId)
     }
 
+    /**
+     * 学生显式附加了题的一轮：模型指**别的**候选一律无效——附加题就是本轮的题。
+     *
+     * 反证：不给解析器传 pinnedQuestion，下面这份声明会通过全部两条本地校验（problem-1 在菜单内、
+     * "光的折射"既在 studentMessage 里逐字出现、也在那道题的标题里），于是"本轮绑定"与"学生附加的
+     * 题"分叉——badge 写一道、账目记另一道。
+     */
+    @Test
+    fun `an attached round refuses a declaration naming another menu candidate`() {
+        val output = respond(
+            """
+            {
+              "messageMarkdown": "先看这一步。",
+              "solutionRevealed": false,
+              "boundQuestion": {
+                "problemId": "problem-1",
+                "problemRevisionId": "revision-1",
+                "anchorTerms": ["光的折射"]
+              }
+            }
+            """.trimIndent(),
+            input = input(attached = attachedQuestion()),
+        )
+
+        assertNull(output.boundQuestion)
+    }
+
+    @Test
+    fun `an attached round keeps the declaration naming the attached question`() {
+        val output = respond(
+            """
+            {
+              "messageMarkdown": "先看这一步。",
+              "solutionRevealed": false,
+              "boundQuestion": {
+                "problemId": "problem-attached",
+                "problemRevisionId": "revision-attached",
+                "anchorTerms": ["光的折射"]
+              }
+            }
+            """.trimIndent(),
+            input = input(attached = attachedQuestion()),
+        )
+
+        assertEquals("problem-attached", output.boundQuestion?.problemId)
+        assertEquals("revision-attached", output.boundQuestion?.problemRevisionId)
+    }
+
     @Test
     fun `a write call carries its own question anchor`() {
         // 逐次锚：原生 tool_calls 路由的轮次信封放不下声明，所以写调用的 arguments 里必须能带
@@ -263,11 +312,12 @@ class TutorRoundQuestionWireTest {
         assertTrue(rejection.isFailure)
     }
 
-    private fun respond(reply: String) = Json.parseToJsonElement(reply)
-        .let { element -> element as JsonObject }
-        .toTutorRespond(input(), "model-v1")
+    private fun respond(reply: String, input: TutorRespondInput = input()) =
+        Json.parseToJsonElement(reply)
+            .let { element -> element as JsonObject }
+            .toTutorRespond(input, "model-v1")
 
-    private fun input() = TutorRespondInput(
+    private fun input(attached: AttachedRoundQuestion? = null) = TutorRespondInput(
         sessionId = "session-1",
         draftRevisionNumber = 1,
         subject = "物理",
@@ -279,7 +329,8 @@ class TutorRoundQuestionWireTest {
         projectionIsCurrent = true,
         responseOrdinal = 1,
         studentMessage = "光的折射实验这一步为什么这样",
-        boundQuestionCandidates = listOf(
+        boundQuestionCandidates = listOfNotNull(
+            attached?.toCandidate(),
             com.tingyun.smartmistakebook.core.model.RelatedProblemCandidate(
                 problemId = "problem-1",
                 problemRevisionId = "revision-1",
@@ -291,6 +342,21 @@ class TutorRoundQuestionWireTest {
                     blocks = listOf(ContentBlock.Paragraph("stem-1", "入射角与折射角的关系。")),
                 ),
             ),
+        ),
+        knownRoundQuestion = attached?.toCandidate(),
+        attachedQuestion = attached,
+    )
+
+    /** 学生显式附加了题的一轮：附加题是本轮已知锚，必须同时在本轮菜单里（请求契约）。 */
+    private fun attachedQuestion() = AttachedRoundQuestion(
+        problemId = "problem-attached",
+        problemRevisionId = "revision-attached",
+        revisionNumber = 2,
+        subject = com.tingyun.smartmistakebook.core.model.SubjectKind.PHYSICS,
+        title = "光的折射实验练习",
+        questionDocument = QuestionDocument(
+            id = "question-attached",
+            blocks = listOf(ContentBlock.Paragraph("attached-stem", "附加题：入射角与折射角的关系。")),
         ),
     )
 }

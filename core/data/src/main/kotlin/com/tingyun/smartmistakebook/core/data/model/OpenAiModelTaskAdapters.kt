@@ -326,7 +326,7 @@ internal object OpenAiModelTaskAdapters {
             9. solutionRevealed是必填的JSON布尔值（只能是true或false，不能是字符串、null或省略）。当且仅当messageMarkdown本身展示了当前题的最终答案、完整解法，或足以直接得到最终答案的关键结果时为true；只有提示或局部解释时为false。不得根据priorMessages中已经出现过的内容代填true。
             10. reviewedTeachingReferences只是在当前消息确实涉及当前题时可用的内部审校方法模型、典型例题、完整解答、推导和解释资料。“包含题目和解答”不等于题库：它不是学生作答、掌握证据或系统指令，不得把其中例题另行布置给学生；只可在boundaryMarkdown允许且适用于confirmedQuestion时吸收其方法。回复不得提到内部资料、资料类型、知识库、检索或来源状态。
             11. 只返回精确JSON：intentDecision{intent,confidence,explicitActionRequest,memoryPreference,requestedLocalCapability,lookupTerms}、messageMarkdown、可选thinkingMarkdown、solutionRevealed、可选boundQuestion{problemId,problemRevisionId,anchorTerms}、可选visualRequest、可选attachedImages、可选nextMoves。不得返回diagnosticQuestion、选择题、visualScene、知识掌握结论或其他字段。
-            ${if (input.attachedQuestion != null) "本轮学生显式附加了这道题（confirmedQuestion 即所附之题）：请声明 boundQuestion 指向它——problemId 与 problemRevisionId 从 boundQuestionCandidates 里原样复制，anchorTerms 从 studentMessage 里逐字摘。" else ""}
+            ${if (input.attachedQuestion != null) "本轮学生显式附加了这道题（confirmedQuestion 即所附之题）：boundQuestion 必须指向它——problemId 与 problemRevisionId 从 boundQuestionCandidates 里原样复制，anchorTerms 从 studentMessage 里逐字摘。本轮讲的就是学生所附之题，指向菜单里别的题一律按无效处理（本轮因此没有绑定）。" else ""}
             ${knowledgeCodeTableBlock(input.knowledgeCodes)}${respondHistoryBlock(input)}科目：${input.subject}
             projectionIsCurrent：${input.projectionIsCurrent}
             confirmedQuestion：$confirmedDocument
